@@ -38,7 +38,7 @@ public class StatsNpc : StatsCharacter
     private Collider objectCollider;
 
     [SerializeField]
-    private TurretBehaviour turret;
+    private ParticleSingleTurret turret;
 
     [SerializeField]
     private AudioSource audioSource;
@@ -47,7 +47,7 @@ public class StatsNpc : StatsCharacter
 
     // Start is called before the first frame update
 
-    void Awake()
+    void Start()
     {
         if (null == objectCollider)
             objectCollider = GetComponent<Collider>();
@@ -56,7 +56,7 @@ public class StatsNpc : StatsCharacter
             npcController = GetComponent<NpcController>();
 
         if (null == turret)
-            turret = GetComponent<TurretBehaviour>();
+            turret = GetComponent<ParticleSingleTurret>();
 
         if (null == audioSource)
         {
@@ -67,13 +67,10 @@ public class StatsNpc : StatsCharacter
             }
         }
 
-
         damageFrom = new Dictionary<GameObject, float>(maxSizeDamageDictionary);
-    }
 
-    void Start()
-    {
-        HostilityManager.hostilityManager.AddCharacter(this);
+        HostilityManager.AddCharacter(this);
+       // ParticleDamage.AddCollider(transform);
     }
 
     private void OnEnable()
@@ -81,10 +78,7 @@ public class StatsNpc : StatsCharacter
         currentHealth = maxHealth;
         ClearDamageList();
 
-        if (HostilityManager.hostilityManager != null)
-        {
-            HostilityManager.hostilityManager.AddCharacter(this);
-        }
+        HostilityManager.AddCharacter(this);
 
         if (null != graphics)
             graphics.SetActive(true);
@@ -117,7 +111,7 @@ public class StatsNpc : StatsCharacter
             graphics.SetActive(false);
 
         if (null != turret)
-            turret.Pause();
+            turret.Stop();
 
         if (null != objectCollider)
             objectCollider.enabled = false;
@@ -126,14 +120,16 @@ public class StatsNpc : StatsCharacter
             npcController.PauseMovement();
 
 
-        HostilityManager.hostilityManager.RemoveCharacter(this);
+        HostilityManager.RemoveCharacter(this);
 
         GfPooling.Destroy(gameObject, deathSound.Length() * 2.0f);
     }
 
     public void ClearDamageList()
     {
-        damageFrom.Clear();
+        if(null != damageFrom)
+            damageFrom.Clear();
+
         biggestDamageReceived = 0;
     }
 

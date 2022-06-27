@@ -27,6 +27,9 @@ public class NpcBehaviour : NpcController
     protected HostileValues hostileValues;
 
     [SerializeField]
+    protected ParticleSingleTurret turret;
+
+    [SerializeField]
     protected float intervalBetweenWalkPhases = 4.0f;
 
     [SerializeField]
@@ -51,9 +54,6 @@ public class NpcBehaviour : NpcController
     protected float timeOfFireChange = 0;
     protected EngageModes currentPhase;
 
-    [SerializeField]
-    protected TurretBehaviour turret = null;
-
     private StatsNpc statsNpc;
 
     private float timeOfNextEnemyCheck = 0;
@@ -76,20 +76,19 @@ public class NpcBehaviour : NpcController
         // destinations.SetDestination(GameManager.gameManager.GetPlayer(), true, true);
         spawnPos = transform.position;
 
-        if (turret == null)
-        {
-            turret = GetComponent<TurretBehaviour>();
-        }
-
         float randomRadian = GfRandom.Range(0, Mathf.PI * 2.0f);
         simpleMovement.SetMovementDir(new Vector3(Mathf.Cos(randomRadian), desiredYDir, Mathf.Sin(randomRadian)));
 
-        statsNpc = GetComponent<StatsNpc>();
+        if (null == statsNpc)
+            statsNpc = GetComponent<StatsNpc>();
+
+        if (null == turret)
+            turret = GetComponent<ParticleSingleTurret>();
     }
 
     private GameObject CheckForEnemiesAround()
     {
-        Dictionary<CharacterTypes, HashSet<StatsCharacter>> enemyDict = HostilityManager.hostilityManager.GetEnemiesList(statsNpc);
+        Dictionary<CharacterTypes, HashSet<StatsCharacter>> enemyDict = HostilityManager.GetEnemiesList(statsNpc);
         foreach (CharacterTypes type in enemyDict.Keys)
         {
             foreach (StatsCharacter character in enemyDict[type])
@@ -108,8 +107,6 @@ public class NpcBehaviour : NpcController
     float horizontalDirOffset;
     protected override void EngageEnemyBehaviour(Vector3 dirToTarget)
     {
-        if (turret != null)
-        {
             float currentTime = Time.time;
             if (currentTime > timeOfChangePhase)
             {
@@ -140,8 +137,8 @@ public class NpcBehaviour : NpcController
                 if (!destination.WasDestroyed())
                 {
                     Transform enemyTransform = destination.TransformDest;
-                    turret.SetTarget(enemyTransform);
-                    turret.Play();
+                    turret.target = enemyTransform;
+                    turret.Fire();
                     //PauseMovement(turret.GetCurrentPhaseLength());
                 }
 
@@ -173,12 +170,8 @@ public class NpcBehaviour : NpcController
             horizontalDir *= 1 + Mathf.Abs(desiredYDir);
 
             simpleMovement.SetMovementDir(new Vector3(horizontalDir.x, desiredYDir, horizontalDir.y));
-        }
-        else
-        {
-            LowLifeBehaviour(dirToTarget);
-        }
     }
+
 
     protected override void NoDestinationsBehaviour()
     {
@@ -186,7 +179,7 @@ public class NpcBehaviour : NpcController
         if (Time.time >= timeOfNextWalkChange)
         {
             statsNpc.ClearDamageList();
-            turret.Pause();
+           // turret.Pause();
 
             timeOfNextWalkChange = Time.time + intervalBetweenWalkPhases * (1 - GfRandom.Range(-varianceRate, varianceRate));
 
@@ -235,16 +228,16 @@ public class NpcBehaviour : NpcController
     {
         Debug.Log("i have low life");
         simpleMovement.SetMovementDir(-dirToTarget);
-        turret.Pause();
+        turret.Stop();
     }
 
 
     protected override void LostTargetBehaviour()
     {
-        Debug.Log("i lost the target");
+       // Debug.Log("i lost the target");
         PauseMovement(1);
         simpleMovement.SetMovementDir(Vector3.zero);
-        turret.Pause();
+        turret.Stop();
         npcState = NpcState.NO_DESTINATION;
         SetDestination(null);
     }
@@ -253,7 +246,7 @@ public class NpcBehaviour : NpcController
     {
         Debug.Log("enemy was destroyed");
         simpleMovement.SetMovementDir(Vector3.zero);
-        turret.Pause();
+        turret.Stop();
         npcState = NpcState.NO_DESTINATION;
         SetDestination(null);
     }

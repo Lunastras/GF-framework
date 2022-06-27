@@ -276,18 +276,18 @@ public class MovementBasic : MovementGeneric
             bool foundGroundCollisions = 0 < Physics.OverlapSphereNonAlloc(groundCheck.position, groundCheckRadius, GfPhysics.GetCollidersArray(), GfPhysics.GroundLayers());
             if (foundGroundCollisions) //is most likely still grounded
             {
-                Debug.Log("sliding but found ground");
+               // Debug.Log("sliding but found ground");
                 auxGrounded = true;
             }
             else
             { //isSliding
 
-                Debug.Log("I am sliding rn i guess with an angle of ");
+                //Debug.Log("I am sliding rn i guess with an angle of ");
                 auxGrounded = false;
                 //check if previously grounded
                 if(isGrounded)
                 {
-                    Debug.Log("Was previously GROUNDED SIDDIING");
+                    //Debug.Log("Was previously GROUNDED SIDDIING");
                     auxVelocity.y = velocity.y = 0;
                 } 
                 else
@@ -313,7 +313,7 @@ public class MovementBasic : MovementGeneric
             velocity = auxVelocity;
         } else
         {
-            Debug.Log("I am still jumping from ledge");
+          //  Debug.Log("I am still jumping from ledge");
         }
     }
 }

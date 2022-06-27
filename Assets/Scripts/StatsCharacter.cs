@@ -8,9 +8,9 @@ public abstract class StatsCharacter : MonoBehaviour
     private CharacterTypes characterType;
 
     // Start is called before the first frame update
-    void Awake()
+    void Start()
     {
-        //HostilityManager.hostilityManager.AddCharacter(this);
+        HostilityManager.AddCharacter(this);
     }
 
     public abstract void Damage(float damage, StatsCharacter enemy = null);
@@ -26,20 +26,24 @@ public abstract class StatsCharacter : MonoBehaviour
     {
         if (characterType != type)
         {
-
-            HostilityManager.hostilityManager.RemoveCharacter(this);
+            HostilityManager.RemoveCharacter(this);
             characterType = type;
-            HostilityManager.hostilityManager.AddCharacter(this);
+            HostilityManager.AddCharacter(this);
         }
     }
 
     private void OnDestroy()
     {
-        HostilityManager.hostilityManager.RemoveCharacter(this);
+        HostilityManager.RemoveCharacter(this);
     }
 
     private void OnDisable()
     {
-        HostilityManager.hostilityManager.RemoveCharacter(this);
+        HostilityManager.RemoveCharacter(this);
+    }
+
+    private void OnEnable()
+    {
+        HostilityManager.AddCharacter(this);
     }
 }

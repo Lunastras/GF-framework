@@ -85,7 +85,7 @@ public class MovementAdvanced : MovementBasic
         Vector3 wallSphereCheckPosition = transform.position + transform.forward * Radius();
 
         //check if the player is touching any walls
-        if (checkPhysics && 0 < Physics.OverlapSphereNonAlloc(wallSphereCheckPosition, Radius(), GfPhysics.GetCollidersArray(), GfPhysics.WallrunLayers()))
+        if (checkPhysics && (isAttachedToWall || 0 < Physics.OverlapSphereNonAlloc(wallSphereCheckPosition, Radius(), GfPhysics.GetCollidersArray(), GfPhysics.WallrunLayers())))
         {
             if (isAttachedToWall
                 || (new Vector2(velocity.x, velocity.z).magnitude > 0.3f && Vector3.Dot(velocity, transform.forward) > 0.1f))
@@ -161,7 +161,7 @@ public class MovementAdvanced : MovementBasic
 
                 if (wallRunSpeed > 0)
                 {                    
-                    if (0 < Physics.OverlapSphereNonAlloc(transform.position - groundCheck.localPosition, groundCheckRadius, GfPhysics.GetCollidersArray(), ~GfPhysics.IgnoreLayers())) //ceiling check
+                    if (0 < Physics.OverlapSphereNonAlloc(transform.position - groundCheck.localPosition, groundCheckRadius, GfPhysics.GetCollidersArray(), GfPhysics.NonCharacterCollisions())) //ceiling check
                     {
                         traversedWallDistance = wallrunMaxDst;
                         isSlidingOffWall = true;
@@ -172,7 +172,7 @@ public class MovementAdvanced : MovementBasic
                 }
                 else
                 {
-                    if (0 < Physics.OverlapSphereNonAlloc(groundCheck.position, groundCheckRadius, GfPhysics.GetCollidersArray(), GfPhysics.GroundLayers())) //ground check
+                    if (0 < Physics.OverlapSphereNonAlloc(groundCheck.position, groundCheckRadius, GfPhysics.GetCollidersArray(), GfPhysics.NonCharacterCollisions())) //ground check
                     {
                         //Debug.Log("Detaching from wall 1");
                         DetachFromWall();

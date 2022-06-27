@@ -112,7 +112,7 @@ public class HitBoxBehaviour : HitBoxGeneric
             bool willDamage = false;
 
             bool hitSelf = characterStats == collisionStats;
-            bool canDamageEnemy = HostilityManager.hostilityManager.CanDamage(characterStats, collisionStats);
+            bool canDamageEnemy = HostilityManager.CanDamage(characterStats, collisionStats);
 
             //check if it can damage target
             if ((!hitSelf && canDamageEnemy) || (hitSelf && canDamageSelf))

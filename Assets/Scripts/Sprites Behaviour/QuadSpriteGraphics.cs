@@ -23,9 +23,6 @@ public class QuadSpriteGraphics : MonoBehaviour
     
     void Update()
     {
-        if (!quadSpriteValues.active)
-            return;
-
         Vector3 vecToTarget = (mainCamera.transform.position - transform.position).normalized;
 
         float xFollowFactor = quadSpriteValues.xFollowFactor;
@@ -59,9 +56,7 @@ public struct QuadSpriteGraphicsValues
     public QuadSpriteGraphicsValues(float xFollowFactor = 1.0f, bool active = true)
     {
         this.xFollowFactor = xFollowFactor;
-        this.active = active;
     }
 
     public float xFollowFactor;
-    public bool active;
 }

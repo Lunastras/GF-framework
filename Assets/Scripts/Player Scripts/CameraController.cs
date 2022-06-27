@@ -6,19 +6,18 @@ public class CameraController : MonoBehaviour
 {
     [SerializeField]
     private float sensitivity = 1;
-    private Transform mainTarget;
+
+    [SerializeField]
+    private float physCheckInterval = 0.2f;
 
     [SerializeField]
     private float dstFromtarget = 6;
 
-    [SerializeField]
-    private float aimDstFromPlayerCoef = 0.5f;
+    //[SerializeField]
+    //private float aimDstFromPlayerCoef = 0.5f;
 
-    [SerializeField]
-    private float aimYPosOffset = 5f;
-
-    [SerializeField]
-    private float playerYPosOffset = 5f;
+   // [SerializeField]
+   // private float aimYPosOffset = 5f;
 
     [SerializeField]
     private float minDstFromtarget = 4;
@@ -30,13 +29,12 @@ public class CameraController : MonoBehaviour
     private float pitchMax = 85;
 
     [SerializeField]
-    private bool canMove = true;
-
-    [SerializeField]
     private float rotationSmoothTime = 0.04f;
 
     public float targetChangeSpeed = 10;
     private Vector3 currentCameraSpeed;
+    private Transform mainTarget;
+
     //Internal script variables
 
     private Vector3 rotationSmoothVelocity;
@@ -48,6 +46,8 @@ public class CameraController : MonoBehaviour
     private float yaw;
     private float pitch;
     private Camera cam;
+
+    private float timeOfCheckPhys;
 
     public float targetSearchRadius = 10;
     public int[] targetLayers;
@@ -83,37 +83,39 @@ public class CameraController : MonoBehaviour
         aimTarget = null;
     }
 
+    private void FixedUpdate()
+    {
+        
+    }
     // Update is called once per frame
     void LateUpdate()
     {
-        if (!canMove) return;
-
         yaw += Input.GetAxisRaw("Mouse X") * sensitivity * Time.deltaTime;
         pitch -= Input.GetAxisRaw("Mouse Y") * sensitivity * Time.deltaTime;
         pitch = Mathf.Clamp(pitch, pitchMin, pitchMax);
 
         transform.rotation = Quaternion.Euler(pitch, yaw, 0);
-        Vector3 desiredTargetPos = mainTarget.position + Vector3.up * playerYPosOffset;
+        Vector3 desiredTargetPos = mainTarget.position;
         desiredDst = dstFromtarget;
 
-        if (Input.GetAxisRaw("Aim") > 0.95f)
-        {
-            if (aimTarget != null || SearchTarget())
-            {
-                Vector3 mainToTarget = aimTarget.position - mainTarget.position;
-                desiredDst = Mathf.Max(mainToTarget.magnitude, minDstFromtarget);
-                desiredTargetPos = mainTarget.position + mainToTarget * aimDstFromPlayerCoef + Vector3.up * aimYPosOffset;
-            }
-            else
-            {
-
-                //still do some things;
-            }
-        }
-        else
-        {
-            aimTarget = null;
-        }
+       //if (Input.GetAxisRaw("Aim") > 0.95f)
+       //{
+       //    if (aimTarget != null || SearchTarget())
+       //    {
+       //        Vector3 mainToTarget = aimTarget.position - mainTarget.position;
+       //        desiredDst = Mathf.Max(mainToTarget.magnitude, minDstFromtarget);
+       //        desiredTargetPos = mainTarget.position + mainToTarget * aimDstFromPlayerCoef + Vector3.up * aimYPosOffset;
+       //    }
+       //    else
+       //    {
+       //
+       //        //still do some things;
+       //    }
+       //}
+       //else
+       //{
+       //    aimTarget = null;
+       //}
 
         if (currentTargetPos != desiredTargetPos)
         {

@@ -21,6 +21,9 @@ public class GfPhysics : MonoBehaviour
     [SerializeField]
     public int wallrunLayerMask = 0;
 
+    [SerializeField]
+    public int nonCharacterCollisions = 0;
+
     /** Layer mask of objects that have collisions
     * that should not affect physics.
     */
@@ -60,6 +63,11 @@ public class GfPhysics : MonoBehaviour
     */
     public static int CollisionsNoGroundLayers() {
         return instance.collisionsNonGroundLayerMask;
+    }
+
+    public static int NonCharacterCollisions()
+    {
+        return instance.nonCharacterCollisions;
     }
 
     /** Get the layer mask of objects that can be considered ground

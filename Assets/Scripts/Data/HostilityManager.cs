@@ -69,7 +69,7 @@ public class HostilityManager : MonoBehaviour
         associationsCanDamage = associationsEnemiesWith = null;
     }
 
-    private void UpdateEnemyListDictionary()
+    private static void UpdateEnemyListDictionary()
     {
         foreach (int i in Enum.GetValues(typeof(CharacterTypes)))
         {
@@ -77,105 +77,105 @@ public class HostilityManager : MonoBehaviour
 
             Dictionary<CharacterTypes, HashSet<StatsCharacter>> enemiesList = new();
 
-            foreach (CharacterTypes enemyType in enemiesWithDict[currentType])
+            foreach (CharacterTypes enemyType in hostilityManager.enemiesWithDict[currentType])
             {
-                enemiesList.Add(enemyType, instantiatedCharacters[enemyType]);
+                enemiesList.Add(enemyType, hostilityManager.instantiatedCharacters[enemyType]);
             }
 
-            if (!enemiesListDict.ContainsKey(currentType))
+            if (!hostilityManager.enemiesListDict.ContainsKey(currentType))
             {
-                enemiesListDict.Add(currentType, enemiesList);
+                hostilityManager.enemiesListDict.Add(currentType, enemiesList);
             }
             else
             {
-                enemiesListDict[currentType] = enemiesList;
+                hostilityManager.enemiesListDict[currentType] = enemiesList;
             }
         }
     }
 
-    public bool CanDamage(CharacterTypes a, CharacterTypes b)
+    public static bool CanDamage(CharacterTypes a, CharacterTypes b)
     {
        // Debug.Log("Asked if " + a + " can damage " + b);
-        return canDamageDict[a].Contains(b);
+        return hostilityManager.canDamageDict[a].Contains(b);
     }
 
-    public bool CanDamage(StatsCharacter a, StatsCharacter b)
+    public static bool CanDamage(StatsCharacter a, StatsCharacter b)
     {       
         return CanDamage(a.GetCharacterType(), b.GetCharacterType());
     }
 
-    public Dictionary<CharacterTypes, HashSet<StatsCharacter>> GetEnemiesList(StatsCharacter a)
+    public static Dictionary<CharacterTypes, HashSet<StatsCharacter>> GetEnemiesList(StatsCharacter a)
     {
         return GetEnemiesList(a.GetCharacterType());
     }
 
-    public Dictionary<CharacterTypes, HashSet<StatsCharacter>> GetEnemiesList(CharacterTypes a)
+    public static Dictionary<CharacterTypes, HashSet<StatsCharacter>> GetEnemiesList(CharacterTypes a)
     {
-        return enemiesListDict[a];
+        return hostilityManager.enemiesListDict[a];
     }
 
-    public void AddCharacter(StatsCharacter character)
+    public static void AddCharacter(StatsCharacter character)
     {
-        if (character != null)
-            instantiatedCharacters[character.GetCharacterType()].Add(character);
+        if (character != null && null != hostilityManager)
+            hostilityManager.instantiatedCharacters[character.GetCharacterType()].Add(character);
     }
 
-    public void RemoveCharacter(StatsCharacter character)
+    public static void RemoveCharacter(StatsCharacter character)
     {
-        if (character != null)
-            instantiatedCharacters[character.GetCharacterType()].Remove(character);
+        if (character != null && null != hostilityManager)
+            hostilityManager.instantiatedCharacters[character.GetCharacterType()].Remove(character);
     }
 
-    public void AddEnemiesWithAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
+    public static void AddEnemiesWithAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
     {
         foreach (CharacterTypes charType in associations)
         {
-            enemiesWithDict[parent].Add(charType);
+            hostilityManager.enemiesWithDict[parent].Add(charType);
             if (mutual)
             {
-                enemiesWithDict[charType].Add(parent);
+                hostilityManager.enemiesWithDict[charType].Add(parent);
             }
         }
 
         UpdateEnemyListDictionary();
     }
 
-    public void AddDamageAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
+    public static void AddDamageAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
     {
         foreach (CharacterTypes charType in associations)
         {
-            canDamageDict[parent].Add(charType);
+            hostilityManager.canDamageDict[parent].Add(charType);
             if (mutual)
             {
-                canDamageDict[charType].Add(parent);
+                hostilityManager.canDamageDict[charType].Add(parent);
             }
         }
 
         UpdateEnemyListDictionary();
     }
 
-    public void RemoveDamageAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
+    public static void RemoveDamageAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
     {
         foreach (CharacterTypes charType in associations)
         {
-            canDamageDict[parent].Remove(charType);
+            hostilityManager.canDamageDict[parent].Remove(charType);
             if (mutual)
             {
-                canDamageDict[charType].Remove(parent);
+                hostilityManager.canDamageDict[charType].Remove(parent);
             }
         }
 
         UpdateEnemyListDictionary();
     }
 
-    public void RemoveEnemiesWithAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
+    public static void RemoveEnemiesWithAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
     {
         foreach (CharacterTypes charType in associations)
         {
-            canDamageDict[parent].Remove(charType);
+            hostilityManager.canDamageDict[parent].Remove(charType);
             if (mutual)
             {
-                enemiesWithDict[charType].Remove(parent);
+                hostilityManager.enemiesWithDict[charType].Remove(parent);
             }
         }
 

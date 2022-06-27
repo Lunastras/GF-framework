@@ -9,63 +9,78 @@ public class OdamaBehaviour : MonoBehaviour
     [SerializeField]
     private  OdamaBehaviourValues odamaValues;
 
+    [SerializeField]
+    private float physCheckInterval = 0.2f;
+
+    private float currentTargetDst = 0;
+    private float timeUntilPhysCheck;
+
+    private bool collidingWithSmth = false;
+
+    private RaycastHit raycastHit;
+
     private const float collisionRadius = 0.7f;
 
     private float currentBopValue;
 
     private float currentRotationRelativeToParentRad = 0;
+
     private Vector3 distanceSmoothVelocity;
-    private const float Euler = 2.71828f;
+    private Vector3 desiredPos;
 
     // private CharacterController
     // Start is called before the first frame update
     void Start()
     {
+        currentTargetDst = odamaValues.dstFromParent;
         currentBopValue = Random.Range(0, 10);
 
         odamaValues.parentMoveSmoothness *= Random.Range(1f, 2f);
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        if (parent == null)
-            return;
+        Vector3 dirFromPlayer = odamaValues.positionOffset 
+                                    + new Vector3(Mathf.Cos(currentRotationRelativeToParentRad) * odamaValues.dstFromParent,
+                                                  Mathf.Sin(currentBopValue) * odamaValues.bopRange, 
+                                                  Mathf.Sin(currentRotationRelativeToParentRad) * odamaValues.dstFromParent);
 
-        Vector2 currentRotation = new Vector2(Mathf.Cos(currentRotationRelativeToParentRad),
-                                              Mathf.Sin(currentRotationRelativeToParentRad));
-
-        currentRotation *= odamaValues.dstFromParent;
-        float verticalBop = Mathf.Sin(currentBopValue) * odamaValues.bopRange;
-
-        Vector3 desiredPosition = parent.position + new Vector3(currentRotation.x, verticalBop, currentRotation.y);
-
-        Vector3 dirFromPlayer = desiredPosition - parent.position;
-        float dstFromPlayer = dirFromPlayer.magnitude;
         dirFromPlayer = dirFromPlayer.normalized;
 
-        desiredPosition += odamaValues.positionOffset;
+        timeUntilPhysCheck -= Time.deltaTime;
 
-        RaycastHit hit;
-        if (Physics.Raycast(parent.position, dirFromPlayer, out hit, dstFromPlayer * 1.2f, ~GfPhysics.IgnoreLayers()))
+        if (timeUntilPhysCheck <= 0)
         {
-            Vector3 hitPoint = hit.point;
-            desiredPosition = hitPoint;
-            dstFromPlayer = (hitPoint - parent.position).magnitude;
+            timeUntilPhysCheck = physCheckInterval;
 
-            if (dstFromPlayer > collisionRadius)
+            int layermask = GfPhysics.NonCharacterCollisions();
+            Collider[] colliders = GfPhysics.GetCollidersArray();
+            currentTargetDst = odamaValues.dstFromParent;
+
+            if (collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(parent.position, collisionRadius, colliders, layermask))
             {
-                desiredPosition -= collisionRadius * dirFromPlayer;
-            }
+                RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
+                collidingWithSmth = 0 < Physics.SphereCastNonAlloc(parent.position, collisionRadius, dirFromPlayer, raycastHits, odamaValues.dstFromParent, layermask);
+
+                if (collidingWithSmth)
+                {
+                    collidingWithSmth = true;
+                    raycastHit = raycastHits[0];
+                    currentTargetDst = raycastHit.distance;
+                }
+            }     
         }
 
-        float smoothTime = odamaValues.parentMoveSmoothness * Mathf.Pow(Euler, dstFromPlayer);
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref distanceSmoothVelocity, odamaValues.parentMoveSmoothness);
-
-        //transform.position = desiredPosition;
-
+        desiredPos = currentTargetDst * dirFromPlayer + parent.position;
+        
         currentRotationRelativeToParentRad += Time.deltaTime * odamaValues.rotationSpeed;
         currentBopValue += Time.deltaTime * odamaValues.bopSpeed;
+    }
+
+    private void Update()
+    {
+        transform.position = Vector3.SmoothDamp(transform.position, desiredPos, ref distanceSmoothVelocity, odamaValues.parentMoveSmoothness);
     }
 
     public void SetAngle(float angle)

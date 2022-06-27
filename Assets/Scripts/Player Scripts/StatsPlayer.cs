@@ -30,8 +30,6 @@ public class StatsPlayer : StatsCharacter
 
     private void Start()
     {
-        HostilityManager.hostilityManager.AddCharacter(this);
-
         currentHealth = maxHealth;
 
         if (null == playerGun)
@@ -48,6 +46,8 @@ public class StatsPlayer : StatsCharacter
                 audioSource = gameObject.AddComponent<AudioSource>();
             }
         }
+
+        HostilityManager.AddCharacter(this);
     }
 
     public override void Damage(float damage, StatsCharacter enemy = null)

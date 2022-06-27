@@ -62,7 +62,7 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
         if (collisionStats != null)
         {
             bool hitSelf = characterStats == collisionStats;
-            bool canDamageEnemy = HostilityManager.hostilityManager.CanDamage(characterStats, collisionStats);
+            bool canDamageEnemy = HostilityManager.CanDamage(characterStats, collisionStats);
 
             //check if it can damage target
             if ((!hitSelf && canDamageEnemy) || (hitSelf && hitBoxValues.canDamageSelf))
@@ -100,7 +100,7 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
 
 
 [System.Serializable]
-public struct SingleHitBoxValues
+public class SingleHitBoxValues
 {
     public SingleHitBoxValues(float damage = 1, float lifeSpan = 1.0f, bool canDamageSelf = false, bool destroysObjectWhenDone = true)
     {
