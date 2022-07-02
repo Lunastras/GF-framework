@@ -19,9 +19,12 @@ public class MovementSimple : MovementGeneric
 
     private float timeOfNextGroundCheck = 0;
 
+    private Rigidbody rigidbody;
+
 
     protected new void Initialize()
     {
+        rigidbody = GetComponent<Rigidbody>();
         base.Initialize();
 
         velocity = Vector3.zero;
@@ -44,17 +47,7 @@ public class MovementSimple : MovementGeneric
 
         velocity.y -= mass * Time.deltaTime;
         velocity.y = Mathf.Max(-terminalVelocity, velocity.y);
-
-        if (isGrounded)
-        {
-            if (timeOfNextGroundCheck <= Time.time)
-            {
-                //if last grounded confirmation was 
-                //longer than groundedCheckInterval
-                jumpTrigger = true;
-                // Debug.Log("I jumped I guess?");
-            }
-        }
+        jumpTrigger = timeOfNextGroundCheck <= Time.time && isGrounded;
     }
 
     private Vector3 refSmoothVelocity3;
@@ -63,9 +56,6 @@ public class MovementSimple : MovementGeneric
 
     protected void CalculateVelocity(float speedMultiplier = 1)
     {
-        if (!canMove)
-            return;
-
         float currentYVelocity = velocity.y;
         velocity.y = canFly ? velocity.y : 0;
 
@@ -73,9 +63,9 @@ public class MovementSimple : MovementGeneric
 
         if (movementDir != Vector3.zero)
         {
-            float desiredYAngle = Mathf.Atan2(velocity.x, velocity.z) * Mathf.Rad2Deg;
+            float desiredYAngle = System.MathF.Atan2(velocity.x, velocity.z) * Mathf.Rad2Deg;
             float currentY = transform.rotation.eulerAngles.y;
-            float newYRot = Mathf.SmoothDampAngle(currentY, desiredYAngle, ref refSmoothRot, effectiveSpeedSmoothing / Mathf.Max(speed, 0.01f));
+            float newYRot = Mathf.SmoothDampAngle(currentY, desiredYAngle, ref refSmoothRot, effectiveSpeedSmoothing / System.MathF.Max(speed, 0.01f));
 
             transform.rotation = Quaternion.Euler(0, newYRot, 0);
         }
@@ -104,13 +94,21 @@ public class MovementSimple : MovementGeneric
         GroundCheck();
         CalculateJump();
         CalculateVelocity(speedMultiplier);
-        Move(velocity * Time.deltaTime);
+        //transform.position += (velocity * Time.deltaTime);
+        rigidbody.velocity = velocity;
+        //Move(velocity * Time.deltaTime);
     }
 
 
     protected void OnControllerColliderHit(ControllerColliderHit collision)
     {
         CalculateCollisionHit(collision.normal, collision.transform);
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        collision.GetContact(0);
+       // CalculateCollisionHit(collision.normal, collision.transform);
     }
 
     protected void CalculateCollisionHit(Vector3 normal, Transform collisionTransform)

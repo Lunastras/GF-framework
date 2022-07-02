@@ -231,16 +231,16 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4547767586303620511}
   serializedVersion: 8
-  lengthInSec: 5
+  lengthInSec: 0.5
   simulationSpeed: 1
   stopAction: 0
   cullingMode: 0
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 1
-  looping: 1
-  prewarm: 1
-  playOnAwake: 1
+  looping: 0
+  prewarm: 0
+  playOnAwake: 0
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -306,7 +306,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 3
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -1057,7 +1057,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 15
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -2761,7 +2761,7 @@ ParticleSystem:
     magnitude:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 3
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -2815,7 +2815,7 @@ ParticleSystem:
     inWorldSpace: 0
     multiplyDragByParticleSize: 1
     multiplyDragByParticleVelocity: 1
-    dampen: 0.1
+    dampen: 0.2
     drag:
       serializedVersion: 2
       minMaxState: 0
@@ -4940,9 +4940,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4759944753111975126}
-  - component: {fileID: 4759944753111975131}
-  - component: {fileID: 1372938329087745302}
+  - component: {fileID: 7288493412668972908}
+  - component: {fileID: 5363898957465585475}
   - component: {fileID: 1652595365150299445}
+  - component: {fileID: 1372938329087745302}
   - component: {fileID: 7866579364068057338}
   m_Layer: 12
   m_Name: EnemyGeneric
@@ -4968,8 +4969,8 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!143 &4759944753111975131
-CharacterController:
+--- !u!136 &7288493412668972908
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4978,14 +4979,46 @@ CharacterController:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Height: 2
   m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
+  m_Height: 1
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &5363898957465585475
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 80
+  m_CollisionDetection: 0
+--- !u!114 &1652595365150299445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64c21996f372c0e4b935fa4a36165b7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 4
+  canFly: 1
+  canMove: 1
+  mass: 35
+  jumpPower: 15
+  speedSmoothing: 0.3
+  terminalVelocity: 100
+  groundedCheckInterval: 0.1
 --- !u!114 &1372938329087745302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5015,26 +5048,6 @@ MonoBehaviour:
   varianceRate: 0.35
   walkSpeedMultiplyer: 0.5
   maxDstFromSpawnWalk: 10
---- !u!114 &1652595365150299445
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4759944753111975130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64c21996f372c0e4b935fa4a36165b7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 4
-  canFly: 1
-  canMove: 1
-  mass: 35
-  jumpPower: 15
-  speedSmoothing: 0.3
-  terminalVelocity: 100
-  groundedCheckInterval: 0.1
 --- !u!114 &7866579364068057338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5049,7 +5062,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterType: 2
   maxHealth: 100
-  graphics: {fileID: 0}
+  graphics: {fileID: 4372195452012348834}
   damageSound:
     clip: {fileID: 8300000, guid: 0c5b647354c22304a9ae8c2cff48c266, type: 3}
     isMusic: 0

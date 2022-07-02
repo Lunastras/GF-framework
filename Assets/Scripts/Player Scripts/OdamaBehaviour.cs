@@ -58,14 +58,13 @@ public class OdamaBehaviour : MonoBehaviour
             Collider[] colliders = GfPhysics.GetCollidersArray();
             currentTargetDst = odamaValues.dstFromParent;
 
-            if (collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(parent.position, collisionRadius, colliders, layermask))
+            if (collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(transform.position, collisionRadius, colliders, layermask))
             {
                 RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
                 collidingWithSmth = 0 < Physics.SphereCastNonAlloc(parent.position, collisionRadius, dirFromPlayer, raycastHits, odamaValues.dstFromParent, layermask);
 
                 if (collidingWithSmth)
                 {
-                    collidingWithSmth = true;
                     raycastHit = raycastHits[0];
                     currentTargetDst = raycastHit.distance;
                 }

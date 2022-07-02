@@ -26,6 +26,9 @@ public class MovementAdvanced : MovementBasic
     protected Vector3 wallRunDir;
     protected float wallRunSpeed;
 
+    private Vector3 forwardVec;
+    private Vector3 upVec;
+
     //static readonly values
     protected static readonly int WALL_RUN_STICK_SPEED = 100;
 
@@ -51,6 +54,9 @@ public class MovementAdvanced : MovementBasic
 
     public override void CalculateMovement(float speedMultiplier = 1)
     {
+        forwardVec = transform.forward;
+        upVec = transform.up;
+
         UpdateEffectiveValues();
         CalculateWallRun();
 
@@ -77,26 +83,26 @@ public class MovementAdvanced : MovementBasic
             return;
         }
 
-        Vector2 movementDir2Norm = new Vector2(movementDir.x, movementDir.z);
+        Vector2 movementDir2Norm = new(movementDir.x, movementDir.z);
 
         bool foundWall = !checkPhysics && isAttachedToWall;
         float currentTime = Time.time;
 
-        Vector3 wallSphereCheckPosition = transform.position + transform.forward * Radius();
+        Vector3 wallSphereCheckPosition = transform.position + forwardVec * Radius();
 
         //check if the player is touching any walls
         if (checkPhysics && (isAttachedToWall || 0 < Physics.OverlapSphereNonAlloc(wallSphereCheckPosition, Radius(), GfPhysics.GetCollidersArray(), GfPhysics.WallrunLayers())))
         {
             if (isAttachedToWall
-                || (new Vector2(velocity.x, velocity.z).magnitude > 0.3f && Vector3.Dot(velocity, transform.forward) > 0.1f))
+                || (new Vector2(velocity.x, velocity.z).magnitude > 0.3f && Vector3.Dot(velocity, forwardVec) > 0.1f))
             {
                 Vector3 offset = new Vector3(0, Height() / 4.0f, 0);
                 //Vector3 dirToWall = (GfPhysics.GetCollidersArray()[0].transform.position - transform.position).normalized;
 
                 float radius = Radius() * 1.5f;
 
-                Ray ray1 = new Ray(transform.position + transform.forward * Radius(), transform.forward);
-                Ray ray2 = new Ray(transform.position + transform.forward * Radius() + transform.up * Height() / 2.0f, transform.forward);
+                Ray ray1 = new Ray(transform.position + forwardVec * Radius() - upVec * Height() / 2.0f, forwardVec);
+                Ray ray2 = new Ray(transform.position + forwardVec * Radius() + upVec * Height() / 2.0f, forwardVec);
 
                 // Debug.Log("Input is accurate");
                 //tried spherecast, not working
@@ -193,7 +199,7 @@ public class MovementAdvanced : MovementBasic
                 jumpingFromLedge = true;
                 timeLeftLedgeJump = jumpingFromLedgeInterval;
 
-                wallRunDir = 1.5f * wallRunDir + 1.0f * transform.forward;
+                wallRunDir = 1.5f * wallRunDir + 1.0f * forwardVec;
                 velocity = wallRunDir.normalized * jumpForce;
 
             }
@@ -272,11 +278,11 @@ public class MovementAdvanced : MovementBasic
     private void SetWallRunRotation(RaycastHit wallHit)
     {
         transform.rotation = Quaternion.LookRotation(-wallHit.normal);
-        wallRunDir = transform.up;
+        wallRunDir = upVec;
 
         const float wallDst = 0.05f;
 
-        Vector3 rayDir = (wallHit.point + wallHit.normal * wallDst) - (transform.position + transform.forward * Radius());
+        Vector3 rayDir = (wallHit.point + wallHit.normal * wallDst) - (transform.position + forwardVec * Radius());
 
         Move(rayDir * Time.deltaTime * 5.0f);
     }

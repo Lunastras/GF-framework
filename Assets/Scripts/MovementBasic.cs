@@ -250,12 +250,18 @@ public class MovementBasic : MovementGeneric
     }
 
 
+    void OnCollisionStay(Collision collision)
+    {
+        Debug.Log("I HIT SOMETHING");
+        // collision.GetContact(0).normal;
+        // Debug.DrawRay(collision.GetContact(0).point, collision.GetContact(0).normal, Color.red, 0.2f);
+        CalculateCollisionHit(collision.GetContact(0).normal, collision.transform);
+    }
 
-    protected void OnControllerColliderHit(ControllerColliderHit collision)
+    protected void CalculateCollisionHit(Vector3 normal, Transform collision)
     {
         if (isAttachedToWall || canFly) return;
 
-        Vector3 normal = collision.normal;
         int angle = (int)Mathf.Round(Vector3.Angle(Vector3.up, normal));
         //Debug.Log("angle is: " + angle);
 
@@ -265,18 +271,18 @@ public class MovementBasic : MovementGeneric
         bool auxGrounded = angle < SlopeLimit() && collisionIsGround;
 
         //check if hitting ceiling
-        if (!auxGrounded && angle >= 110 ) 
+        if (!auxGrounded && angle >= 110)
         {
             // Debug.Log("Hit ceiling");
             canExtendJump = false;
             auxVelocity.y = Mathf.Min(auxVelocity.y, 0);
         }
-        else if(!auxGrounded)//check if sliding
+        else if (!auxGrounded)//check if sliding
         {
             bool foundGroundCollisions = 0 < Physics.OverlapSphereNonAlloc(groundCheck.position, groundCheckRadius, GfPhysics.GetCollidersArray(), GfPhysics.GroundLayers());
             if (foundGroundCollisions) //is most likely still grounded
             {
-               // Debug.Log("sliding but found ground");
+                // Debug.Log("sliding but found ground");
                 auxGrounded = true;
             }
             else
@@ -285,11 +291,11 @@ public class MovementBasic : MovementGeneric
                 //Debug.Log("I am sliding rn i guess with an angle of ");
                 auxGrounded = false;
                 //check if previously grounded
-                if(isGrounded)
+                if (isGrounded)
                 {
                     //Debug.Log("Was previously GROUNDED SIDDIING");
                     auxVelocity.y = velocity.y = 0;
-                } 
+                }
                 else
                 {
                     auxVelocity += velocityChange;
@@ -297,12 +303,12 @@ public class MovementBasic : MovementGeneric
             }
         }
 
-        
+
 
         if (auxGrounded)
         {
             timeUntilUngrounded = groundedInterval;
-            SetParentTransform(collision.transform);
+            SetParentTransform(collision);
             auxVelocity.y = Math.Max(-terminalVelocity, auxVelocity.y);
         }
 
@@ -311,9 +317,15 @@ public class MovementBasic : MovementGeneric
         if (!jumpingFromLedge)
         {
             velocity = auxVelocity;
-        } else
-        {
-          //  Debug.Log("I am still jumping from ledge");
         }
+        else
+        {
+            //  Debug.Log("I am still jumping from ledge");
+        }
+    }
+
+    protected void OnControllerColliderHit(ControllerColliderHit collision)
+    {
+        CalculateCollisionHit(collision.normal, collision.transform);
     }
 }

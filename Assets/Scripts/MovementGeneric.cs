@@ -24,6 +24,7 @@ public abstract class MovementGeneric : MonoBehaviour
     protected bool jumpTriggerReleased = true;
 
     private CharacterController controller;
+    private new CapsuleCollider collider;
 
     //parent position movement
     protected Transform parentTransform;
@@ -41,6 +42,7 @@ public abstract class MovementGeneric : MonoBehaviour
     protected void Initialize()
     {
         controller = GetComponent<CharacterController>();
+        collider = GetComponent<CapsuleCollider>();
     }
 
     public virtual void SetMovementDir(Vector3 dir)
@@ -81,12 +83,12 @@ public abstract class MovementGeneric : MonoBehaviour
 
     public float Height()
     {
-        return controller.height;
+        return collider.height;
     }
 
     public float Radius()
     {
-        return controller.radius;
+        return collider.radius;
     }
     public Vector3 GetVelocity()
     {

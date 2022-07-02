@@ -235,7 +235,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1060989423887231677}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 3.67, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -255,7 +255,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1060989423887231677}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 0
   m_Radius: 0.5
   m_Height: 2
@@ -340,18 +340,15 @@ MonoBehaviour:
   characterType: 0
   maxHealth: 200
   damageSound:
-    name: 
     clip: {fileID: 8300000, guid: 14c31c6cf8f59fd43883ea2d75667ec2, type: 3}
     isMusic: 0
-    volume: 0.351
+    volume: 0.1
     volumeVariance: 0
-    pitch: 1
+    pitch: 0.2
     pitchVariance: 0
     loop: 0
     mixerGroup: {fileID: 0}
-    source: {fileID: 0}
   deathSound:
-    name: 
     clip: {fileID: 0}
     isMusic: 0
     volume: 0.5
@@ -360,10 +357,8 @@ MonoBehaviour:
     pitchVariance: 0
     loop: 0
     mixerGroup: {fileID: 0}
-    source: {fileID: 0}
   playerGun: {fileID: 0}
   itemPickUpSound:
-    name: Item pick up
     clip: {fileID: 8300000, guid: 9bfcd935f0dda04478cb828dc0389e3c, type: 3}
     isMusic: 0
     volume: 0.1
@@ -372,8 +367,8 @@ MonoBehaviour:
     pitchVariance: 0.1
     loop: 0
     mixerGroup: {fileID: 0}
-    source: {fileID: 0}
   loadoutManager: {fileID: 7719255096279800446}
+  audioSource: {fileID: 0}
 --- !u!114 &1060989423887231619
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -587,10 +582,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   quadSpriteValues:
-    followCameraOnXAxis: 0
-    followCameraOnYAxis: 1
-    angleOffset: {x: -20, y: 0}
-    active: 1
+    xFollowFactor: 0.3
 --- !u!114 &7719255097061151188
 MonoBehaviour:
   m_ObjectHideFlags: 0
