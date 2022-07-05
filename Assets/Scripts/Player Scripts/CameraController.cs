@@ -106,7 +106,7 @@ public class CameraController : MonoBehaviour
             Collider[] colliders = GfPhysics.GetCollidersArray();
             currentDesiredDst = dstFromtarget;
 
-            if (collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(transform.position, 1.5f * collisionRadius, colliders, layermask))
+            if (collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(transform.position, 2.0f * collisionRadius, colliders, layermask))
             {
                 RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
                 collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, collisionRadius, -forward, raycastHits, dstFromtarget, layermask);

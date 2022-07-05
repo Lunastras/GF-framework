@@ -13,23 +13,20 @@ public class WeaponFiring : MonoBehaviour
     private StatsCharacter statsCharacter;
 
     [SerializeField]
-    private Transform weaponParent;
+    private float distanceUpdateInterval = 0.05f;
 
     [SerializeField]
-    private int[] layersIgnore;
+    private float distanceOffset;
 
-    [SerializeField]
-    private bool canFire = true;
+    // [SerializeField]
+    // private bool canFire = true;
 
     [SerializeField]
     private float maxFireDistance = 100;
 
     public int currentLevel { get; set; }
 
-    private int layerMaskIgnore;
-
     private WeaponBasic[] weapons = null;
-    private RaycastHit[] rayCastHits;
 
     private RaycastHit lastRayHit;
 
@@ -37,7 +34,7 @@ public class WeaponFiring : MonoBehaviour
 
     private int numWeapons = 0;
 
-    private bool wasFiring = false;
+    private float timeUntilNextUpdate;
 
     // Start is called before the first frame update
     void Awake()
@@ -46,23 +43,15 @@ public class WeaponFiring : MonoBehaviour
         {
             fireSource = transform;
         }
+        fireSource = Camera.main.transform;
 
         //currentExp = new List<float>();
-
-        rayCastHits = new RaycastHit[1];
 
         lastRayHit = new RaycastHit();
 
         if (statsCharacter == null)
         {
             statsCharacter = GetComponent<StatsCharacter>();
-        }
-
-        //weapons = new List<WeaponBasic>();
-
-        for (int i = 0; i < layersIgnore.Length; i++)
-        {
-            layerMaskIgnore += (int)Mathf.Pow(2, layersIgnore[i]);
         }
     }
 
@@ -77,60 +66,52 @@ public class WeaponFiring : MonoBehaviour
         this.numWeapons = numWeapons;
     }
 
+    private void FixedUpdate()
+    {
+        timeUntilNextUpdate -= Time.deltaTime;
+    }
+
     // Update is called once per frame
     public void Fire()
     {
-        bool gunCarFire = false;
+        Vector3 fireTargetDir = fireSource.forward;
 
-        if (weapons == null)
-            return;
-
-        for (int i = 0; i < numWeapons; ++i)
+        if (timeUntilNextUpdate < 0)
         {
-            gunCarFire = weapons[i] != null && weapons[i].gameObject.activeSelf && weapons[i].canFire();
-            if (gunCarFire) break;
-        }
+            timeUntilNextUpdate = distanceUpdateInterval;
 
-        if (canFire && gunCarFire)
-        {
-            Vector3 fireTargetDir = fireSource.forward;
+            Ray ray = new(fireSource.position, fireTargetDir);
+            RaycastHit[] rayHits = GfPhysics.GetRaycastHits();
 
-            rayCastHits[0].point = Vector3.zero;
-            hitAnObject = true;
+            hitAnObject = 0 != Physics.RaycastNonAlloc(ray, rayHits, maxFireDistance, ~GfPhysics.IgnoreLayers());
 
-            Ray ray = new Ray(fireSource.position, fireTargetDir);
-            RaycastHit oldHit = rayCastHits[0];
-
-            if (0 == Physics.RaycastNonAlloc(ray, rayCastHits, maxFireDistance, ~layerMaskIgnore))
+            if (hitAnObject)
             {
-                hitAnObject = false;
-                fireTargetDir *= maxFireDistance;
-                fireTargetDir += Camera.main.transform.position;
-
-                lastRayHit.point = fireTargetDir;
+                Debug.Log("hAHAHA I HIT SOMETHING OMGGGG");
+                lastRayHit = rayHits[0];
+                lastRayHit.distance += distanceOffset;
+            }
+            else 
+            { 
+                Debug.Log("I T fuck all");
                 lastRayHit.distance = maxFireDistance;
             }
-            else
-            {
-                rayCastHits[0].point += Camera.main.transform.forward;
-                rayCastHits[0].distance++;
-                lastRayHit = rayCastHits[0];
-            }
-
-            for (int i = 0; i < numWeapons; ++i)
-            {
-                if (weapons[i] != null && weapons[i].gameObject.activeSelf)
-                    weapons[i].Fire(lastRayHit, hitAnObject);
-            }
         }
+
+        lastRayHit.point = fireSource.position + fireTargetDir * lastRayHit.distance;
+      //  Debug.Log("THE POSITION OF THE CAMERA IS " + fireSource.forward);
+       // Debug.Log("THE POSITION OF THE CAMERA IS ");
+
+      //  Debug.DrawRay(fireSource.position, fireTargetDir * 100f, Color.green, 0.1f);
+
+
+        for (int i = 0; i < numWeapons; ++i)
+            weapons[i].Fire(lastRayHit, hitAnObject);
+        
     }
 
     public void ReleaseFire()
     {
-
-        if (weapons == null)
-            return;
-
         for (int i = 0; i < numWeapons; ++i)
         {
             if (weapons[i] != null && weapons[i].gameObject.activeSelf)

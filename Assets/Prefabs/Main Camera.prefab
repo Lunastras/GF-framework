@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 3676997061914269407}
   - component: {fileID: 3676997061914269400}
   - component: {fileID: 3676997061914269402}
-  - component: {fileID: 654494292}
   m_Layer: 16
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -99,20 +98,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62b84bf63db85d041923bbe7d9522058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainTarget: {fileID: 0}
   sensitivity: 600
-  dstFromtarget: 8
-  aimDstFromPlayerCoef: 0.5
-  aimYPosOffset: 0.4
-  playerYPosOffset: 1.5
+  offset: {x: 0, y: 1.8, z: 0}
+  physCheckInterval: 0.2
+  dstFromtarget: 9
+  collisionRadius: 1
   minDstFromtarget: 1
   pitchMin: -40
   pitchMax: 85
-  canMove: 1
   rotationSmoothTime: 0.01
-  targetChangeSpeed: 0.06
-  targetSearchRadius: 20
-  targetLayers: 0c000000
-  collisionLayers: 00000000090000000b000000
+  movementSmoothTime: 0.04
+  distanceSmoothTime: 0.1
 --- !u!114 &3676997061914269402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,16 +143,3 @@ MonoBehaviour:
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
---- !u!135 &654494292
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3676997061914269404}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 15
-  m_Center: {x: 0, y: 0, z: 0}
