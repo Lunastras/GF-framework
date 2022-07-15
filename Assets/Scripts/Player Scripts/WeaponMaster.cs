@@ -5,6 +5,12 @@ using UnityEngine;
 public class WeaponMaster : MonoBehaviour
 {
     [SerializeField]
+    private GameObject fireSourceTemplate;
+
+    [SerializeField]
+    private Transform activeFireSourcesParent;
+
+    [SerializeField]
     public GameObject[] weapons;
 
     private static WeaponMaster instance = null;
@@ -30,6 +36,16 @@ public class WeaponMaster : MonoBehaviour
     public static int NumWeapons()
     {
         return instance.weapons.Length;
+    }
+
+    public static GameObject GetTemplate()
+    {
+        return instance.fireSourceTemplate;
+    }
+
+    public static Transform GetActiveFireSourcesParent()
+    {
+        return instance.activeFireSourcesParent;
     }
 
 

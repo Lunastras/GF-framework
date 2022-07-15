@@ -183,6 +183,28 @@ public class GfPooling : MonoBehaviour
             InternalDestroy(objectToDestroy, forceDestroy);
     }
 
+    private static void DestroyInsert(GameObject objectToDestroy, float delay, bool forceDestroy = false)
+    {
+        if (null != objectToDestroy)
+        {
+            if (PoolSizeAvailable(objectToDestroy) == 0)
+                Pool(objectToDestroy, 1, false);
+            
+            instance.StartCoroutine(DestroyCoroutine(objectToDestroy, delay, forceDestroy));
+        }
+    }
+
+    public static void DestroyInsert(GameObject objectToDestroy, bool forceDestroy = false)
+    {
+        if (null != objectToDestroy) 
+        {
+            if (PoolSizeAvailable(objectToDestroy) == 0)
+                Pool(objectToDestroy, 1, false);
+
+            InternalDestroy(objectToDestroy, forceDestroy);
+        }
+    }
+
     public static void FillPool(GameObject pooledObject, int ammount = -1)
     {
         if (ammount < -1 || null == pooledObject) return;
@@ -251,7 +273,7 @@ public class GfPooling : MonoBehaviour
     * If the value is negative, it will reduce the size of the pool and remove  
     * the given ammount of gameObjects.
 */
-    public static void Pool(GameObject objectToPool, int numInstances)
+    public static void Pool(GameObject objectToPool, int numInstances, bool instantiateObjects = true)
     {
         if (numInstances < 0)
         {
@@ -285,7 +307,7 @@ public class GfPooling : MonoBehaviour
             currentPool.capacity += numInstances;
         }
 
-        while (0 <= --numInstances)
+        while (instantiateObjects && 0 <= --numInstances)
         {
             GameObject obj = GameObject.Instantiate(objectToPool);
             obj.SetActive(false);
@@ -328,6 +350,11 @@ public class GfPooling : MonoBehaviour
     public static int PoolSizeAvailable(GameObject objectPooled)
     {
         return instance.pools.ContainsKey(objectPooled.name) ? instance.pools[objectPooled.name].parent.childCount : 0;
+    }
+
+    public static GameObject GetObjectInPool(GameObject objectPool)
+    {
+        return (instance.pools.ContainsKey(objectPool.name) && PoolSizeAvailable(objectPool) > 0) ? instance.pools[objectPool.name].parent.GetChild(0).gameObject : null;
     }
 
     public static int PoolSizeMax(GameObject objectPooled)

@@ -31,7 +31,7 @@ public class PolymorphicBullet : GfPolymorphism
         Initialize();
     }
 
-    public override void SetCopyPrefab(GameObject objectToCopy)
+    protected override void SetCopyPrefabInternal(GameObject objectToCopy)
     {
         PolymorphicBullet bulletCopy = objectToCopy.GetComponent<PolymorphicBullet>();
 
@@ -87,6 +87,12 @@ public class PolymorphicBullet : GfPolymorphism
         graphicsObject.transform.localScale = copyGraphicsObj.transform.localScale;
         graphicsObject.transform.localPosition = copyGraphicsObj.transform.localPosition;
         graphicsObject.transform.localRotation = copyGraphicsObj.transform.localRotation;
+    }
+
+    public override bool CanCopyObject(GameObject objectToCheck)
+    {
+        PolymorphicBullet polyOdama = objectToCheck.GetComponent<PolymorphicBullet>();
+        return isTemplate && null != polyOdama && (!polyOdama.isTemplate || null != polyOdama.GetCopyPrefab());
     }
 
     public BulletMovement GetBulletMovement()

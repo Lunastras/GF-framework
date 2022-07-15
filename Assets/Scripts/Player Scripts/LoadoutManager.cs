@@ -14,7 +14,7 @@ public class LoadoutManager : MonoBehaviour
     [SerializeField]
     public HudManager hudManager = null;
 
-    private OdamaInventoryValue[] weaponsInInventory;
+    private int[] weaponsInInventory;
 
     private int odamaCapacity = 2;
 
@@ -28,13 +28,10 @@ public class LoadoutManager : MonoBehaviour
     public static readonly int MAX_ODAMA = 4;
     public static readonly int MAX_LOADOUTS = 6;
 
-    private Transform inactiveOdamasParent;
-
-    private Transform activeOdamasParent;
-
     private WeaponBasic[] weapons = null;
 
-    private int activeLevelWeapons;
+    private int numWeapons = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -56,12 +53,7 @@ public class LoadoutManager : MonoBehaviour
             weaponFiring = GetComponent<WeaponFiring>();
         }
 
-        weaponsInInventory = new OdamaInventoryValue[WeaponMaster.NumWeapons()];
-
-        for (int i = 0; i < weaponsInInventory.Length; ++i)
-        {
-            weaponsInInventory[i] = new OdamaInventoryValue(MAX_ODAMA);
-        }
+        weaponsInInventory = new int[WeaponMaster.NumWeapons()];
 
         loadOuts = new WeaponLoadOut[MAX_LOADOUTS];
 
@@ -70,13 +62,7 @@ public class LoadoutManager : MonoBehaviour
             loadOuts[i] = new WeaponLoadOut(MAX_ODAMA);
         }
 
-        activeOdamasParent = new GameObject("Active Odamas").transform;
-        inactiveOdamasParent = new GameObject("Inactive Odamas").transform;
-
-        activeOdamasParent.parent = odamasParent;
-        inactiveOdamasParent.parent = odamasParent;
-
-        if (WeaponMaster.NumWeapons() > 0 && weaponsInInventory[0].odamasInInventory == 0)
+        if (WeaponMaster.NumWeapons() > 0 && weaponsInInventory[0] == 0)
             AddOdamaToInventory(0);
 
         if (-1 == indexOfLastLoadout)
@@ -97,16 +83,26 @@ public class LoadoutManager : MonoBehaviour
         IncreaseOdamaCapacity(3);
 
         AddOdamaToInventory(1);
+        AddOdamaToInventory(1);
+        AddOdamaToInventory(1);
         AddOdamaToInventory(0);
         AddOdamaToInventory(0);
         AddOdamaToInventory(0);
 
         ChangeLoadOutWeapon(1, 1, 1);
+        ChangeLoadOutWeapon(1, 1, 2);
+        ChangeLoadOutWeapon(1, 1, 3);
+        ChangeLoadOutWeapon(0, 1, 3);
+        ChangeLoadOutWeapon(0, 1, 1);
+
         ChangeLoadOutWeapon(0, 0, 2);
         ChangeLoadOutWeapon(0, 0, 3);
 
+        ChangeLoadOutWeapon(1, 2, 3);
+
+
         //SetCurrentLoadout(1);
-        Debug.Log(" ");  
+      //  Debug.Log(" ");  
 
         // ChangeLoadOutWeapon(null, 0, 2);
     }
@@ -115,44 +111,10 @@ public class LoadoutManager : MonoBehaviour
 
     private void InternalChangeLoadOutWeapon(int newWeapon, int loadOutIndex, int weaponIndex)
     {
-        Debug.Log("I got here! weapon chaneg loadout");
-        //make sure that it doesn't let all the loadouts be empty
-        if (-1 == newWeapon && 0 == indexOfLastLoadout && (MAX_ODAMA - 1) == loadOuts[loadOutIndex].NumNullWeapons())
-            return;
-
-        int currentWeapon = loadOuts[loadOutIndex].weapons[weaponIndex];
+        //Debug.Log("I got here! weapon chaneg loadout");
 
         bool loadoutWasEmpty = loadOuts[loadOutIndex].NoWeapons();
-        bool loadoutIsEmpty = loadoutWasEmpty;
-
-        if (-1 != currentWeapon)
-        {
-            //countOfWeapon - 1 because the array starts at 0
-            //the code cannot run here if GetCountOfWeapon yields 0, it will be at least 1
-            //so when we check the array, we will never check the index -1
-            //however, if the index -1 is checked, then someone messed up the loadouts and that someone will be fired
-            int countOfWeapon = loadOuts[loadOutIndex].GetCountOfWeapon(currentWeapon) - 1;
-            weaponsInInventory[currentWeapon].weaponCountFrequency[countOfWeapon]--;
-            if (0 == weaponsInInventory[currentWeapon].weaponCountFrequency[countOfWeapon])
-            {
-                // Debug.Log("I will resize (down) the pool for " + currentWeapon + " with " + countOfWeapon);
-                weaponsInInventory[currentWeapon].setCountBiggestIndex = countOfWeapon - 1;
-                GfPooling.ResizePool(WeaponMaster.GetWeapon(currentWeapon), countOfWeapon, true);
-            }
-        }
-
-        if (-1 != newWeapon)
-        {
-            int countOfWeapon = loadOuts[loadOutIndex].GetCountOfWeapon(newWeapon);
-            weaponsInInventory[newWeapon].weaponCountFrequency[countOfWeapon]++;
-
-            if (1 == weaponsInInventory[newWeapon].weaponCountFrequency[countOfWeapon])
-            {
-                //Debug.Log("I will resize (up) the pool for " + newWeapon + " with " + (countOfWeapon + 1));
-                weaponsInInventory[newWeapon].setCountBiggestIndex = countOfWeapon;
-                GfPooling.ResizePool(WeaponMaster.GetWeapon(newWeapon), countOfWeapon + 1, true);
-            }
-        }
+        bool loadoutIsEmpty;
 
         loadOuts[loadOutIndex].SetWeapon(newWeapon, weaponIndex);
 
@@ -181,26 +143,16 @@ public class LoadoutManager : MonoBehaviour
 
     public void ChangeLoadOutWeapon(int newWeapon, int loadOutIndex, int weaponIndex)
     {
-        if (-1 == newWeapon || null != WeaponMaster.GetWeapon(newWeapon))
+        bool canAddOdama = !(-1 == newWeapon && weaponsInInventory[newWeapon] > 0);
+
+        loadOutIndex %= MAX_LOADOUTS;
+        weaponIndex %= MAX_ODAMA;
+
+        int currentWeapon = loadOuts[loadOutIndex].weapons[weaponIndex];
+
+        if (canAddOdama && newWeapon != currentWeapon)
         {
-            bool canAddOdama = true;
-
-            if (-1 == newWeapon)
-            {
-                OdamaInventoryValue odamaData = weaponsInInventory[newWeapon];
-                //check if there are odamas left in the inventory
-                canAddOdama = odamaData.odamasInInventory > 0;
-            }
-
-            loadOutIndex %= MAX_LOADOUTS;
-            weaponIndex %= MAX_ODAMA;
-
-            int currentWeapon = loadOuts[loadOutIndex].weapons[weaponIndex];
-
-            if (canAddOdama && newWeapon != currentWeapon)
-            {
-                InternalChangeLoadOutWeapon(newWeapon, loadOutIndex, weaponIndex);
-            }
+            InternalChangeLoadOutWeapon(newWeapon, loadOutIndex, weaponIndex);
         }
     }
 
@@ -216,38 +168,55 @@ public class LoadoutManager : MonoBehaviour
 
     public void InternalSetCurrentLoadout(int index)
     {
-        index = index % Math.Max(1, indexOfLastLoadout + 1);
+        currentLoadOutIndex = index % Math.Max(1, indexOfLastLoadout + 1);
 
-        GfPooling.DestroyChildren(activeOdamasParent);
+        int i, desiredNumWeapons = loadOuts[currentLoadOutIndex].NumWeapons();
 
-        currentLoadOutIndex = index;
-        WeaponLoadOut loadOut = loadOuts[currentLoadOutIndex];
-
-        float numActiveOdamas = Mathf.Min(loadOut.NumWeapons(), odamaCapacity);
-        // Debug.Log("The loadout is:");
-        for (int i = 0; i < weapons.Length; ++i)
+        //destroy unneeded weapons
+        int excessWeapons = numWeapons - desiredNumWeapons;
+        for (i = 0; i < excessWeapons; ++i)
         {
-            GameObject spawnedOdama = GfPooling.Instantiate(WeaponMaster.GetWeapon(loadOut.weapons[i]));
-            weapons[i] = null;
+            weapons[desiredNumWeapons + i].FreeFiringSource();
+            GfPooling.DestroyInsert(weapons[desiredNumWeapons + i].gameObject);
+        }
+            
 
-            if (spawnedOdama != null)
+        numWeapons = desiredNumWeapons;
+        float angleBetweenOdamas = 360.0f / numWeapons;
+
+        for (i = 0; i < numWeapons; ++i)
+        {
+            GameObject desiredWeapon = WeaponMaster.GetWeapon(loadOuts[currentLoadOutIndex].weapons[i]);
+
+            if (weapons[i] == null)
+                weapons[i] = GfPolymorphism.PoolInstantiate(desiredWeapon).GetComponent<WeaponBasic>();
+
+            GfPolymorphism poly = weapons[i].GetComponent<GfPolymorphism>();
+            
+            if (null != poly && poly.CanCopyObject(desiredWeapon))
             {
-                // Debug.Log("weapon " + loadOut.weapons[i].name);
-                weapons[i] = spawnedOdama.GetComponent<WeaponBasic>();
-                OdamaBehaviour ob = weapons[i].GetComponent<OdamaBehaviour>();
-                ob.SetAngle(i * (360.0f / numActiveOdamas));
-                ob.SetParent(weaponFiring.transform);
-                weapons[i].statsCharacter = weaponFiring.GetStatsCharacter();
-
-                weapons[i].gameObject.SetActive(true);
-                weapons[i].transform.parent = activeOdamasParent;
+                poly.SetCopyObject(desiredWeapon);
+            } 
+            else
+            {
+              //  Debug.Log(null == poly ? " I didn't find a polymorphic component" : "The given object is not a template, destroying it");
+                weapons[i].FreeFiringSource();
+                GfPooling.DestroyInsert(weapons[i].gameObject);
+                weapons[i] = GfPooling.PoolInstantiate(desiredWeapon).GetComponent<WeaponBasic>();
             }
+
+            OdamaBehaviour ob = weapons[i].GetComponent<OdamaBehaviour>();
+            ob.SetAngle(i * angleBetweenOdamas);
+            ob.SetParent(weaponFiring.transform);
+                      
+            weapons[i].SetStatsCharacter(weaponFiring.GetStatsCharacter());  
+            weapons[i].gameObject.SetActive(true);
+            weapons[i].transform.parent = odamasParent;
         }
 
         //refresh the levelweapons
         RefreshExpForWeapons();
-
-        weaponFiring.SetWeaponArray(weapons, loadOut.NumWeapons());
+        weaponFiring.SetWeaponArray(weapons, numWeapons);
     }
 
     public void SetCurrentLoadout(int index)
@@ -264,7 +233,7 @@ public class LoadoutManager : MonoBehaviour
     {
         if (weaponsInInventory != null && null != WeaponMaster.GetWeapon(weapon))
         {
-            weaponsInInventory[weapon].odamasInInventory = Mathf.Min(count + weaponsInInventory[weapon].odamasInInventory, MAX_ODAMA);
+            weaponsInInventory[weapon] = Mathf.Min(count + weaponsInInventory[weapon], MAX_ODAMA);
         }
     }
 
@@ -425,29 +394,5 @@ public class WeaponLoadOut
     public int NumNullWeapons()
     {
         return (weapons.Length - indexOfLastWeapon + 1);
-    }
-}
-
-internal class OdamaInventoryValue
-{
-    //number of odamas available;
-    public int odamasInInventory = 0;
-
-    //how many sets exist with the respective count of the given GameObject
-    //e.g. there are 2 sets with 3 weapons : [ 2, 2, 2, 0 ]
-    // +1 set with 2 weapons : [ 3, 3, 2, 0 ]
-    // +1 set with 4 weapons: [ 4, 4, 3, 1 ]
-    public int[] weaponCountFrequency;
-
-    public int setCountBiggestIndex = -1;
-
-    public OdamaInventoryValue(int maxInstances)
-    {
-        weaponCountFrequency = new int[maxInstances];
-
-        for (int i = 0; i < maxInstances; i++)
-        {
-            weaponCountFrequency[i] = 0;
-        }
     }
 }

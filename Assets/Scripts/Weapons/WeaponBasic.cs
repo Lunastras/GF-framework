@@ -9,15 +9,10 @@ public class WeaponBasic : MonoBehaviour
     private WeaponValues weaponValues;
 
     [SerializeField]
-    private ParticleSystem[] particleSystems;
-
-    [SerializeField]
     private AudioSource audioSource;
 
     [SerializeField]
-    private Transform levelsTransform;
-
-    protected ParticleSystem currentParticleSystem;
+    protected ParticleSingleDamage currentParticleSystem;
 
     public float currentExp { get; private set; } = 0;
 
@@ -25,7 +20,30 @@ public class WeaponBasic : MonoBehaviour
 
     public float nextLevelProgress { get; private set; } = 0;
 
-    public StatsCharacter statsCharacter { get; set; }
+    private StatsCharacter statsCharacter;
+
+    private bool fireReleased;
+
+    private void OnEnable()
+    {
+        fireReleased = true;
+        if(null == currentParticleSystem)
+        {
+            currentParticleSystem = ParticleSingleDamage.GetNewFiringSource();
+            currentParticleSystem.transform.SetParent(transform);
+            if(weaponValues.particleSystems.Length > 0)
+                ParticleSingleDamage.SetNewParticleSingleDamage(weaponValues.particleSystems[currentLevel], ref currentParticleSystem);
+        }
+    }
+
+    public void FreeFiringSource()
+    {
+        if (null != currentParticleSystem)
+        {
+            currentParticleSystem.Stop();
+            ParticleSingleDamage.DestroyFiringSource(ref currentParticleSystem);
+        }
+    }
 
     private void Start()
     {
@@ -38,8 +56,21 @@ public class WeaponBasic : MonoBehaviour
             }
         }
 
-        currentParticleSystem = particleSystems[0];
-        
+        if(weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel])
+            ParticleSingleDamage.SetNewParticleSingleDamage(weaponValues.particleSystems[currentLevel], ref currentParticleSystem);
+
+    }
+
+    public void SetStatsCharacter(StatsCharacter value)
+    {
+        statsCharacter = value;
+        if(currentParticleSystem)
+            currentParticleSystem.SetStatsCharacter(statsCharacter);
+    }
+
+    public StatsCharacter GetStatsCharacter()
+    {
+        return statsCharacter;
     }
 
     protected virtual Sound GetFireSound()
@@ -56,14 +87,22 @@ public class WeaponBasic : MonoBehaviour
     {
         Vector3 dirBullet = (hit.point - transform.position).normalized;
 
+       // Debug.Log("I GOT HERE ehehe");
         currentParticleSystem.transform.rotation = Quaternion.LookRotation(dirBullet);
 
-        currentParticleSystem.Play();
+        if(fireReleased)
+        {
+            currentParticleSystem.particleSystem.Play();
+            fireReleased = false;
+        }
+
+        
     }
 
     protected virtual void InternalReleasedFire(RaycastHit hit, int currentLevel, bool hitAnObject)
     {
-        currentParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        fireReleased = true;
+        currentParticleSystem.particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         // Debug.Log("Released fire");
     }
 
@@ -85,36 +124,9 @@ public class WeaponBasic : MonoBehaviour
         InternalReleasedFire(hit, currentLevel, hitAnObject);
     }
 
-    public ParticleSystem GetParticleSystem(int index)
+    public ParticleSingleDamage GetParticleSystem()
     {
-        return particleSystems[index];
-    }
-
-    public ParticleSystem SetParticleSystem(ParticleSystem systemToCopy, int index)
-    {
-        CopyParticleSystem.CopyFrom(systemToCopy, particleSystems[index]);
-        return particleSystems[index];
-    }
-
-    public int GetNumParticleSystems()
-    {
-        return particleSystems.Length;
-    }
-
-    public void IncreaseNumPartSystemsTo(int newSize)
-    {
-        if(particleSystems.Length < newSize)
-        {
-            Array.Resize(ref particleSystems, newSize);
-
-            for (int i = particleSystems.Length; i < newSize; ++i)
-            {
-                GameObject newParticleSystem = new("level" + (i + 1));
-                particleSystems[i] = newParticleSystem.AddComponent<ParticleSystem>();
-                newParticleSystem.transform.SetParent(levelsTransform);
-                newParticleSystem.transform.localPosition = Vector3.zero;
-            }
-        }     
+        return currentParticleSystem;
     }
 
     /**
@@ -164,7 +176,7 @@ public class WeaponBasic : MonoBehaviour
         return currentExp;
     }
 
-    protected void UpdateFireLevel()
+    protected void UpdateFireLevel(bool forceUpdate = false)
     {
         int auxCurrentLevel = 0;
 
@@ -194,15 +206,15 @@ public class WeaponBasic : MonoBehaviour
             nextLevelProgress = lowerExp / upperExp;
         }
 
-        auxCurrentLevel = Mathf.Min(auxCurrentLevel, particleSystems.Length - 1);
+        auxCurrentLevel = Mathf.Min(auxCurrentLevel, weaponValues.particleSystems.Length - 1);
 
-        if(auxCurrentLevel >= 0 && currentLevel != auxCurrentLevel)
+        if((forceUpdate || (auxCurrentLevel >= 0 && currentLevel != auxCurrentLevel)) && (null != currentParticleSystem && weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel]))
         {
-            particleSystems[currentLevel].gameObject.SetActive(false);
-            particleSystems[auxCurrentLevel].gameObject.SetActive(true);
+            //Debug.Log("Name of the object on rn is " + gameObject.name);
+           // Debug.Log("The current level is " + currentLevel + " and the current weapon count level is " + weaponValues.particleSystems.Length);
             currentLevel = auxCurrentLevel;
-
-            currentParticleSystem = particleSystems[currentLevel];
+            ParticleSingleDamage.SetNewParticleSingleDamage(weaponValues.particleSystems[currentLevel], ref currentParticleSystem);
+            fireReleased = true;
         }
     }
 
@@ -224,6 +236,7 @@ public class WeaponBasic : MonoBehaviour
     public void SetWeaponValues(WeaponValues values)
     {
         weaponValues = values;
+        UpdateFireLevel(true);
     }
 }
 
@@ -236,7 +249,7 @@ public enum WeanponType
 }
 
 [System.Serializable]
-public struct WeaponValues
+public class WeaponValues
 {
     [SerializeField]
     public Sound[] levelFireSounds;
@@ -249,4 +262,7 @@ public struct WeaponValues
 
     [SerializeField]
     public WeanponType weaponType;
+
+    [SerializeField]
+    public ParticleSingleDamage[] particleSystems;
 }

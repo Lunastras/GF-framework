@@ -87,13 +87,11 @@ public class WeaponFiring : MonoBehaviour
 
             if (hitAnObject)
             {
-                Debug.Log("hAHAHA I HIT SOMETHING OMGGGG");
                 lastRayHit = rayHits[0];
                 lastRayHit.distance += distanceOffset;
             }
             else 
             { 
-                Debug.Log("I T fuck all");
                 lastRayHit.distance = maxFireDistance;
             }
         }

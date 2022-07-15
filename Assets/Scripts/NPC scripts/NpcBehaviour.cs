@@ -27,7 +27,7 @@ public class NpcBehaviour : NpcController
     protected HostileValues hostileValues;
 
     [SerializeField]
-    protected ParticleSingleTurret turret;
+    protected ParticleSingleDamage turret;
 
     [SerializeField]
     protected float intervalBetweenWalkPhases = 4.0f;
@@ -83,7 +83,7 @@ public class NpcBehaviour : NpcController
             statsNpc = GetComponent<StatsNpc>();
 
         if (null == turret)
-            turret = GetComponent<ParticleSingleTurret>();
+            turret = GetComponent<ParticleSingleDamage>();
     }
 
     private GameObject CheckForEnemiesAround()
@@ -138,7 +138,7 @@ public class NpcBehaviour : NpcController
                 {
                     Transform enemyTransform = destination.TransformDest;
                     turret.target = enemyTransform;
-                    turret.Fire();
+                    turret.Play();
                     //PauseMovement(turret.GetCurrentPhaseLength());
                 }
 

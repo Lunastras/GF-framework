@@ -321,7 +321,7 @@ MonoBehaviour:
   jumpForce: 11
   jumpExtGravCoef: 0.65
   timingGroundJumpError: 0.2
-  physCheckInterval: 0.025
+  physCheckInterval: 0.02
   wallrunMaxDst: 7
   wallrunCheckRadius: 0.6
   timingWallrunJumpDelay: 0.2
@@ -383,9 +383,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fireSource: {fileID: 0}
   statsCharacter: {fileID: 1060989423887231618}
-  weaponParent: {fileID: 7719255096279800441}
-  layersIgnore: 080000000a0000000d000000
-  canFire: 1
+  distanceUpdateInterval: 0.1
+  distanceOffset: 0
   maxFireDistance: 100
 --- !u!114 &7719255096930906789
 MonoBehaviour:

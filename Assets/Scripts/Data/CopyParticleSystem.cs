@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CopyParticleSystem : MonoBehaviour
+public class CopyParticleSystem
 {
     private static ParticleSystem.Burst[] auxBursts;
     private static Mesh[] auxMeshes;
@@ -13,7 +13,9 @@ public class CopyParticleSystem : MonoBehaviour
         var copyMain = copy.main;
         var originalMain = original.main;
 
-        copyMain.duration = originalMain.duration;
+        if(!copy.IsAlive(true))
+            copyMain.duration = originalMain.duration;
+
         copyMain.loop = originalMain.loop;
         copyMain.prewarm = originalMain.prewarm;
 
@@ -536,25 +538,23 @@ public class CopyParticleSystem : MonoBehaviour
         {
             int countEmitters = originalModule.subEmittersCount;
             while (copyModule.subEmittersCount > countEmitters)
-                copyModule.RemoveSubEmitter(copyModule.subEmittersCount - 1);
-
-            
+                copyModule.RemoveSubEmitter(copyModule.subEmittersCount - 1); 
 
             for (int i = 0; i < countEmitters; ++i)
             {
-                if(originalModule.subEmittersCount - 1 >= i) //check if index exists
+                if(copyModule.subEmittersCount > i) //check if index exists
+                {
+                    copyModule.SetSubEmitterEmitProbability(i, originalModule.GetSubEmitterEmitProbability(i));
+                    copyModule.SetSubEmitterProperties(i, originalModule.GetSubEmitterProperties(i));
+                    copyModule.SetSubEmitterSystem(i, originalModule.GetSubEmitterSystem(i));
+                    copyModule.SetSubEmitterType(i, originalModule.GetSubEmitterType(i));                 
+                }
+                else //modify subsystem
                 {
                     copyModule.AddSubEmitter(originalModule.GetSubEmitterSystem(i),
                         originalModule.GetSubEmitterType(i),
                         originalModule.GetSubEmitterProperties(i),
                         originalModule.GetSubEmitterEmitProbability(i));
-                }
-                else //modify subsystem
-                {
-                    copyModule.SetSubEmitterEmitProbability(i, originalModule.GetSubEmitterEmitProbability(i));
-                    copyModule.SetSubEmitterProperties(i, originalModule.GetSubEmitterProperties(i));
-                    copyModule.SetSubEmitterSystem(i, originalModule.GetSubEmitterSystem(i));
-                    copyModule.SetSubEmitterType(i, originalModule.GetSubEmitterType(i));
                 }
                 
             }
@@ -700,6 +700,9 @@ public class CopyParticleSystem : MonoBehaviour
 
     public static void CopyRenderer(ParticleSystem original, ParticleSystem copy, bool forceCopy = false)
     {
+       // Debug.Log("THE name of the weird ass copy particle is " + copy.name);
+      //  Debug.Log("THE name of the weird ass original particle is " + original.name);
+
         var copyModule = copy.GetComponent<ParticleSystemRenderer>();
         var originalModule = original.GetComponent<ParticleSystemRenderer>();
         copyModule.enabled = originalModule.enabled;
@@ -748,7 +751,7 @@ public class CopyParticleSystem : MonoBehaviour
             }
 
             copyModule.normalDirection = originalModule.normalDirection;
-            copyModule.material = originalModule.material;
+            copyModule.sharedMaterial = originalModule.sharedMaterial;
             copyModule.sortMode = originalModule.sortMode;
             copyModule.sortingFudge = originalModule.sortingFudge;
             copyModule.minParticleSize = originalModule.minParticleSize;

@@ -16,64 +16,71 @@ public class PolymorphicOdama : GfPolymorphism
     [SerializeField]
     private GameObject graphicsObject;
 
-
     // Start is called before the first frame update
     void Start()
     {
         Initialize();
     }
 
-    public override void SetCopyPrefab(GameObject objectToCopy)
+    protected override void SetCopyPrefabInternal(GameObject objectToCopy)
     {
-        PolymorphicOdama odamaCopy = objectToCopy.GetComponent<PolymorphicOdama>();
+      //  Debug.Log("I have been called lmao to copy " + objectToCopy.name);
 
-       odamaBehaviour.SetOdamaValues(odamaCopy.GetOdamaBehaviour().GetOdamaValues());
-       weaponBasic.SetWeaponValues(odamaCopy.GetWeaponBasic().GetWeaponValues());
-
-       odamaBehaviour.enabled = odamaCopy.GetOdamaBehaviour().enabled;
-       weaponBasic.enabled = odamaCopy.GetWeaponBasic().enabled;
-
-        copiedPrefab = objectToCopy;
-
-        GameObject copyGraphicsObj = odamaCopy.GetGraphicsObject();
-        graphicsObject.SetActive(copyGraphicsObj.activeSelf);
-
-        SpriteRenderer copySpriteRenderer = copyGraphicsObj.GetComponent<SpriteRenderer>();
-
-        if (null != copySpriteRenderer)
+        if(CanCopyObject(objectToCopy))
         {
-            quadGraphics.SetquadSpriteValues(odamaCopy.GetQuadGraphics().GetquadSpriteValues());
-            quadGraphics.enabled = odamaCopy.GetQuadGraphics().enabled;
+            //Destroy(objectToCopy);
 
-            SpriteRenderer objectSpriteRenderer = graphicsObject.GetComponent<SpriteRenderer>();
-            objectSpriteRenderer.color = copySpriteRenderer.color;
-            objectSpriteRenderer.sprite = copySpriteRenderer.sprite;
-            objectSpriteRenderer.flipX = copySpriteRenderer.flipX;
-            objectSpriteRenderer.flipY = copySpriteRenderer.flipY;
-            objectSpriteRenderer.material = copySpriteRenderer.sharedMaterial;
-            objectSpriteRenderer.drawMode = copySpriteRenderer.drawMode;
-            objectSpriteRenderer.spriteSortPoint = copySpriteRenderer.spriteSortPoint;
-        }
-        /* else
-         {
-             MeshFilter copyMeshFilter = copyGraphicsObj.GetComponent<MeshFilter>();
+            if (objectToCopy != copiedPrefab)
+            {
+                copiedPrefab = objectToCopy;
+                PolymorphicOdama odamaOriginal = objectToCopy.GetComponent<PolymorphicOdama>();
 
-             if (null != copyMeshFilter)
-             {
-                 MeshFilter objectMeshFilter = graphicsObject.GetComponent<MeshFilter>();
+                WeaponBasic weaponBasicOriginal = odamaOriginal.GetWeaponBasic();
 
-                 objectMeshFilter.mesh = copyMeshFilter.mesh;
-             }
-         }*/
+                odamaBehaviour.SetOdamaValues(odamaOriginal.GetOdamaBehaviour().GetOdamaValues());
+                //   weaponBasic.SetParticleSystems(weaponBasicOriginal.GetParticleSystems());
+                weaponBasic.SetWeaponValues(weaponBasicOriginal.GetWeaponValues());
 
-        // GetComponent<Renderer>().sharedMaterials = 
+                odamaBehaviour.enabled = odamaOriginal.GetOdamaBehaviour().enabled;
+                weaponBasic.enabled = weaponBasicOriginal.enabled;
 
-        transform.localScale = objectToCopy.transform.localScale;
-        graphicsObject.transform.localScale = copyGraphicsObj.transform.localScale;
-        graphicsObject.transform.localPosition = copyGraphicsObj.transform.localPosition;
-        graphicsObject.transform.localRotation = copyGraphicsObj.transform.localRotation;
+                GameObject copyGraphicsObj = odamaOriginal.GetGraphicsObject();
+                graphicsObject.SetActive(copyGraphicsObj.activeSelf);
+
+                SpriteRenderer copySpriteRenderer = copyGraphicsObj.GetComponent<SpriteRenderer>();
+
+                if (null != copySpriteRenderer)
+                {
+                    quadGraphics.SetquadSpriteValues(odamaOriginal.GetQuadGraphics().GetquadSpriteValues());
+                    quadGraphics.enabled = odamaOriginal.GetQuadGraphics().enabled;
+
+                    SpriteRenderer objectSpriteRenderer = graphicsObject.GetComponent<SpriteRenderer>();
+                    objectSpriteRenderer.color = copySpriteRenderer.color;
+                    objectSpriteRenderer.sprite = copySpriteRenderer.sprite;
+                    objectSpriteRenderer.flipX = copySpriteRenderer.flipX;
+                    objectSpriteRenderer.flipY = copySpriteRenderer.flipY;
+                    objectSpriteRenderer.material = copySpriteRenderer.sharedMaterial;
+                    objectSpriteRenderer.drawMode = copySpriteRenderer.drawMode;
+                    objectSpriteRenderer.spriteSortPoint = copySpriteRenderer.spriteSortPoint;
+                }
+
+                transform.localScale = objectToCopy.transform.localScale;
+                graphicsObject.transform.localScale = copyGraphicsObj.transform.localScale;
+                graphicsObject.transform.localPosition = copyGraphicsObj.transform.localPosition;
+                graphicsObject.transform.localRotation = copyGraphicsObj.transform.localRotation;
+
+            }
+        } else
+        {
+            Debug.LogError(objectToCopy.name + " is an invalid object to copy for " + gameObject.name);
+        }   
     }
 
+    public override bool CanCopyObject(GameObject objectToCheck)
+    {
+        PolymorphicOdama polyOdama = objectToCheck.GetComponent<PolymorphicOdama>();
+        return isTemplate && null != polyOdama && (!polyOdama.isTemplate || null != polyOdama.GetCopyPrefab());
+    }
 
     public GameObject GetGraphicsObject()
     {
