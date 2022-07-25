@@ -38,7 +38,7 @@ public class StatsNpc : StatsCharacter
     private Collider objectCollider;
 
     [SerializeField]
-    private ParticleSingleDamage turret;
+    private ParticleSingleHit turret;
 
     [SerializeField]
     private AudioSource audioSource;
@@ -56,7 +56,7 @@ public class StatsNpc : StatsCharacter
             npcController = GetComponent<NpcController>();
 
         if (null == turret)
-            turret = GetComponent<ParticleSingleDamage>();
+            turret = GetComponent<ParticleSingleHit>();
 
         if (null == audioSource)
         {

@@ -27,7 +27,7 @@ public class NpcBehaviour : NpcController
     protected HostileValues hostileValues;
 
     [SerializeField]
-    protected ParticleSingleDamage turret;
+    protected ParticleSingleHit turret;
 
     [SerializeField]
     protected float intervalBetweenWalkPhases = 4.0f;
@@ -83,7 +83,7 @@ public class NpcBehaviour : NpcController
             statsNpc = GetComponent<StatsNpc>();
 
         if (null == turret)
-            turret = GetComponent<ParticleSingleDamage>();
+            turret = GetComponent<ParticleSingleHit>();
     }
 
     private GameObject CheckForEnemiesAround()

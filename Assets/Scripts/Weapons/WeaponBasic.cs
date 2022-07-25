@@ -12,7 +12,7 @@ public class WeaponBasic : MonoBehaviour
     private AudioSource audioSource;
 
     [SerializeField]
-    protected ParticleSingleDamage currentParticleSystem;
+    protected ParticleSingleHitHandler firingHandler;
 
     public float currentExp { get; private set; } = 0;
 
@@ -27,26 +27,25 @@ public class WeaponBasic : MonoBehaviour
     private void OnEnable()
     {
         fireReleased = true;
-        if(null == currentParticleSystem)
-        {
-            currentParticleSystem = ParticleSingleDamage.GetNewFiringSource();
-            currentParticleSystem.transform.SetParent(transform);
-            if(weaponValues.particleSystems.Length > 0)
-                ParticleSingleDamage.SetNewParticleSingleDamage(weaponValues.particleSystems[currentLevel], ref currentParticleSystem);
-        }
     }
 
-    public void FreeFiringSource()
+    public void StopFiring()
     {
-        if (null != currentParticleSystem)
-        {
-            currentParticleSystem.Stop();
-            ParticleSingleDamage.DestroyFiringSource(ref currentParticleSystem);
-        }
+        firingHandler.GetSystem().Stop();
     }
 
     private void Start()
     {
+        if(null == firingHandler)
+        {
+            firingHandler = GetComponent<ParticleSingleHitHandler>();
+
+            if(null == firingHandler)
+            {
+                firingHandler = gameObject.AddComponent<ParticleSingleHitHandler>();
+            }
+        }
+
         if (null == audioSource)
         {
             audioSource = GetComponent<AudioSource>();
@@ -57,15 +56,14 @@ public class WeaponBasic : MonoBehaviour
         }
 
         if(weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel])
-            ParticleSingleDamage.SetNewParticleSingleDamage(weaponValues.particleSystems[currentLevel], ref currentParticleSystem);
+            firingHandler.GetSystem().SetParticleSystemHit(weaponValues.particleSystems[currentLevel]);
 
     }
 
     public void SetStatsCharacter(StatsCharacter value)
     {
         statsCharacter = value;
-        if(currentParticleSystem)
-            currentParticleSystem.SetStatsCharacter(statsCharacter);
+        firingHandler.GetSystem().SetStatsCharacter(value);
     }
 
     public StatsCharacter GetStatsCharacter()
@@ -88,11 +86,11 @@ public class WeaponBasic : MonoBehaviour
         Vector3 dirBullet = (hit.point - transform.position).normalized;
 
        // Debug.Log("I GOT HERE ehehe");
-        currentParticleSystem.transform.rotation = Quaternion.LookRotation(dirBullet);
+        firingHandler.GetSystem().SetRotation(Quaternion.LookRotation(dirBullet));
 
         if(fireReleased)
         {
-            currentParticleSystem.particleSystem.Play();
+            firingHandler.GetSystem().Play();
             fireReleased = false;
         }
 
@@ -102,7 +100,8 @@ public class WeaponBasic : MonoBehaviour
     protected virtual void InternalReleasedFire(RaycastHit hit, int currentLevel, bool hitAnObject)
     {
         fireReleased = true;
-        currentParticleSystem.particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        firingHandler.GetSystem().Stop();
+        //currentParticleSystem.particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         // Debug.Log("Released fire");
     }
 
@@ -122,11 +121,6 @@ public class WeaponBasic : MonoBehaviour
             GetReleaseFireSound().Play(audioSource);
         
         InternalReleasedFire(hit, currentLevel, hitAnObject);
-    }
-
-    public ParticleSingleDamage GetParticleSystem()
-    {
-        return currentParticleSystem;
     }
 
     /**
@@ -208,12 +202,12 @@ public class WeaponBasic : MonoBehaviour
 
         auxCurrentLevel = Mathf.Min(auxCurrentLevel, weaponValues.particleSystems.Length - 1);
 
-        if((forceUpdate || (auxCurrentLevel >= 0 && currentLevel != auxCurrentLevel)) && (null != currentParticleSystem && weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel]))
+        if((forceUpdate || (auxCurrentLevel >= 0 && currentLevel != auxCurrentLevel)) && (weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel]))
         {
             //Debug.Log("Name of the object on rn is " + gameObject.name);
            // Debug.Log("The current level is " + currentLevel + " and the current weapon count level is " + weaponValues.particleSystems.Length);
             currentLevel = auxCurrentLevel;
-            ParticleSingleDamage.SetNewParticleSingleDamage(weaponValues.particleSystems[currentLevel], ref currentParticleSystem);
+            firingHandler.GetSystem().SetParticleSystemHit(weaponValues.particleSystems[currentLevel]);
             fireReleased = true;
         }
     }
@@ -264,5 +258,5 @@ public class WeaponValues
     public WeanponType weaponType;
 
     [SerializeField]
-    public ParticleSingleDamage[] particleSystems;
+    public ParticleSingleHit[] particleSystems;
 }

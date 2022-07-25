@@ -109,9 +109,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7669414761986027255}
-  - component: {fileID: 133037623122158904}
   - component: {fileID: 3626822765685253527}
   - component: {fileID: 1608161839850249133}
+  - component: {fileID: 996019745373869235}
+  - component: {fileID: 9030302980622458077}
   m_Layer: 0
   m_Name: FiringSource
   m_TagString: Untagged
@@ -134,22 +135,6 @@ Transform:
   m_Father: {fileID: 4759944753111975126}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &133037623122158904
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4547767586303620511}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0616d2adc357100488fd449afde3a88e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damageData:
-    damage: 10
-    canDamageSelf: 0
-  statsCharacter: {fileID: 7866579364068057338}
 --- !u!199 &3626822765685253527
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -4930,6 +4915,38 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!114 &996019745373869235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4547767586303620511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageData:
+    damage: 10
+    canDamageSelf: 0
+  statsCharacter: {fileID: 0}
+--- !u!114 &9030302980622458077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4547767586303620511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageData:
+    damage: 10
+    canDamageSelf: 0
+  statsCharacter: {fileID: 0}
 --- !u!1 &4759944753111975130
 GameObject:
   m_ObjectHideFlags: 0
@@ -4978,8 +4995,8 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.5
-  m_Height: 1
+  m_Radius: 1
+  m_Height: 3
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &5363898957465585475
@@ -5025,7 +5042,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4759944753111975130}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1650e1ef77aadd74bb3eab0891bd102b, type: 3}
   m_Name: 
@@ -5041,7 +5058,7 @@ MonoBehaviour:
     timeBetweenFire: 2.5
     varianceInValues: 0.2
     runsIfLowHealth: 1
-  turret: {fileID: 133037623122158904}
+  turret: {fileID: 0}
   intervalBetweenWalkPhases: 4
   intervalBetweenEnemyChecks: 2
   varianceRate: 0.35
@@ -5085,5 +5102,5 @@ MonoBehaviour:
   dropsToSpawn: 05000000
   npcController: {fileID: 0}
   objectCollider: {fileID: 0}
-  turret: {fileID: 133037623122158904}
+  turret: {fileID: 0}
   audioSource: {fileID: 0}

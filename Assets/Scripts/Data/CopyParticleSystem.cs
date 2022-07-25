@@ -13,8 +13,7 @@ public class CopyParticleSystem
         var copyMain = copy.main;
         var originalMain = original.main;
 
-        if(!copy.IsAlive(true))
-            copyMain.duration = originalMain.duration;
+        copyMain.duration = originalMain.duration;
 
         copyMain.loop = originalMain.loop;
         copyMain.prewarm = originalMain.prewarm;
@@ -559,6 +558,8 @@ public class CopyParticleSystem
                 
             }
         }
+
+        copyModule.enabled = false;
     }
 
     public static void CopyTextureSheetAnimation(ParticleSystem original, ParticleSystem copy, bool forceCopy = false)

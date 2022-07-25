@@ -176,7 +176,7 @@ public class LoadoutManager : MonoBehaviour
         int excessWeapons = numWeapons - desiredNumWeapons;
         for (i = 0; i < excessWeapons; ++i)
         {
-            weapons[desiredNumWeapons + i].FreeFiringSource();
+            weapons[desiredNumWeapons + i].StopFiring();
             GfPooling.DestroyInsert(weapons[desiredNumWeapons + i].gameObject);
         }
             
@@ -200,7 +200,7 @@ public class LoadoutManager : MonoBehaviour
             else
             {
               //  Debug.Log(null == poly ? " I didn't find a polymorphic component" : "The given object is not a template, destroying it");
-                weapons[i].FreeFiringSource();
+                weapons[i].StopFiring();
                 GfPooling.DestroyInsert(weapons[i].gameObject);
                 weapons[i] = GfPooling.PoolInstantiate(desiredWeapon).GetComponent<WeaponBasic>();
             }

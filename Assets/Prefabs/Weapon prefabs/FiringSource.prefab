@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2935416853526763353}
-  - component: {fileID: 2319065216897296163}
   - component: {fileID: 7908783972286969184}
   - component: {fileID: 2216491234296216140}
+  - component: {fileID: 2356549193570192664}
   m_Layer: 0
   m_Name: FiringSource
   m_TagString: Untagged
@@ -34,22 +34,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2319065216897296163
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9157835617557150965}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0616d2adc357100488fd449afde3a88e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damageData:
-    damage: 10
-    canDamageSelf: 0
-  statsCharacter: {fileID: 0}
 --- !u!199 &7908783972286969184
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -4829,3 +4813,19 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!114 &2356549193570192664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9157835617557150965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageData:
+    damage: 10
+    canDamageSelf: 0
+  statsCharacter: {fileID: 0}
