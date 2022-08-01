@@ -13,8 +13,7 @@ public class ParticleSingleHit : ParticleCollision
 
     public Transform target { get; set; } = null;
 
-    private static Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>> releasedFireSources = new(23);
-
+    private static Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>> releasedFireSources;
     public void Play()
     {
         particleSystem.Play();
@@ -40,6 +39,7 @@ public class ParticleSingleHit : ParticleCollision
     protected override void InternalAwake()
     {
         statsCharacter = null == statsCharacter ? GetComponent<StatsCharacter>() : statsCharacter;
+        releasedFireSources = null == releasedFireSources ? new Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>>(23) : releasedFireSources;
     }
 
     private void FixedUpdate()
@@ -158,7 +158,7 @@ public class ParticleSingleHit : ParticleCollision
                 ParticleSingleHit originalChild = originalEmitterModule.GetSubEmitterSystem(i).GetComponent<ParticleSingleHit>();
                 ParticleSingleHit child = GetNewFiringSource(originalChild);
 
-                child.transform.SetParent(copy.transform);
+                child.transform.parent = copy.transform;
 
                 child.transform.localPosition = copy.transform.localPosition;
                 child.transform.localRotation = copy.transform.localRotation;
@@ -176,14 +176,13 @@ public class ParticleSingleHit : ParticleCollision
         if (copy.particleSystem.IsAlive(true) || hasInstanceOfOriginal)
         {
             ParticleSingleHit newSource = GetNewFiringSource(original);
-            newSource.transform.SetParent(copy.transform.parent);
+            newSource.transform.parent = copy.transform.parent;
             newSource.target = copy.target;
             newSource.SetStatsCharacter(copy.statsCharacter);
 
             DestroyFiringSource(ref copy);
             copy = newSource;        
         }
-
 
         copy.transform.localPosition = original.transform.localPosition;
         copy.transform.localRotation = original.transform.localRotation;
@@ -218,11 +217,6 @@ public class ParticleSingleHit : ParticleCollision
      
         return null;
     }
-
-    // public static ParticleSingleDamage GetNewFiringSource()
-    // {
-    //return GfPooling.PoolInstantiate(WeaponMaster.GetTemplate()).GetComponent<ParticleSingleDamage>();
-    //}
 
     public static ParticleSingleHit GetNewFiringSource(ParticleSingleHit copy = null)
     {
@@ -260,20 +254,20 @@ public class ParticleSingleHit : ParticleCollision
             firingSource.Stop();
             firingSource.transform.SetParent(WeaponMaster.GetActiveFireSourcesParent());           
         } else
-        {       
-            GfPooling.DestroyInsert(firingSource.gameObject);
-        }
-
-        if (!releasedFireSources.ContainsKey(firingSource.damageData))
-            releasedFireSources.Add(firingSource.damageData, new(7));
-
-        if (false == releasedFireSources[firingSource.damageData].Contains(firingSource))
-            releasedFireSources[firingSource.damageData].Add(firingSource);
-
-        foreach (Transform child in firingSource.transform)
         {
-            ParticleSingleHit psd = child.GetComponent<ParticleSingleHit>();
-            DestroyFiringSource(ref psd);
+            if (!releasedFireSources.ContainsKey(firingSource.damageData))
+                releasedFireSources.Add(firingSource.damageData, new(5));
+
+            if (false == releasedFireSources[firingSource.damageData].Contains(firingSource))
+                releasedFireSources[firingSource.damageData].Add(firingSource);
+
+            foreach (Transform child in firingSource.transform)
+            {
+                ParticleSingleHit psd = child.GetComponent<ParticleSingleHit>();
+                DestroyFiringSource(ref psd);
+            }
+
+            GfPooling.DestroyInsert(firingSource.gameObject);
         }
 
         firingSource = null;

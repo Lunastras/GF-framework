@@ -40,7 +40,7 @@ public class ParticleSingleHitSystem
 
     public Transform transform;
 
-    
+    private Dictionary<ParticleSingleHit, ParticleSingleHitSystem> activeSystems = new(1);
 
     public void SetStatsCharacter(StatsCharacter stats)
     {
@@ -81,6 +81,7 @@ public class ParticleSingleHitSystem
             currentParticleSingleHit.target = target;
 
         currentParticleSingleHit.gameObject.SetActive(true);
+        oldParticleSingleHit = currentParticleSingleHit;
     }
 
     public void SetRotation(Quaternion rotation)
@@ -98,7 +99,17 @@ public class ParticleSingleHitSystem
     {
         if (null == currentParticleSingleHit)
         {
-            currentParticleSingleHit = ParticleSingleHit.GetNewFiringSource(copiedParticleSingleHit);
+            if (null != oldParticleSingleHit && oldParticleSingleHit.enabled
+                && oldParticleSingleHit.GetStatsCharacter() == statsCharacter
+                && oldParticleSingleHit.copiedParticleSingleHit == copiedParticleSingleHit)
+            {
+                currentParticleSingleHit = copiedParticleSingleHit;
+            } 
+            else
+            {
+                currentParticleSingleHit = ParticleSingleHit.GetNewFiringSource(copiedParticleSingleHit);
+            }
+
             SetValuesForSource();
         }
 

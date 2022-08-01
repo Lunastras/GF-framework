@@ -38,6 +38,8 @@ public class ParticleTurret : MonoBehaviour
         }
 
         pshSystems = new(highestCountSystems);
+        //Debug.Log("The count of systems in pshSystems is  " + pshSystems.Length);
+        
 
         // for(int i = 0; i < pshSystems.Count; ++i)
         //   pshSystems.Add(null);
