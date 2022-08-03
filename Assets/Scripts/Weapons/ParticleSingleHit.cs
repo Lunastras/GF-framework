@@ -11,9 +11,13 @@ public class ParticleSingleHit : ParticleCollision
     [SerializeField]
     private StatsCharacter statsCharacter;
 
+   // public ParticleSingleHitSystem masterSystem { get; set; } 
+
     public Transform target { get; set; } = null;
 
-    private static Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>> releasedFireSources;
+   // public bool destroyWhenFinished { get; set; } = false;
+
+   // private static Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>> releasedFireSources;
     public void Play()
     {
         particleSystem.Play();
@@ -32,25 +36,26 @@ public class ParticleSingleHit : ParticleCollision
 
     private void OnDestroy()
     {
-        if (releasedFireSources.ContainsKey(damageData))
-            releasedFireSources[damageData].Remove(this);
+       // if (releasedFireSources.ContainsKey(damageData))
+           // releasedFireSources[damageData].Remove(this);
     }
 
     protected override void InternalAwake()
     {
         statsCharacter = null == statsCharacter ? GetComponent<StatsCharacter>() : statsCharacter;
-        releasedFireSources = null == releasedFireSources ? new Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>>(23) : releasedFireSources;
+        //releasedFireSources = null == releasedFireSources ? new Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>>(23) : releasedFireSources;
     }
 
     private void FixedUpdate()
     {
-        if (transform.parent == WeaponMaster.GetActiveFireSourcesParent() && !particleSystem.IsAlive(true))
+        /*
+        if (destroyWhenFinished && !particleSystem.IsAlive(true))
         {
             ParticleSingleHit psd = this;
             DestroyFiringSource(ref psd);
         }
+        */
            
-
         if (null == target)
             return;
 
@@ -137,6 +142,8 @@ public class ParticleSingleHit : ParticleCollision
         return damageData;
     }
 
+    /*
+     
     private static void CopySubEmitters(ParticleSingleHit original, ref ParticleSingleHit copy)
     {
         var originalEmitterModule = original.particleSystem.subEmitters;
@@ -165,6 +172,7 @@ public class ParticleSingleHit : ParticleCollision
             }
         }
     }
+
 
     public static void SetNewParticleSingleDamage(ParticleSingleHit original, ref ParticleSingleHit copy)
     {
@@ -252,13 +260,21 @@ public class ParticleSingleHit : ParticleCollision
         if (firingSource.particleSystem.IsAlive(true))
         {
             firingSource.Stop();
-            firingSource.transform.SetParent(WeaponMaster.GetActiveFireSourcesParent());           
-        } else
+            firingSource.destroyWhenFinished = true;
+        } 
+        else
         {
+            firingSource.destroyWhenFinished = false;
+
+            if (null != firingSource.masterSystem)
+            {
+                firingSource.masterSystem.ReleaseSystem(firingSource.damageData);
+            }
+
             if (!releasedFireSources.ContainsKey(firingSource.damageData))
                 releasedFireSources.Add(firingSource.damageData, new(5));
 
-            if (false == releasedFireSources[firingSource.damageData].Contains(firingSource))
+            if (!releasedFireSources[firingSource.damageData].Contains(firingSource))
                 releasedFireSources[firingSource.damageData].Add(firingSource);
 
             foreach (Transform child in firingSource.transform)
@@ -272,6 +288,7 @@ public class ParticleSingleHit : ParticleCollision
 
         firingSource = null;
     }
+    */
 }
 
 [System.Serializable]

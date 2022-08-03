@@ -12,7 +12,7 @@ public class WeaponBasic : MonoBehaviour
     private AudioSource audioSource;
 
     [SerializeField]
-    protected ParticleSingleHitHandler firingHandler;
+    protected ParticleTurret firingHandler;
 
     public float currentExp { get; private set; } = 0;
 

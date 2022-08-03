@@ -13,7 +13,7 @@ public class ParticleTurret : MonoBehaviour
     [SerializeField]
     private StatsCharacter statsCharacter;
 
-    private List<ParticleSingleHitSystem> pshSystems;
+    private ParticleSingleHit[] pshSystems;
 
     private static readonly float[] DEFAULT_WAIT_TIME = { 0 };
 
@@ -27,36 +27,18 @@ public class ParticleTurret : MonoBehaviour
         if (timeBetweenPhases.Length == 0)
             timeBetweenPhases = DEFAULT_WAIT_TIME;
 
-        int highestCountSystems = 1;
-
         if (null == statsCharacter)
             statsCharacter = GetComponent<StatsCharacter>();
 
-        foreach (ParticleTurretPhase phase in turretPhases)
-        {
-            highestCountSystems = Mathf.Max(highestCountSystems, phase.particleSystems.Length);
-        }
-
-        pshSystems = new(highestCountSystems);
-        //Debug.Log("The count of systems in pshSystems is  " + pshSystems.Length);
-        
-
-        // for(int i = 0; i < pshSystems.Count; ++i)
-        //   pshSystems.Add(null);
 
         Play(0);
     }
 
     public void Stop()
     {
-        for (int i = pshSystems.Count - 1; i >= 0; --i)
+        for (int i = pshSystems.Length - 1; i >= 0; --i)
         {
-            ParticleSingleHitSystem psh = pshSystems[i];
-            psh.Clear();
-
-            ObjectPool<ParticleSingleHitSystem>.Store(ref psh);
-
-            pshSystems.RemoveAt(i);
+            pshSystems[i].Stop();
         }
 
         firing = false;

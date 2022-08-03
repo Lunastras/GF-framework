@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+
 public class ParticleSingleHitHandler : MonoBehaviour
 {
     [SerializeField]
@@ -23,6 +25,7 @@ public class ParticleSingleHitHandler : MonoBehaviour
     }
 }
 
+
 [System.Serializable]
 public class ParticleSingleHitSystem
 {
@@ -40,7 +43,9 @@ public class ParticleSingleHitSystem
 
     public Transform transform;
 
-    private Dictionary<ParticleSingleHit, ParticleSingleHitSystem> activeSystems = new(1);
+    private Dictionary<ParticleSingleDamageData, ParticleSingleHit> activeSystems = new();
+
+    public bool isPlaying { get; private set; } = false;
 
     public void SetStatsCharacter(StatsCharacter stats)
     {
@@ -57,11 +62,21 @@ public class ParticleSingleHitSystem
 
     public void Stop()
     {
+        isPlaying = false;
         if (currentParticleSingleHit != null)
         {
-            currentParticleSingleHit.Stop();
+            activeSystems.Add(currentParticleSingleHit.GetDamageData(), currentParticleSingleHit);
             ParticleSingleHit.DestroyFiringSource(ref currentParticleSingleHit);
         }
+    }
+
+    public void ReleaseSystem(ParticleSingleDamageData damageData)
+    {
+        if (activeSystems.TryGetValue(damageData, out ParticleSingleHit psh))
+        {
+            ParticleSingleHit.DestroyFiringSource(ref psh);
+            activeSystems.Remove(damageData);
+        }      
     }
 
     private void SetValuesForSource()
@@ -81,7 +96,6 @@ public class ParticleSingleHitSystem
             currentParticleSingleHit.target = target;
 
         currentParticleSingleHit.gameObject.SetActive(true);
-        oldParticleSingleHit = currentParticleSingleHit;
     }
 
     public void SetRotation(Quaternion rotation)
@@ -95,25 +109,18 @@ public class ParticleSingleHitSystem
         }
     }
 
-    public void Play()
+    public void Play(bool forcePlay = false)
     {
-        if (null == currentParticleSingleHit)
+        if(!isPlaying || forcePlay)
         {
-            if (null != oldParticleSingleHit && oldParticleSingleHit.enabled
-                && oldParticleSingleHit.GetStatsCharacter() == statsCharacter
-                && oldParticleSingleHit.copiedParticleSingleHit == copiedParticleSingleHit)
-            {
-                currentParticleSingleHit = copiedParticleSingleHit;
-            } 
-            else
-            {
-                currentParticleSingleHit = ParticleSingleHit.GetNewFiringSource(copiedParticleSingleHit);
-            }
+            isPlaying = true;
 
-            SetValuesForSource();
-        }
+            if (null == currentParticleSingleHit)
+                AquireFiringSource();
 
-        currentParticleSingleHit.Play();
+
+            currentParticleSingleHit.Play();
+        }    
     }
 
     public void SetTarget(Transform target)
@@ -131,20 +138,32 @@ public class ParticleSingleHitSystem
         return copiedParticleSingleHit;
     }
 
-    public void SetParticleSystemHit(ParticleSingleHit psh)
+    private void AquireFiringSource()
     {
-        copiedParticleSingleHit = psh;
-
-        if (null == currentParticleSingleHit)
+        if (null != copiedParticleSingleHit)
         {
-            currentParticleSingleHit = ParticleSingleHit.GetNewFiringSource(psh);
+            ParticleSingleDamageData damageData = copiedParticleSingleHit.GetDamageData();
+            if (activeSystems.TryGetValue(damageData, out currentParticleSingleHit))
+            {
+                activeSystems.Remove(damageData);
+            }
+            else
+            {
+                currentParticleSingleHit = ParticleSingleHit.GetNewFiringSource(copiedParticleSingleHit);
+            }        
         }
         else
         {
-            ParticleSingleHit.SetNewParticleSingleDamage(psh, ref currentParticleSingleHit);
+            Debug.LogError("The copied particle system is null, it needs to be set to a value");
         }
 
         SetValuesForSource();
+    }
+
+    public void SetParticleSystemHit(ParticleSingleHit psh)
+    {
+        copiedParticleSingleHit = psh;
+        Stop();
     }
 
     public void SetParticleSystemHit(ParticleSingleHitHandler psh)
@@ -163,4 +182,4 @@ public class ParticleSingleHitSystem
         SetStatsCharacter(null);
         Stop();
     }
-} 
+} */
