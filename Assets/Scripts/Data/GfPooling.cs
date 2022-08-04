@@ -114,22 +114,30 @@ public class GfPooling : MonoBehaviour
         return InternalInstantiate(objectToSpawn, position, rotation, parent, true);
     }
 
-    private static void InternalDestroy(GameObject objectToDestroy, bool forceDestroy = false)
+    private static void InternalDestroy(GameObject objectToDestroy, bool keepActive, bool forceDestroy)
     {
         if (null != objectToDestroy)
         {
-            bool destroyObject = true;
-            forceDestroy = false;
+            forceDestroy |= keepActive;
 
-            if (!forceDestroy && instance.pools.ContainsKey(objectToDestroy.name))
+            bool destroyObject = true;
+
+            if(keepActive && !instance.pools.ContainsKey(objectToDestroy.name))
+                Pool(objectToDestroy, 1, false);
+
+            if (!forceDestroy && instance.pools.TryGetValue(objectToDestroy.name, out PoolClass currentPool))
             {
-                PoolClass currentPool = instance.pools[objectToDestroy.name];
                 if (currentPool.parent.childCount < currentPool.capacity)
                 {
                     //  Debug.Log("Put into pool: " + objectToDestroy.name);
-                    objectToDestroy.SetActive(false);
+
+                    objectToDestroy.SetActive(keepActive);
                     objectToDestroy.transform.SetParent(currentPool.parent);
                     destroyObject = false;
+                                        
+                    if(keepActive) {
+                        objectToDestroy.transform.position = new Vector3(99999999, 99999999, 99999999);
+                    }
                 }
                 else
                 {
@@ -164,44 +172,44 @@ public class GfPooling : MonoBehaviour
             GfPooling.Destroy(obj.GetChild(0).gameObject);
     }
 
-    private static IEnumerator DestroyCoroutine(GameObject obj, float delay, bool forceDestroy = false)
+    private static IEnumerator DestroyCoroutine(GameObject obj, float delay, bool forceDestroy = false, bool keepActive = false)
     {
         yield return new WaitForSeconds(delay);
 
-        InternalDestroy(obj, forceDestroy);
+        InternalDestroy(obj, keepActive, forceDestroy);
     }
 
-    private static void Destroy(GameObject objectToDestroy, float delay, bool forceDestroy = false)
+    private static void Destroy(GameObject objectToDestroy, float delay, bool forceDestroy = false, bool keepActive = false)
     {
         if (null != objectToDestroy)
-            instance.StartCoroutine(DestroyCoroutine(objectToDestroy, delay, forceDestroy));
+            instance.StartCoroutine(DestroyCoroutine(objectToDestroy, delay, forceDestroy, keepActive));
     }
 
-    public static void Destroy(GameObject objectToDestroy, bool forceDestroy = false)
+    public static void Destroy(GameObject objectToDestroy, bool forceDestroy = false, bool keepActive = false)
     {
         if (null != objectToDestroy)
-            InternalDestroy(objectToDestroy, forceDestroy);
+            InternalDestroy(objectToDestroy, keepActive, forceDestroy);
     }
 
-    private static void DestroyInsert(GameObject objectToDestroy, float delay, bool forceDestroy = false)
+    private static void DestroyInsert(GameObject objectToDestroy, float delay, bool forceDestroy = false, bool keepActive = false)
     {
         if (null != objectToDestroy)
         {
             if (PoolSizeAvailable(objectToDestroy) == 0)
                 Pool(objectToDestroy, 1, false);
             
-            instance.StartCoroutine(DestroyCoroutine(objectToDestroy, delay, forceDestroy));
+            instance.StartCoroutine(DestroyCoroutine(objectToDestroy, delay, forceDestroy, keepActive));
         }
     }
 
-    public static void DestroyInsert(GameObject objectToDestroy, bool forceDestroy = false)
+    public static void DestroyInsert(GameObject objectToDestroy, bool forceDestroy = false, bool keepActive = false)
     {
         if (null != objectToDestroy) 
         {
             if (PoolSizeAvailable(objectToDestroy) == 0)
                 Pool(objectToDestroy, 1, false);
 
-            InternalDestroy(objectToDestroy, forceDestroy);
+            InternalDestroy(objectToDestroy, keepActive, forceDestroy);
         }
     }
 

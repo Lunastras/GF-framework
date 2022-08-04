@@ -12,7 +12,7 @@ public class WeaponBasic : MonoBehaviour
     private AudioSource audioSource;
 
     [SerializeField]
-    protected ParticleTurret firingHandler;
+    protected ParticleTurret turret;
 
     public float currentExp { get; private set; } = 0;
 
@@ -22,28 +22,17 @@ public class WeaponBasic : MonoBehaviour
 
     private StatsCharacter statsCharacter;
 
-    private bool fireReleased;
-
-    private void OnEnable()
-    {
-        fireReleased = true;
-    }
-
     public void StopFiring()
     {
-        firingHandler.GetSystem().Stop();
+        turret.Stop();
     }
+    
 
     private void Start()
     {
-        if(null == firingHandler)
+        if(null == turret)
         {
-            firingHandler = GetComponent<ParticleSingleHitHandler>();
-
-            if(null == firingHandler)
-            {
-                firingHandler = gameObject.AddComponent<ParticleSingleHitHandler>();
-            }
+            turret = GetComponent<ParticleTurret>();
         }
 
         if (null == audioSource)
@@ -54,16 +43,12 @@ public class WeaponBasic : MonoBehaviour
                 audioSource = gameObject.AddComponent<AudioSource>();
             }
         }
-
-        if(weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel])
-            firingHandler.GetSystem().SetParticleSystemHit(weaponValues.particleSystems[currentLevel]);
-
     }
 
     public void SetStatsCharacter(StatsCharacter value)
     {
         statsCharacter = value;
-        firingHandler.GetSystem().SetStatsCharacter(value);
+        turret.SetStatsCharacter(value);
     }
 
     public StatsCharacter GetStatsCharacter()
@@ -86,21 +71,14 @@ public class WeaponBasic : MonoBehaviour
         Vector3 dirBullet = (hit.point - transform.position).normalized;
 
        // Debug.Log("I GOT HERE ehehe");
-        firingHandler.GetSystem().SetRotation(Quaternion.LookRotation(dirBullet));
+        turret.SetRotation(Quaternion.LookRotation(dirBullet));
 
-        if(fireReleased)
-        {
-            firingHandler.GetSystem().Play();
-            fireReleased = false;
-        }
-
-        
+        turret.Play(currentLevel);      
     }
 
     protected virtual void InternalReleasedFire(RaycastHit hit, int currentLevel, bool hitAnObject)
     {
-        fireReleased = true;
-        firingHandler.GetSystem().Stop();
+        turret.Stop();
         //currentParticleSystem.particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         // Debug.Log("Released fire");
     }
@@ -200,16 +178,17 @@ public class WeaponBasic : MonoBehaviour
             nextLevelProgress = lowerExp / upperExp;
         }
 
-        auxCurrentLevel = Mathf.Min(auxCurrentLevel, weaponValues.particleSystems.Length - 1);
+       // auxCurrentLevel = Mathf.Min(auxCurrentLevel, GetNumPhases() - 1);
+        currentLevel = auxCurrentLevel;
 
-        if((forceUpdate || (auxCurrentLevel >= 0 && currentLevel != auxCurrentLevel)) && (weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel]))
-        {
+        //if((forceUpdate || (auxCurrentLevel >= 0 && currentLevel != auxCurrentLevel)) && (weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel]))
+       // {
             //Debug.Log("Name of the object on rn is " + gameObject.name);
            // Debug.Log("The current level is " + currentLevel + " and the current weapon count level is " + weaponValues.particleSystems.Length);
-            currentLevel = auxCurrentLevel;
-            firingHandler.GetSystem().SetParticleSystemHit(weaponValues.particleSystems[currentLevel]);
-            fireReleased = true;
-        }
+           // currentLevel = auxCurrentLevel;
+           // turret.GetSystem().SetParticleSystemHit(weaponValues.particleSystems[currentLevel]);
+           // fireReleased = true;
+        //}
     }
 
     public bool IsMaxLevel()
@@ -256,7 +235,4 @@ public class WeaponValues
 
     [SerializeField]
     public WeanponType weaponType;
-
-    [SerializeField]
-    public ParticleSingleHit[] particleSystems;
 }

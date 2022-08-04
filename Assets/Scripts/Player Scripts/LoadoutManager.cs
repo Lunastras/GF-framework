@@ -170,48 +170,34 @@ public class LoadoutManager : MonoBehaviour
     {
         currentLoadOutIndex = index % Math.Max(1, indexOfLastLoadout + 1);
 
-        int i, desiredNumWeapons = loadOuts[currentLoadOutIndex].NumWeapons();
+        int i = 0;
+        for (; i < numWeapons; ++i) {
+            weapons[i].StopFiring();
+            OdamaBehaviour ob = weapons[i].GetComponent<OdamaBehaviour>();
 
-        //destroy unneeded weapons
-        int excessWeapons = numWeapons - desiredNumWeapons;
-        for (i = 0; i < excessWeapons; ++i)
-        {
-            weapons[desiredNumWeapons + i].StopFiring();
-            GfPooling.DestroyInsert(weapons[desiredNumWeapons + i].gameObject);
-        }
+            if(ob) 
+                ob.enabled = false;
             
 
-        numWeapons = desiredNumWeapons;
+            GfPooling.DestroyInsert(weapons[i].gameObject, false, true);
+        }
+
+        numWeapons = loadOuts[currentLoadOutIndex].NumWeapons();
         float angleBetweenOdamas = 360.0f / numWeapons;
 
         for (i = 0; i < numWeapons; ++i)
-        {
+        {               
             GameObject desiredWeapon = WeaponMaster.GetWeapon(loadOuts[currentLoadOutIndex].weapons[i]);
-
-            if (weapons[i] == null)
-                weapons[i] = GfPolymorphism.PoolInstantiate(desiredWeapon).GetComponent<WeaponBasic>();
-
-            GfPolymorphism poly = weapons[i].GetComponent<GfPolymorphism>();
-            
-            if (null != poly && poly.CanCopyObject(desiredWeapon))
-            {
-                poly.SetCopyObject(desiredWeapon);
-            } 
-            else
-            {
-              //  Debug.Log(null == poly ? " I didn't find a polymorphic component" : "The given object is not a template, destroying it");
-                weapons[i].StopFiring();
-                GfPooling.DestroyInsert(weapons[i].gameObject);
-                weapons[i] = GfPooling.PoolInstantiate(desiredWeapon).GetComponent<WeaponBasic>();
-            }
+            weapons[i] = GfPooling.PoolInstantiate(desiredWeapon).GetComponent<WeaponBasic>();
 
             OdamaBehaviour ob = weapons[i].GetComponent<OdamaBehaviour>();
             ob.SetAngle(i * angleBetweenOdamas);
             ob.SetParent(weaponFiring.transform);
+            ob.enabled = true;
                       
             weapons[i].SetStatsCharacter(weaponFiring.GetStatsCharacter());  
-            weapons[i].gameObject.SetActive(true);
             weapons[i].transform.parent = odamasParent;
+            weapons[i].transform.position = weaponFiring.transform.position;
         }
 
         //refresh the levelweapons

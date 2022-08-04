@@ -12,6 +12,11 @@ public class MovementSimple : MovementGeneric
 
     [SerializeField]
     private float terminalVelocity = 45;
+    [SerializeField]
+    private float acceleration = 2;
+
+    [SerializeField]
+    private float maxSpeed = 8;
 
 
     [SerializeField]
@@ -19,7 +24,7 @@ public class MovementSimple : MovementGeneric
 
     private float timeOfNextGroundCheck = 0;
 
-    private Rigidbody rigidbody;
+    private new Rigidbody rigidbody;
 
 
     protected new void Initialize()
@@ -89,13 +94,26 @@ public class MovementSimple : MovementGeneric
         }
     }
 
+    private float redSmoothSpeed;
+
     public override void CalculateMovement(float speedMultiplier = 1.0f)
     {
-        GroundCheck();
-        CalculateJump();
-        CalculateVelocity(speedMultiplier);
+       // GroundCheck();
+       // CalculateJump();
+       // CalculateVelocity(speedMultiplier);
         //transform.position += (velocity * Time.deltaTime);
-        rigidbody.velocity = velocity;
+        //rigidbody.velocity = velocity;
+        Vector3 forceToAdd = Vector3.zero;
+
+        float movementDirMagnitude = movementDir.magnitude;
+        Vector3 vel = movementDir * acceleration * Time.deltaTime;
+        rigidbody.AddForce(vel * speedMultiplier);
+
+        float speedMagnitude = rigidbody.velocity.magnitude;
+        if(speedMagnitude > maxSpeed) {
+            //rigidbody
+        }
+        
         //Move(velocity * Time.deltaTime);
     }
 

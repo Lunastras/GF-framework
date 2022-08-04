@@ -27,7 +27,7 @@ public class BulletEmitter : GameObjectSpawner
         Vector3 bulletEulerAngles = Quaternion.LookRotation(bulletForwardVec).eulerAngles;
         bulletEulerAngles += rotationOffsetPerFire * objectsSpawned;
 
-        GameObject bulletFired = GfPolymorphism.Instantiate(spawnerStruct.gameObjectToSpawn, spawnPosition, Quaternion.Euler(bulletEulerAngles));
+        GameObject bulletFired = GfPooling.Instantiate(spawnerStruct.gameObjectToSpawn, spawnPosition, Quaternion.Euler(bulletEulerAngles));
 
         bulletFired.GetComponent<HitBoxGeneric>().characterStats = characterStats;
 
