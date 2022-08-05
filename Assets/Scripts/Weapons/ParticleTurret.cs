@@ -46,15 +46,8 @@ public class ParticleTurret : MonoBehaviour
        
         if(timeUntilUnpause <= 0) {
             if(autoPlay && firing) {
-
-                ParticleSingleHit[] systems = turretPhases[currentPhaseIndex].particleSystems;
-                int length = systems.Length;
-                bool isPlaying = false;
-                for(int i = 0; i < length && !isPlaying; ++i) {
-                    isPlaying |= systems[i].particleSystem.IsAlive(true);
-                }
-
-                if(!isPlaying) { //phase ended
+             
+                if(!IsAlive()) { //phase ended
                     ++currentPhaseIndex;
 
                     bool playNext = currentPhaseIndex < turretPhases.Length;
@@ -89,16 +82,47 @@ public class ParticleTurret : MonoBehaviour
 
     public void Stop()
     {
-        if(firing) {
+        if(firing)
+        {
             ParticleSingleHit[] systems = turretPhases[currentPhaseIndex].particleSystems;
 
             for (int i = systems.Length - 1; i >= 0; --i)
             {
                 systems[i].Stop();
             }
-           
+
             firing = false;
-        }       
+        }     
+    }
+
+    public bool IsAlive(bool allPhases = false)
+    {
+        bool isPlaying = false;
+
+        if (allPhases)
+        {
+            for (int i = 0; i < turretPhases.Length && !isPlaying; ++i)
+            {
+                ParticleSingleHit[] systems = turretPhases[i].particleSystems;
+                int length = systems.Length;
+
+                for (int j = 0; j < length && !isPlaying; ++j)
+                {
+                    isPlaying |= systems[j].particleSystem.IsAlive(true);
+                }
+            }     
+        } 
+        else
+        {
+            ParticleSingleHit[] systems = turretPhases[currentPhaseIndex].particleSystems;
+            int length = systems.Length;
+            for (int i = 0; i < length && !isPlaying; ++i)
+            {
+                isPlaying |= systems[i].particleSystem.IsAlive(true);
+            }
+        }
+        
+        return isPlaying;
     }
 
     public int GetNumPhases() {
@@ -135,21 +159,23 @@ public class ParticleTurret : MonoBehaviour
         requestedPhase = phase;
     }
 
-    public void Play(int phase = -1, bool forcePlay = false)
+    public void Play(int phase = -1, bool forcePlay = false, bool stopPreviousPhase = true)
     {
-        Debug.Log("I AM FIRING " + gameObject.name);
+       // Debug.Log("I AM FIRING " + gameObject.name);
         phase = System.Math.Max(0, System.Math.Max(phase, currentPhaseIndex));
 
         bool phaseChanged = phase != currentPhaseIndex;
-        firing |= forcePlay;
+        firing &= !forcePlay;
 
         if(phaseChanged) {
+            if(stopPreviousPhase)
+                Stop();
+
             currentPhaseIndex = phase;
             firing = false;
-            Stop();
-        }       
+        }
 
-        if(!firing) {
+        if (!firing) {
             firing = true;
             ParticleSingleHit[] systems = turretPhases[currentPhaseIndex].particleSystems;
             foreach(ParticleSingleHit system in systems) {

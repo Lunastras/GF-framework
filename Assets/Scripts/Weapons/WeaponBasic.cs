@@ -22,6 +22,8 @@ public class WeaponBasic : MonoBehaviour
 
     private StatsCharacter statsCharacter;
 
+    public bool destroyWhenDone { get; set; } = false;
+
     public void StopFiring()
     {
         turret.Stop();
@@ -43,6 +45,20 @@ public class WeaponBasic : MonoBehaviour
                 audioSource = gameObject.AddComponent<AudioSource>();
             }
         }
+    }
+
+    public bool IsAlive(bool allPhases = false)
+    {
+        return turret.IsAlive(allPhases);
+    }
+
+    private void FixedUpdate()
+    {
+        if(destroyWhenDone && !turret.IsAlive(true))
+        {
+            destroyWhenDone = false;
+            GfPooling.DestroyInsert(gameObject);
+        }       
     }
 
     public void SetStatsCharacter(StatsCharacter value)
@@ -180,7 +196,6 @@ public class WeaponBasic : MonoBehaviour
 
        // auxCurrentLevel = Mathf.Min(auxCurrentLevel, GetNumPhases() - 1);
         currentLevel = auxCurrentLevel;
-
         //if((forceUpdate || (auxCurrentLevel >= 0 && currentLevel != auxCurrentLevel)) && (weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel]))
        // {
             //Debug.Log("Name of the object on rn is " + gameObject.name);

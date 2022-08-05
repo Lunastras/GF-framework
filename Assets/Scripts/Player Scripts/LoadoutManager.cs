@@ -22,6 +22,7 @@ public class LoadoutManager : MonoBehaviour
 
     private int currentLoadOutIndex = 0;
 
+
     //if -1, all loadouts are empty
     private int indexOfLastLoadout = -1;
 
@@ -31,6 +32,10 @@ public class LoadoutManager : MonoBehaviour
     private WeaponBasic[] weapons = null;
 
     private int numWeapons = 0;
+
+    private Transform inactiveOdamasParent;
+
+    private Dictionary<String, Transform> inactiveOdamas;
 
     // Start is called before the first frame update
     void Start()
@@ -48,12 +53,17 @@ public class LoadoutManager : MonoBehaviour
             odamasParent = transform;
         }
 
+        inactiveOdamasParent = new GameObject("Inactive Odamas").transform;
+        inactiveOdamasParent.parent = odamasParent;
+
         if (weaponFiring == null)
         {
             weaponFiring = GetComponent<WeaponFiring>();
         }
 
         weaponsInInventory = new int[WeaponMaster.NumWeapons()];
+
+        inactiveOdamas = new(10);
 
         loadOuts = new WeaponLoadOut[MAX_LOADOUTS];
 
@@ -166,6 +176,43 @@ public class LoadoutManager : MonoBehaviour
         SetCurrentLoadout(currentLoadOutIndex + 1);
     }
 
+    private GameObject GetOdama(GameObject reference)
+    {
+        GameObject objectToReturn = null;
+        if(inactiveOdamas.TryGetValue(reference.name, out Transform parent) && parent.childCount > 0) {
+            objectToReturn = parent.GetChild(0).gameObject;
+        }
+
+        if(null == objectToReturn)
+        {
+            objectToReturn = GfPooling.PoolInstantiate(reference);
+        }
+
+        return objectToReturn;
+    }
+
+    private void DestroyOdama(WeaponBasic weaponToDestroy)
+    {
+        if(weaponToDestroy.IsAlive(true))
+        {
+            weaponToDestroy.destroyWhenDone = true;
+            inactiveOdamas.TryGetValue(weaponToDestroy.name, out Transform parent);
+            if(null == parent)
+            {
+                parent = new GameObject(weaponToDestroy + " Pool").transform;
+                parent.parent = inactiveOdamasParent;
+                inactiveOdamas.Add(weaponToDestroy.name, parent);               
+            }
+
+            weaponToDestroy.transform.parent = parent;
+            weaponToDestroy.transform.position = new Vector3(999999, 999999, 999999);
+        } 
+        else
+        {
+            GfPooling.DestroyInsert(weaponToDestroy.gameObject);
+        }
+    }
+
     public void InternalSetCurrentLoadout(int index)
     {
         currentLoadOutIndex = index % Math.Max(1, indexOfLastLoadout + 1);
@@ -178,8 +225,7 @@ public class LoadoutManager : MonoBehaviour
             if(ob) 
                 ob.enabled = false;
             
-
-            GfPooling.DestroyInsert(weapons[i].gameObject, false, true);
+            DestroyOdama(weapons[i]);
         }
 
         numWeapons = loadOuts[currentLoadOutIndex].NumWeapons();
@@ -188,7 +234,8 @@ public class LoadoutManager : MonoBehaviour
         for (i = 0; i < numWeapons; ++i)
         {               
             GameObject desiredWeapon = WeaponMaster.GetWeapon(loadOuts[currentLoadOutIndex].weapons[i]);
-            weapons[i] = GfPooling.PoolInstantiate(desiredWeapon).GetComponent<WeaponBasic>();
+            weapons[i] = GetOdama(desiredWeapon).GetComponent<WeaponBasic>();
+            weapons[i].destroyWhenDone = false;
 
             OdamaBehaviour ob = weapons[i].GetComponent<OdamaBehaviour>();
             ob.SetAngle(i * angleBetweenOdamas);
