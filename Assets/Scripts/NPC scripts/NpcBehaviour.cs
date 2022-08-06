@@ -134,7 +134,7 @@ public class NpcBehaviour : NpcController
             if (currentTime > timeOfFireChange)
             {
 
-                if (!destination.WasDestroyed())
+                if (!destination.WasDestroyed() && null != turret)
                 {
                     Transform enemyTransform = destination.TransformDest;
                     turret.target = enemyTransform;

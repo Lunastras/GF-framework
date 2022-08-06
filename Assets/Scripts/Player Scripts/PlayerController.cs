@@ -85,6 +85,9 @@ public class PlayerController : MonoBehaviour
     private bool wasFiring = false;
     private void GetFireInput()
     {
+        if (!weaponFiring)
+            return;
+
         if (Input.GetAxisRaw("Fire1") > 0.2f)
         {
             wasFiring = true;
@@ -99,6 +102,9 @@ public class PlayerController : MonoBehaviour
 
     private void GetWeaponScrollInput()
     {
+        if (loadoutManager == null)
+            return;
+
         float wheelValue = Input.GetAxisRaw("Mouse ScrollWheel");
         if (wheelValue >= 0.1f)
         {
@@ -113,7 +119,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         GetFireInput();
         CalculateJump();

@@ -75,13 +75,8 @@ public class CameraController : MonoBehaviour
         aimTarget = null;
     }
 
-    private void FixedUpdate()
-    {
-        
-    }
-
     // Update is called once per frame
-    void LateUpdate()
+    void FixedUpdate()
     {
         yaw += Input.GetAxisRaw("Mouse X") * sensitivity * Time.deltaTime;
         pitch -= Input.GetAxisRaw("Mouse Y") * sensitivity * Time.deltaTime;
