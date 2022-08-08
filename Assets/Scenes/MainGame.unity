@@ -482,6 +482,7 @@ MonoBehaviour:
   canMove: 1
   mass: 35
   acceleration: 10
+  maxSpeed: 10
   deacceleration: 10
   rigidbody: {fileID: 0}
 --- !u!114 &467963259 stripped
