@@ -14,7 +14,7 @@ public abstract class MovementGeneric : MonoBehaviour
     [SerializeField]
     protected float mass = 35;
     protected Vector3 velocity;
-    public Vector3 movementDir { get; private set; }
+    public Vector3 movementDir { get; protected set; }
     protected float movementDirMagnitude;
 
     public bool isGrounded { get; protected set; }
@@ -51,13 +51,6 @@ public abstract class MovementGeneric : MonoBehaviour
             dir.y = 0;
 
         movementDirMagnitude = dir.magnitude;
-
-        if (movementDirMagnitude > 1)
-        {
-            movementDirMagnitude = 1;
-            dir = dir.normalized;
-        }
-
         movementDir = dir;
     }
 

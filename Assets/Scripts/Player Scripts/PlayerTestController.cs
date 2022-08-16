@@ -21,41 +21,45 @@ public class PlayerTestController : MovementGeneric
     {
         if (!rigidbody)
             rigidbody = GetComponent<Rigidbody>();
-
-       rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
     }
 
     public override void CalculateMovement(float speedMultiplier = 1)
     {
         float currentSpeed = rigidbody.velocity.magnitude;
+        Vector3 effectiveVelocity = rigidbody.velocity;
+        if (!canFly) effectiveVelocity.y = 0;
 
-        Vector3 velDir = rigidbody.velocity.normalized;
+        Vector3 velDir = effectiveVelocity.normalized;
+        float deaccCoef = 1;  
 
-        //will be 1 if over speed limit, 0 if under
-        float deaccCoef;
+        float speedToMax = System.MathF.Max(0, currentSpeed - maxSpeed * movementDirMagnitude);
+        if (0 == speedToMax)
+        {
+            deaccCoef = System.MathF.Min(1, 1 - Vector3.Dot(movementDir, velDir));
+        }
 
-        if (maxSpeed - currentSpeed > 0)
-            deaccCoef = Mathf.Max(0, Vector3.Dot(-velDir, movementDir));
-        else
-            deaccCoef = 1;
-
-        float deaccMagn = Mathf.Min(currentSpeed, deacceleration * deaccCoef);
-        Debug.Log("Deacc magnitude is " + deaccMagn);
+        //make sure it doesn't reduce the speed to less than 0 when not moving
+        //+ make sure it doesn't reduce the speed past the desired speed
+        float deaccMagn = System.MathF.Min(speedToMax, System.MathF.Min(currentSpeed, deacceleration * deaccCoef * Time.deltaTime));
 
         Vector3 deaccForce = -velDir * deaccMagn;
+        Vector3 accForce = movementDir * acceleration * Time.deltaTime;
 
-        Vector3 accForce = movementDir * acceleration;
-
-        Vector3 vel = (deaccForce + accForce) * Time.deltaTime;
+        Vector3 vel = deaccForce + accForce;
         rigidbody.AddForce(vel, ForceMode.VelocityChange);
-
-        //Debug.Log("velocity rn is " + rigidbody.velocity);
-
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        int contactCount = collision.contactCount;
+        // collision.GetContact(0).normal;
+        // Debug.DrawRay(collision.GetContact(0).point, collision.GetContact(0).normal, Color.red, 0.2f);
+
     }
 }
