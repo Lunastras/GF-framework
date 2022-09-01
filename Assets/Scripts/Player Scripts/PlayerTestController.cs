@@ -14,22 +14,58 @@ public class PlayerTestController : MovementGeneric
     private float deacceleration = 10;
 
     [SerializeField]
-    private new Rigidbody rigidbody;
+    private float maxFallSpeed = 40;
+
+    [SerializeField]
+    private float jumpForce = 40;
+
+    [SerializeField]
+    private CharacterMovement movement;
 
     // Start is called before the first frame update
     void Start()
     {
-        if (!rigidbody)
-            rigidbody = GetComponent<Rigidbody>();
-    }
 
+    }
+    
     public override void CalculateMovement(float speedMultiplier = 1)
     {
-        float currentSpeed = rigidbody.velocity.magnitude;
-        Vector3 effectiveVelocity = rigidbody.velocity;
+        //Debug.Log("IS GROUNDED IS " + movement.IsGrounded);
+        CalculateGravity();
+        CalculateJump();
+        CalculateVelocity();
+    }
+    
+    void CalculateGravity() 
+    { 
+        movement.Velocity -= Vector3.up * mass * Time.deltaTime;
+        movement.Velocity.y = System.MathF.Max(movement.Velocity.y, -maxFallSpeed);
+    }
+
+    void CalculateJump() 
+    { 
+        if(jumpTrigger) {
+            jumpTrigger = false;
+
+            if(jumpTriggerReleased) {
+                jumpTriggerReleased = false;
+                movement.Velocity.y = jumpForce;
+            }
+
+        } else {
+            jumpTriggerReleased = true;
+        }
+    }
+
+    // Update is called once per frame
+    void CalculateVelocity()
+    {
+        Vector3 effectiveVelocity = movement.Velocity;
         if (!canFly) effectiveVelocity.y = 0;
 
+        float currentSpeed = effectiveVelocity.magnitude;
         Vector3 velDir = effectiveVelocity.normalized;
+        
         float deaccCoef = 1;  
 
         float speedToMax = System.MathF.Max(0, currentSpeed - maxSpeed * movementDirMagnitude);
@@ -46,13 +82,7 @@ public class PlayerTestController : MovementGeneric
         Vector3 accForce = movementDir * acceleration * Time.deltaTime;
 
         Vector3 vel = deaccForce + accForce;
-        rigidbody.AddForce(vel, ForceMode.VelocityChange);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        movement.Velocity += vel;
     }
 
     void OnCollisionStay(Collision collision)

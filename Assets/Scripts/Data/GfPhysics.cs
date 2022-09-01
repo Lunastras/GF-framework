@@ -4,10 +4,15 @@ using UnityEngine;
 
 public class GfPhysics : MonoBehaviour
 {
+    public const int MAX_RAYCASTHITS = 12;
+    public const int MAX_COLLIDERS = 12;
+
     private static Collider[] colliders = null;
     private static RaycastHit[] raycastHits = null;
 
     private static GfPhysics instance;
+
+    private int[] layerMasks;
 
     //layer mask of objects that can be considered ground
     [SerializeField]
@@ -35,15 +40,30 @@ public class GfPhysics : MonoBehaviour
             Destroy(instance);
         }
 
+        layerMasks = new int[32];
+
+        for(int layer = 0; layer < 32; layer++)
+        {
+            int mask = 0;
+ 
+            for (int i = 0; i < 32; i++)
+            {
+                if (!Physics.GetIgnoreLayerCollision(layer, i)) mask |= 1 << i;
+            }
+ 
+            layerMasks[layer] = mask;
+        }
+
         instance = this;
     }   
+
+    public static int GetLayerMask(int layer) => instance.layerMasks[layer];
 
     public static Collider[] GetCollidersArray()
     {
         if (null == colliders)
         {
-            colliders = new Collider[1];
-            colliders[0] = null;
+            colliders = new Collider[MAX_COLLIDERS];
         }
 
         return colliders;
@@ -53,7 +73,7 @@ public class GfPhysics : MonoBehaviour
     {
         if (null == raycastHits)
         {
-            raycastHits = new RaycastHit[1];
+            raycastHits = new RaycastHit[MAX_RAYCASTHITS];
         }
 
         return raycastHits;
