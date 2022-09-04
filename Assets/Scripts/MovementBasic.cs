@@ -69,7 +69,6 @@ public class MovementBasic : MovementGeneric
 
     protected new void Initialize()
     {
-        base.Initialize();
         effectiveGravityAcc = mass;
         effectiveAcc = speedAcc;
         effectiveDeAcc = speedDeAcc;
@@ -82,6 +81,7 @@ public class MovementBasic : MovementGeneric
 
         groundCheck.localPosition = Vector3.down * (Height() * 0.45f);
         groundCheckRadius = Radius() * 0.45f;
+
 
 
         // Debug.Log("height: " + (controller.height * 0.475f) + " groundCheckRadius: " + groundCheckRadius);
@@ -174,6 +174,15 @@ public class MovementBasic : MovementGeneric
         }
 
         Move((velocity) * Time.deltaTime);
+    }
+
+    public override void SetMovementDir(Vector3 dir)
+    {
+        if (!canFly)
+            dir.y = 0;
+
+        movementDirMagnitude = dir.magnitude;
+        movementDir = dir;
     }
 
     protected void CalculateMovementVelocity()

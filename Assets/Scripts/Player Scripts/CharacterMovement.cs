@@ -20,15 +20,10 @@ public class CharacterMovement : MonoBehaviour
     public const float INWARD_STEP_DISTANCE = 0.01F; // minimum displacement into a stepping plane
     public const float MIN_HOVER_DISTANCE = 0.025F;
     public const float MIN_PUSHBACK_DEPTH = 0.005F;
-    
-    public static readonly int ARCHETYPE_SPHERE = 0;
-    public static readonly int ARCHETYPE_CAPSULE = 1;
-    public static readonly int ARCHETYPE_BOX = 2;
-    public static readonly int ARCHETYPE_LINE = 3;
 
     public Vector3 Velocity;
 
-    private readonly Vector3 upVec = Vector3.up;
+    public Vector3 UpVec { get; set; } = Vector3.up;
 
     [SerializeField]
     private new CapsuleCollider collider;
@@ -41,33 +36,15 @@ public class CharacterMovement : MonoBehaviour
 
     public bool IsGrounded { get; private set; } = false;
 
-    private Vector3 lastPosition;
+    public Vector3 SlopeNormal { get; private set; }
 
+    private readonly float SKINEPSILON = 0.02F;
+    private readonly float TRACEBIAS = 2.0F;
 
-
-    private static readonly float[] SKINEPSILON = new float[3]
-    {
-        0.002F, // sphere
-        0.002F, // capsule
-        0.02F // box
-    };
-
-    private static readonly float[] TRACEBIAS = new float[4]
-    {
-        0.0002F, // sphere
-        0.0002F, // capsule
-        0.01F, // box
-        0.0F // line
-    };
-
-    public static float GET_SKINEPSILON(int _i0) => SKINEPSILON[_i0];
-    public static float GET_TRACEBIAS(int _i0) => TRACEBIAS[_i0];
     // Start is called before the first frame update
     void Start()
     {
       //  Time.timeScale = 0.2f;
-        lastPosition = transform.position;
-
         if(null == collider)
             collider = GetComponent<CapsuleCollider>();
 
@@ -89,6 +66,7 @@ public class CharacterMovement : MonoBehaviour
 
     public void PM_FlyMove()
     {
+        SlopeNormal = UpVec;
         IsGrounded = false;
     /*
         Steps:
@@ -114,7 +92,7 @@ public class CharacterMovement : MonoBehaviour
 
         /* tracing values */
         float timefactor = 1F;
-        float skin = SKINEPSILON[ARCHETYPE_CAPSULE];
+        float skin = SKINEPSILON;
 
         int numbumps = 0;
         int numpushbacks = 0;
@@ -172,10 +150,10 @@ public class CharacterMovement : MonoBehaviour
             else
             {
                 Trace(position, _trace / _tracelen, _tracelen + skin, /* prevent tunneling by using this skin length */
-                      orientation, layermask, 0F, _interacttype: querytype,
+                      orientation, layermask, _interacttype: querytype,
                       tracesbuffer, out _tracecount);
 
-                ActorTraceFilter(ref _tracecount, out int _i0, GET_TRACEBIAS(ARCHETYPE_CAPSULE), self, tracesbuffer);
+                ActorTraceFilter(ref _tracecount, out int _i0, TRACEBIAS, self, tracesbuffer);
 
                 if (_i0 <= -1) /* Nothing was discovered in our trace */
                 {
@@ -208,8 +186,6 @@ public class CharacterMovement : MonoBehaviour
             //transform.position = position;
         
         Velocity = velocity;
-
-        lastPosition = position;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -221,7 +197,7 @@ public class CharacterMovement : MonoBehaviour
         _v.z = _n.z * _d;
     }
 
-    private void PM_FlyClipVelocity(ref Vector3 velocity, Vector3 normal)
+    private void PM_FlyClipVelocity(ref Vector3 velocity, Vector3 normal, float dotOffset)
     {
         float len = velocity.magnitude;
         if (len <= 0F) // preventing NaN generation
@@ -231,30 +207,21 @@ public class CharacterMovement : MonoBehaviour
             //ClipVector(ref velocity, plane);
 
             float angle = 0.01f + Mathf.Round(Vector3.Angle(Vector3.up, normal));
-            IsGrounded = slopeLimit > angle;
-      
-            if(IsGrounded) {
-                velocity.y = 0;
+            IsGrounded |= slopeLimit > angle;
+    
+            if (IsGrounded)
+            {
+                SlopeNormal = normal;
+                velocity -= SlopeNormal * (len * Vector3.Dot(SlopeNormal, velocity.normalized));
             }
 
+            //Debug.Log("the given velocity dir was " + velocity.normalized + " with a velocity of " + velocity + " and a slope of " + SlopeNormal);
             float velNormMagn = velocity.normalized.magnitude;
-            Debug.Log("The current velocity is: " + velocity.normalized.magnitude + " isGrounded is: " + IsGrounded);
-      
-            Vector3 velocityChange = velNormMagn * (-Vector3.Dot(velocity, normal) + 0.5f) * normal;
-
-            Debug.Log("velocity change is " + velocityChange);
-
-          //if(IsGrounded) {
-
-          //    Vector3 velDir = velocity.normalized;
-          //    //velocity += velocityChange ;
-          //    velocity *= System.MathF.Max(0, Vector3.Dot(velDir, -normal));
-
-          //} else {
-          //    velocity += velocityChange;
-          //}
-            
+            Vector3 velocityChange = velNormMagn * (-Vector3.Dot(velocity, normal) + dotOffset) * normal;
             velocity += velocityChange;
+
+            Debug.Log("Velocity change is " + velocityChange);
+
         } 
     }
 
@@ -266,7 +233,7 @@ public class CharacterMovement : MonoBehaviour
         {
             case 0: /* the first penetration plane has been identified in the feedback loop */
               // Debug.Log("FIRST SWITCH ");
-                PM_FlyClipVelocity(ref velocity, plane);
+                PM_FlyClipVelocity(ref velocity, plane, 0);
                 geometryclips |= 1 << 0;
                 break;
             case (1 << 0): /* two planes have been discovered, which potentially result in a crease */
@@ -279,12 +246,13 @@ public class CharacterMovement : MonoBehaviour
                     Vector3 crease = Vector3.Cross(lastplane, plane);
                     crease.Normalize();
 
+
                     ProjectVector(ref velocity, crease);
                     geometryclips |= (1 << 1);
                 }
                 else {
                    // Debug.Log("DID NOT CREASE ");
-                    PM_FlyClipVelocity(ref velocity, plane);
+                    PM_FlyClipVelocity(ref velocity, plane, 0.5f);
                 }
                     
                 break;
@@ -300,7 +268,7 @@ public class CharacterMovement : MonoBehaviour
 
     public void Overlap(Vector3 _pos, Quaternion _orient, int _filter, float _inflate, QueryTriggerInteraction _interacttype, Collider[] _colliders, out int _overlapcount)
     {
-        Vector3 offset = (_inflate + collider.height * 0.5f - collider.radius) * upVec;
+        Vector3 offset = (_inflate + collider.height * 0.5f - collider.radius) * UpVec;
         Vector3 _p0 = _pos - offset;
         Vector3 _p1 = _pos + offset;
 
@@ -362,17 +330,18 @@ public class CharacterMovement : MonoBehaviour
         _tracesfound = nb_found;
     }
 
-    public void Trace(Vector3 _pos, Vector3 _direction, float _len, Quaternion _orient, LayerMask _filter, float _inflate, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, out int _tracecount)
+    public void Trace(Vector3 _pos, Vector3 _direction, float _len, Quaternion _orient, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, out int _tracecount)
     {
-       // _pos += _orient * collider.center;
-        _pos -= _direction * TRACEBIAS[ARCHETYPE_CAPSULE];
+        // _pos += _orient * collider.center;
+        //_pos -= _direction * TRACEBIAS[ARCHETYPE_CAPSULE];
+        _pos -= _direction * TRACEBIAS;
 
-        Vector3 offset = (_inflate + collider.height * 0.5f - collider.radius) * upVec;
+        Vector3 offset = (collider.height * 0.5f - collider.radius) * UpVec;
         Vector3 _p0 = _pos - offset;
         Vector3 _p1 = _pos + offset;
 
-        _tracecount = Physics.CapsuleCastNonAlloc(_p0, _p1, collider.radius + _inflate, _direction,
-             _hits, _len + TRACEBIAS[ARCHETYPE_CAPSULE], _filter, _interacttype);
+        _tracecount = Physics.CapsuleCastNonAlloc(_p0, _p1, collider.radius, _direction,
+             _hits, _len + TRACEBIAS, _filter, _interacttype);
     }
 
     // Simply a copy of ArchetypeHeader.OverlapFilters.FilterSelf() with trigger checking

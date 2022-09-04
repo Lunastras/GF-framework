@@ -30,7 +30,6 @@ public class MovementSimple : MovementGeneric
     protected new void Initialize()
     {
         rigidbody = GetComponent<Rigidbody>();
-        base.Initialize();
 
         velocity = Vector3.zero;
         isGrounded = false;
