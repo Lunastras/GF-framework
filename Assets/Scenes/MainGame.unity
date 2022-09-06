@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.5752923, g: 1.6303955, b: 1.3408743, a: 1}
+  m_IndirectSpecularColor: {r: 0.5752923, g: 1.6303954, b: 1.3408738, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -461,16 +461,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20e2ae2ae88333a46905526272233837, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rigidbody: {fileID: 413798922}
+  collider: {fileID: 413798914}
   speed: 7
   canFly: 0
   canMove: 1
   mass: 35
-  collider: {fileID: 413798914}
   Velocity: {x: 0, y: 0, z: 0}
   slopeLimit: 45
-  rigidbody: {fileID: 413798922}
+  upperSlopeLimit: 100
   acceleration: 30
-  maxSpeed: 10
   deacceleration: 25
   maxFallSpeed: 40
   jumpForce: 10

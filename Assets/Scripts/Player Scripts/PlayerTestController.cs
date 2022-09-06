@@ -8,9 +8,6 @@ public class PlayerTestController : MovementGeneric
     private float acceleration = 10;
 
     [SerializeField]
-    private float maxSpeed = 10;
-
-    [SerializeField]
     private float deacceleration = 10;
 
     [SerializeField]
@@ -55,14 +52,10 @@ public class PlayerTestController : MovementGeneric
     {
         Debug.Log("CALC MOVEMENT WAS CAALLED, GROUNDED IS " + IsGrounded);
 
-        Vector3 oldDir = movementDir;
         if (SlopeNormal != Vector3.up) {
             Quaternion q = RotationTo(Vector3.up, SlopeNormal);
             movementDir = q * movementDir;
         }
-
-        //Debug.Log("The original dir: " + oldDir + " reprojected dir: " + movementDir + " for the slope " + movement.SlopeNormal);
-
         
         CalculateVelocity();
         CalculateGravity();
@@ -72,9 +65,15 @@ public class PlayerTestController : MovementGeneric
     }
 
     void CalculateGravity() 
-    {
-        if(!IsGrounded)
-            Velocity -= UpVec * (mass * Time.deltaTime);
+    {    
+        Velocity -= SlopeNormal * (mass * Time.deltaTime);
+
+
+        //clip fall speed to maxFallSpeed
+        float verticalFallSpeed = Velocity.magnitude * System.MathF.Max(0, -Vector3.Dot(SlopeNormal, Velocity.normalized));
+        Debug.Log("Vertical fall speed is " + verticalFallSpeed);
+
+        Velocity += SlopeNormal * System.MathF.Max(0, verticalFallSpeed - maxFallSpeed);  
     }
 
     void CalculateJump() 
@@ -106,7 +105,7 @@ public class PlayerTestController : MovementGeneric
         //make sure it does not affect vertical velocity
         float deaccCoef = 1;
 
-        float speedMaxDiff = currentSpeed - maxSpeed * movementDirMagnitude;
+        float speedMaxDiff = currentSpeed - speed * movementDirMagnitude;
 
         float speedToMax = System.MathF.Max(0, speedMaxDiff);
         if (0 == speedToMax)

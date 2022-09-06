@@ -5,6 +5,13 @@ using System.Runtime.CompilerServices;
 
 public abstract class MovementGeneric : MonoBehaviour
 {
+    
+    [SerializeField]
+    private new Rigidbody rigidbody;
+    
+    [SerializeField]
+    private new CapsuleCollider collider;
+
     [SerializeField]
     protected float speed = 7;
     [SerializeField]
@@ -23,9 +30,6 @@ public abstract class MovementGeneric : MonoBehaviour
     public bool jumpTrigger { get; set; } = false;
 
     protected bool jumpTriggerReleased = true;
-
-    [SerializeField]
-    private new CapsuleCollider collider;
 
     //parent position movement
     protected Transform parentTransform;
@@ -259,6 +263,7 @@ public abstract class MovementGeneric : MonoBehaviour
     public const float MIN_HOVER_DISTANCE = 0.025F;
     public const float MIN_PUSHBACK_DEPTH = 0.005F;
 
+    [HideInInspector]
     public Vector3 Velocity;
 
     public Vector3 UpVec { get; set; } = Vector3.up;
@@ -267,7 +272,7 @@ public abstract class MovementGeneric : MonoBehaviour
     private float slopeLimit = 45;
 
     [SerializeField]
-    private new Rigidbody rigidbody;
+    private float upperSlopeLimit = 100;
 
     public bool IsGrounded { get; private set; } = false;
 
@@ -279,6 +284,8 @@ public abstract class MovementGeneric : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        SlopeNormal = UpVec;
+
         //  Time.timeScale = 0.2f;
         if (null == collider)
             collider = GetComponent<CapsuleCollider>();
@@ -289,8 +296,7 @@ public abstract class MovementGeneric : MonoBehaviour
 
 
     protected void PM_FlyMove()
-    {
-        SlopeNormal = UpVec;
+    {    
         IsGrounded = false;
         /*
             Steps:
@@ -326,8 +332,7 @@ public abstract class MovementGeneric : MonoBehaviour
         /* attempt an overlap pushback at this current position */
         while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
         {
-            float inflate = 1.01f;
-            Overlap(position, orientation, layermask, inflate, querytype, colliderbuffer, out numoverlaps);
+            Overlap(position, orientation, layermask, 0, querytype, colliderbuffer, out numoverlaps);
 
             if (numoverlaps > 0)
             {
@@ -340,7 +345,6 @@ public abstract class MovementGeneric : MonoBehaviour
             //  Debug.Log("Num of overlaps is " + numoverlaps + " num of colliders size is: " + colliderbuffer.Length);
             if (numoverlaps > 0)
             {
-               // Debug.Log("I HIT SOMETHING " + colliderbuffer[0].name);
                 /* pushback against the first valid penetration found in our collider buffer */
                 for (int ci = 0; ci < numoverlaps; ci++)
                 {
@@ -378,6 +382,7 @@ public abstract class MovementGeneric : MonoBehaviour
             // IF unable to trace any further, break and end
             if (_tracelen <= MIN_DISPLACEMENT)
             {
+                Debug.Log("neah too little to actually move");
                 break;
             }
             else
@@ -418,6 +423,7 @@ public abstract class MovementGeneric : MonoBehaviour
             rigidbody.MovePosition(position);
         //transform.position = position;
 
+        if(!IsGrounded) SlopeNormal = UpVec;
         Velocity = velocity;
     }
 
@@ -443,19 +449,21 @@ public abstract class MovementGeneric : MonoBehaviour
             float angle = 0.01f + Mathf.Round(Vector3.Angle(Vector3.up, normal));
             IsGrounded |= slopeLimit > angle;
 
-            if (IsGrounded)
-            {
-                SlopeNormal = normal;
-                velocity -= SlopeNormal * (len * Vector3.Dot(SlopeNormal, velocity.normalized));
+            float dotSlopeVel = Vector3.Dot(SlopeNormal, velocity.normalized);
+
+            if(angle > upperSlopeLimit) {
+                velocity -= SlopeNormal * (len * System.MathF.Max(0, dotSlopeVel));
             }
 
-            //Debug.Log("the given velocity dir was " + velocity.normalized + " with a velocity of " + velocity + " and a slope of " + SlopeNormal);
-            float velNormMagn = velocity.normalized.magnitude;
-            Vector3 velocityChange = velNormMagn * (-Vector3.Dot(velocity, normal) + dotOffset) * normal;
+            if (IsGrounded) {
+                velocity -= SlopeNormal * (len * dotSlopeVel);
+                SlopeNormal = normal;
+            }
+
+            Vector3 velocityChange = velocity.normalized.magnitude * (-Vector3.Dot(velocity, normal) + dotOffset) * normal;
             velocity += velocityChange;
 
-            Debug.Log("Velocity change is " + velocityChange);
-
+            Debug.Log("Velocity change is " + velocityChange);        
         }
     }
 
@@ -515,12 +523,7 @@ public abstract class MovementGeneric : MonoBehaviour
     }
 
     // Simply a copy of ArchetypeHeader.TraceFilters.FindClosestFilterInvalids() with added trigger functionality
-    public static void ActorTraceFilter(
-           ref int _tracesfound,
-           out int _closestindex,
-           float _bias,
-           Collider _self,
-           RaycastHit[] _hits)
+    public static void ActorTraceFilter(ref int _tracesfound, out int _closestindex, float _bias, Collider _self, RaycastHit[] _hits)
     {
         int nb_found = _tracesfound;
         float _closestdistance = Mathf.Infinity;
@@ -613,12 +616,7 @@ public abstract class MovementGeneric : MonoBehaviour
         _overlapsfound = nb_found;
     }
 
-    public static void FindClosestFilterInvalids(
-        ref int _tracesfound,
-        out int _closestindex,
-        float _bias,
-        Collider _self,
-        RaycastHit[] _hits)
+    public static void FindClosestFilterInvalids(ref int _tracesfound, out int _closestindex, float _bias, Collider _self, RaycastHit[] _hits)
     {
         int nb_found = _tracesfound;
         float _closestdistance = Mathf.Infinity;
@@ -649,10 +647,7 @@ public abstract class MovementGeneric : MonoBehaviour
         }
     }
 
-    public static void FilterSelf(
-        ref int _overlapsfound,
-        Collider _self,
-        Collider[] _colliders)
+    public static void FilterSelf(ref int _overlapsfound, Collider _self, Collider[] _colliders)
     {
         int nb_found = _overlapsfound;
         for (int i = nb_found - 1; i >= 0; i--)
@@ -671,12 +666,7 @@ public abstract class MovementGeneric : MonoBehaviour
         _overlapsfound = nb_found;
     }
 
-    public static void FindClosestFilterInvalidsList(
-        ref int _tracesfound,
-        out int _closestindex,
-        float _bias,
-        List<Collider> _invalids,
-        RaycastHit[] _hits)
+    public static void FindClosestFilterInvalidsList(ref int _tracesfound, out int _closestindex, float _bias, List<Collider> _invalids, RaycastHit[] _hits)
     {
         int nb_found = _tracesfound;
         float _closestdistance = Mathf.Infinity;
