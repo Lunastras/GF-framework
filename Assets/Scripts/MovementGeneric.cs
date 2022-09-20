@@ -16,11 +16,12 @@ public abstract class MovementGeneric : MonoBehaviour
     protected float speed = 7;
     [SerializeField]
     protected bool canFly;
-
-    [SerializeField]
     protected bool canMove = true;
     [SerializeField]
     protected float mass = 35;
+    [SerializeField]
+    protected float stepOffset = 0.3f;
+
     protected Vector3 velocity;
     public Vector3 movementDir { get; protected set; }
     protected float movementDirMagnitude;
@@ -278,8 +279,8 @@ public abstract class MovementGeneric : MonoBehaviour
 
     public Vector3 SlopeNormal { get; private set; }
 
-    private readonly float SKINEPSILON = 0.02F;
-    private readonly float TRACEBIAS = 0.02F;
+    private readonly float SKINEPSILON = 0.002F;
+    private readonly float TRACEBIAS = 0.002F;
 
     // Start is called before the first frame update
     void Start()
@@ -320,10 +321,6 @@ public abstract class MovementGeneric : MonoBehaviour
         int layermask = GfPhysics.GetLayerMask(gameObject.layer);
         RaycastHit[] tracesbuffer = GfPhysics.GetRaycastHits();
 
-        /* tracing values */
-        float timefactor = 1F;
-        float skin = SKINEPSILON;
-
         int numbumps = 0;
         int numpushbacks = 0;
         int geometryclips = 0;
@@ -333,11 +330,6 @@ public abstract class MovementGeneric : MonoBehaviour
         while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
         {
             Overlap(position, orientation, layermask, 0, querytype, colliderbuffer, out numoverlaps);
-
-            if (numoverlaps > 0)
-            {
-               // Debug.Log("I MIGHT HAVE HIT SOMETHING " + colliderbuffer[0].name);
-            }
 
             /* filter ourselves out of the collider buffer */
             ActorOverlapFilter(ref numoverlaps, self, colliderbuffer);        
@@ -356,12 +348,10 @@ public abstract class MovementGeneric : MonoBehaviour
                     {
                         /* resolve pushback using closest exit distance */
                         position += normal * (mindistance + MIN_PUSHBACK_DEPTH);
-                        float angle = 0.01f + Mathf.Round(Vector3.Angle(Vector3.up, normal));
-                        IsGrounded |= slopeLimit > angle;
 
                         /* only consider normals that we are technically penetrating into */
                         if (Vector3.Dot(velocity, normal) < 0F)
-                            PM_FlyDetermineImmediateGeometry(ref velocity, ref lastplane, normal, ref geometryclips);
+                            PM_FlyDetermineImmediateGeometry(ref velocity, ref lastplane, normal, ref geometryclips, default, ref position);
 
                         break;
                     }
@@ -369,20 +359,24 @@ public abstract class MovementGeneric : MonoBehaviour
             }
         }
 
-        // We must assume that our position is valid.
-        // actor.SetPosition(position);
+        /* tracing values */
+        float timefactor = 1F;
+        float skin = SKINEPSILON;
 
         int _tracecount = 0;
+
+        // We must assume that our position is valid.
+        // actor.SetPosition(position);
+        
         while (numbumps++ <= MAX_BUMPS && timefactor > 0)
         {
             // Begin Trace
-            Vector3 _trace = velocity * Time.deltaTime;
+            Vector3 _trace = velocity * Time.deltaTime * timefactor;
             float _tracelen = _trace.magnitude;
 
             // IF unable to trace any further, break and end
             if (_tracelen <= MIN_DISPLACEMENT)
             {
-                Debug.Log("neah too little to actually move");
                 break;
             }
             else
@@ -401,18 +395,20 @@ public abstract class MovementGeneric : MonoBehaviour
                 else /* Discovered an obstruction along our linear path */
                 {
                     RaycastHit _closest = tracesbuffer[_i0];
-                    float _rto = _closest.distance / _tracelen;
-                    timefactor -= _rto;
+                    float _dist = Mathf.Max(_closest.distance - skin, 0F);
 
-                    float _dis = Mathf.Max(_closest.distance - skin, 0F);
-                    position += (_trace / _tracelen) * _dis; /* Move back! */
+                    timefactor -= _dist / _tracelen;
+                    position += (_trace / _tracelen) * _dist; /* Move back! position += trace direction * distance from hit */
+
+                    MgCollisionEnter(_closest);
 
                     /* determine our topology state */
-                    PM_FlyDetermineImmediateGeometry(ref velocity, ref lastplane, _closest.normal, ref geometryclips);
+                    PM_FlyDetermineImmediateGeometry(ref velocity, ref lastplane, _closest.normal, ref geometryclips, _closest, ref position);
                 }
             }
         }
 
+        //int safetycount = 0;
         /* Safety check to prevent multiple actors phasing through each other... Feel free to disable this for performance if you'd like*/
         Overlap(position, orientation, layermask, 0F, _interacttype: querytype, colliderbuffer, out int safetycount);
 
@@ -436,7 +432,7 @@ public abstract class MovementGeneric : MonoBehaviour
         _v.z = _n.z * _d;
     }
 
-    private void PM_FlyClipVelocity(ref Vector3 velocity, Vector3 normal, float dotOffset)
+    private void PM_FlyClipVelocity(ref Vector3 velocity, Vector3 normal, float angle)
     {
         float len = velocity.magnitude;
         if (len <= 0F) // preventing NaN generation
@@ -446,8 +442,7 @@ public abstract class MovementGeneric : MonoBehaviour
             // only clip if we're piercing into the infinite plane 
             //ClipVector(ref velocity, plane);
 
-            float angle = 0.01f + Mathf.Round(Vector3.Angle(Vector3.up, normal));
-            IsGrounded |= slopeLimit > angle;
+            
 
             float dotSlopeVel = Vector3.Dot(SlopeNormal, velocity.normalized);
 
@@ -457,50 +452,95 @@ public abstract class MovementGeneric : MonoBehaviour
 
             if (IsGrounded) {
                 velocity -= SlopeNormal * (len * dotSlopeVel);
-                SlopeNormal = normal;
+                SlopeNormal = normal;             
+            } 
+            else
+            {
+                Vector3 velocityChange = velocity.normalized.magnitude * (-Vector3.Dot(velocity, normal)) * normal;
+                velocity += velocityChange;
             }
 
-            Vector3 velocityChange = velocity.normalized.magnitude * (-Vector3.Dot(velocity, normal) + dotOffset) * normal;
-            velocity += velocityChange;
-
-            Debug.Log("Velocity change is " + velocityChange);        
+            
         }
     }
 
-    private void PM_FlyDetermineImmediateGeometry(ref Vector3 velocity, ref Vector3 lastplane, Vector3 plane, ref int geometryclips)
+    protected abstract void MgCollisionEnter(RaycastHit hitObject);
+
+    private static float GetStepHeight(ref RaycastHit hit, ref CapsuleCollider collider, Vector3 UpVec, ref Vector3 position)
     {
+        Vector3 bottomPos = -(collider.height * 0.5f) * UpVec;
+        Vector3 localStepHitPos = (hit.point - position);
+
+        return Vector3.Dot(UpVec, localStepHitPos) - Vector3.Dot(UpVec, bottomPos);
+    }
+
+    private void PM_FlyDetermineImmediateGeometry(ref Vector3 velocity, ref Vector3 lastplane, Vector3 plane, ref int geometryclips, RaycastHit hit, ref Vector3 position)
+    {
+        float angle = 0.01f + Mathf.Round(Vector3.Angle(Vector3.up, plane));
+        bool underSlopeLimit = slopeLimit > angle;
+        IsGrounded |= underSlopeLimit;
+        bool recalculateVelocity = true;
+
+        /*
+        //Check for stair, if no stair is found, then perform normal velocity calculations
+        if (IsGrounded && (!underSlopeLimit) && (0 == geometryclips || (1 << 0) == geometryclips))
+        {
+            float stepHeight = GetStepHeight(ref hit, ref collider, UpVec, ref position);
+
+           // Debug.Log("huuh second AND i potentially found a stair ");
+
+            if (stepHeight <= stepOffset && stepHeight > 0.01f)
+            {
+                IsGrounded = true;
+              //  Debug.Log("yeeee found stair ");
+                position += UpVec * (stepHeight);
+                recalculateVelocity = false;
+            } else
+            {
+               // Debug.Log("neah step is wayyy too small");
+            }
+        }
+        */
 
         //  Debug.Log("Geometry clips num is " + geometryclips);
         switch (geometryclips)
         {
             case 0: /* the first penetration plane has been identified in the feedback loop */
-                // Debug.Log("FIRST SWITCH ");
-                PM_FlyClipVelocity(ref velocity, plane, 0);
-                geometryclips |= 1 << 0;
+               // Debug.Log("FIRST SWITCH");
+                if(recalculateVelocity)
+                {
+                    PM_FlyClipVelocity(ref velocity, plane, angle);
+                    geometryclips = 1 << 0;
+                }
+                    
                 break;
             case (1 << 0): /* two planes have been discovered, which potentially result in a crease */
 
-                float creaseEpsilon = System.MathF.Cos(Mathf.Deg2Rad * slopeLimit);
-                //Debug.Log("SECOND SWITCH ");
-                if (Vector3.Dot(lastplane, plane) < creaseEpsilon)
-                {
-                    // Debug.Log("CREASED ");
-                    Vector3 crease = Vector3.Cross(lastplane, plane);
-                    crease.Normalize();
+               // Debug.Log("SECOND SWITCH");
 
-
-                    ProjectVector(ref velocity, crease);
-                    geometryclips |= (1 << 1);
-                }
-                else
+                if(recalculateVelocity)
                 {
-                    // Debug.Log("DID NOT CREASE ");
-                    PM_FlyClipVelocity(ref velocity, plane, 0.5f);
-                }
+                    float creaseEpsilon = System.MathF.Cos(Mathf.Deg2Rad * slopeLimit);
+                    //Debug.Log("SECOND SWITCH ");
+
+                    if (Vector3.Dot(lastplane, plane) < creaseEpsilon)
+                    {
+                     //   Debug.Log("CREASED ");
+                        Vector3 crease = Vector3.Cross(lastplane, plane);
+                        crease.Normalize();
+                        ProjectVector(ref velocity, crease);
+                        geometryclips |= (1 << 1);
+                    }
+                    else
+                    {
+                        // Debug.Log("DID NOT CREASE ");
+                        PM_FlyClipVelocity(ref velocity, plane, angle);
+                    }
+                }                      
 
                 break;
             case (1 << 0) | (1 << 1): /* three planes have been detected, our velocity must be cancelled entirely. */
-                // Debug.Log("THIRD SWITCH ");
+               // Debug.Log("THIRD SWITCH ");
                 velocity = Vector3.zero;
                 geometryclips |= (1 << 2);
                 break;
@@ -575,7 +615,7 @@ public abstract class MovementGeneric : MonoBehaviour
         // _pos += _orient * collider.center;
         //_pos -= _direction * TRACEBIAS[ARCHETYPE_CAPSULE];
         _pos -= _direction * TRACEBIAS;
-        Debug.Log("DIRECTION IS " + _direction + " TRACE LEN IS " + _len);
+        //Debug.Log("DIRECTION IS " + _direction + " TRACE LEN IS " + _len);
 
         Vector3 offset = (collider.height * 0.5f - collider.radius) * UpVec;
         Vector3 _p0 = _pos - offset;

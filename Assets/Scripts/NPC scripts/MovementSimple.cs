@@ -58,6 +58,10 @@ public class MovementSimple : MovementGeneric
     private Vector2 refSmoothVelocity2;
     private float refSmoothRot;
 
+    protected override void MgCollisionEnter(RaycastHit hitObject)
+    {
+
+    }
     protected void CalculateVelocity(float speedMultiplier = 1)
     {
         float currentYVelocity = velocity.y;

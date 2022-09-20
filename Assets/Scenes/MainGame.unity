@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.5752923, g: 1.6303954, b: 1.3408738, a: 1}
+  m_IndirectSpecularColor: {r: 0.5752923, g: 1.6303955, b: 1.3408743, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -143,7 +143,7 @@ PrefabInstance:
     - target: {fileID: 1638784938448980616, guid: 3fa6d1718b0a7c7458a0344ae7aba8a7,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.035583496
+      value: 0.86
       objectReference: {fileID: 0}
     - target: {fileID: 1638784938448980616, guid: 3fa6d1718b0a7c7458a0344ae7aba8a7,
         type: 3}
@@ -359,7 +359,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 413798913}
-  m_Material: {fileID: 13400000, guid: de735816fda935a4db71732e599313fe, type: 2}
+  m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.5
@@ -465,11 +465,11 @@ MonoBehaviour:
   collider: {fileID: 413798914}
   speed: 7
   canFly: 0
-  canMove: 1
   mass: 35
+  stepOffset: 0.4
   Velocity: {x: 0, y: 0, z: 0}
   slopeLimit: 45
-  upperSlopeLimit: 100
+  upperSlopeLimit: 120
   acceleration: 30
   deacceleration: 25
   maxFallSpeed: 40
@@ -635,6 +635,11 @@ PrefabInstance:
         type: 3}
       propertyPath: sensitivity
       value: 2000
+      objectReference: {fileID: 0}
+    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+        type: 3}
+      propertyPath: collisionRadius
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -805,6 +810,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: EnemyGeneric
+      objectReference: {fileID: 0}
+    - target: {fileID: 4759944753111975130, guid: 6df6120ef64359346a9967a4589f3b71,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6df6120ef64359346a9967a4589f3b71, type: 3}

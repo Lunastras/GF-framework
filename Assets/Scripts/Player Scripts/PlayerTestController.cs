@@ -21,6 +21,11 @@ public class PlayerTestController : MovementGeneric
     {
     }
 
+    protected override void MgCollisionEnter(RaycastHit hitObject)
+    {
+
+    }
+
     /*
      Implementation from quat.rotationTo function from toji/gl-matrix on github, found in quat.js
      */
@@ -50,7 +55,7 @@ public class PlayerTestController : MovementGeneric
 
     public override void CalculateMovement(float speedMultiplier = 1)
     {
-        Debug.Log("CALC MOVEMENT WAS CAALLED, GROUNDED IS " + IsGrounded);
+        //Debug.Log("CALC MOVEMENT WAS CAALLED, GROUNDED IS " + IsGrounded);
 
         if (SlopeNormal != Vector3.up) {
             Quaternion q = RotationTo(Vector3.up, SlopeNormal);
@@ -71,9 +76,9 @@ public class PlayerTestController : MovementGeneric
 
         //clip fall speed to maxFallSpeed
         float verticalFallSpeed = Velocity.magnitude * System.MathF.Max(0, -Vector3.Dot(SlopeNormal, Velocity.normalized));
-        Debug.Log("Vertical fall speed is " + verticalFallSpeed);
+        //Debug.Log("Vertical fall speed is " + verticalFallSpeed);
 
-        Velocity += SlopeNormal * System.MathF.Max(0, verticalFallSpeed - maxFallSpeed);  
+       // Velocity += SlopeNormal * System.MathF.Max(0, verticalFallSpeed - maxFallSpeed);  
     }
 
     void CalculateJump() 
@@ -100,12 +105,14 @@ public class PlayerTestController : MovementGeneric
         horizontalVelocity -= SlopeNormal * (horizontalVelocity.magnitude * Vector3.Dot(SlopeNormal, horizontalVelocity.normalized));
 
         float currentSpeed = horizontalVelocity.magnitude;
-        Vector3 velDir = horizontalVelocity.normalized;   
+        Vector3 velDir = horizontalVelocity.normalized;
+
+        float desiredSpeed = speed * movementDirMagnitude;
 
         //make sure it does not affect vertical velocity
         float deaccCoef = 1;
 
-        float speedMaxDiff = currentSpeed - speed * movementDirMagnitude;
+        float speedMaxDiff = currentSpeed - desiredSpeed;
 
         float speedToMax = System.MathF.Max(0, speedMaxDiff);
         if (0 == speedToMax)
@@ -119,12 +126,20 @@ public class PlayerTestController : MovementGeneric
 
         Vector3 deaccForce = -velDir * deaccMagn;
 
-        float accMagn = Time.deltaTime * acceleration;
+        //ACCELERATION CALCULATION
+
+        float speedInDesiredDir = currentSpeed * System.MathF.Max(0, Vector3.Dot(movementDir, velDir));
+        float maxAccCoef = System.MathF.Max(0, desiredSpeed - speedInDesiredDir);
+
+        float accMagn = System.MathF.Min(maxAccCoef, Time.deltaTime * acceleration);
         Vector3 accForce = movementDir * accMagn;
+
+        Debug.Log("Speed in desired dir is: " + speedInDesiredDir * currentSpeed + " and speed is: " + currentSpeed);
+
 
         Vector3 vel = deaccForce + accForce;
 
-        Debug.Log("horizontalVelocity " + horizontalVelocity + " and the deacc magn is " + deaccMagn);
+        //Debug.Log("horizontalVelocity " + horizontalVelocity + " and the deacc magn is " + deaccMagn);
 
         Velocity += vel;
     }

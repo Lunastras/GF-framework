@@ -93,6 +93,11 @@ public class MovementBasic : MovementGeneric
         CalculateParentMovement();
     }
 
+    protected override void MgCollisionEnter(RaycastHit hitObject)
+    {
+
+    }
+
     protected void CalculateJump()
     {
         if (jumpTrigger)
