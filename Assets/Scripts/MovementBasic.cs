@@ -285,7 +285,7 @@ public class MovementBasic : MovementGeneric
         Vector3 velocityChange = (-Vector3.Dot(Velocity, normal) + 0.5f) * normal;
         Vector3 auxVelocity = Velocity;
         bool collisionIsGround = GfPhysics.LayerIsInMask(collision.gameObject.layer, GfPhysics.GroundLayers());
-        bool auxGrounded = angle < SlopeLimit() && collisionIsGround;
+        bool auxGrounded = angle < slopeLimit && collisionIsGround;
 
         //check if hitting ceiling
         if (!auxGrounded && angle >= 110)
@@ -339,6 +339,13 @@ public class MovementBasic : MovementGeneric
         {
             //  Debug.Log("I am still jumping from ledge");
         }
+    }
+
+    protected override void BeforeFixedUpdate()
+    {
+    }
+
+    protected override void AfterFixedUpdate() {
     }
 
     protected void OnControllerColliderHit(ControllerColliderHit collision)

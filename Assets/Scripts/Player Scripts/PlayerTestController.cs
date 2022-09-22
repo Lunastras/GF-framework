@@ -29,14 +29,9 @@ public class PlayerTestController : MovementGeneric
     private bool touchedParent;
 
     // Start is called before the first frame update
-    protected override void InternalStart()
-    {
+    protected override void InternalStart() { }
 
-    }
-
-    public override void CalculateMovement(float speedMultiplier = 1) {
-
-    }
+    public override void CalculateMovement(float speedMultiplier = 1) { }
 
     protected override void BeforeFixedUpdate()
     {
@@ -52,7 +47,7 @@ public class PlayerTestController : MovementGeneric
     }
 
     protected override void AfterFixedUpdate() {
-        if(touchedParent && null != parentTransform) 
+        if(!touchedParent && null != parentTransform) 
             DetachFromParent();
     }
     
@@ -68,17 +63,8 @@ public class PlayerTestController : MovementGeneric
         _effectiveDeacceleration *= DeaccelerationCoef;
     }
 
-        //
-
-       // if(movementDirMagnitude > 0.0001f)
-        //    Debug.Log("Speed in desired dir is: " + speedInDesiredDir + " and speed is: " + currentSpeed + " unwanted speed is: " + unwantedSpeed);
-    // Update is called once per frame
-
     void CalculateVelocity()
     {
-      //  Debug.Log("The vertical velocity is: " + (Velocity.magnitude * Vector3.Dot(SlopeNormal, Velocity.normalized)));
-        //remove vertical factor from the velocity to calculate the horizontal plane velocity easier
-
         float verticalFallSpeed = (Velocity.magnitude * Vector3.Dot(SlopeNormal, Velocity.normalized));
         float fallMagn, fallMaxDiff = -verticalFallSpeed - maxFallSpeed;
 
@@ -88,6 +74,7 @@ public class PlayerTestController : MovementGeneric
             fallMagn = -Min(fallMaxDiff, _effectiveDeacceleration * Time.deltaTime);
         }
 
+        //remove vertical factor from the velocity to calculate the horizontal plane velocity easier
         Vector3 horizontalVelocity = Velocity - SlopeNormal * verticalFallSpeed;
 
         float currentSpeed = horizontalVelocity.magnitude;
@@ -120,10 +107,12 @@ public class PlayerTestController : MovementGeneric
 
     protected override void MgOnCollision(MgCollisionStruct collision)
     {
+        Debug.Log("I came into collision WITH " + collision.collider.name);
         Transform collisionTrans = collision.collider.transform;
-        bool auxGrounded = slopeLimit < collision.angle;
+        bool auxGrounded = slopeLimit >= collision.angle;
+
         if(auxGrounded && parentTransform == null) {
-            touchedParent = true;
+            Debug.Log("I am supposed to parent something");
             SetParentTransform(collisionTrans);
         }
 

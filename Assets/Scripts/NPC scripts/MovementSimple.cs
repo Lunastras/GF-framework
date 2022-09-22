@@ -58,9 +58,16 @@ public class MovementSimple : MovementGeneric
     private Vector2 refSmoothVelocity2;
     private float refSmoothRot;
 
-    protected override void MgOnCollision(RaycastHit hitObject)
+    protected override void MgOnCollision(MgCollisionStruct collision)
     {
 
+    }
+
+    protected override void BeforeFixedUpdate()
+    {
+    }
+
+    protected override void AfterFixedUpdate() {
     }
     protected void CalculateVelocity(float speedMultiplier = 1)
     {
@@ -147,7 +154,7 @@ public class MovementSimple : MovementGeneric
 
         if (angle >= 0)
         {
-            if (angle >= SlopeLimit())
+            if (angle >= slopeLimit)
             {
                 // Debug.Log("over slope limit");
 

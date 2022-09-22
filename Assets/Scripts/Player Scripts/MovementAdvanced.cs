@@ -114,7 +114,7 @@ public class MovementAdvanced : MovementBasic
                     RaycastHit auxHit = GfPhysics.GetRaycastHits()[0];
 
                     float wallAngle = Vector3.Angle(auxHit.normal, Vector3.up);
-                    foundWall = (wallAngle > SlopeLimit() && wallAngle < 91 && wallAngle > 0); //check if the slope is good for wallrunning
+                    foundWall = (wallAngle > slopeLimit && wallAngle < 91 && wallAngle > 0); //check if the slope is good for wallrunning
 
                     IsGrounded = false;
 
