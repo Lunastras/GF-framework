@@ -45,10 +45,10 @@ public class MovementAdvanced : MovementBasic
         checkPhysics = 0 >= timeUntilPhysCheck;
         timeUntilPhysCheck = checkPhysics ? physCheckInterval : (timeUntilPhysCheck - Time.deltaTime);
 
-        isGrounded = timeUntilUngrounded > 0 || canFly;
+        IsGrounded = timeUntilUngrounded > 0 || canFly;
         timeUntilUngrounded = Mathf.Max(-1, timeUntilUngrounded - Time.deltaTime);
 
-        jumpingFromLedge = timeLeftLedgeJump > 0 && velocity.y > -3.0f;
+        jumpingFromLedge = timeLeftLedgeJump > 0 && Velocity.y > -3.0f;
         timeLeftLedgeJump = Mathf.Max(-1, timeLeftLedgeJump - Time.deltaTime);
     }
 
@@ -67,14 +67,14 @@ public class MovementAdvanced : MovementBasic
             CalculateMovementVelocity();
         }
 
-        Move((velocity) * Time.deltaTime);
+        Move((Velocity) * Time.deltaTime);
     }
 
     RaycastHit wallRunHit;
 
     private unsafe void CalculateWallRun()
     {
-        if (!canWallrun || (isGrounded && !jumpTrigger))
+        if (!canWallrun || (IsGrounded && !JumpTrigger))
         {
             if (isAttachedToWall)
             {
@@ -83,7 +83,7 @@ public class MovementAdvanced : MovementBasic
             return;
         }
 
-        Vector2 movementDir2Norm = new(movementDir.x, movementDir.z);
+        Vector2 movementDir2Norm = new(MovementDir.x, MovementDir.z);
 
         bool foundWall = !checkPhysics && isAttachedToWall;
         float currentTime = Time.time;
@@ -94,7 +94,7 @@ public class MovementAdvanced : MovementBasic
         if (checkPhysics && (isAttachedToWall || 0 < Physics.OverlapSphereNonAlloc(wallSphereCheckPosition, Radius(), GfPhysics.GetCollidersArray(), GfPhysics.WallrunLayers())))
         {
             if (isAttachedToWall
-                || (new Vector2(velocity.x, velocity.z).magnitude > 0.3f && Vector3.Dot(velocity, forwardVec) > 0.1f))
+                || (new Vector2(Velocity.x, Velocity.z).magnitude > 0.3f && Vector3.Dot(Velocity, forwardVec) > 0.1f))
             {
                 Vector3 offset = new Vector3(0, Height() / 4.0f, 0);
                 //Vector3 dirToWall = (GfPhysics.GetCollidersArray()[0].transform.position - transform.position).normalized;
@@ -116,7 +116,7 @@ public class MovementAdvanced : MovementBasic
                     float wallAngle = Vector3.Angle(auxHit.normal, Vector3.up);
                     foundWall = (wallAngle > SlopeLimit() && wallAngle < 91 && wallAngle > 0); //check if the slope is good for wallrunning
 
-                    isGrounded = false;
+                    IsGrounded = false;
 
                     if (foundWall)
                     {
@@ -185,7 +185,7 @@ public class MovementAdvanced : MovementBasic
                     }
                 }
 
-            velocity = wallRunSpeed * wallRunDir;
+            Velocity = wallRunSpeed * wallRunDir;
         }
         else if (isAttachedToWall)
         {
@@ -200,16 +200,16 @@ public class MovementAdvanced : MovementBasic
                 timeLeftLedgeJump = jumpingFromLedgeInterval;
 
                 wallRunDir = 1.5f * wallRunDir + 1.0f * forwardVec;
-                velocity = wallRunDir.normalized * jumpForce;
+                Velocity = wallRunDir.normalized * jumpForce;
 
             }
         }
 
         if (isAttachedToWall)
         {
-            if (jumpTrigger)
+            if (JumpTrigger)
             {
-                jumpTrigger = false;
+                JumpTrigger = false;
                 if ((Time.time - timeAttachedToWall) > timingWallrunJumpDelay && jumpTriggerReleased)
                 {
                     Vector3 wallNormal = wallRunHit.normal;
@@ -226,7 +226,7 @@ public class MovementAdvanced : MovementBasic
                     }
 
                     canDoubleJump = true;
-                    velocity = jumpDir * jumpForce * 1.5f;
+                    Velocity = jumpDir * jumpForce * 1.5f;
                     // Debug.Log("Detaching from wall 3");
                     DetachFromWall();
                     //  Debug.Log("Wait, JUMPY??");
@@ -266,13 +266,13 @@ public class MovementAdvanced : MovementBasic
         wallRunSpeed = 4;
         SetWallRunRotation(wallHit);
 
-        if (Vector3.Dot(velocity, wallRunDir) > 0)
+        if (Vector3.Dot(Velocity, wallRunDir) > 0)
         {
-            wallRunSpeed = Mathf.Clamp(velocity.magnitude, 4, speed);
+            wallRunSpeed = Mathf.Clamp(Velocity.magnitude, 4, speed);
         }
         else wallRunSpeed = 4;
 
-        velocity = Vector3.zero;
+        Velocity = Vector3.zero;
     }
 
     private void SetWallRunRotation(RaycastHit wallHit)

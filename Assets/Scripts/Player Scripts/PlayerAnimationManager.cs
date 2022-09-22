@@ -48,7 +48,7 @@ public class PlayerAnimationManager : MonoBehaviour
             return;
 
         isAttachedToWall = playerController.isAttachedToWall;
-        isGrounded = playerController.isGrounded;
+        isGrounded = playerController.IsGrounded;
         Vector2 velocity = new Vector2(playerController.GetVelocity().x, playerController.GetVelocity().z);
         currentSpeed = velocity.magnitude;
         isSlidingOffWall = playerController.isSlidingOffWall;

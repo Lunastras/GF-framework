@@ -27,15 +27,15 @@ public class MovementSimple : MovementGeneric
     private new Rigidbody rigidbody;
 
 
-    protected new void Initialize()
+    protected void Initialize()
     {
         rigidbody = GetComponent<Rigidbody>();
 
-        velocity = Vector3.zero;
-        isGrounded = false;
+        Velocity = Vector3.zero;
+        IsGrounded = false;
     }
 
-    private void Start()
+    protected override void InternalStart()
     {
         Initialize();
     }
@@ -49,50 +49,50 @@ public class MovementSimple : MovementGeneric
         if (canFly)
             return;
 
-        velocity.y -= mass * Time.deltaTime;
-        velocity.y = Mathf.Max(-terminalVelocity, velocity.y);
-        jumpTrigger = timeOfNextGroundCheck <= Time.time && isGrounded;
+        Velocity.y -= mass * Time.deltaTime;
+        Velocity.y = Mathf.Max(-terminalVelocity, Velocity.y);
+        JumpTrigger = timeOfNextGroundCheck <= Time.time && IsGrounded;
     }
 
     private Vector3 refSmoothVelocity3;
     private Vector2 refSmoothVelocity2;
     private float refSmoothRot;
 
-    protected override void MgCollisionEnter(RaycastHit hitObject)
+    protected override void MgOnCollision(RaycastHit hitObject)
     {
 
     }
     protected void CalculateVelocity(float speedMultiplier = 1)
     {
-        float currentYVelocity = velocity.y;
-        velocity.y = canFly ? velocity.y : 0;
+        float currentYVelocity = Velocity.y;
+        Velocity.y = canFly ? Velocity.y : 0;
 
-        float effectiveSpeedSmoothing = speedSmoothing * (isGrounded || canFly ? 1.0f : 0.5f);
+        float effectiveSpeedSmoothing = speedSmoothing * (IsGrounded || canFly ? 1.0f : 0.5f);
 
-        if (movementDir != Vector3.zero)
+        if (MovementDir != Vector3.zero)
         {
-            float desiredYAngle = System.MathF.Atan2(velocity.x, velocity.z) * Mathf.Rad2Deg;
+            float desiredYAngle = System.MathF.Atan2(Velocity.x, Velocity.z) * Mathf.Rad2Deg;
             float currentY = transform.rotation.eulerAngles.y;
             float newYRot = Mathf.SmoothDampAngle(currentY, desiredYAngle, ref refSmoothRot, effectiveSpeedSmoothing / System.MathF.Max(speed, 0.01f));
 
             transform.rotation = Quaternion.Euler(0, newYRot, 0);
         }
 
-        Vector3 desiredVelocity = movementDir;
+        Vector3 desiredVelocity = MovementDir;
         desiredVelocity *= speed * speedMultiplier;
 
-        velocity = Vector3.SmoothDamp(velocity, desiredVelocity, ref refSmoothVelocity3, effectiveSpeedSmoothing);
+        Velocity = Vector3.SmoothDamp(Velocity, desiredVelocity, ref refSmoothVelocity3, effectiveSpeedSmoothing);
 
-        velocity.y = canFly ? velocity.y : currentYVelocity;
+        Velocity.y = canFly ? Velocity.y : currentYVelocity;
     }
 
     protected void CalculateJump()
     {
-        if (jumpTrigger)
+        if (JumpTrigger)
         {
-            jumpTrigger = false;
-            isGrounded = false;
-            velocity.y = jumpPower;
+            JumpTrigger = false;
+            IsGrounded = false;
+            Velocity.y = jumpPower;
             // Debug.Log("I jumped I guess?");
         }
     }
@@ -108,8 +108,8 @@ public class MovementSimple : MovementGeneric
         //rigidbody.velocity = velocity;
         Vector3 forceToAdd = Vector3.zero;
 
-        float movementDirMagnitude = movementDir.magnitude;
-        Vector3 vel = movementDir * acceleration * Time.deltaTime;
+        float movementDirMagnitude = MovementDir.magnitude;
+        Vector3 vel = MovementDir * acceleration * Time.deltaTime;
         rigidbody.AddForce(vel * speedMultiplier);
 
         float speedMagnitude = rigidbody.velocity.magnitude;
@@ -134,16 +134,16 @@ public class MovementSimple : MovementGeneric
 
     protected void CalculateCollisionHit(Vector3 normal, Transform collisionTransform)
     {
-        if (velocity.y > 5.0f)
+        if (Velocity.y > 5.0f)
             return;
 
         int angle = (int)Mathf.Round(Vector3.Angle(Vector3.up, normal));
         // Debug.Log("angle is: " + angle);
 
-        Vector3 velocityChange = -Vector3.Dot(velocity, normal) * normal;
+        Vector3 velocityChange = -Vector3.Dot(Velocity, normal) * normal;
 
-        Vector3 auxVelocity = velocity;
-        bool auxGrounded = isGrounded;
+        Vector3 auxVelocity = Velocity;
+        bool auxGrounded = IsGrounded;
 
         if (angle >= 0)
         {
@@ -151,15 +151,15 @@ public class MovementSimple : MovementGeneric
             {
                 // Debug.Log("over slope limit");
 
-                if (isGrounded)
+                if (IsGrounded)
                 {
                     // Debug.Log("jrumpsy");
 
-                    jumpTrigger = true;
+                    JumpTrigger = true;
                 }
                 else if (angle > 91)
                 {
-                    velocity.y = -0.5f;
+                    Velocity.y = -0.5f;
                 }
                 else
                 {
@@ -187,8 +187,8 @@ public class MovementSimple : MovementGeneric
             auxVelocity.y = Math.Min(velocityChange.y + auxVelocity.y, 0);
         }
 
-        velocity = auxVelocity;
-        isGrounded = auxGrounded;
+        Velocity = auxVelocity;
+        IsGrounded = auxGrounded;
     }
 
 

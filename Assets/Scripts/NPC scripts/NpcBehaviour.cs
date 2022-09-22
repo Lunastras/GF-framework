@@ -183,7 +183,7 @@ public class NpcBehaviour : NpcController
 
             timeOfNextWalkChange = Time.time + intervalBetweenWalkPhases * (1 - GfRandom.Range(-varianceRate, varianceRate));
 
-            float movementDirMagnitude = simpleMovement.movementDir.magnitude;
+            float movementDirMagnitude = simpleMovement.MovementDir.magnitude;
 
             if (movementDirMagnitude > 0.9f)
             {

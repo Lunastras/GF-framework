@@ -62,12 +62,15 @@ public class MovementBasic : MovementGeneric
 
     protected const float jumpingFromLedgeInterval = 3.0f;
 
+    protected override void InternalStart()
+    {
 
+    }
 
     //protected Vector2 input;
     public float targetSpeed { get; protected set; }
 
-    protected new void Initialize()
+    protected void Initialize()
     {
         effectiveGravityAcc = mass;
         effectiveAcc = speedAcc;
@@ -75,7 +78,7 @@ public class MovementBasic : MovementGeneric
 
         //  Time.timeScale = 0.5f;   
 
-        velocity = Vector3.zero;
+        Velocity = Vector3.zero;
 
         groundCheck = GameObject.Find("GroundCheck").transform;
 
@@ -93,30 +96,30 @@ public class MovementBasic : MovementGeneric
         CalculateParentMovement();
     }
 
-    protected override void MgCollisionEnter(RaycastHit hitObject)
+    protected override void MgOnCollision(MgCollisionStruct collision)
     {
 
     }
 
     protected void CalculateJump()
     {
-        if (jumpTrigger)
+        if (JumpTrigger)
         {
-            jumpTrigger = false;
+            JumpTrigger = false;
             if (jumpTriggerReleased)
             {
                 jumpTriggerReleased = false;
-                if (isGrounded)
+                if (IsGrounded)
                 {
-                    isGrounded = false;
+                    IsGrounded = false;
                     canExtendJump = canDoubleJump = true;
                     DetachFromParent();
-                    velocity.y = jumpForce;
+                    Velocity.y = jumpForce;
                 }
                 else if (canDoubleJump)
                 {
                     canDoubleJump = canExtendJump = false;
-                    velocity.y = jumpForce;
+                    Velocity.y = jumpForce;
                 }
             }
 
@@ -130,8 +133,8 @@ public class MovementBasic : MovementGeneric
 
     protected void UpdateEffectiveValues()
     {
-        effectiveDeAcc = speedDeAcc * (isGrounded ? 1 : midAirDeAccCoef);
-        effectiveAcc = speedAcc * (isGrounded ? 1 : midAirAccCoef);
+        effectiveDeAcc = speedDeAcc * (IsGrounded ? 1 : midAirDeAccCoef);
+        effectiveAcc = speedAcc * (IsGrounded ? 1 : midAirAccCoef);
         effectiveGravityAcc = mass * (canExtendJump ? jumpExtGravCoef : 1) * Convert.ToInt32(!canFly);
     }
 
@@ -141,11 +144,11 @@ public class MovementBasic : MovementGeneric
      */
     protected void GroundCheck()
     {
-        velocity.y = Mathf.Max(-terminalVelocity, velocity.y - effectiveGravityAcc * Time.deltaTime);
+        Velocity.y = Mathf.Max(-terminalVelocity, Velocity.y - effectiveGravityAcc * Time.deltaTime);
 
-        if (!isGrounded && !jumpingFromLedge)
+        if (!IsGrounded && !jumpingFromLedge)
         {
-            canExtendJump = canExtendJump && (velocity.y > 0);
+            canExtendJump = canExtendJump && (Velocity.y > 0);
             DetachFromParent();
         }
     }
@@ -158,10 +161,10 @@ public class MovementBasic : MovementGeneric
         bool auxIsGrounded = timeUntilUngrounded > 0 || canFly;
 
         //check if previously grounded
-        if(!auxIsGrounded && isGrounded)
+        if(!auxIsGrounded && IsGrounded)
         {
             Debug.Log("Was previously grounded");
-            velocity.y = 0;
+            Velocity.y = 0;
         }
 
         timeUntilUngrounded = Mathf.Max(-1, timeUntilUngrounded - Time.deltaTime);
@@ -178,7 +181,7 @@ public class MovementBasic : MovementGeneric
             CalculateMovementVelocity();
         }
 
-        Move((velocity) * Time.deltaTime);
+        Move((Velocity) * Time.deltaTime);
     }
 
     public override void SetMovementDir(Vector3 dir)
@@ -187,21 +190,21 @@ public class MovementBasic : MovementGeneric
             dir.y = 0;
 
         movementDirMagnitude = dir.magnitude;
-        movementDir = dir;
+        MovementDir = dir;
     }
 
     protected void CalculateMovementVelocity()
     {
-        Vector3 auxVelocity = velocity;
+        Vector3 auxVelocity = Velocity;
         auxVelocity.y = canFly ? auxVelocity.y : 0;
         Vector3 frameAccerelartion = Vector3.zero;
 
         turnAmount = 0;
         targetSpeed = 0;
 
-        if (canMove && movementDir != Vector3.zero)
+        if (canMove && MovementDir != Vector3.zero)
         {
-            targetYDeg = Mathf.Atan2(movementDir.x, movementDir.z) * Mathf.Rad2Deg;
+            targetYDeg = Mathf.Atan2(MovementDir.x, MovementDir.z) * Mathf.Rad2Deg;
             float eulerY = transform.eulerAngles.y;
             turnAmount = GfTools.AngleDifference(eulerY, targetYDeg);
             float absTurnAmount = Math.Abs(turnAmount);
@@ -218,16 +221,16 @@ public class MovementBasic : MovementGeneric
 
             targetSpeed = speed * movementDirMagnitude;
 
-            frameAccerelartion = movementDir * effectiveAcc * Time.deltaTime;
+            frameAccerelartion = MovementDir * effectiveAcc * Time.deltaTime;
         }
 
         Vector3 velocityDir = auxVelocity.normalized;
 
         float movementDeaccDot = 1;
 
-        if (auxVelocity.magnitude <= targetSpeed || !isGrounded)
+        if (auxVelocity.magnitude <= targetSpeed || !IsGrounded)
         {
-            movementDeaccDot = Vector3.Dot(movementDir, velocityDir);
+            movementDeaccDot = Vector3.Dot(MovementDir, velocityDir);
             if (movementDeaccDot >= 0)
             {
                 movementDeaccDot = 1 - movementDeaccDot;
@@ -260,7 +263,7 @@ public class MovementBasic : MovementGeneric
             }
         }
 
-        velocity = new Vector3(auxVelocity.x, canFly ? auxVelocity.y : velocity.y, auxVelocity.z);
+        Velocity = new Vector3(auxVelocity.x, canFly ? auxVelocity.y : Velocity.y, auxVelocity.z);
     }
 
 
@@ -279,8 +282,8 @@ public class MovementBasic : MovementGeneric
         int angle = (int)Mathf.Round(Vector3.Angle(Vector3.up, normal));
         //Debug.Log("angle is: " + angle);
 
-        Vector3 velocityChange = (-Vector3.Dot(velocity, normal) + 0.5f) * normal;
-        Vector3 auxVelocity = velocity;
+        Vector3 velocityChange = (-Vector3.Dot(Velocity, normal) + 0.5f) * normal;
+        Vector3 auxVelocity = Velocity;
         bool collisionIsGround = GfPhysics.LayerIsInMask(collision.gameObject.layer, GfPhysics.GroundLayers());
         bool auxGrounded = angle < SlopeLimit() && collisionIsGround;
 
@@ -305,10 +308,10 @@ public class MovementBasic : MovementGeneric
                 //Debug.Log("I am sliding rn i guess with an angle of ");
                 auxGrounded = false;
                 //check if previously grounded
-                if (isGrounded)
+                if (IsGrounded)
                 {
                     //Debug.Log("Was previously GROUNDED SIDDIING");
-                    auxVelocity.y = velocity.y = 0;
+                    auxVelocity.y = Velocity.y = 0;
                 }
                 else
                 {
@@ -326,11 +329,11 @@ public class MovementBasic : MovementGeneric
             auxVelocity.y = Math.Max(-terminalVelocity, auxVelocity.y);
         }
 
-        isGrounded = auxGrounded;
+        IsGrounded = auxGrounded;
 
         if (!jumpingFromLedge)
         {
-            velocity = auxVelocity;
+            Velocity = auxVelocity;
         }
         else
         {

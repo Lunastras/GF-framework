@@ -4,37 +4,31 @@ using UnityEngine;
 using System.Runtime.CompilerServices;
 
 public abstract class MovementGeneric : MonoBehaviour
-{
-    
+{   
     [SerializeField]
-    private new Rigidbody rigidbody;
-    
-    [SerializeField]
-    private new CapsuleCollider collider;
+    protected bool canFly;
 
     [SerializeField]
     protected float speed = 7;
-    [SerializeField]
-    protected bool canFly;
     protected bool canMove = true;
     [SerializeField]
     protected float mass = 35;
     [SerializeField]
     protected float stepOffset = 0.3f;
 
-    protected Vector3 velocity;
-    public Vector3 movementDir { get; protected set; }
+    private new Rigidbody rigidbody;
+    
+    private new CapsuleCollider collider;
+
+    public Vector3 MovementDir { get; protected set; }
     protected float movementDirMagnitude;
 
-    public bool isGrounded { get; protected set; }
-
-    public bool jumpTrigger { get; set; } = false;
+    public bool JumpTrigger { get; set; } = false;
 
     protected bool jumpTriggerReleased = true;
 
     //parent position movement
     protected Transform parentTransform;
-    private bool hasToDetachFromParent = false;
     // whether or not the velocity was adjusted to that of the parent upon parenting
     private bool adjustedVelocityToParent;
 
@@ -44,13 +38,21 @@ public abstract class MovementGeneric : MonoBehaviour
 
     public abstract void CalculateMovement(float speedMultiplier = 1.0f);
 
+    private void Start() {
+        rigidbody = GetComponent<Rigidbody>();
+        collider = GetComponent<CapsuleCollider>();
+        SlopeNormal = UpVec;
+        InternalStart();
+    }
+    protected abstract void InternalStart();
+
     public virtual void SetMovementDir(Vector3 dir)
     {
         if (!canFly)
             dir.y = 0;
 
         movementDirMagnitude = dir.magnitude;
-        movementDir = dir;
+        MovementDir = dir;
     }
 
     public virtual void SetCanFly(bool canFly)
@@ -68,11 +70,6 @@ public abstract class MovementGeneric : MonoBehaviour
         this.speed = speed;
     }
 
-    public float SlopeLimit()
-    {
-        return slopeLimit;
-    }
-
     public float Height()
     {
         return collider.height;
@@ -84,12 +81,12 @@ public abstract class MovementGeneric : MonoBehaviour
     }
     public Vector3 GetVelocity()
     {
-        return velocity;
+        return Velocity;
     }
 
     public void SetVelocity(Vector3 velocity)
     {
-        this.velocity = velocity;
+        this.Velocity = velocity;
     }
 
 
@@ -103,29 +100,21 @@ public abstract class MovementGeneric : MonoBehaviour
 
             parentRotMov = parentPosMov = Vector3.zero;
             parentLastPos = parent.position;
-            hasToDetachFromParent = false;
             parentLastRot = parent.rotation.eulerAngles;
             parentTransform = parent;
         }
     }
 
-    private void PrivateDetachFromParent()
+    public void DetachFromParent()
     {
         if (parentTransform != null)
         {
             Vector3 parentMovement = parentPosMov + parentRotMov;
             parentMovement.y = Mathf.Max(0, parentMovement.y);
-            velocity += parentMovement;
+            Velocity += parentMovement;
             // Debug.Log(parentMovement + " added to velocity at time frame ");
             parentTransform = null;
         }
-
-        hasToDetachFromParent = false;
-    }
-
-    public void DetachFromParent()
-    {
-        hasToDetachFromParent = true;
     }
 
     protected CollisionFlags Move(Vector3 movement)
@@ -141,15 +130,10 @@ public abstract class MovementGeneric : MonoBehaviour
 
     protected void CalculateParentMovement()
     {
-        if (hasToDetachFromParent && !isGrounded)
-        {
-            PrivateDetachFromParent();
-        }
-
         //Calculate the movement according to the parent's movement
         if (parentTransform == null) return;
 
-        Vector3 frameParentMovement = Vector3.zero;
+        Vector3 frameParentMovement;
 
         Vector3 frameParentPosMov = Vector3.zero; //raw movement since last position change
         Vector3 currentPos = parentTransform.position;
@@ -206,7 +190,7 @@ public abstract class MovementGeneric : MonoBehaviour
 
                 // Debug.DrawRay(transform.position, parentRotMov * 20f, Color.green, 0.1f);
 
-                if (movementDir == Vector3.zero)
+                if (MovementDir == Vector3.zero)
                 {
                     transform.Rotate(Vector3.up * parentRotation.y);
                 }
@@ -231,21 +215,20 @@ public abstract class MovementGeneric : MonoBehaviour
                 if (parentVelocity != Vector3.zero && hasToAdjustVelocityWhenParenting)
                 {
                     adjustedVelocityToParent = true;
-                    Vector3 velocityNorm = velocity.normalized;
+                    Vector3 velocityNorm = Velocity.normalized;
                     float velocityDot = Vector3.Dot(parentVelocity.normalized, velocityNorm);
 
                     if (velocityDot > 0)
                     {
                         float speedToDecrease = velocityDot * parentVelocity.magnitude;
-                        velocity = (velocity.magnitude > speedToDecrease) ? (velocity - velocityNorm * speedToDecrease) : Vector3.zero;
+                        Velocity = (Velocity.magnitude > speedToDecrease) ? (Velocity - velocityNorm * speedToDecrease) : Vector3.zero;
                     }
                 }
             }
 
+            rigidbody.MovePosition(transform.position + frameParentMovement);
             //controller.Move(frameParentMovement);
         }
-
-
     }
 
     public const float MIN_GROUNDQUERY = .1F; // distance queried in our ground traces if we weren't grounded the previous simulated step
@@ -270,34 +253,24 @@ public abstract class MovementGeneric : MonoBehaviour
     public Vector3 UpVec { get; set; } = Vector3.up;
 
     [SerializeField]
-    private float slopeLimit = 45;
+    protected float slopeLimit = 45;
 
     [SerializeField]
-    private float upperSlopeLimit = 100;
+    protected float upperSlopeLimit = 100;
 
-    public bool IsGrounded { get; private set; } = false;
+    public bool IsGrounded { get; protected set; } = false;
 
     public Vector3 SlopeNormal { get; private set; }
 
     private readonly float SKINEPSILON = 0.002F;
     private readonly float TRACEBIAS = 0.002F;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        SlopeNormal = UpVec;
-
-        //  Time.timeScale = 0.2f;
-        if (null == collider)
-            collider = GetComponent<CapsuleCollider>();
-
-        if (null == rigidbody)
-            rigidbody = GetComponent<Rigidbody>();
-    }
-
-
-    protected void PM_FlyMove()
+    protected abstract void BeforeFixedUpdate();
+    protected abstract void AfterFixedUpdate();
+    protected void FixedUpdate()
     {    
+        BeforeFixedUpdate();
+
         IsGrounded = false;
         /*
             Steps:
@@ -312,7 +285,7 @@ public abstract class MovementGeneric : MonoBehaviour
         Quaternion orientation = transform.rotation;
 
         /* archetype buffers & references */
-        Vector3 lastplane = Vector3.zero;
+        Vector3 lastNormal = Vector3.zero;
 
         QueryTriggerInteraction querytype = QueryTriggerInteraction.Ignore;
         Collider self = collider;
@@ -325,6 +298,7 @@ public abstract class MovementGeneric : MonoBehaviour
         int numpushbacks = 0;
         int geometryclips = 0;
         int numoverlaps = -1;
+        MgCollisionStruct collision;
 
         /* attempt an overlap pushback at this current position */
         while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
@@ -347,11 +321,14 @@ public abstract class MovementGeneric : MonoBehaviour
                         othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                     {
                         /* resolve pushback using closest exit distance */
+                        collision = new MgCollisionStruct(normal, UpVec, otherc, mindistance, position - normal * mindistance);
+                        MgOnCollision(collision);
+
                         position += normal * (mindistance + MIN_PUSHBACK_DEPTH);
 
                         /* only consider normals that we are technically penetrating into */
                         if (Vector3.Dot(velocity, normal) < 0F)
-                            PM_FlyDetermineImmediateGeometry(ref velocity, ref lastplane, normal, ref geometryclips, default, ref position);
+                            PM_FlyDetermineImmediateGeometry(ref velocity, ref lastNormal, collision, ref geometryclips, ref position);
 
                         break;
                     }
@@ -380,11 +357,11 @@ public abstract class MovementGeneric : MonoBehaviour
                 break;
             }
             else
-            {
+            {   
                 Trace(position, _trace / _tracelen, _tracelen + skin, /* prevent tunneling by using this skin length */
                       orientation, layermask, _interacttype: querytype,
                       tracesbuffer, out _tracecount);
-
+//
                 ActorTraceFilter(ref _tracecount, out int _i0, TRACEBIAS, self, tracesbuffer);
 
                 if (_i0 <= -1) /* Nothing was discovered in our trace */
@@ -399,11 +376,13 @@ public abstract class MovementGeneric : MonoBehaviour
 
                     timefactor -= _dist / _tracelen;
                     position += (_trace / _tracelen) * _dist; /* Move back! position += trace direction * distance from hit */
-
-                    MgCollisionEnter(_closest);
+                    
+                    collision = new MgCollisionStruct(_closest.normal, UpVec, _closest.collider, _closest.distance, _closest.point - position);
+                    
+                    MgOnCollision(collision);
 
                     /* determine our topology state */
-                    PM_FlyDetermineImmediateGeometry(ref velocity, ref lastplane, _closest.normal, ref geometryclips, _closest, ref position);
+                    PM_FlyDetermineImmediateGeometry(ref velocity, ref lastNormal, collision, ref geometryclips, ref position);
                 }
             }
         }
@@ -421,6 +400,8 @@ public abstract class MovementGeneric : MonoBehaviour
 
         if(!IsGrounded) SlopeNormal = UpVec;
         Velocity = velocity;
+
+        AfterFixedUpdate();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -432,12 +413,12 @@ public abstract class MovementGeneric : MonoBehaviour
         _v.z = _n.z * _d;
     }
 
-    private void PM_FlyClipVelocity(ref Vector3 velocity, Vector3 normal, float angle)
+    private void PM_FlyClipVelocity(ref Vector3 velocity, MgCollisionStruct collision)
     {
         float len = velocity.magnitude;
         if (len <= 0F) // preventing NaN generation
             return;
-        else if (Vector3.Dot(velocity / len, normal) < 0F && len > 0.005f)
+        else if (Vector3.Dot(velocity / len, collision.normal) < 0F && len > 0.005f)
         {
             // only clip if we're piercing into the infinite plane 
             //ClipVector(ref velocity, plane);
@@ -446,17 +427,17 @@ public abstract class MovementGeneric : MonoBehaviour
 
             float dotSlopeVel = Vector3.Dot(SlopeNormal, velocity.normalized);
 
-            if(angle > upperSlopeLimit) {
+            if(collision.angle > upperSlopeLimit) {
                 velocity -= SlopeNormal * (len * System.MathF.Max(0, dotSlopeVel));
             }
 
             if (IsGrounded) {
                 velocity -= SlopeNormal * (len * dotSlopeVel);
-                SlopeNormal = normal;             
+                SlopeNormal = collision.normal;             
             } 
             else
             {
-                Vector3 velocityChange = velocity.normalized.magnitude * (-Vector3.Dot(velocity, normal)) * normal;
+                Vector3 velocityChange = velocity.normalized.magnitude * (-Vector3.Dot(velocity, collision.normal)) * collision.normal;
                 velocity += velocityChange;
             }
 
@@ -464,7 +445,7 @@ public abstract class MovementGeneric : MonoBehaviour
         }
     }
 
-    protected abstract void MgCollisionEnter(RaycastHit hitObject);
+    protected abstract void MgOnCollision(MgCollisionStruct collision);
 
     private static float GetStepHeight(ref RaycastHit hit, ref CapsuleCollider collider, Vector3 UpVec, ref Vector3 position)
     {
@@ -474,10 +455,9 @@ public abstract class MovementGeneric : MonoBehaviour
         return Vector3.Dot(UpVec, localStepHitPos) - Vector3.Dot(UpVec, bottomPos);
     }
 
-    private void PM_FlyDetermineImmediateGeometry(ref Vector3 velocity, ref Vector3 lastplane, Vector3 plane, ref int geometryclips, RaycastHit hit, ref Vector3 position)
+    private void PM_FlyDetermineImmediateGeometry(ref Vector3 velocity, ref Vector3 lastNormal, MgCollisionStruct collision, ref int geometryclips, ref Vector3 position)
     {
-        float angle = 0.01f + Mathf.Round(Vector3.Angle(Vector3.up, plane));
-        bool underSlopeLimit = slopeLimit > angle;
+        bool underSlopeLimit = slopeLimit > collision.angle;
         IsGrounded |= underSlopeLimit;
         bool recalculateVelocity = true;
 
@@ -509,7 +489,7 @@ public abstract class MovementGeneric : MonoBehaviour
                // Debug.Log("FIRST SWITCH");
                 if(recalculateVelocity)
                 {
-                    PM_FlyClipVelocity(ref velocity, plane, angle);
+                    PM_FlyClipVelocity(ref velocity, collision);
                     geometryclips = 1 << 0;
                 }
                     
@@ -523,10 +503,10 @@ public abstract class MovementGeneric : MonoBehaviour
                     float creaseEpsilon = System.MathF.Cos(Mathf.Deg2Rad * slopeLimit);
                     //Debug.Log("SECOND SWITCH ");
 
-                    if (Vector3.Dot(lastplane, plane) < creaseEpsilon)
+                    if (Vector3.Dot(lastNormal, collision.normal) < creaseEpsilon)
                     {
                      //   Debug.Log("CREASED ");
-                        Vector3 crease = Vector3.Cross(lastplane, plane);
+                        Vector3 crease = Vector3.Cross(lastNormal, collision.normal);
                         crease.Normalize();
                         ProjectVector(ref velocity, crease);
                         geometryclips |= (1 << 1);
@@ -534,7 +514,7 @@ public abstract class MovementGeneric : MonoBehaviour
                     else
                     {
                         // Debug.Log("DID NOT CREASE ");
-                        PM_FlyClipVelocity(ref velocity, plane, angle);
+                        PM_FlyClipVelocity(ref velocity, collision);
                     }
                 }                      
 
@@ -546,7 +526,7 @@ public abstract class MovementGeneric : MonoBehaviour
                 break;
         }
 
-        lastplane = plane;
+        lastNormal = collision.normal;
     }
 
     public void Overlap(Vector3 _pos, Quaternion _orient, int _filter, float _inflate, QueryTriggerInteraction _interacttype, Collider[] _colliders, out int _overlapcount)
@@ -735,4 +715,21 @@ public abstract class MovementGeneric : MonoBehaviour
             }
         }
     }
+}
+
+public struct MgCollisionStruct {
+
+    public MgCollisionStruct(Vector3 normal, Vector3 upVec, Collider collider, float distance, Vector3 point) {
+        this.collider = collider;
+        this.normal = normal;
+        this.distance = distance;
+        this.point = point;
+        angle = Vector3.Angle(normal, upVec) + 0.00001F;
+    }
+
+    public Collider collider;
+    public Vector3 normal;
+    public float angle;
+    public float distance;
+    public Vector3 point;
 }

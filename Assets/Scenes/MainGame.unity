@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.5752923, g: 1.6303955, b: 1.3408743, a: 1}
+  m_IndirectSpecularColor: {r: 0.5752923, g: 1.6303954, b: 1.3408738, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -461,17 +461,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20e2ae2ae88333a46905526272233837, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rigidbody: {fileID: 413798922}
-  collider: {fileID: 413798914}
-  speed: 7
   canFly: 0
+  speed: 8
   mass: 35
   stepOffset: 0.4
-  Velocity: {x: 0, y: 0, z: 0}
+  Velocity: {x: 0.0000013113022, y: 0, z: -0.000000016763806}
   slopeLimit: 45
   upperSlopeLimit: 120
-  acceleration: 30
+  acceleration: 16
   deacceleration: 25
+  midAirAcceleration: 10
+  midAirDeacceleration: 10
   maxFallSpeed: 40
   jumpForce: 10
 --- !u!54 &413798922
@@ -664,12 +664,12 @@ PrefabInstance:
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: movementSmoothTime
-      value: 0.1
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: rotationSmoothTime
-      value: 0.03
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269401, guid: 239bd930e80146d49937810266bc593c,
         type: 3}

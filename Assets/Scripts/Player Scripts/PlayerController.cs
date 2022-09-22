@@ -73,7 +73,7 @@ public class PlayerController : MonoBehaviour
             if (true)
             {
                 releasedJumpButton = false;
-                movement.jumpTrigger = true;
+                movement.JumpTrigger = true;
             }
         }
         else
