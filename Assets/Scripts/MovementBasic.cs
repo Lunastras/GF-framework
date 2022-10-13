@@ -93,7 +93,6 @@ public class MovementBasic : MovementGeneric
 
     private void LateUpdate()
     {
-        CalculateParentMovement();
     }
 
     protected override void MgOnCollision(MgCollisionStruct collision)
