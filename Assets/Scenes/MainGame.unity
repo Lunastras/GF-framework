@@ -344,7 +344,6 @@ GameObject:
   - component: {fileID: 413798914}
   - component: {fileID: 413798920}
   - component: {fileID: 413798919}
-  - component: {fileID: 413798922}
   m_Layer: 8
   m_Name: Aux Player
   m_TagString: Untagged
@@ -424,7 +423,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 413798913}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.22, y: 2.15, z: -33.51}
+  m_LocalPosition: {x: 4.22, y: 10.5, z: -33.51}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -462,34 +461,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canFly: 0
-  speed: 8
-  mass: 35
-  stepOffset: 0.4
-  Velocity: {x: 0.0000013113022, y: 0, z: -0.000000016763806}
-  slopeLimit: 45
-  upperSlopeLimit: 120
-  acceleration: 16
-  deacceleration: 25
-  midAirAcceleration: 10
-  midAirDeacceleration: 10
-  maxFallSpeed: 40
-  jumpForce: 10
---- !u!54 &413798922
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 413798913}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 1
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  m_speed: 10
+  m_mass: 35
+  m_stepOffset: 0.3
+  JumpTrigger: 0
+  m_parentTransform: {fileID: 0}
+  Velocity: {x: 0, y: 0, z: 0}
+  m_slopeLimit: 45
+  m_upperSlopeLimit: 110
+  m_timeBetweenPhysChecks: 0.012
+  m_useInterpolation: 1
+  useCustomDelta: 0
+  m_acceleration: 30
+  m_deacceleration: 40
+  m_midAirAcceleration: 10
+  m_midAirDeacceleration: 10
+  m_maxFallSpeed: 40
+  m_jumpForce: 10
+  AccelerationCoef: 1
+  DeaccelerationCoef: 1
 --- !u!114 &467963259 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 916576516595235586, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca,
@@ -664,12 +654,12 @@ PrefabInstance:
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: movementSmoothTime
-      value: 0.05
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: rotationSmoothTime
-      value: 0.01
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269401, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -945,6 +935,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f231c4fb786f3946a6b90b886c48677, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SendPointerHoverToParent: 1
   m_HorizontalAxis: Horizontal
   m_VerticalAxis: Vertical
   m_SubmitButton: Submit

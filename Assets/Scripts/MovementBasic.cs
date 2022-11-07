@@ -72,7 +72,7 @@ public class MovementBasic : MovementGeneric
 
     protected void Initialize()
     {
-        effectiveGravityAcc = mass;
+        effectiveGravityAcc = m_mass;
         effectiveAcc = speedAcc;
         effectiveDeAcc = speedDeAcc;
 
@@ -93,7 +93,7 @@ public class MovementBasic : MovementGeneric
 
     private void LateUpdate()
     {
-        CalculateParentMovement();
+       // CalculateParentMovement();
     }
 
     protected override void MgOnCollision(MgCollisionStruct collision)
@@ -106,9 +106,9 @@ public class MovementBasic : MovementGeneric
         if (JumpTrigger)
         {
             JumpTrigger = false;
-            if (jumpTriggerReleased)
+            if (m_jumpTriggerReleased)
             {
-                jumpTriggerReleased = false;
+                m_jumpTriggerReleased = false;
                 if (IsGrounded)
                 {
                     IsGrounded = false;
@@ -127,7 +127,7 @@ public class MovementBasic : MovementGeneric
         else
         {
             canExtendJump = false;
-            jumpTriggerReleased = true;
+            m_jumpTriggerReleased = true;
         }
     }
 
@@ -135,7 +135,7 @@ public class MovementBasic : MovementGeneric
     {
         effectiveDeAcc = speedDeAcc * (IsGrounded ? 1 : midAirDeAccCoef);
         effectiveAcc = speedAcc * (IsGrounded ? 1 : midAirAccCoef);
-        effectiveGravityAcc = mass * (canExtendJump ? jumpExtGravCoef : 1) * Convert.ToInt32(!canFly);
+        effectiveGravityAcc = m_mass * (canExtendJump ? jumpExtGravCoef : 1) * Convert.ToInt32(!canFly);
     }
 
     /**
@@ -189,7 +189,7 @@ public class MovementBasic : MovementGeneric
         if (!canFly)
             dir.y = 0;
 
-        movementDirMagnitude = dir.magnitude;
+        m_movementDirMagnitude = dir.magnitude;
         MovementDir = dir;
     }
 
@@ -202,7 +202,7 @@ public class MovementBasic : MovementGeneric
         turnAmount = 0;
         targetSpeed = 0;
 
-        if (canMove && MovementDir != Vector3.zero)
+        if (m_canMove && MovementDir != Vector3.zero)
         {
             targetYDeg = Mathf.Atan2(MovementDir.x, MovementDir.z) * Mathf.Rad2Deg;
             float eulerY = transform.eulerAngles.y;
@@ -219,7 +219,7 @@ public class MovementBasic : MovementGeneric
                 turnAmount = 0;
             }
 
-            targetSpeed = speed * movementDirMagnitude;
+            targetSpeed = m_speed * m_movementDirMagnitude;
 
             frameAccerelartion = MovementDir * effectiveAcc * Time.deltaTime;
         }
@@ -285,7 +285,7 @@ public class MovementBasic : MovementGeneric
         Vector3 velocityChange = (-Vector3.Dot(Velocity, normal) + 0.5f) * normal;
         Vector3 auxVelocity = Velocity;
         bool collisionIsGround = GfPhysics.LayerIsInMask(collision.gameObject.layer, GfPhysics.GroundLayers());
-        bool auxGrounded = angle < slopeLimit && collisionIsGround;
+        bool auxGrounded = angle < m_slopeLimit && collisionIsGround;
 
         //check if hitting ceiling
         if (!auxGrounded && angle >= 110)
@@ -339,13 +339,6 @@ public class MovementBasic : MovementGeneric
         {
             //  Debug.Log("I am still jumping from ledge");
         }
-    }
-
-    protected override void BeforeFixedUpdate()
-    {
-    }
-
-    protected override void AfterFixedUpdate() {
     }
 
     protected void OnControllerColliderHit(ControllerColliderHit collision)

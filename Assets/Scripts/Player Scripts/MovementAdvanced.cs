@@ -114,7 +114,7 @@ public class MovementAdvanced : MovementBasic
                     RaycastHit auxHit = GfPhysics.GetRaycastHits()[0];
 
                     float wallAngle = Vector3.Angle(auxHit.normal, Vector3.up);
-                    foundWall = (wallAngle > slopeLimit && wallAngle < 91 && wallAngle > 0); //check if the slope is good for wallrunning
+                    foundWall = (wallAngle > m_slopeLimit && wallAngle < 91 && wallAngle > 0); //check if the slope is good for wallrunning
 
                     IsGrounded = false;
 
@@ -146,7 +146,7 @@ public class MovementAdvanced : MovementBasic
             if (!isSlidingOffWall)
             {
                 wallRunSpeed += speedAcc * Time.deltaTime;
-                wallRunSpeed = Math.Min(wallRunSpeed, speed * 1.5f);
+                wallRunSpeed = Math.Min(wallRunSpeed, m_speed * 1.5f);
                 traversedWallDistance += wallRunSpeed * Time.deltaTime;
                 float dstDifference = wallrunMaxDst - traversedWallDistance;
 
@@ -159,7 +159,7 @@ public class MovementAdvanced : MovementBasic
             }
             else
             {
-                wallRunSpeed -= mass * Time.deltaTime;
+                wallRunSpeed -= m_mass * Time.deltaTime;
                 wallRunSpeed = Math.Max(wallRunSpeed, -terminalVelocity / 4f);
             }
 
@@ -210,11 +210,11 @@ public class MovementAdvanced : MovementBasic
             if (JumpTrigger)
             {
                 JumpTrigger = false;
-                if ((Time.time - timeAttachedToWall) > timingWallrunJumpDelay && jumpTriggerReleased)
+                if ((Time.time - timeAttachedToWall) > timingWallrunJumpDelay && m_jumpTriggerReleased)
                 {
                     Vector3 wallNormal = wallRunHit.normal;
                     wallRunSpeed = 0;
-                    jumpTriggerReleased = false;
+                    m_jumpTriggerReleased = false;
                     Vector3 jumpDir;
                     if (movementDir2Norm != Vector2.zero && Vector2.Dot(new Vector2(wallNormal.x, wallNormal.z), movementDir2Norm) > 0.3f)
                     {
@@ -235,7 +235,7 @@ public class MovementAdvanced : MovementBasic
             }
             else
             {
-                jumpTriggerReleased = true;
+                m_jumpTriggerReleased = true;
             }
         }
     }
@@ -258,7 +258,7 @@ public class MovementAdvanced : MovementBasic
     private void InitiateWallRun(RaycastHit wallHit)
     {
         gameObject.layer = 10; //switch to wallrun layer
-        jumpTriggerReleased = false;
+        m_jumpTriggerReleased = false;
         isAttachedToWall = true;
         canDoubleJump = false;
 
@@ -268,7 +268,7 @@ public class MovementAdvanced : MovementBasic
 
         if (Vector3.Dot(Velocity, wallRunDir) > 0)
         {
-            wallRunSpeed = Mathf.Clamp(Velocity.magnitude, 4, speed);
+            wallRunSpeed = Mathf.Clamp(Velocity.magnitude, 4, m_speed);
         }
         else wallRunSpeed = 4;
 

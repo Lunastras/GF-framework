@@ -49,7 +49,7 @@ public class MovementSimple : MovementGeneric
         if (canFly)
             return;
 
-        Velocity.y -= mass * Time.deltaTime;
+        Velocity.y -= m_mass * Time.deltaTime;
         Velocity.y = Mathf.Max(-terminalVelocity, Velocity.y);
         JumpTrigger = timeOfNextGroundCheck <= Time.time && IsGrounded;
     }
@@ -62,13 +62,7 @@ public class MovementSimple : MovementGeneric
     {
 
     }
-
-    protected override void BeforeFixedUpdate()
-    {
-    }
-
-    protected override void AfterFixedUpdate() {
-    }
+    
     protected void CalculateVelocity(float speedMultiplier = 1)
     {
         float currentYVelocity = Velocity.y;
@@ -80,13 +74,13 @@ public class MovementSimple : MovementGeneric
         {
             float desiredYAngle = System.MathF.Atan2(Velocity.x, Velocity.z) * Mathf.Rad2Deg;
             float currentY = transform.rotation.eulerAngles.y;
-            float newYRot = Mathf.SmoothDampAngle(currentY, desiredYAngle, ref refSmoothRot, effectiveSpeedSmoothing / System.MathF.Max(speed, 0.01f));
+            float newYRot = Mathf.SmoothDampAngle(currentY, desiredYAngle, ref refSmoothRot, effectiveSpeedSmoothing / System.MathF.Max(m_speed, 0.01f));
 
             transform.rotation = Quaternion.Euler(0, newYRot, 0);
         }
 
         Vector3 desiredVelocity = MovementDir;
-        desiredVelocity *= speed * speedMultiplier;
+        desiredVelocity *= m_speed * speedMultiplier;
 
         Velocity = Vector3.SmoothDamp(Velocity, desiredVelocity, ref refSmoothVelocity3, effectiveSpeedSmoothing);
 
@@ -154,7 +148,7 @@ public class MovementSimple : MovementGeneric
 
         if (angle >= 0)
         {
-            if (angle >= slopeLimit)
+            if (angle >= m_slopeLimit)
             {
                 // Debug.Log("over slope limit");
 
