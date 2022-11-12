@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
 
         if (player == null)
         {
-            player = FindObjectOfType<MovementAdvanced>().transform;
+           // player = FindObjectOfType<MovementAdvanced>().transform;
         }
     }
 

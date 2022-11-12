@@ -135,7 +135,7 @@ public class MovementBasic : MovementGeneric
     {
         effectiveDeAcc = speedDeAcc * (IsGrounded ? 1 : midAirDeAccCoef);
         effectiveAcc = speedAcc * (IsGrounded ? 1 : midAirAccCoef);
-        effectiveGravityAcc = m_mass * (canExtendJump ? jumpExtGravCoef : 1) * Convert.ToInt32(!canFly);
+        effectiveGravityAcc = m_mass * (canExtendJump ? jumpExtGravCoef : 1) * Convert.ToInt32(!CanFly);
     }
 
     /**
@@ -158,7 +158,7 @@ public class MovementBasic : MovementGeneric
         checkPhysics = 0 >= timeUntilPhysCheck;
         timeUntilPhysCheck = checkPhysics ? physCheckInterval : (timeUntilPhysCheck - Time.deltaTime);
 
-        bool auxIsGrounded = timeUntilUngrounded > 0 || canFly;
+        bool auxIsGrounded = timeUntilUngrounded > 0 || CanFly;
 
         //check if previously grounded
         if(!auxIsGrounded && IsGrounded)
@@ -186,7 +186,7 @@ public class MovementBasic : MovementGeneric
 
     public override void SetMovementDir(Vector3 dir)
     {
-        if (!canFly)
+        if (!CanFly)
             dir.y = 0;
 
         m_movementDirMagnitude = dir.magnitude;
@@ -196,7 +196,7 @@ public class MovementBasic : MovementGeneric
     protected void CalculateMovementVelocity()
     {
         Vector3 auxVelocity = Velocity;
-        auxVelocity.y = canFly ? auxVelocity.y : 0;
+        auxVelocity.y = CanFly ? auxVelocity.y : 0;
         Vector3 frameAccerelartion = Vector3.zero;
 
         turnAmount = 0;
@@ -263,7 +263,7 @@ public class MovementBasic : MovementGeneric
             }
         }
 
-        Velocity = new Vector3(auxVelocity.x, canFly ? auxVelocity.y : Velocity.y, auxVelocity.z);
+        Velocity = new Vector3(auxVelocity.x, CanFly ? auxVelocity.y : Velocity.y, auxVelocity.z);
     }
 
 
@@ -277,7 +277,7 @@ public class MovementBasic : MovementGeneric
 
     protected void CalculateCollisionHit(Vector3 normal, Transform collision)
     {
-        if (isAttachedToWall || canFly) return;
+        if (isAttachedToWall || CanFly) return;
 
         int angle = (int)Mathf.Round(Vector3.Angle(Vector3.up, normal));
         //Debug.Log("angle is: " + angle);

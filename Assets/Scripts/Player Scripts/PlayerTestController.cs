@@ -30,9 +30,6 @@ public class PlayerTestController : MovementGeneric
 
     // Start is called before the first frame update
     protected override void InternalStart() { }
-
-    public override void CalculateMovement(float speedMultiplier = 1) { }
-
     protected override void BeforePhysChecks(float deltaTime)
     {
         m_touchedParent = false;

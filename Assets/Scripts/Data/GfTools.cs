@@ -62,7 +62,7 @@ public class GfTools
     public static void Div3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x /= rightHand.x; leftHand.y /= rightHand.y; leftHand.z /= rightHand.z; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Div3(ref Vector3 leftHand, float rightHand) { leftHand.x /= rightHand; leftHand.y /= rightHand; leftHand.z /= rightHand; }
+    public static void Div3(ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }
 
 
 

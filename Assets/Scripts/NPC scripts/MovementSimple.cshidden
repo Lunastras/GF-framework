@@ -46,7 +46,7 @@ public class MovementSimple : MovementGeneric
      */
     protected void GroundCheck()
     {
-        if (canFly)
+        if (CanFly)
             return;
 
         Velocity.y -= m_mass * Time.deltaTime;
@@ -66,9 +66,9 @@ public class MovementSimple : MovementGeneric
     protected void CalculateVelocity(float speedMultiplier = 1)
     {
         float currentYVelocity = Velocity.y;
-        Velocity.y = canFly ? Velocity.y : 0;
+        Velocity.y = CanFly ? Velocity.y : 0;
 
-        float effectiveSpeedSmoothing = speedSmoothing * (IsGrounded || canFly ? 1.0f : 0.5f);
+        float effectiveSpeedSmoothing = speedSmoothing * (IsGrounded || CanFly ? 1.0f : 0.5f);
 
         if (MovementDir != Vector3.zero)
         {
@@ -84,7 +84,7 @@ public class MovementSimple : MovementGeneric
 
         Velocity = Vector3.SmoothDamp(Velocity, desiredVelocity, ref refSmoothVelocity3, effectiveSpeedSmoothing);
 
-        Velocity.y = canFly ? Velocity.y : currentYVelocity;
+        Velocity.y = CanFly ? Velocity.y : currentYVelocity;
     }
 
     protected void CalculateJump()

@@ -45,7 +45,7 @@ public class MovementAdvanced : MovementBasic
         checkPhysics = 0 >= timeUntilPhysCheck;
         timeUntilPhysCheck = checkPhysics ? physCheckInterval : (timeUntilPhysCheck - Time.deltaTime);
 
-        IsGrounded = timeUntilUngrounded > 0 || canFly;
+        IsGrounded = timeUntilUngrounded > 0 || CanFly;
         timeUntilUngrounded = Mathf.Max(-1, timeUntilUngrounded - Time.deltaTime);
 
         jumpingFromLedge = timeLeftLedgeJump > 0 && Velocity.y > -3.0f;

@@ -31,7 +31,7 @@ public class OutOfBoundsRespawn : MonoBehaviour
             transform.position = respawnPosition;
             if (movement != null)
             {
-                movement.SetVelocity(Vector3.zero);
+                movement.Velocity = Vector3.zero;
             }
         }
     }

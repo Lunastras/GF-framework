@@ -133,6 +133,7 @@ public class PlatformMovement : MonoBehaviour
         {
 
             transform.position += currentSpeed * vecBetweenPosAndDest.normalized;
+           // Debug.Log("Movement of platform is : " + currentSpeed * vecBetweenPosAndDest.normalized);
            // Debug.Log("akaka I am getting here " + (currentSpeed * vecBetweenPosAndDest.normalized));
 
         }

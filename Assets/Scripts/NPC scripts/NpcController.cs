@@ -101,8 +101,6 @@ public class NpcController : MonoBehaviour
                 NoDestinationsBehaviour();
             }
         }
-
-        simpleMovement.CalculateMovement(currentSpeedMultiplier);
     }
 
     protected bool CheckCanSeeTarget(Transform target, float lineOfSightLength, bool currentlySeesTarget, bool unlimitedFov = false, bool forceRayCast = false)
@@ -129,7 +127,7 @@ public class NpcController : MonoBehaviour
                // Debug.Log("CHECKIES target RAY 2");
                 timeUntilNextTargetCheck = targetCheckCooldown * GfRandom.Range(0.5f, 1.5f);
 
-                Vector3 offsetSource = Vector3.up * simpleMovement.Height() / 2.0f;
+                Vector3 offsetSource = Vector3.up;
                 Vector3 offsetDest = Vector3.up * 1.0f;
 
                 dirToTarget =  (target.position + offsetDest) - (transform.position + offsetSource);

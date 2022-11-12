@@ -125,6 +125,5 @@ public class PlayerController : MonoBehaviour
         CalculateJump();
         GetMovementInput();
         GetWeaponScrollInput();
-        movement.CalculateMovement();
     }
 }

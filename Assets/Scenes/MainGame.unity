@@ -460,7 +460,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20e2ae2ae88333a46905526272233837, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canFly: 0
+  CanFly: 0
   m_speed: 10
   m_mass: 35
   m_stepOffset: 0.3
@@ -469,15 +469,14 @@ MonoBehaviour:
   Velocity: {x: 0, y: 0, z: 0}
   m_slopeLimit: 45
   m_upperSlopeLimit: 110
-  m_timeBetweenPhysChecks: 0.012
+  m_timeBetweenPhysChecks: 0.02
   m_useInterpolation: 1
-  useCustomDelta: 0
   m_acceleration: 30
   m_deacceleration: 40
   m_midAirAcceleration: 10
   m_midAirDeacceleration: 10
   m_maxFallSpeed: 40
-  m_jumpForce: 10
+  m_jumpForce: 15
   AccelerationCoef: 1
   DeaccelerationCoef: 1
 --- !u!114 &467963259 stripped
