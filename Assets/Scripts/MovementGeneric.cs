@@ -6,7 +6,6 @@ public abstract class MovementGeneric : MonoBehaviour
 {
     [SerializeField]
     public bool CanFly;
-
     [SerializeField]
     protected float m_speed = 7;
     protected bool m_canMove = true;
@@ -14,6 +13,15 @@ public abstract class MovementGeneric : MonoBehaviour
     protected float m_mass = 35;
     [SerializeField]
     protected float m_stepOffset = 0.3f;
+    [SerializeField]
+    protected float m_slopeLimit = 45;
+    [SerializeField]
+    protected float m_upperSlopeLimit = 100;
+    [SerializeField]
+    private float m_timeBetweenPhysChecks = 0.02f;
+
+    [SerializeField]
+    private bool m_useInterpolation = true;
 
     protected Transform m_transform;
 
@@ -28,56 +36,36 @@ public abstract class MovementGeneric : MonoBehaviour
     public bool JumpTrigger = false;
 
     protected bool m_jumpTriggerReleased;
-
-    //parent position movement
-    [SerializeField]
     protected Transform m_parentTransform;
-    // whether or not the velocity was adjusted to that of the parent upon parenting
-    private bool m_adjustedVelocityToParent;
+    private bool m_adjustedVelocityToParent;  // whether or not the velocity was adjusted to that of the parent upon parenting
 
     private Vector3 m_parentLastRot, m_parentRotVel, m_parentLastPos, m_parentPosVel;
     private float m_timeOfLastParentRotUpdate, m_timeOfLastParentPosUpdate;
+    
+    private float m_parentDeltaTimePos, m_parentDeltaTimeRot; //delta of the last movement from the parent
     protected bool m_hasToAdjustVelocityWhenParenting = true;
 
     [HideInInspector]
     public Vector3 Velocity;
 
-    public Vector3 UpVec { get; set; } = Vector3.up;
+    public Vector3 UpVec = Vector3.up;
 
-    [SerializeField]
-    protected float m_slopeLimit = 45;
-
-    [SerializeField]
-    protected float m_upperSlopeLimit = 100;
-
-    public bool IsGrounded { get; protected set; } = false;
+    protected bool IsGrounded = false;
 
     public Vector3 SlopeNormal { get; private set; }
 
     private readonly float SKINEPSILON = 0.002F;
     private readonly float TRACEBIAS = 0.0002F;
 
-    //private Vector3 _previousStep;
-
-    //private Vector3 _currentStep;
-
     private Vector3 m_movementUntilPhysCheck;
 
     private float m_previousLerpAlpha;
-
-    //  private Vector3 accumulatedMovement;
 
     //because velocity isn't changed instantly (due to physchecks running independently from Update()), we need to 
     //add the unparenting velocity in the interpolation phase to avoid stuttering
     private Vector3 m_movementParentInterpolation;
 
     private float m_accumulatedTimefactor = 0;
-
-    [SerializeField]
-    private float m_timeBetweenPhysChecks = 0.02f;
-
-    [SerializeField]
-    private bool m_useInterpolation = true;
 
     private float m_timeUntilPhysChecks = 0;
 
@@ -92,6 +80,7 @@ public abstract class MovementGeneric : MonoBehaviour
     {
         m_transform = transform;
 
+        Time.timeScale = 0.1f;
         m_collider = GetComponent<CapsuleCollider>();
         SlopeNormal = UpVec;
         InternalStart();
@@ -103,9 +92,9 @@ public abstract class MovementGeneric : MonoBehaviour
 
     private void Update()
     {
+        //Debug.Log("the current rotation is: " + m_transform.rotation);
         float deltaTime = Time.deltaTime;
         m_timeUntilPhysChecks -= deltaTime;
-        // Debug.Log("Update called, time until physcheck is: " + m_timeUntilPhysChecks);
 
         if (m_timeUntilPhysChecks <= 0)
         {
@@ -127,38 +116,25 @@ public abstract class MovementGeneric : MonoBehaviour
 
     private void LateUpdate()
     {
-
+       // Debug.Log("LATEUPDATE was called");
         //Calculate the movement according to the parent's movement
         if (m_parentTransform != null)
         {
             float deltaTime = Time.deltaTime;
             float currentTime = Time.time;
-            float invMaxTimeSinceLastFrame = 1.0f / System.MathF.Max(Time.fixedDeltaTime, deltaTime);
 
             Vector3 frameParentPosMov = Zero3; //raw movement since last position change
             Vector3 currentPos = m_parentTransform.position;
-
             if (m_parentLastPos != currentPos)
             {
-
-                float invTimeSinceLastFrame = 1.0f / System.MathF.Max(deltaTime, currentTime - m_timeOfLastParentPosUpdate);
-
                 frameParentPosMov.x = currentPos.x - m_parentLastPos.x;
                 frameParentPosMov.y = currentPos.y - m_parentLastPos.y;
                 frameParentPosMov.z = currentPos.z - m_parentLastPos.z;
 
-                if (invTimeSinceLastFrame >= invMaxTimeSinceLastFrame)
-                {
-                    m_parentPosVel.x = frameParentPosMov.x * invTimeSinceLastFrame;
-                    m_parentPosVel.y = frameParentPosMov.y * invTimeSinceLastFrame;
-                    m_parentPosVel.z = frameParentPosMov.z * invTimeSinceLastFrame;
-                }
-                else
-                    m_parentPosVel = Zero3;
-
-
+                m_parentDeltaTimeRot = currentTime - m_timeOfLastParentPosUpdate;
                 m_timeOfLastParentPosUpdate = currentTime;
                 m_parentLastPos = currentPos;
+                m_parentPosVel = frameParentPosMov;
             }
 
             //Calculate the rotation according to the parent's rotation
@@ -167,8 +143,6 @@ public abstract class MovementGeneric : MonoBehaviour
             if (m_parentLastRot != currentRot)
             {
                 Vector3 parentRotation = (currentRot - m_parentLastRot);
-                float invTimeSinceLastFrame = 1.0f / System.MathF.Max(deltaTime, currentTime - m_timeOfLastParentRotUpdate);
-
                 Vector3 dif = m_transform.position - m_parentTransform.position;
 
                 if (m_parentLastRot.x != currentRot.x)
@@ -185,23 +159,16 @@ public abstract class MovementGeneric : MonoBehaviour
                 if (MovementDir == Zero3)
                     m_transform.Rotate(Vector3.up * parentRotation.y);
 
-                if (invTimeSinceLastFrame >= invMaxTimeSinceLastFrame)
-                {
-                    m_parentRotVel.x = frameParentRotMov.x * invTimeSinceLastFrame;
-                    m_parentRotVel.y = frameParentRotMov.y * invTimeSinceLastFrame;
-                    m_parentRotVel.z = frameParentRotMov.z * invTimeSinceLastFrame;
-                }
-                else
-                    m_parentRotVel = Zero3;
-
+                m_parentDeltaTimeRot = currentTime - m_timeOfLastParentRotUpdate;
                 m_timeOfLastParentRotUpdate = currentTime;
                 m_parentLastRot = currentRot;
+                m_parentRotVel = frameParentRotMov;
             }
 
             //adjust the player's velocity to the parent's
             if (!m_adjustedVelocityToParent)
             {
-                Vector3 parentVelocity = m_parentRotVel + m_parentPosVel;
+                Vector3 parentVelocity = GetParentVelocity(currentTime, deltaTime);
                 m_adjustedVelocityToParent = true;
 
                 GfTools.ProjectOnPlane(ref Velocity, parentVelocity);
@@ -210,70 +177,57 @@ public abstract class MovementGeneric : MonoBehaviour
             }
 
             GfTools.Add3(ref frameParentRotMov, frameParentPosMov);
-            m_transform.position += frameParentRotMov;
+            m_transform.localPosition += frameParentRotMov;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void PhysCheck(float deltaTime)
     {
-        //  Debug.Log("deltaTime: " + deltaTime + " real deltatime is: " + Time.deltaTime);
+        if(m_parentTransform)
+            return;
+
         BeforePhysChecks(deltaTime);
 
+        Debug.Log("The velocity is: " + Velocity);
+
         m_previousLerpAlpha = 0;
-
-        /*
-            Steps:
-
-            1. Discrete Overlap Resolution
-            2. Continuous Collision Prevention    
-        */
-
-        /* actor transform values */
-
         Vector3 movementCorrection = m_movementUntilPhysCheck * (1.0f - m_accumulatedTimefactor);
-        //  Debug.Log("accumulated time factor was + " + accumulatedTimefactor);
-
-        Vector3 position = m_transform.position + movementCorrection;
-        m_transform.position = position;
+        m_transform.localPosition += movementCorrection;
+        Vector3 position = m_transform.position;
 
         Vector3 immediateMovement = Zero3;
         Vector3 velocity = Velocity;
         Quaternion orientation = m_transform.rotation;
         m_accumulatedTimefactor = 0;
         IsGrounded = false;
+        MgCollisionStruct collision;
+        Vector3 upDir = transform.up;
+        Vector3 offset = (m_collider.height * 0.5f - m_collider.radius) * upDir; //todo
 
-        /* archetype buffers & references */
         Vector3 lastNormal = Zero3;
-
         QueryTriggerInteraction querytype = QueryTriggerInteraction.Ignore;
         Collider self = m_collider;
 
         Collider[] colliderbuffer = GfPhysics.GetCollidersArray();
-        int layermask = GfPhysics.GetLayerMask(gameObject.layer);
         RaycastHit[] tracesbuffer = GfPhysics.GetRaycastHits();
+        int layermask = GfPhysics.GetLayerMask(gameObject.layer);
 
+        /* OVERLAP SECTION START*/
         int numbumps = 0;
         int numpushbacks = 0;
         int geometryclips = 0;
         int numoverlaps = -1;
-        MgCollisionStruct collision;
-        Vector3 upDir = transform.up;
-        Vector3 offset = (m_collider.height * 0.5f - m_collider.radius) * upDir; //todo
 
         /* attempt an overlap pushback at this current position */
         while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
         {
             Overlap(position, offset, layermask, querytype, colliderbuffer, out numoverlaps);
+            ActorOverlapFilter(ref numoverlaps, self, colliderbuffer); /* filter ourselves out of the collider buffer */
 
-            /* filter ourselves out of the collider buffer */
-            ActorOverlapFilter(ref numoverlaps, self, colliderbuffer);
-
-            //  Debug.Log("Num of overlaps is " + numoverlaps + " num of colliders size is: " + colliderbuffer.Length);
             if (numoverlaps > 0)
             {
-                /* pushback against the first valid penetration found in our collider buffer */
-                for (int ci = 0; ci < numoverlaps; ci++)
+                for (int ci = 0; ci < numoverlaps; ci++)/* pushback against the first valid penetration found in our collider buffer */
                 {
                     Collider otherc = colliderbuffer[ci];
                     Transform othert = otherc.transform;
@@ -281,14 +235,13 @@ public abstract class MovementGeneric : MonoBehaviour
                     if (Physics.ComputePenetration(self, position, orientation, otherc,
                         othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                     {
-                        Debug.Log("Found collision with object");
                         /* resolve pushback using closest exit distance */
                         collision = new MgCollisionStruct(normal, UpVec, otherc, mindistance, position - normal * mindistance);
                         MgOnCollision(collision);
 
                         Vector3 collisionPush = normal * (mindistance + MIN_PUSHBACK_DEPTH);
-                        position += collisionPush;
                         immediateMovement += collisionPush;
+                        position += collisionPush;
 
                         /* only consider normals that we are technically penetrating into */
                         if (Vector3.Dot(velocity, normal) < 0F)
@@ -296,23 +249,22 @@ public abstract class MovementGeneric : MonoBehaviour
 
                         break;
                     }
-                }
-            }
-        }
+                } // for (int ci = 0; ci < numoverlaps; ci++)
+            } // if (numoverlaps > 0)
+        }// while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
 
-        /* tracing values */
+        /* OVERLAP SECTION END*/
+
+        /* TRACING SECTION START*/
         float timefactor = 1F;
         float skin = SKINEPSILON;
 
         int _tracecount = 0;
 
-        // We must assume that our position is valid.
-        // actor.SetPosition(position);
-
         while (numbumps++ <= MAX_BUMPS && timefactor > 0)
         {
-            // Begin Trace
             Vector3 _trace = velocity * deltaTime * timefactor;
+            Debug.Log("The velocity is: " + velocity);
             float _tracelen = _trace.magnitude;
 
             // IF unable to trace any further, break and end
@@ -322,6 +274,7 @@ public abstract class MovementGeneric : MonoBehaviour
                 GfTools.Div3(ref traceDir, _tracelen);
                 Trace(position, offset, traceDir, _tracelen + skin , layermask, querytype, tracesbuffer, out _tracecount);/* prevent tunneling by using this skin length */                    
                 ActorTraceFilter(ref _tracecount, out int _i0, TRACEBIAS, self, tracesbuffer);
+                Debug.Log("The trace length was " + _tracelen);
 
                 if (_i0 > -1) /* Nothing was discovered in our trace */
                 {
@@ -330,7 +283,6 @@ public abstract class MovementGeneric : MonoBehaviour
 
                     timefactor -= _dist / _tracelen;
 
-                    //position += traceDir * _dist; //move back the position based on the hit distance
                     GfTools.Mult3(ref traceDir, _dist);
                     GfTools.Add3(ref position, traceDir);
 
@@ -341,49 +293,40 @@ public abstract class MovementGeneric : MonoBehaviour
                     PM_FlyDetermineImmediateGeometry(ref velocity, ref lastNormal, collision, ref geometryclips, ref position);
                 }
                 else /* Discovered an obstruction along our linear path */
-                {                                        
+                {          
+                    Debug.Log("FOUND NOTHING ");                              
                     GfTools.Add3(ref position, _trace);
                     break;
                 }
-            }
-            else
-            {
-                break;
-            }
+            } else break; //if (_tracelen > MIN_DISPLACEMENT)        
+        } // while (numbumps++ <= MAX_BUMPS && timefactor > 0)
+
+        /* TRACING SECTION END*/
+
+        int safetycount = 0;
+        if(numbumps > MAX_BUMPS) {
+            Overlap(position, offset, layermask, querytype, colliderbuffer, out safetycount); /* Safety check to prevent multiple actors phasing through each other... Feel free to disable this for performance if you'd like*/
+            ActorOverlapFilter(ref safetycount, self, colliderbuffer); /* filter ourselves out of the collider buffer, no need to check for triggers */
+
+            if (safetycount != 0) //don't move object if collision was found
+                position = m_transform.position;
         }
 
-        //int safetycount = 0;
-        /* Safety check to prevent multiple actors phasing through each other... Feel free to disable this for performance if you'd like*/
-        Overlap(position, offset, layermask, querytype, colliderbuffer, out int safetycount);
-
-        /* filter ourselves out of the collider buffer, no need to check for triggers */
-        FilterSelf(ref safetycount, self, colliderbuffer);
-
-        //don't move object if collision was found
-        if (safetycount != 0)
-            position = m_transform.position;
-
-        // m_transform.position = position;
-        m_transform.position += immediateMovement;
+        m_transform.localPosition += immediateMovement;
+        GfTools.Add3(ref position, immediateMovement);
         m_movementUntilPhysCheck = position - m_transform.position;
-
-        // Debug.Log("immediate movement is: " + immediateMovement + " and the interpoltion movement is: " + movementUntilFixedUpdate);
-        //transform.position = position;
-
         if (!IsGrounded) SlopeNormal = UpVec;
-
-
-
         Velocity = velocity;
         AfterPhysChecks(deltaTime);
     }
 
+    float timeOfParenting;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetParentTransform(Transform parent)
     {
         if (parent != m_parentTransform)
         {
-            //  Debug.Log("set parent " + parent.name);
+            Debug.Log("set parent " + parent.name);
             m_adjustedVelocityToParent = false;
             m_timeOfLastParentPosUpdate = m_timeOfLastParentRotUpdate = Time.time;
 
@@ -391,6 +334,8 @@ public abstract class MovementGeneric : MonoBehaviour
             m_parentLastPos = parent.position;
             m_parentLastRot = parent.rotation.eulerAngles;
             m_parentTransform = parent;
+
+            timeOfParenting = Time.time;
 
         }
     }
@@ -401,15 +346,12 @@ public abstract class MovementGeneric : MonoBehaviour
         //  addVelocity = false;
         if (m_parentTransform != null)
         {
-            Debug.Log("Deparented from parent, addVelocity is: " + addVelocity);
+            Debug.Log("Deparented from parent, addVelocity is: " + addVelocity + " Time since parenting was: " + (Time.time - timeOfParenting));
 
             if (addVelocity)
             {
-                Vector3 parentVelocity = Zero3; //m_parentPosMov + m_parentRotMov
-
-                float maxTimeSinceLastFrame = System.MathF.Max(Time.fixedDeltaTime, Time.deltaTime);
-                if (Time.time - m_timeOfLastParentPosUpdate <= maxTimeSinceLastFrame) GfTools.Add3(ref parentVelocity, m_parentPosVel);
-                if (Time.time - m_timeOfLastParentRotUpdate <= maxTimeSinceLastFrame) GfTools.Add3(ref parentVelocity, m_parentRotVel);
+                Debug.Break();
+                Vector3 parentVelocity = GetParentVelocity(Time.time, Time.deltaTime);
 
                 //remove velocity that is going down
                 float verticalFallSpeed = System.MathF.Max(0, -Vector3.Dot(UpVec, parentVelocity));
@@ -424,6 +366,30 @@ public abstract class MovementGeneric : MonoBehaviour
 
             m_parentTransform = null;
         }
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Vector3 GetParentVelocity(float time, float deltaTime) {
+        Vector3 parentVelocity = Zero3; //m_parentPosMov + m_parentRotMov
+
+        float maxTimeSinceLastFrame = System.MathF.Max(Time.fixedDeltaTime, deltaTime);
+        if (time - m_timeOfLastParentPosUpdate <= maxTimeSinceLastFrame) {
+            float invTimeSinceLastFrame = 1.0f / System.MathF.Max(deltaTime, m_parentDeltaTimePos);
+
+            parentVelocity.x = m_parentPosVel.x * invTimeSinceLastFrame;
+            parentVelocity.y = m_parentPosVel.y * invTimeSinceLastFrame;
+            parentVelocity.z = m_parentPosVel.z * invTimeSinceLastFrame;
+        }
+
+        if (time - m_timeOfLastParentRotUpdate <= maxTimeSinceLastFrame) {
+            float invTimeSinceLastFrame = 1.0f / System.MathF.Max(deltaTime, m_parentDeltaTimeRot);
+
+            parentVelocity.x += m_parentRotVel.x * invTimeSinceLastFrame;
+            parentVelocity.y += m_parentRotVel.y * invTimeSinceLastFrame;
+            parentVelocity.z += m_parentRotVel.z * invTimeSinceLastFrame;
+        }
+
+        return parentVelocity;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -552,8 +518,7 @@ public abstract class MovementGeneric : MonoBehaviour
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ActorOverlapFilter(ref int _overlapsfound, Collider _self, Collider[] _colliders)
     {
-        int nb_found = _overlapsfound;
-        for (int i = nb_found - 1; i >= 0; i--)
+        for (int i = _overlapsfound - 1; i >= 0; i--)
         {         
             Collider col = _colliders[i];
             bool filterout = col == _self;
@@ -568,25 +533,22 @@ public abstract class MovementGeneric : MonoBehaviour
 
             if (filterout)
             {
-                nb_found--;
+                _overlapsfound--;
 
-                if (i < nb_found)
-                    _colliders[i] = _colliders[nb_found];
+                if (i < _overlapsfound)
+                    _colliders[i] = _colliders[_overlapsfound];
             }
         }
-
-        _overlapsfound = nb_found;
     }
 
     // Simply a copy of ArchetypeHeader.TraceFilters.FindClosestFilterInvalids() with added trigger functionality
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ActorTraceFilter(ref int _tracesfound, out int _closestindex, float _bias, Collider _self, RaycastHit[] _hits)
     {
-        int nb_found = _tracesfound;
         float _closestdistance = Mathf.Infinity;
         _closestindex = -1;
 
-        for (int i = nb_found - 1; i >= 0; i--)
+        for (int i = _tracesfound - 1; i >= 0; i--)
         {
             _hits[i].distance -= _bias;
             RaycastHit _hit = _hits[i];
@@ -603,10 +565,10 @@ public abstract class MovementGeneric : MonoBehaviour
 
             if (filterout)
             {
-                nb_found--;
+                _tracesfound--;
 
-                if (i < nb_found)
-                    _hits[i] = _hits[nb_found];
+                if (i < _tracesfound)
+                    _hits[i] = _hits[_tracesfound];
             }
             else if (_tracelen < _closestdistance)
             {
@@ -614,26 +576,6 @@ public abstract class MovementGeneric : MonoBehaviour
                     _closestindex = i;
             }
         }
-
-        _tracesfound = nb_found;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void FilterSelf(ref int _overlapsfound, Collider _self, Collider[] _colliders)
-    {
-        int nb_found = _overlapsfound;
-        for (int i = nb_found - 1; i >= 0; i--)
-        {
-            if (_colliders[i] == _self)
-            {
-                nb_found--;
-
-                if (i < nb_found)
-                    _colliders[i] = _colliders[nb_found];
-            }
-        }
-
-        _overlapsfound = nb_found;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -647,10 +589,10 @@ public abstract class MovementGeneric : MonoBehaviour
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public virtual void SetMovementSpeed(float speed)
-    {
-        this.m_speed = speed;
-    }
+    public virtual void SetMovementSpeed(float speed) { this.m_speed = speed; }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public virtual bool GetIsGrounded()  { return IsGrounded; }
 }
 
 public struct MgCollisionStruct
