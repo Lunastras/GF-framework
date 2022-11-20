@@ -5,9 +5,6 @@ using System.Runtime.CompilerServices;
 
 public class GfTools
 {
-    public static readonly Vector3 Zero3 = Vector3.zero;
-    public static readonly Quaternion Identity = Quaternion.identity;
-
     //godbless stack overflow
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float AngleDifference(float deg1, float deg2)
@@ -45,7 +42,7 @@ public class GfTools
         }
         else //vectors are identical, dot = 1
         {
-            return Identity;
+            return Quaternion.identity;
         }
     }
 
@@ -56,39 +53,18 @@ public class GfTools
     public static void Add3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x += rightHand.x; leftHand.y += rightHand.y; leftHand.z += rightHand.z; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Mult3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x *= rightHand.x; leftHand.y *= rightHand.y; leftHand.z *= rightHand.z; }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Mult3(ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Div3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x /= rightHand.x; leftHand.y /= rightHand.y; leftHand.z /= rightHand.z; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Div3(ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Project(ref Vector3 vector, Vector3 onNormal)
-    {
-        float sqrMag = Vector3.Dot(onNormal, onNormal);
-        if (sqrMag < Mathf.Epsilon)
-            vector = Zero3;
-        else
-        {
-            var dot = Vector3.Dot(vector, onNormal);
-            vector.x = onNormal.x * dot / sqrMag;
-            vector.y = onNormal.y * dot / sqrMag;
-            vector.z = onNormal.z * dot / sqrMag;
-        }
-    }
 
-    // Projects a vector onto a plane defined by a normal orthogonal to the plane.
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ProjectOnPlane(ref Vector3 vector, Vector3 planeNormal)
-    {
-        float sqrMag = Vector3.Dot(planeNormal, planeNormal);
-        if (sqrMag >= Mathf.Epsilon)
-        {
-            var dot = Vector3.Dot(vector, planeNormal);
-            vector.x -= planeNormal.x * dot / sqrMag;
-            vector.y -= planeNormal.y * dot / sqrMag;
-            vector.z -= planeNormal.z * dot / sqrMag;
-        }
-    }
 
 
 
