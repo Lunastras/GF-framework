@@ -1,5 +1,5 @@
 ﻿
-  
+
 /*
  * This script takes care of basic platform movement from one point to another. Various options are offered for the user 
  * to do anything they want with the script. 
@@ -80,11 +80,11 @@ public class PlatformMovement : MonoBehaviour
 
     void Update()
     {
-       // Debug.Log("uhuh ");
+        // Debug.Log("uhuh ");
 
         if (!canMove || isWaiting) return;
 
-       // Debug.Log("akaka I am getting here ");
+        // Debug.Log("akaka I am getting here ");
 
         if (arrivedAtDest)
         {
@@ -127,14 +127,14 @@ public class PlatformMovement : MonoBehaviour
         if (currentSpeed > distanceFromDestination)
         {
             transform.position = positions[currentDestination];
-            StartCoroutine(ArrivedAtDestination());     
+            StartCoroutine(ArrivedAtDestination());
         }
         else
         {
 
             transform.position += currentSpeed * vecBetweenPosAndDest.normalized;
-           // Debug.Log("Movement of platform is : " + currentSpeed * vecBetweenPosAndDest.normalized);
-           // Debug.Log("akaka I am getting here " + (currentSpeed * vecBetweenPosAndDest.normalized));
+            // Debug.Log("Movement of platform is : " + currentSpeed * vecBetweenPosAndDest.normalized);
+            // Debug.Log("akaka I am getting here " + (currentSpeed * vecBetweenPosAndDest.normalized));
 
         }
     }

@@ -18,6 +18,10 @@ public class PlayerController : MonoBehaviour
     //misc
     private Transform playerCamera;
 
+     [SerializeField]
+    //misc
+    private CameraController cameraController;
+
     [SerializeField]
     //misc
     private bool invertedY = false;
@@ -122,8 +126,14 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         GetFireInput();
+        GetWeaponScrollInput();
+    }
+
+    void LateUpdate() {
         CalculateJump();
         GetMovementInput();
-        GetWeaponScrollInput();
+
+        movement.Move(Time.deltaTime);
+        cameraController.Move(Time.deltaTime);
     }
 }

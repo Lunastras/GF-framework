@@ -53,9 +53,6 @@ public class GfTools
     public static void Add3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x += rightHand.x; leftHand.y += rightHand.y; leftHand.z += rightHand.z; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Mult3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x *= rightHand.x; leftHand.y *= rightHand.y; leftHand.z *= rightHand.z; }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Mult3(ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

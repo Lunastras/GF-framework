@@ -422,14 +422,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 413798913}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.22, y: 10.5, z: -33.51}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 4.22, y: 1.5500011, z: -33.51}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1476646638}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &413798919
 MonoBehaviour:
@@ -447,6 +447,7 @@ MonoBehaviour:
   movement: {fileID: 413798920}
   loadoutManager: {fileID: 0}
   playerCamera: {fileID: 917058816}
+  cameraController: {fileID: 1686971780}
   invertedY: 0
 --- !u!114 &413798920
 MonoBehaviour:
@@ -461,16 +462,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CanFly: 0
+  m_useInterpolation: 1
   m_speed: 10
   m_mass: 35
   m_stepOffset: 0.3
-  JumpTrigger: 0
-  m_parentTransform: {fileID: 0}
-  Velocity: {x: 0, y: 0, z: 0}
   m_slopeLimit: 45
   m_upperSlopeLimit: 110
-  m_timeBetweenPhysChecks: 0.02
-  m_useInterpolation: 1
+  m_timeBetweenPhysChecks: 0.01
+  JumpTrigger: 0
+  Velocity: {x: 0, y: 0, z: 0}
+  UpVec: {x: 0, y: 1, z: 0}
   m_acceleration: 30
   m_deacceleration: 40
   m_midAirAcceleration: 10
@@ -663,7 +664,7 @@ PrefabInstance:
     - target: {fileID: 3676997061914269401, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: m_RootOrder
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269401, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -1224,6 +1225,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1476646637}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1686971780 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+    type: 3}
+  m_PrefabInstance: {fileID: 791159494}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62b84bf63db85d041923bbe7d9522058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1739277403 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 916576515994448418, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca,
