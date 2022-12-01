@@ -76,10 +76,10 @@ public abstract class MovementGeneric : MonoBehaviour
     static readonly protected Vector3 Zero3 = new Vector3(0, 0, 0);
 
 
-    //private readonly float SKINEPSILON = 0.02F;
+    private readonly float SKINEPSILON = 0.02F;
     private readonly float TRACEBIAS = 0.02F;
 
-    private readonly float DOWNPULL = 20.0F;
+    private readonly float DOWNPULL = 50.0F;
 
     private const int MAX_PUSHBACKS = 8; // # of iterations in our Pushback() funcs
     private const int MAX_BUMPS = 6; // # of iterations in our Move() funcs                      // a hit buffer.
@@ -104,10 +104,46 @@ public abstract class MovementGeneric : MonoBehaviour
     protected virtual void BeforePhysChecks(float deltaTime) { }
     protected virtual void AfterPhysChecks(float delteTime) { }
 
+    [SerializeField]
+    private bool m_calculateParentMovFirst = false;
+
     public void Move(float deltaTime)
     {
-        #region parentMovement
+        if (m_calculateParentMovFirst)
+        {
+            m_parentWasSetThisFrame = false;
+            ParentMovement(deltaTime);
+            CalculateMovement(deltaTime);
+        }
+        else
+        {
+            CalculateMovement(deltaTime);
+            ParentMovement(deltaTime);
+        }
+    }
 
+    private void CalculateMovement(float deltaTime)
+    {
+        if ((m_timeUntilPhysChecks -= deltaTime) <= 0)
+        {
+            m_previousPhysDeltaTime = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks + m_timeUntilPhysChecks);
+            PhysCheck(m_previousPhysDeltaTime); //actually the current deltatime   
+            m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
+        }
+        else if (m_interpolateThisFrame)
+        {
+            float timeBetweenChecks = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks);
+            float alpha = (timeBetweenChecks - m_timeUntilPhysChecks) / timeBetweenChecks;
+            float timefactor = alpha - m_previousLerpAlpha;
+            m_previousLerpAlpha = alpha;
+            m_accumulatedTimefactor += timefactor;
+
+            m_transform.localPosition += m_movementUntilPhysCheck * timefactor;
+        }
+    }
+
+    private void ParentMovement(float deltaTime)
+    {
         if (m_parentTransform != null)
         {
             float currentTime = Time.time;
@@ -157,7 +193,7 @@ public abstract class MovementGeneric : MonoBehaviour
             GfTools.Add3(ref frameParentPosMov, frameParentRotMov); //combine them into one
 
             //adjust the player's velocity to the parent's
-            if (!m_adjustedVelocityToParent)
+            if (!m_adjustedVelocityToParent && !m_parentWasSetThisFrame)
             {
                 Debug.Log("ADJUSTED VELOCITY");
                 Vector3 parentVelocity = GetParentVelocity(currentTime, deltaTime);
@@ -174,30 +210,6 @@ public abstract class MovementGeneric : MonoBehaviour
             m_transform.localPosition += frameParentPosMov;
             m_parentWasSetThisFrame = false; // one frame passed
         }
-
-        #endregion //parentMovement
-
-        #region movementCalculations
-
-        if ((m_timeUntilPhysChecks -= deltaTime) <= 0)
-        {
-            m_previousPhysDeltaTime = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks + m_timeUntilPhysChecks);
-            PhysCheck(m_previousPhysDeltaTime); //actually the current deltatime   
-            m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
-        }
-        else if (m_interpolateThisFrame)
-        {
-            float timeBetweenChecks = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks);
-            float alpha = (timeBetweenChecks - m_timeUntilPhysChecks) / timeBetweenChecks;
-            float timefactor = alpha - m_previousLerpAlpha;
-            m_previousLerpAlpha = alpha;
-            m_accumulatedTimefactor += timefactor;
-
-            m_transform.localPosition += m_movementUntilPhysCheck * timefactor;
-        }
-
-        #endregion //movementCalculations
-
     }
 
     private static void AdjustVector(ref Vector3 child, Vector3 parent)
@@ -234,7 +246,7 @@ public abstract class MovementGeneric : MonoBehaviour
         Quaternion orientation = m_transform.rotation;
         Vector3 upDir = transform.up;
         Vector3 offset = (m_collider.height * 0.5f - m_collider.radius) * upDir; //todo
-        float radius = m_collider.radius;// + SKINEPSILON;
+        float radius = m_collider.radius + SKINEPSILON;
 
         Vector3 lastNormal = Zero3;
         QueryTriggerInteraction querytype = QueryTriggerInteraction.Ignore;
@@ -256,12 +268,14 @@ public abstract class MovementGeneric : MonoBehaviour
             Overlap(position, offset, layermask, querytype, colliderbuffer, radius, out numoverlaps);
             ActorOverlapFilter(ref numoverlaps, self, colliderbuffer); /* filter ourselves out of the collider buffer */
 
-            //  m_collider.radius = radius;
+            m_collider.radius = radius;
             for (int ci = 0; ci < numoverlaps; ci++)/* pushback against the first valid penetration found in our collider buffer */
             {
-                Debug.Log("I will check collision!");
                 Collider otherc = colliderbuffer[ci];
                 Transform othert = otherc.transform;
+                Debug.Log("I will check collision with: " + otherc.name);
+
+                Physics.SyncTransforms();
 
                 if (Physics.ComputePenetration(self, position, orientation, otherc,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
@@ -282,11 +296,12 @@ public abstract class MovementGeneric : MonoBehaviour
 
                     break;
                 }
+                else Debug.Log("Compute penetration yielded nothig");
             } // for (int ci = 0; ci < numoverlaps; ci++)
         }// while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
 
         Debug.Log("finished collision checks ");
-        // m_collider.radius = radius - SKINEPSILON;
+        m_collider.radius = radius - SKINEPSILON;
 
         /* OVERLAP SECTION END*/
 
@@ -320,7 +335,7 @@ public abstract class MovementGeneric : MonoBehaviour
             {
                 Vector3 traceDir = _trace / _tracelen;
 
-                Trace(position, offset, traceDir, _tracelen /*+ SKINEPSILON*/, layermask, querytype, tracesbuffer, radius, TRACEBIAS, out _tracecount);/* prevent tunneling by using this skin length */
+                Trace(position, offset, traceDir, _tracelen + SKINEPSILON, layermask, querytype, tracesbuffer, radius, TRACEBIAS, out _tracecount);/* prevent tunneling by using this skin length */
                 Debug.Log("Traced objects before filter " + _tracecount);
                 if (_tracecount > 0)
                 {
@@ -341,27 +356,26 @@ public abstract class MovementGeneric : MonoBehaviour
                     Debug.Log("I hit some things");
                     MgOnCollision(collision);
 
-                    if (_dist >= 0)
-                    {
-                        //_dist = Mathf.Max(_closest.distance /* - SKINEPSILON*/, 0F);
-                        timefactor -= _dist / _tracelen;
+                    //if (_dist >= 0)
+                    //{
+                    _dist = Mathf.Max(_closest.distance - SKINEPSILON, 0F);
+                    timefactor -= _dist / _tracelen;
 
+                    GfTools.Mult3(ref traceDir, _dist);
+                    GfTools.Add3(ref position, traceDir);
 
-                        GfTools.Mult3(ref traceDir, _dist);
-                        GfTools.Add3(ref position, traceDir);
+                    /* determine our topology state */
+                    PM_FlyDetermineImmediateGeometry(ref velocity, ref lastNormal, collision, ref geometryclips, ref position);
+                    // }
+                    //else
+                    //{
+                    // Vector3 collisionPush = collision.normal * (collision.distance + MIN_PUSHBACK_DEPTH); //(mindistance );
+                    // position += collisionPush;
 
-                        /* determine our topology state */
-                        PM_FlyDetermineImmediateGeometry(ref velocity, ref lastNormal, collision, ref geometryclips, ref position);
-                    }
-                    else
-                    {
-                        Vector3 collisionPush = collision.normal * (collision.distance + MIN_PUSHBACK_DEPTH); //(mindistance );
-                        position += collisionPush;
-
-                        /* only consider normals that we are technically penetrating into */
-                        if (Vector3.Dot(velocity, collision.normal) <= 0F)
-                            PM_FlyDetermineImmediateGeometry(ref velocity, ref lastNormal, collision, ref geometryclips, ref position);
-                    }
+                    /* only consider normals that we are technically penetrating into */
+                    // if (Vector3.Dot(velocity, collision.normal) <= 0F)
+                    //   PM_FlyDetermineImmediateGeometry(ref velocity, ref lastNormal, collision, ref geometryclips, ref position);
+                    //}
 
 
                 }
@@ -665,8 +679,8 @@ public abstract class MovementGeneric : MonoBehaviour
             RaycastHit _hit = _hits[i];
             Collider _col = _hit.collider;
             float _tracelen = _hit.distance;
-            //bool filterout = _tracelen < 0F || _col == _self;
-            bool filterout = _col == _self;
+            bool filterout = _tracelen < 0F || _col == _self;
+            //bool filterout = _col == _self;
             Debug.Log("The name of the collision: " + _hit.transform.name + " with a normal of: " + _hit.normal + " and a distance of: " + _hits[i].distance);
 
             if (_col != _self)
