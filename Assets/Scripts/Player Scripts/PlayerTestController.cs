@@ -18,6 +18,9 @@ public class PlayerTestController : MovementGeneric
     private float m_maxFallSpeed = 40;
     [SerializeField]
     private float m_jumpForce = 40;
+
+    [SerializeField]
+    private bool breakWhenUnparent = true;
     public float AccelerationCoef = 1;
     public float DeaccelerationCoef = 1;
     private float m_effectiveDeacceleration;
@@ -55,7 +58,7 @@ public class PlayerTestController : MovementGeneric
         {
             Debug.Log("I haven't touched " + m_parentTransform.name + " this frame");
             DetachFromParent();
-            Debug.Break();
+            if (breakWhenUnparent) Debug.Break();
         }
 
     }
@@ -142,6 +145,6 @@ public class PlayerTestController : MovementGeneric
             SetParentTransform(collisionTrans);
         }
 
-        m_touchedParent |= auxGrounded && m_parentTransform == collisionTrans;
+        m_touchedParent |= m_parentTransform == collisionTrans;
     }
 }
