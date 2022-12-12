@@ -39,7 +39,8 @@ public class PlayerTestController : MovementGeneric
     {
         m_touchedParent = false;
         m_effectiveMovementDir = MovementDir;
-        //Debug.Log("CALC MOVEMENT WAS CAALLED, GROUNDED IS " + IsGrounded);
+        // Debug.Log("CALC MOVEMENT WAS CAALLED, GROUNDED IS " + m_isGrounded);
+
         if (SlopeNormal != Vector3.up)
         {
             Quaternion q = GfTools.RotationTo(Vector3.up, SlopeNormal);
@@ -65,7 +66,7 @@ public class PlayerTestController : MovementGeneric
 
     protected void CalculateEffectiveValues()
     {
-        if (IsGrounded)
+        if (m_isGrounded)
         {
             m_effectiveAcceleration = m_acceleration;
             m_effectiveDeacceleration = m_deacceleration;
@@ -110,10 +111,9 @@ public class PlayerTestController : MovementGeneric
         float accMagn = Min(Max(0, desiredSpeed - speedInDesiredDir), deltaTime * m_effectiveAcceleration);
         float deaccMagn = Min(unwantedSpeed, m_effectiveDeacceleration * deltaTime);
 
-        //  Debug.Log("The Added acc is: " + (unwantedVelocity * deaccMagn));
-        //Debug.Log("The Added deacc is: " + (m_effectiveMovementDir * accMagn));
+        // Debug.Log("The Added deacc is: " + (unwantedVelocity));
+        // Debug.Log("The Added acc is: " + (m_effectiveMovementDir * accMagn));
         //Debug.Log("The Added vertical is: " + (SlopeNormal * fallMagn));
-
 
         Velocity += m_effectiveMovementDir * accMagn - unwantedVelocity * deaccMagn - SlopeNormal * fallMagn;
     }
@@ -125,7 +125,7 @@ public class PlayerTestController : MovementGeneric
             JumpTrigger = false;
             Velocity = Velocity - UpVec * Vector3.Dot(UpVec, Velocity);
             Velocity = Velocity + UpVec * m_jumpForce;
-            IsGrounded = false;
+            m_isGrounded = false;
             Debug.Log("I HAVE JUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUMPED");
             DetachFromParent();
         }
@@ -136,12 +136,11 @@ public class PlayerTestController : MovementGeneric
     {
         //        Debug.Log("I came into collision WITH " + collision.collider.name);
         Transform collisionTrans = collision.collider.transform;
-        bool auxGrounded = m_slopeLimit >= collision.angle;
+        bool auxGrounded = CheckGround(collision);
 
         if (auxGrounded && m_parentTransform == null && !collision.pushback)
         {
-            //  Debug.Log("I am supposed to parent something");
-
+            // Debug.Break();
             SetParentTransform(collisionTrans);
         }
 

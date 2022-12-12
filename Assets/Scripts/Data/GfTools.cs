@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 
 public class GfTools
 {
+    //public const float kEpsilon = 0.00000001F;
+
     //godbless stack overflow
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float AngleDifference(float deg1, float deg2)
@@ -55,12 +57,12 @@ public class GfTools
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Mult3(ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Div3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x /= rightHand.x; leftHand.y /= rightHand.y; leftHand.z /= rightHand.z; }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Div3(ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }
 
+    // public static bool Equals(Quaternion lefHhand, Quaternion rightHand)
+    // {
+    // return Quaternion.Dot(lefHhand, rightHand) > 1.0f - kEpsilon;
+    //}
 
 
 

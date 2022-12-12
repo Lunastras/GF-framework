@@ -16,46 +16,48 @@ public class GfPhysics : MonoBehaviour
 
     //layer mask of objects that can be considered ground
     [SerializeField]
-    public int collisionsNonGroundLayerMask = 0;
-    
+    public LayerMask collisionsNonGroundLayerMask;
+
     //layer mask of objects that can be considered ground
     [SerializeField]
-    public int groundLayerMask = 0;
+    public LayerMask groundLayerMask;
 
     //layer mask of wallrunnable objects
     [SerializeField]
-    public int wallrunLayerMask = 0;
+    public LayerMask wallrunLayerMask;
 
     [SerializeField]
-    public int nonCharacterCollisions = 0;
+    public LayerMask nonCharacterCollisions;
 
     /** Layer mask of objects that have collisions
     * that should not affect physics.
     */
     [SerializeField]
-    public int physicsIgnoreLayerMask = 0;
+    public LayerMask physicsIgnoreLayerMask;
 
-    private void Awake() {
-        if(instance != null) {
+    private void Awake()
+    {
+        if (instance != null)
+        {
             Destroy(instance);
         }
 
         layerMasks = new int[32];
 
-        for(int layer = 0; layer < 32; layer++)
+        for (int layer = 0; layer < 32; layer++)
         {
             int mask = 0;
- 
+
             for (int i = 0; i < 32; i++)
             {
                 if (!Physics.GetIgnoreLayerCollision(layer, i)) mask |= 1 << i;
             }
- 
+
             layerMasks[layer] = mask;
         }
 
         instance = this;
-    }   
+    }
 
     public static int GetLayerMask(int layer) => instance.layerMasks[layer];
 
@@ -81,7 +83,8 @@ public class GfPhysics : MonoBehaviour
 
     /** Get the layer mask of objects that can be considered ground
     */
-    public static int CollisionsNoGroundLayers() {
+    public static int CollisionsNoGroundLayers()
+    {
         return instance.collisionsNonGroundLayerMask;
     }
 
@@ -92,20 +95,23 @@ public class GfPhysics : MonoBehaviour
 
     /** Get the layer mask of objects that can be considered ground
     */
-    public static int GroundLayers() {
+    public static int GroundLayers()
+    {
         return instance.groundLayerMask;
     }
 
     /** Get the layer mask of wallrunnable objects
     */
-    public static int WallrunLayers() {
+    public static int WallrunLayers()
+    {
         return instance.wallrunLayerMask;
     }
-    
+
     /** Get the layer mask of objects that have collisions
     * that should not affect physics.
     */
-    public static int IgnoreLayers() {
+    public static int IgnoreLayers()
+    {
         return instance.physicsIgnoreLayerMask;
     }
 
