@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     //misc
     private Transform playerCamera;
 
-     [SerializeField]
+    [SerializeField]
     //misc
     private CameraController cameraController;
 
@@ -46,21 +46,37 @@ public class PlayerController : MonoBehaviour
     private void GetMovementInput()
     {
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        // Debug.Log(input);
-
         float movementDirMagnitude = input.magnitude;
 
-        float targetYDeg;
-        if (movementDirMagnitude > 0.01f)
+        if (movementDirMagnitude > 0.001f)
         {
-            targetYDeg = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + playerCamera.transform.eulerAngles.y;
+            //float effectiveMagnitude = System.MathF.Min(1.0f, System.MathF.Max(input.x, input.y));
+            if (movementDirMagnitude > 1) GfTools.Div2(ref input, movementDirMagnitude);
+
+            Vector3 cameraForward = playerCamera.forward * input.y;
+            Vector3 cameraRight = playerCamera.right * input.x;
+
+            Vector3 upVec = movement.UpVec;
+
+            if (!movement.CanFly)
+            {
+                GfTools.Minus3(ref cameraForward, upVec * Vector3.Dot(upVec, cameraForward));
+                cameraForward.Normalize();
+            }
+
+            Vector3 movementDir = cameraForward + cameraRight;
+
+            movement.SetMovementDir(movementDir, upVec);
+
+            /*
+            targetYDeg = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + playerCamera.eulerAngles.y;
             Vector2 movementDir2Norm = GfTools.Degree2Vector2(targetYDeg);
 
 
             float yDir = playerCamera.forward.y;
             yDir *= invertedY ? -1 : 1;
 
-            movement.SetMovementDir(new Vector3(movementDir2Norm.x, yDir, movementDir2Norm.y));
+            movement.SetMovementDir(new Vector3(movementDir2Norm.x, yDir, movementDir2Norm.y));*/
         }
         else
         {
@@ -129,11 +145,18 @@ public class PlayerController : MonoBehaviour
         GetWeaponScrollInput();
     }
 
-    void LateUpdate() {
-        CalculateJump();
-        GetMovementInput();
+    void LateUpdate()
+    {
+        float deltaTime = Time.deltaTime;
 
-        movement.Move(Time.deltaTime);
-        cameraController.Move(Time.deltaTime);
+        //only get input for movement if physics will be checked
+        if (movement.PhysCheckGivenDelta(deltaTime))
+        {
+            CalculateJump();
+            GetMovementInput();
+        }
+
+        movement.Move(deltaTime);
+        cameraController.Move(deltaTime);
     }
 }

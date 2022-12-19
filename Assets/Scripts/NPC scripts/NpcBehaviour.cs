@@ -107,69 +107,69 @@ public class NpcBehaviour : NpcController
     float horizontalDirOffset;
     protected override void EngageEnemyBehaviour(Vector3 dirToTarget)
     {
-            float currentTime = Time.time;
-            if (currentTime > timeOfChangePhase)
+        float currentTime = Time.time;
+        if (currentTime > timeOfChangePhase)
+        {
+            timeOfChangePhase = currentTime + hostileValues.timeBetweenPhases
+                                * (1.0f + GfRandom.Range(-hostileValues.varianceInValues, hostileValues.varianceInValues));
+
+            float randomNumber = GfRandom.GetRandomNum();
+            desiredYDir = GfRandom.Range(-0.9f, 0.2f);
+
+            // Debug.Log("random num: " + randomNumber + " and circle likelyhood: " + hostileValues.likelyHoodToCircleTarget);
+
+            if (randomNumber > hostileValues.likelyHoodToCircleTarget) //approach target
             {
-                timeOfChangePhase = currentTime + hostileValues.timeBetweenPhases
-                                    * (1.0f + GfRandom.Range(-hostileValues.varianceInValues, hostileValues.varianceInValues));
+                //Debug.Log("APPROACH");
+                currentPhase = EngageModes.APPROACH;
+            }
+            else
+            {
+                //Debug.Log("CIRCLE");
+                currentPhase = (randomNumber >= hostileValues.likelyHoodToCircleTarget / 2.0f)
+                            ? EngageModes.CIRLCE_CLOCKWISE : EngageModes.CIRCLE_COUNTER;
+            }
+        }
 
-                float randomNumber = GfRandom.GetRandomNum();
-                desiredYDir = GfRandom.Range(-0.9f, 0.2f);
+        if (currentTime > timeOfFireChange)
+        {
 
-                // Debug.Log("random num: " + randomNumber + " and circle likelyhood: " + hostileValues.likelyHoodToCircleTarget);
-
-                if (randomNumber > hostileValues.likelyHoodToCircleTarget) //approach target
-                {
-                    //Debug.Log("APPROACH");
-                    currentPhase = EngageModes.APPROACH;
-                }
-                else
-                {
-                    //Debug.Log("CIRCLE");
-                    currentPhase = (randomNumber >= hostileValues.likelyHoodToCircleTarget / 2.0f)
-                                ? EngageModes.CIRLCE_CLOCKWISE : EngageModes.CIRCLE_COUNTER;
-                }
+            if (!destination.WasDestroyed() && null != turret)
+            {
+                Transform enemyTransform = destination.TransformDest;
+                turret.target = enemyTransform;
+                turret.Play();
+                //PauseMovement(turret.GetCurrentPhaseLength());
             }
 
-            if (currentTime > timeOfFireChange)
-            {
-
-                if (!destination.WasDestroyed() && null != turret)
-                {
-                    Transform enemyTransform = destination.TransformDest;
-                    turret.target = enemyTransform;
-                    turret.Play();
-                    //PauseMovement(turret.GetCurrentPhaseLength());
-                }
-
-                timeOfFireChange = currentTime + hostileValues.timeBetweenFire
-                                    * (1 + GfRandom.Range(-hostileValues.varianceInValues, hostileValues.varianceInValues));
-            }
+            timeOfFireChange = currentTime + hostileValues.timeBetweenFire
+                                * (1 + GfRandom.Range(-hostileValues.varianceInValues, hostileValues.varianceInValues));
+        }
 
 
-            Vector2 horizontalDir = new Vector2(dirToTarget.x, dirToTarget.z);
-            Vector2 newDir;
+        Vector2 horizontalDir = new Vector2(dirToTarget.x, dirToTarget.z);
+        Vector2 newDir;
 
-            switch (currentPhase)
-            {
-                case EngageModes.CIRLCE_CLOCKWISE:
-                    newDir = new Vector2(-horizontalDir.y, horizontalDir.x);
-                    horizontalDir = (newDir + horizontalDirOffset * horizontalDir).normalized;
-                    break;
+        switch (currentPhase)
+        {
+            case EngageModes.CIRLCE_CLOCKWISE:
+                newDir = new Vector2(-horizontalDir.y, horizontalDir.x);
+                horizontalDir = (newDir + horizontalDirOffset * horizontalDir).normalized;
+                break;
 
-                case EngageModes.CIRCLE_COUNTER:
-                    newDir = new Vector2(horizontalDir.y, -horizontalDir.x);
-                    horizontalDir = (newDir + horizontalDirOffset * horizontalDir).normalized;
-                    break;
-                case EngageModes.APPROACH:
-                    // desiredYDir = dirToTarget.y;
-                    horizontalDir = horizontalDir.normalized;
-                    break;
-            }
+            case EngageModes.CIRCLE_COUNTER:
+                newDir = new Vector2(horizontalDir.y, -horizontalDir.x);
+                horizontalDir = (newDir + horizontalDirOffset * horizontalDir).normalized;
+                break;
+            case EngageModes.APPROACH:
+                // desiredYDir = dirToTarget.y;
+                horizontalDir = horizontalDir.normalized;
+                break;
+        }
 
-            horizontalDir *= 1 + Mathf.Abs(desiredYDir);
+        horizontalDir *= 1 + Mathf.Abs(desiredYDir);
 
-            simpleMovement.SetMovementDir(new Vector3(horizontalDir.x, desiredYDir, horizontalDir.y));
+        simpleMovement.SetMovementDir(new Vector3(horizontalDir.x, desiredYDir, horizontalDir.y));
     }
 
 
@@ -179,11 +179,11 @@ public class NpcBehaviour : NpcController
         if (Time.time >= timeOfNextWalkChange)
         {
             statsNpc.ClearDamageList();
-           // turret.Pause();
+            // turret.Pause();
 
             timeOfNextWalkChange = Time.time + intervalBetweenWalkPhases * (1 - GfRandom.Range(-varianceRate, varianceRate));
 
-            float movementDirMagnitude = simpleMovement.MovementDir.magnitude;
+            float movementDirMagnitude = simpleMovement.MovementDirRaw.magnitude;
 
             if (movementDirMagnitude > 0.9f)
             {
@@ -234,7 +234,7 @@ public class NpcBehaviour : NpcController
 
     protected override void LostTargetBehaviour()
     {
-       // Debug.Log("i lost the target");
+        // Debug.Log("i lost the target");
         PauseMovement(1);
         simpleMovement.SetMovementDir(Vector3.zero);
         turret.Stop();

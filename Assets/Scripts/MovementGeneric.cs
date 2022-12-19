@@ -11,7 +11,6 @@ public abstract class MovementGeneric : MonoBehaviour
     private bool m_useInterpolation;
     [SerializeField]
     protected float m_speed = 7;
-    protected bool m_canMove = true;
     [SerializeField]
     protected float m_mass = 35;
     [SerializeField]
@@ -22,16 +21,18 @@ public abstract class MovementGeneric : MonoBehaviour
     protected float m_upperSlopeLimit = 100;
     [SerializeField]
     private float m_timeBetweenPhysChecks = 0.02f;
+    [SerializeField]
+    private QueryTriggerInteraction m_queryTrigger;
 
     protected Transform m_transform;
 
     protected float m_previousPhysDeltaTime;
 
     //private new Rigidbody rigidbody;
-    private CapsuleCollider m_collider;
+    private Collider m_collider;
 
-    public Vector3 MovementDir { get; protected set; }
-    protected float m_movementDirMagnitude;
+    public Vector3 MovementDirRaw { get; protected set; }
+    public Vector3 MovementDirUpVec { get; protected set; } //the up direction of the given movement direction (NOT NECESSARY TO BE PERPENDICULAR)
 
     [HideInInspector]
     public bool JumpTrigger = false;
@@ -45,10 +46,7 @@ public abstract class MovementGeneric : MonoBehaviour
     private float m_timeOfLastParentRotUpdate, m_timeOfLastParentPosUpdate;
 
     private float m_parentDeltaTimePos, m_parentDeltaTimeRot; //delta of the last movement from the parent
-    protected bool m_hasToAdjustVelocityWhenParenting = true;
-
-    //Because we check the parent's movement after initially parenting, we don't know their speed so we wait one frame to see their velocity
-    private bool m_parentWasSetThisFrame;
+                                                              //Because we check the parent's movement after initially parenting, we don't know their speed so we wait one frame to see their velocity
 
     [HideInInspector]
     public Vector3 Velocity;
@@ -59,9 +57,13 @@ public abstract class MovementGeneric : MonoBehaviour
 
     protected bool m_isGrounded = false;
 
-    public Vector3 SlopeNormal { get; private set; }
+    protected Vector3 m_slopeNormal;
+    private bool m_forceParented = false;
 
-    private Vector3 m_movementUntilPhysCheck;
+    private Vector3 m_interpolationMovement;
+    private Quaternion m_interpolationRotation;
+
+    protected Quaternion m_rotationToApply;
 
     private float m_previousLerpAlpha;
 
@@ -72,60 +74,124 @@ public abstract class MovementGeneric : MonoBehaviour
     private float m_lastParentMovDeltaTime;
 
     private bool m_interpolateThisFrame;
+    private bool m_validatedParentVertical; //whether the vertical movement of the parent was accounted to the actor's position
 
+    private ArchetypeCollision m_archetype;
     static readonly protected Vector3 Zero3 = new Vector3(0, 0, 0);
 
-
-    private readonly float SKINEPSILON = 0.01F;
-    private readonly float TRACEBIAS = 0.01F;
-
-    private readonly float EXTRATRACE = 0.0f;
-
+    private readonly float TRACE_SKIN = 0.01F;
+    private readonly float TRACEBIAS = 0.1F;
+    private readonly float DOWNPULL = 0.09F;
     private const int MAX_PUSHBACKS = 8; // # of iterations in our Pushback() funcs
     private const int MAX_BUMPS = 6; // # of iterations in our Move() funcs                      // a hit buffer.
     private const float MIN_DISPLACEMENT = 0.000000001F; // min squared length of a displacement vector required for a Move() to proceed.
-    private const float MIN_PUSHBACK_DEPTH = 0.000001F;
+    private const float MIN_PUSHBACK_DEPTH = 0.00001F;
 
     #endregion
 
     private void Start()
     {
         Physics.autoSyncTransforms = true;
-
         m_transform = transform;
-
         //Application.targetFrameRate = 60;
-
         // Time.timeScale = 0.1f;
-        m_collider = GetComponent<CapsuleCollider>();
-        SlopeNormal = UpVec;
+        m_slopeNormal = UpVec;
         InternalStart();
     }
     protected abstract void InternalStart();
-
     protected virtual void BeforePhysChecks(float deltaTime) { }
     protected virtual void AfterPhysChecks(float delteTime) { }
 
-    [SerializeField]
-    private bool m_calculateParentMovFirst = false;
-
-    public void Move(float deltaTime)
+    private void ValidateArchetype()
     {
-        if (m_calculateParentMovFirst)
+        if (null == m_collider || null == m_archetype)
         {
-            m_parentWasSetThisFrame = false;
-            ParentMovement(deltaTime);
-            CalculateMovement(deltaTime);
-        }
-        else
-        {
-            CalculateMovement(deltaTime);
-            ParentMovement(deltaTime);
+            //type checking is not available in c# without an IDictionary, so we check until one is found. It works because there are only a few anywyay
+            CapsuleCollider capsuleCollider = GetComponent<CapsuleCollider>();
+            if (capsuleCollider)
+            {
+                m_collider = capsuleCollider;
+                m_archetype = new ArchetypeCapsule(capsuleCollider);
+            }
+            else
+            {
+                SphereCollider sphereCollider = GetComponent<SphereCollider>();
+                if (sphereCollider)
+                {
+                    m_collider = sphereCollider;
+                    m_archetype = new ArchetypeSphere(sphereCollider);
+                }
+            }
+
+            if (null == m_archetype)
+            {
+                m_archetype = new ArchetypeCollision();
+                if (GetComponent<SphereCollider>() != null)
+                    Debug.LogError("The collider attached to: " + gameObject.name + " is not supported by MovementGeneric");
+            }
         }
     }
 
-    private void CalculateMovement(float deltaTime)
+    public void Move(float deltaTime)
     {
+        #region ParentMovement
+
+        if (m_parentTransform != null)
+        {
+            float currentTime = Time.time;
+            Vector3 currentParentPos = m_parentTransform.position;
+            if (!currentParentPos.Equals(m_parentLastPos))
+            {
+                m_parentPosMov.x = currentParentPos.x - m_parentLastPos.x;
+                m_parentPosMov.y = currentParentPos.y - m_parentLastPos.y;
+                m_parentPosMov.z = currentParentPos.z - m_parentLastPos.z;
+
+                m_parentDeltaTimePos = System.MathF.Max(deltaTime, currentTime - m_timeOfLastParentPosUpdate);
+                m_timeOfLastParentPosUpdate = currentTime;
+                m_parentLastPos = currentParentPos;
+                m_transform.position += m_parentPosMov;
+            }
+
+            //Calculate the rotation according to the parent's rotation
+            Quaternion currentRot = m_parentTransform.rotation;
+            if (!currentRot.Equals(m_parentLastRot)) // .Equals() is different from == (and a bit wrong), but it works better here because of the added accuracy
+            {
+                Quaternion deltaQuaternion = currentRot * Quaternion.Inverse(m_parentLastRot);
+                Vector3 vecFromParent = m_transform.position - m_parentTransform.position;
+                Vector3 newVecFromParent = deltaQuaternion * vecFromParent;
+                m_parentRotMov = newVecFromParent - vecFromParent;
+
+                if (MovementDirRaw == Zero3) //not working properly, gotta fix
+                {
+                    GfTools.Minus3(ref vecFromParent, UpVec * Vector3.Dot(UpVec, vecFromParent));
+                    GfTools.Minus3(ref newVecFromParent, UpVec * Vector3.Dot(UpVec, newVecFromParent));
+                    float rotationDegrees = GfTools.SignedAngle(vecFromParent, newVecFromParent, UpVec);
+                    m_transform.Rotate(UpVec * rotationDegrees, Space.World);
+                }
+
+                m_parentDeltaTimeRot = System.MathF.Max(deltaTime, currentTime - m_timeOfLastParentRotUpdate);
+                m_timeOfLastParentRotUpdate = currentTime;
+                m_parentLastRot = currentRot;
+                m_transform.position += m_parentRotMov;
+            }
+
+            //adjust the player's velocity to the parent's
+            if (!m_adjustedVelocityToParent)
+            {
+                Vector3 parentVelocity = GetParentVelocity(currentTime, deltaTime);
+                m_adjustedVelocityToParent = true;
+
+                AdjustVector(ref Velocity, parentVelocity);
+                GfTools.Mult3(ref parentVelocity, m_previousPhysDeltaTime);
+                GfTools.Minus3(ref parentVelocity, UpVec * Vector3.Dot(UpVec, parentVelocity)); //remove any vertical movement from parent velocity            
+                AdjustVector(ref m_interpolationMovement, parentVelocity); //adjust interpolation 
+            }
+        }
+
+        #endregion
+
+        #region CalculateMovement
+
         if ((m_timeUntilPhysChecks -= deltaTime) <= 0)
         {
             m_previousPhysDeltaTime = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks + m_timeUntilPhysChecks);
@@ -140,467 +206,261 @@ public abstract class MovementGeneric : MonoBehaviour
             m_previousLerpAlpha = alpha;
             m_accumulatedTimefactor += timefactor;
 
-            m_transform.localPosition += m_movementUntilPhysCheck * timefactor;
+            m_transform.position += m_interpolationMovement * timefactor;
+            m_transform.rotation *= Quaternion.LerpUnclamped(Quaternion.identity, m_interpolationRotation, timefactor);
         }
-    }
 
-    protected bool CheckGround(MgCollisionStruct collision)
-    {
-        return m_slopeLimit >= collision.angle;
-        /*&& GfPhysics.LayerIsInMask(collision.collider.gameObject.layer, GfPhysics.GroundLayers());*/
-    }
-
-    private void ParentMovement(float deltaTime)
-    {
-        if (m_parentTransform != null)
-        {
-            float currentTime = Time.time;
-            Debug.Log("PARENT MOVEMENT");
-
-            Vector3 currentParentPos = m_parentTransform.position;
-            if (!currentParentPos.Equals(m_parentLastPos))
-            {
-                m_parentPosMov.x = currentParentPos.x - m_parentLastPos.x;
-                m_parentPosMov.y = currentParentPos.y - m_parentLastPos.y;
-                m_parentPosMov.z = currentParentPos.z - m_parentLastPos.z;
-
-                m_parentDeltaTimePos = System.MathF.Max(deltaTime, currentTime - m_timeOfLastParentPosUpdate);
-                m_timeOfLastParentPosUpdate = currentTime;
-                m_parentLastPos = currentParentPos;
-                m_transform.localPosition += m_parentPosMov;
-                Debug.Log("The parent movement this frame was: " + m_parentPosMov);
-            }
-
-            //Calculate the rotation according to the parent's rotation
-            Quaternion currentRot = m_parentTransform.rotation;
-            if (!currentRot.Equals(m_parentLastRot)) // .Equals() is different from == (and a bit wrong), but it works better here because of the added accuracy
-            {
-                Quaternion deltaQuaternion = currentRot * Quaternion.Inverse(m_parentLastRot);
-                Vector3 vecFromParent = m_transform.position - m_parentTransform.position;
-                Vector3 newVecFromParent = deltaQuaternion * vecFromParent;
-
-                m_parentRotMov = -(vecFromParent - newVecFromParent);
-
-                /*
-                //if (MovementDir == Zero3) //todo
-                m_transform.Rotate(Vector3.up * parentRotation.y);
-                */
-
-                m_parentDeltaTimeRot = System.MathF.Max(deltaTime, currentTime - m_timeOfLastParentRotUpdate);
-                m_timeOfLastParentRotUpdate = currentTime;
-                m_parentLastRot = currentRot;
-                m_transform.localPosition += m_parentRotMov;
-                Debug.Log("The parent rotation was: " + m_parentRotMov);
-            }
-
-            //adjust the player's velocity to the parent's
-            if (!m_adjustedVelocityToParent && false)
-            {
-                Debug.Log("ADJUSTED VELOCITY");
-                Vector3 parentVelocity = GetParentVelocity(currentTime, deltaTime);
-                m_adjustedVelocityToParent = true;
-
-                AdjustVector(ref Velocity, parentVelocity);
-                GfTools.Mult3(ref parentVelocity, m_previousPhysDeltaTime);
-                AdjustVector(ref m_movementUntilPhysCheck, parentVelocity); //adjust interpolation 
-            }
-
-
-        }
-    }
-
-    private static void AdjustVector(ref Vector3 child, Vector3 parent)
-    {
-        Vector3 velocityNorm = child.normalized;
-        float velocityDot = Vector3.Dot(parent.normalized, velocityNorm);
-
-        if (velocityDot > 0)
-        {
-            float speedToDecrease = velocityDot * parent.magnitude;
-            child = (child.magnitude > speedToDecrease) ? (child - velocityNorm * speedToDecrease) : Zero3;
-        }
+        #endregion
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void PhysCheck(float deltaTime)
     {
-        BeforePhysChecks(deltaTime);
-
         if (m_interpolateThisFrame)
         {
-            Vector3 movementCorrection = m_movementUntilPhysCheck * (1.0f - m_accumulatedTimefactor);
-            m_transform.localPosition += movementCorrection;
+            float correctionFactor = 1.0f - m_accumulatedTimefactor;
+            Vector3 movementCorrection = m_interpolationMovement * correctionFactor;
+            m_transform.position += movementCorrection;
             m_accumulatedTimefactor = m_previousLerpAlpha = 0;
+            Quaternion correctedRotation = Quaternion.LerpUnclamped(Quaternion.identity, m_interpolationRotation, correctionFactor);
+            //halfRotation = m_interpolationRotation;
+            m_transform.rotation = m_transform.rotation * correctedRotation;
         }
 
-        //if the framerate is smaller than the interval for physics checks, don't interpolate
+        Quaternion currentRotation = m_transform.rotation;
+        m_interpolationRotation = Quaternion.identity;
+
+        BeforePhysChecks(deltaTime);
+
         m_interpolateThisFrame = m_useInterpolation; //&& Time.deltaTime < m_timeBetweenPhysChecks;
 
         Vector3 position = m_transform.position;
-        Vector3 velocity = Velocity;
-        Quaternion orientation = m_transform.rotation;
-        Vector3 upDir = transform.up;
-        Vector3 offset = (m_collider.height * 0.5f - m_collider.radius) * upDir; //todo
-        float radius = m_collider.radius + SKINEPSILON;
-
         Vector3 lastNormal = Zero3;
-        QueryTriggerInteraction querytype = QueryTriggerInteraction.Ignore;
-        Collider self = m_collider;
 
         Collider[] colliderbuffer = GfPhysics.GetCollidersArray();
         RaycastHit[] tracesbuffer = GfPhysics.GetRaycastHits();
         int layermask = GfPhysics.GetLayerMask(gameObject.layer);
 
+        Vector3 addedDownpull = Zero3;
+        bool appliedDownpull = m_isGrounded;
+        if (appliedDownpull)
+        {
+            addedDownpull = m_slopeNormal * DOWNPULL;
+            GfTools.Minus3(ref position, addedDownpull);
+        }
+
+        ValidateArchetype();
+        m_archetype.UpdateValues();
+
         /* OVERLAP SECTION START*/
         int numbumps = 0;
-        int numpushbacks = 0;
         int geometryclips = 0;
-        int numoverlaps = -1;
-        bool wasGrounded = m_isGrounded;
+        int numCollisions = -1;
         m_isGrounded = false;
 
         /* attempt an overlap pushback at this current position */
-        while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
+        while (numbumps++ < MAX_PUSHBACKS && numCollisions != 0)
         {
-            Overlap(position, offset, layermask, querytype, colliderbuffer, radius, out numoverlaps);
-            ActorOverlapFilter(ref numoverlaps, self, colliderbuffer); /* filter ourselves out of the collider buffer */
-            for (int ci = numoverlaps - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
+            bool groundCheckPhase = appliedDownpull;
+            m_archetype.Overlap(position, layermask, m_queryTrigger, colliderbuffer, out numCollisions);
+            ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer); /* filter ourselves out of the collider buffer */
+            for (int ci = numCollisions - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
             {
                 Collider otherc = colliderbuffer[ci];
                 Transform othert = otherc.transform;
-                Debug.Log("I will check collision with: " + otherc.name);
-                MgCollisionStruct collision;
 
-                if (Physics.ComputePenetration(self, position, orientation, otherc,
+                if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherc,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                 {
-                    Debug.Log("gottem " + otherc.name);
-                    /* resolve pushback using closest exit distance */
-                    Vector3 collisionPush = normal * (mindistance + MIN_PUSHBACK_DEPTH);
-                    position += collisionPush;
-                    collision = new MgCollisionStruct(normal, UpVec, otherc, mindistance, position - normal * mindistance, true);
+                    MgCollisionStruct collision = new MgCollisionStruct(normal, UpVec, otherc, mindistance, position - normal * mindistance, true);
+                    collision.isGrounded = CheckGround(collision);
+                    MgOnCollision(collision);
 
-                    /* only consider normals that we are technically penetrating into */
-                    if (Vector3.Dot(velocity, normal) <= 0F)
-                        PM_FlyDetermineImmediateGeometry(ref velocity, ref lastNormal, collision, ref geometryclips, ref position);
+                    if (!groundCheckPhase)/* resolve pushback using closest exit distance if no downpull was added*/
+                    {
+                        position += normal * (mindistance + MIN_PUSHBACK_DEPTH);
 
-                    break;
+                        if (Vector3.Dot(Velocity, normal) <= 0F) /* only consider normals that we are technically penetrating into */
+                            DetermineGeometryType(ref Velocity, ref lastNormal, collision, ref geometryclips, ref position);
+                        break;
+                    }
                 }
                 else
                 {
-                    collision = new MgCollisionStruct(normal, UpVec, otherc, mindistance, position - normal * mindistance, true);
-                    --numoverlaps;
+                    // MgOnCollision(new MgCollisionStruct(normal, UpVec, otherc, mindistance, position - normal * mindistance, false, true, false));
+                    --numCollisions;
                 }
-
-                MgOnCollision(collision);
-
             } // for (int ci = 0; ci < numoverlaps; ci++)
-        }// while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
 
+            if (appliedDownpull) //remove downpull and continue overlap check normally
+            {
+                appliedDownpull = false;
+                GfTools.Add3(ref position, addedDownpull);
+            }
+        }// while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
         /* OVERLAP SECTION END*/
+
+        if (appliedDownpull) GfTools.Add3(ref position, addedDownpull); //cancel downpull if we didn't touch anything
 
         /* TRACING SECTION START*/
         float timefactor = 1F;
-        int _tracecount = 0;
+        numbumps = 0;
 
-        Debug.Log("");
-        Debug.Log("");
-
-        Debug.Log("Let's trace lmao, IsGrounded is: " + m_isGrounded + " the parent velocity is: " + GetParentVelocity(Time.time, Time.deltaTime));
         while (numbumps++ <= MAX_BUMPS && timefactor > 0)
         {
-            Debug.Log("");
-            Vector3 _trace = velocity * deltaTime * timefactor;
+            Vector3 _trace = Velocity * deltaTime * timefactor;
             float _tracelen = _trace.magnitude;
-            Debug.Log("Velocity is: " + velocity + " Trace is: " + _trace + " with a dir of: " + (_trace / _tracelen) + " and a magnitude of: " + _tracelen);
 
-            // IF unable to trace any further, break and end
-            Physics.SyncTransforms();
             if (_tracelen > MIN_DISPLACEMENT)
             {
                 Vector3 traceDir = _trace / _tracelen;
 
-                Trace(position, offset, traceDir, _tracelen + EXTRATRACE, layermask, querytype, tracesbuffer, m_collider.radius, TRACEBIAS, out _tracecount);/* prevent tunneling by using this skin length */
-                Debug.Log("Traced objects before filter " + _tracecount);
-                if (_tracecount > 0)
-                {
-                    for (int i = 0; i < _tracecount; ++i)
-                    {
-                        Debug.Log("TOUCHED " + tracesbuffer[i].transform.name);
-                    }
-                }
-
-                ActorTraceFilter(ref _tracecount, out int _i0, TRACEBIAS, self, tracesbuffer, position);
-                Debug.Log("Traced objects after filter " + _tracecount);
+                m_archetype.Trace(position, traceDir, _tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, out numCollisions);/* prevent tunneling by using this skin length */
+                ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, position);
 
                 if (_i0 > -1) /* we found something in our trace */
                 {
                     RaycastHit _closest = tracesbuffer[_i0];
                     MgCollisionStruct collision = new MgCollisionStruct(_closest.normal, UpVec, _closest.collider, _closest.distance, _closest.point - position, false);
-                    MgOnCollision(collision);
+                    collision.isGrounded = CheckGround(collision);
 
-                    float _dist = System.MathF.Max(System.MathF.Min(_closest.distance, _tracelen) - SKINEPSILON, 0F);
+                    float _dist = System.MathF.Max(_closest.distance - TRACE_SKIN, 0F);
                     timefactor -= _dist / _tracelen;
-
                     GfTools.Mult3(ref traceDir, _dist);
                     GfTools.Add3(ref position, traceDir);
 
-                    /* determine our topology state */
-                    PM_FlyDetermineImmediateGeometry(ref velocity, ref lastNormal, collision, ref geometryclips, ref position);
+                    MgOnCollision(collision);
+                    DetermineGeometryType(ref Velocity, ref lastNormal, collision, ref geometryclips, ref position);
                 }
-                else /* Discovered an obstruction along our linear path */
+                else /* Discovered noting along our linear path */
                 {
                     GfTools.Add3(ref position, _trace);
                     break;
                 }
             }
-            else
-            {
-                Debug.Log("meeeen that shiit smoll, not moving");
-                break;
-            }
+            else break;
+
             //break; //if (_tracelen > MIN_DISPLACEMENT)        
         } // while (numbumps++ <= MAX_BUMPS && timefactor > 0)
 
         /* TRACING SECTION END*/
-
-        int safetycount = 0;
-        if (numbumps > MAX_BUMPS)
-        {
-            Overlap(position, offset, layermask, querytype, colliderbuffer, radius, out safetycount); /* Safety check to prevent multiple actors phasing through each other... Feel free to disable this for performance if you'd like*/
-            ActorOverlapFilter(ref safetycount, self, colliderbuffer); /* filter ourselves out of the collider buffer, no need to check for triggers */
-
-            if (safetycount != 0) //don't move object if collision was found
-                position = m_transform.position;
-        }
-
         if (m_interpolateThisFrame)
-            m_movementUntilPhysCheck = position - m_transform.position;
+        {
+            m_interpolationMovement = position - m_transform.position;
+            Quaternion desiredRotation = m_transform.rotation;
+            if (!currentRotation.Equals(desiredRotation)) //== operator is more appropriate but it doesn't have enough accuray
+            {
+                m_interpolationRotation = Quaternion.Inverse(currentRotation) * desiredRotation;
+                m_transform.rotation = currentRotation;
+            }
+        }
         else
             m_transform.position = position;
 
+
         if (!m_isGrounded)
-        {
-            SlopeNormal = UpVec;
-            // if(wasGrounded) //TODO remove negative velocity
+            m_slopeNormal = UpVec;
 
-        }
-
-        Debug.Log("phys checks over: now IsGrounded is: " + m_isGrounded);
-
-        Velocity = velocity;
         AfterPhysChecks(deltaTime);
     }
 
-    float timeOfParenting;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetParentTransform(Transform parent)
+    private float GetStepHeight(ref RaycastHit hit, ref Vector3 position)
     {
-        if (parent != m_parentTransform)
-        {
-            Debug.Log("The new parent is: " + parent.name);
-            m_adjustedVelocityToParent = false;
-            m_timeOfLastParentPosUpdate = m_timeOfLastParentRotUpdate = Time.time;
-
-            m_parentWasSetThisFrame = true;
-            m_parentRotMov = m_parentPosMov = Zero3;
-            m_parentLastPos = parent.position;
-            m_parentLastRot = parent.rotation;
-            m_parentTransform = parent;
-
-            timeOfParenting = Time.time;
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DetachFromParent(bool addVelocity = true)
-    {
-        Debug.Log("DETACH was called with add velocity being: " + addVelocity);
-
-        //  addVelocity = false;
-        if (m_parentTransform != null)
-        {
-            if (addVelocity)
-            {
-                Vector3 parentVelocity = GetParentVelocity(Time.time, Time.deltaTime);
-
-                //remove velocity that is going down
-                float verticalFallSpeed = System.MathF.Max(0, -Vector3.Dot(UpVec, parentVelocity));
-
-                parentVelocity.x += UpVec.x * verticalFallSpeed;
-                parentVelocity.y += UpVec.y * verticalFallSpeed;
-                parentVelocity.z += UpVec.z * verticalFallSpeed;
-
-                GfTools.Add3(ref m_movementUntilPhysCheck, parentVelocity * m_previousPhysDeltaTime);
-                GfTools.Add3(ref Velocity, parentVelocity);
-
-                Debug.Log("I have deparented! with a velocity of: " + parentVelocity);
-            }
-
-            m_parentPosMov = m_parentRotMov = Zero3;
-            m_parentTransform = null;
-        }
-        else Debug.Log("The parent was null bruh");
-    }
-
-    public Vector3 GetParentVelocity(float time, float deltaTime)
-    {
-        Vector3 parentVelocity = Zero3;
-        float maxTimeSinceLastFrame = System.MathF.Max(Time.fixedDeltaTime, deltaTime);
-
-        if (time - m_timeOfLastParentPosUpdate <= maxTimeSinceLastFrame && 0 < m_parentDeltaTimePos)
-        {
-            float invTimeSinceLastFrame = 1.0f / m_parentDeltaTimePos;
-
-            parentVelocity.x = m_parentPosMov.x * invTimeSinceLastFrame;
-            parentVelocity.y = m_parentPosMov.y * invTimeSinceLastFrame;
-            parentVelocity.z = m_parentPosMov.z * invTimeSinceLastFrame;
-        }
-
-        if (time - m_timeOfLastParentRotUpdate <= maxTimeSinceLastFrame && 0 < m_parentDeltaTimeRot)
-        {
-            float invTimeSinceLastFrame = 1.0f / m_parentDeltaTimeRot;
-
-            parentVelocity.x += m_parentRotMov.x * invTimeSinceLastFrame;
-            parentVelocity.y += m_parentRotMov.y * invTimeSinceLastFrame;
-            parentVelocity.z += m_parentRotMov.z * invTimeSinceLastFrame;
-        }
-
-        return parentVelocity;
-    }
-
-    private void ClipVelocity(ref Vector3 velocity, MgCollisionStruct collision)
-    {
-        if (Vector3.Dot(velocity, collision.normal) < 0F) //only do these calculations if the normal is facing away from the velocity
-        {
-            float dotSlopeVel = Vector3.Dot(SlopeNormal, velocity); //dot of the previous slope
-
-            if (collision.angle > m_upperSlopeLimit)
-                GfTools.Minus3(ref velocity, SlopeNormal * System.MathF.Max(0, dotSlopeVel));
-
-
-            if (collision.angle < m_slopeLimit)
-            {
-                GfTools.Minus3(ref velocity, SlopeNormal * dotSlopeVel);
-                SlopeNormal = collision.normal;
-                Debug.Log("I have set my slopeNormal to " + SlopeNormal);
-            }
-
-            GfTools.Minus3(ref velocity, (Vector3.Dot(velocity, collision.normal)) * collision.normal);
-
-            Debug.Log("The velocity change was: " + (-(Vector3.Dot(velocity, collision.normal)) * collision.normal));
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static float GetStepHeight(ref RaycastHit hit, ref CapsuleCollider collider, Vector3 UpVec, ref Vector3 position)
-    {
-        Vector3 bottomPos = -(collider.height * 0.5f) * UpVec;
+        Vector3 bottomPos = -(1 * 0.5f) * UpVec;
         Vector3 localStepHitPos = (hit.point - position);
 
         return Vector3.Dot(UpVec, localStepHitPos) - Vector3.Dot(UpVec, bottomPos);
     }
 
-    private void PM_FlyDetermineImmediateGeometry(ref Vector3 velocity, ref Vector3 lastNormal, MgCollisionStruct collision, ref int geometryclips, ref Vector3 position)
+    private void DetermineGeometryType(ref Vector3 velocity, ref Vector3 lastNormal, MgCollisionStruct collision, ref int geometryclips, ref Vector3 position)
     {
         bool underSlopeLimit = m_slopeLimit > collision.angle;
-        m_isGrounded |= CheckGround(collision);
+        m_isGrounded |= collision.isGrounded;
         bool recalculateVelocity = true;
-
         /*
+
         //Check for stair, if no stair is found, then perform normal velocity calculations
-        if (IsGrounded && (!underSlopeLimit) && (0 == geometryclips || (1 << 0) == geometryclips))
+        if (!collision.pushback && !underSlopeLimit)
         {
             float stepHeight = GetStepHeight(ref hit, ref collider, UpVec, ref position);
 
-           // Debug.Log("huuh second AND i potentially found a stair ");
+            // Debug.Log("huuh second AND i potentially found a stair ");
 
             if (stepHeight <= stepOffset && stepHeight > 0.01f)
             {
                 IsGrounded = true;
-              //  Debug.Log("yeeee found stair ");
+                //  Debug.Log("yeeee found stair ");
                 position += UpVec * (stepHeight);
                 recalculateVelocity = false;
-            } else
+            }
+            else
             {
-               // Debug.Log("neah step is wayyy too small");
+                // Debug.Log("neah step is wayyy too small");
             }
         }
         */
 
-        //  Debug.Log("Geometry clips num is " + geometryclips);
         switch (geometryclips)
         {
             case 0: /* the first penetration plane has been identified in the feedback loop */
-                // Debug.Log("FIRST SWITCH");
                 if (recalculateVelocity)
                 {
                     ClipVelocity(ref velocity, collision);
-                    geometryclips = 1 << 0;
+                    geometryclips = 1;
                 }
 
                 break;
-            case (1 << 0): /* two planes have been discovered, which potentially result in a crease */
-
-                // Debug.Log("SECOND SWITCH");
-
+            case 1: /* two planes have been discovered, which potentially result in a crease */
                 if (recalculateVelocity)
                 {
-                    float creaseEpsilon = System.MathF.Cos(Mathf.Deg2Rad * m_slopeLimit);
-                    //Debug.Log("SECOND SWITCH ");
-
-                    if (Vector3.Dot(lastNormal, collision.normal) < creaseEpsilon)
+                    if (!collision.isGrounded)
                     {
-                        //   Debug.Log("CREASED ");
                         Vector3 crease = Vector3.Cross(lastNormal, collision.normal);
                         crease.Normalize();
                         velocity = Vector3.Project(velocity, crease);
-                        geometryclips |= (1 << 1);
                     }
-                    else
-                    {
-                        // Debug.Log("DID NOT CREASE ");
-                        ClipVelocity(ref velocity, collision);
-                    }
+                    else ClipVelocity(ref velocity, collision);
+
+                    geometryclips = 2;
                 }
 
                 break;
-            case (1 << 0) | (1 << 1): /* three planes have been detected, our velocity must be cancelled entirely. */
-                // Debug.Log("THIRD SWITCH ");
-                velocity = Zero3;
-                geometryclips |= (1 << 2);
+            case 2: /* three planes have been detected, our velocity must be cancelled entirely. */
+                if (collision.isGrounded)
+                    ClipVelocity(ref velocity, collision);
+                else
+                    velocity = Zero3;
+
+                geometryclips = 2;
                 break;
         }
 
         lastNormal = collision.normal;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void ProjectVector(ref Vector3 _v, Vector3 _n)
+    protected virtual void ClipVelocity(ref Vector3 velocity, MgCollisionStruct collision)
     {
-        float _d = Vector3.Dot(_v, _n);
-        _v.x = _n.x * _d;
-        _v.y = _n.y * _d;
-        _v.z = _n.z * _d;
-    }
+        if (Vector3.Dot(velocity, collision.normal) < 0F) //only do these calculations if the normal is facing away from the velocity
+        {
+            float dotSlopeVel = Vector3.Dot(m_slopeNormal, velocity); //dot of the previous slope
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Overlap(Vector3 _pos, Vector3 offset, int _filter, QueryTriggerInteraction _interacttype, Collider[] _colliders, float radius, out int _overlapcount)
-    {
-        _overlapcount = Physics.OverlapCapsuleNonAlloc(_pos - offset, _pos + offset, radius, _colliders, _filter, _interacttype);
-    }
+            if (collision.angle > m_upperSlopeLimit)
+                GfTools.Minus3(ref velocity, m_slopeNormal * System.MathF.Max(0, dotSlopeVel));
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Trace(Vector3 _pos, Vector3 offset, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float radius, float tracebias, out int _tracecount)
-    {
-        GfTools.Minus3(ref _pos, _direction * tracebias);
 
-        _tracecount = Physics.CapsuleCastNonAlloc(_pos - offset, _pos + offset, radius, _direction,
-             _hits, _len + tracebias, _filter, _interacttype);
+            if (collision.angle < m_slopeLimit)
+            {
+                GfTools.Minus3(ref velocity, m_slopeNormal * dotSlopeVel);
+                m_slopeNormal = collision.normal;
+            }
+
+            // GfTools.Minus3(ref velocity, Vector3.Project(velocity, collision.normal));
+            GfTools.Minus3(ref velocity, (Vector3.Dot(velocity, collision.normal)) * collision.normal);
+        }
     }
 
     // Simply a copy of ArchetypeHeader.OverlapFilters.FilterSelf() with trigger checking
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void ActorOverlapFilter(ref int _overlapsfound, Collider _self, Collider[] _colliders)
     {
         for (int i = _overlapsfound - 1; i >= 0; i--)
@@ -627,8 +487,7 @@ public abstract class MovementGeneric : MonoBehaviour
     }
 
     // Simply a copy of ArchetypeHeader.TraceFilters.FindClosestFilterInvalids() with added trigger functionality
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ActorTraceFilter(ref int _tracesfound, out int _closestindex, float _bias, Collider _self, RaycastHit[] _hits, Vector3 position)
+    private static void ActorTraceFilter(ref int _tracesfound, out int _closestindex, float _bias, Collider _self, RaycastHit[] _hits, Vector3 position)
     {
         float _closestdistance = Mathf.Infinity;
         _closestindex = -1;
@@ -663,14 +522,149 @@ public abstract class MovementGeneric : MonoBehaviour
         }
     }
 
+    protected bool CheckGround(MgCollisionStruct collision)
+    {
+        return m_slopeLimit >= collision.angle
+        && GfPhysics.LayerIsInMask(collision.collider.gameObject.layer, GfPhysics.GroundLayers());
+    }
+
+    private static void AdjustVector(ref Vector3 child, Vector3 parent)
+    {
+        Vector3 parentNorm = parent.normalized;
+
+        float velocityDot = System.MathF.Max(0, Vector3.Dot(child.normalized, parentNorm));
+        float speedToDecrease = System.MathF.Min(child.magnitude, velocityDot * parent.magnitude);
+        child -= parentNorm * speedToDecrease;
+    }
+
+    float timeOfParenting;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SetParentTransform(Transform parent, bool addVelocityFromPreviousParent = true, bool forceParent = false)
+    {
+        m_forceParented |= (forceParent && parent);
+        if (parent != m_parentTransform && (forceParent || !m_forceParented))
+        {
+            if (m_parentTransform) DetachFromParent(addVelocityFromPreviousParent, true);
+            m_adjustedVelocityToParent = m_validatedParentVertical = false;
+            m_timeOfLastParentPosUpdate = m_timeOfLastParentRotUpdate = Time.time;
+
+            m_parentRotMov = m_parentPosMov = Zero3;
+            m_parentLastPos = parent.position;
+            m_parentLastRot = parent.rotation;
+            m_parentTransform = parent;
+
+            timeOfParenting = Time.time;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DetachFromParent(bool addVelocity = true, bool forceUnparent = false)
+    {
+        if (m_parentTransform != null && (forceUnparent || !m_forceParented))
+        {
+            if (addVelocity)
+            {
+                Vector3 parentVelocity = GetParentVelocity(Time.time, Time.deltaTime);
+
+                //remove velocity that is going down
+                float verticalFallSpeed = System.MathF.Max(0, -Vector3.Dot(UpVec, parentVelocity));
+
+                parentVelocity.x += UpVec.x * verticalFallSpeed;
+                parentVelocity.y += UpVec.y * verticalFallSpeed;
+                parentVelocity.z += UpVec.z * verticalFallSpeed;
+
+                GfTools.Add3(ref m_interpolationMovement, parentVelocity * m_previousPhysDeltaTime);
+                GfTools.Add3(ref Velocity, parentVelocity);
+            }
+
+            m_parentPosMov = m_parentRotMov = Zero3;
+            m_parentTransform = null;
+        }
+    }
+
+    public Vector3 GetParentVelocity(float time, float deltaTime)
+    {
+        Vector3 parentVelocity = Zero3;
+        float maxTimeSinceLastFrame = System.MathF.Max(Time.fixedDeltaTime, deltaTime) * 2.0f; //if more than 2 frame/fixed update passed since movement, assume parent was stationary
+
+        if (time - m_timeOfLastParentPosUpdate <= maxTimeSinceLastFrame && 0 < m_parentDeltaTimePos)
+        {
+            float invTimeSinceLastFrame = 1.0f / m_parentDeltaTimePos;
+
+            parentVelocity.x = m_parentPosMov.x * invTimeSinceLastFrame;
+            parentVelocity.y = m_parentPosMov.y * invTimeSinceLastFrame;
+            parentVelocity.z = m_parentPosMov.z * invTimeSinceLastFrame;
+        }
+
+        if (time - m_timeOfLastParentRotUpdate <= maxTimeSinceLastFrame && 0 < m_parentDeltaTimeRot)
+        {
+            float invTimeSinceLastFrame = 1.0f / m_parentDeltaTimeRot;
+
+            parentVelocity.x += m_parentRotMov.x * invTimeSinceLastFrame;
+            parentVelocity.y += m_parentRotMov.y * invTimeSinceLastFrame;
+            parentVelocity.z += m_parentRotMov.z * invTimeSinceLastFrame;
+        }
+
+        return parentVelocity;
+    }
+
+    public Vector3 MovementDirComputed()
+    {
+        Vector3 movDir = MovementDirRaw;
+        if (!UpVec.Equals(MovementDirUpVec) && !movDir.Equals(Zero3))
+        {
+            Debug.Log("i got here! for some reason...");
+            movDir = GfTools.RotationTo(MovementDirUpVec, UpVec) * MovementDirRaw;
+
+            //  Vector3 movDirNoVert = movDir - UpVec * Vector3.Dot(UpVec, movDir);
+            //  Vector3 rawMov = GfTools.RotationTo(MovementDirUpVec, UpVec) * MovementDirRaw;
+            // rawMov -= UpVec * Vector3.Dot(UpVec, rawMov);
+
+            // float angle = GfTools.SignedAngle(movDirNoVert, rawMov, UpVec);
+            // movDir = Quaternion.AngleAxis(angle, UpVec) * movDir;
+        }
+
+        if (!m_slopeNormal.Equals(UpVec))
+        {
+            Vector3 auxMov = movDir;
+            float magnitude = movDir.magnitude;
+            GfTools.Minus3(ref movDir, Vector3.Dot(movDir, m_slopeNormal) * m_slopeNormal);
+
+            // movDir = Vector3.ProjectOnPlane(movDir.normalized, m_slopeNormal);
+
+            movDir.Normalize();
+            GfTools.Mult3(ref movDir, magnitude);
+
+            Debug.Log("movDir is: " + auxMov + " projection is: " + movDir);
+        }
+
+        if (!CanFly)
+        {
+            GfTools.Minus3(ref movDir, UpVec * Vector3.Dot(UpVec, movDir));
+        }
+
+        return movDir;
+    }
+
     public virtual void SetMovementDir(Vector3 dir)
     {
-        if (!CanFly)
-            dir.y = 0;
+        SetMovementDir(dir, Vector3.up);
+    }
 
-        m_movementDirMagnitude = dir.magnitude;
-        MovementDir = dir;
+    /**PhysCheckGivenDelta
+    Check if physics will be checked when Move is called with the given deltaTime
+    @param1 deltaTime Value that would be passed to the Move function
+    @return bool Wheteher or not the physics will be checked with the given delta
+    */
+    public bool PhysCheckGivenDelta(float deltaTime)
+    {
+        return m_timeUntilPhysChecks - deltaTime <= 0;
+    }
+
+    public virtual void SetMovementDir(Vector3 dir, Vector3 upVec)
+    {
+        MovementDirUpVec = upVec;
+        MovementDirRaw = dir;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -695,6 +689,7 @@ public struct MgCollisionStruct
         this.point = point;
         this.pushback = pushback;
         angle = Vector3.Angle(normal, upVec) + 0.00001F;
+        isGrounded = false;
     }
     public Collider collider;
     public Vector3 normal;
@@ -703,8 +698,12 @@ public struct MgCollisionStruct
     public Vector3 point;
 
     public bool pushback;
+
+    //if the normal and distance were computed
+    public bool isGrounded;
 }
 
 #endregion
+
 
 

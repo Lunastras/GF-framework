@@ -5,7 +5,10 @@ using System.Runtime.CompilerServices;
 
 public class GfTools
 {
+    private const float PHI = 1.618033988749895f; // min squared length of a displacement vector required for a Move() to proceed.
+
     //public const float kEpsilon = 0.00000001F;
+    public const float kEpsilonNormalSqrt = 1e-15F;
 
     //godbless stack overflow
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -58,6 +61,60 @@ public class GfTools
     public static void Mult3(ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
 
     public static void Div3(ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Minus2(ref Vector2 leftHand, Vector2 rightHand) { leftHand.x -= rightHand.x; leftHand.y -= rightHand.y; }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Add2(ref Vector2 leftHand, Vector2 rightHand) { leftHand.x += rightHand.x; leftHand.y += rightHand.y; }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Mult2(ref Vector2 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; }
+
+    public static void Div2(ref Vector2 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; }
+
+    /*Props to allista from the kerbal space program forum for this incredible function*/
+    public static float Angle(Vector3 a, Vector3 b)
+    {
+        var abm = a * b.magnitude;
+        var bam = b * a.magnitude;
+        return 2 * Mathf.Atan2((abm - bam).magnitude, (abm + bam).magnitude) * Mathf.Rad2Deg;
+    }
+
+    public static float SignedAngle(Vector3 from, Vector3 to, Vector3 axis)
+    {
+        float unsignedAngle = Angle(from, to);
+
+        float cross_x = from.y * to.z - from.z * to.y;
+        float cross_y = from.z * to.x - from.x * to.z;
+        float cross_z = from.x * to.y - from.y * to.x;
+        float sign = Mathf.Sign(axis.x * cross_x + axis.y * cross_y + axis.z * cross_z);
+        return unsignedAngle * sign;
+    }
+
+    public static Quaternion Lerp4(Quaternion a, Quaternion b, float t)
+    {
+        Quaternion r;
+        float t_ = 1 - t;
+        r.x = t_ * a.x + t * b.x;
+        r.y = t_ * a.y + t * b.y;
+        r.z = t_ * a.z + t * b.z;
+        r.w = t_ * a.w + t * b.w;
+        r.Normalize();
+        return r;
+    }
+
+    public static Quaternion QuaternionFraction(Quaternion a, float coef)
+    {
+        Quaternion r;
+        float t_ = 1 - coef;
+        r.x = coef * a.x;
+        r.y = coef * a.y;
+        r.z = coef * a.z;
+        r.w = t_ + coef * a.w;
+        r.Normalize();
+        return r;
+    }
 
     // public static bool Equals(Quaternion lefHhand, Quaternion rightHand)
     // {

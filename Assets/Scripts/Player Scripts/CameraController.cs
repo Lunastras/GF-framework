@@ -85,7 +85,6 @@ public class CameraController : MonoBehaviour
         transform.rotation = Quaternion.Euler(pitch, yaw, 0);
         currentRotation = Vector3.SmoothDamp(currentRotation, new Vector3(pitch, yaw), ref refRotationVelocity, rotationSmoothTime);
         transform.eulerAngles = currentRotation;
-        transform.eulerAngles = new Vector3(pitch, yaw); //dellme
 
         Vector3 desiredTargetPos = mainTarget.position + offset;
         currentTargetPos = Vector3.SmoothDamp(currentTargetPos, desiredTargetPos, ref refTargetPosVelocity, movementSmoothTime);
@@ -117,8 +116,8 @@ public class CameraController : MonoBehaviour
 
         currentTargetDst = Mathf.SmoothDamp(currentTargetDst, currentDesiredDst, ref refDistanceVel, distanceSmoothTime);
 
-       // transform.position = currentTargetPos - forward * currentTargetDst;
-        transform.position = currentTargetPos - forward * dstFromtarget;
+        transform.position = currentTargetPos - forward * currentTargetDst;
+        //transform.position = currentTargetPos - forward * dstFromtarget;
 
     }
 }

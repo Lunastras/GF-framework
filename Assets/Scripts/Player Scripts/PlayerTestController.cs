@@ -20,6 +20,9 @@ public class PlayerTestController : MovementGeneric
     private float m_jumpForce = 40;
 
     [SerializeField]
+    private float m_turnSpeed = 10;
+
+    [SerializeField]
     private bool breakWhenUnparent = true;
     public float AccelerationCoef = 1;
     public float DeaccelerationCoef = 1;
@@ -27,29 +30,25 @@ public class PlayerTestController : MovementGeneric
     private float m_effectiveAcceleration;
     public bool CanDoubleJump { get; protected set; }
     public bool CanExtendJump { get; protected set; }
+    private bool m_jumpedThisFrame = false;
 
     //whether we touched the current parent this frame or not
     private bool m_touchedParent;
 
-    private Vector3 m_effectiveMovementDir;
-
     // Start is called before the first frame update
-    protected override void InternalStart() { }
+    protected override void InternalStart()
+    {
+    }
+
     protected override void BeforePhysChecks(float deltaTime)
     {
-        m_touchedParent = false;
-        m_effectiveMovementDir = MovementDir;
-        // Debug.Log("CALC MOVEMENT WAS CAALLED, GROUNDED IS " + m_isGrounded);
-
-        if (SlopeNormal != Vector3.up)
-        {
-            Quaternion q = GfTools.RotationTo(Vector3.up, SlopeNormal);
-            m_effectiveMovementDir = q * MovementDir;
-            //Debug.Log("movement Dir is: ")
-        }
+        m_touchedParent = m_jumpedThisFrame = false;
+        Vector3 movDir = MovementDirComputed();
+        float magnitude = movDir.magnitude;
+        if (magnitude > 0.000001f) GfTools.Div3(ref movDir, magnitude); //normalise
 
         CalculateEffectiveValues();
-        CalculateVelocity(deltaTime);
+        CalculateVelocity(deltaTime, movDir, magnitude);
         CalculateJump();
     }
 
@@ -66,7 +65,7 @@ public class PlayerTestController : MovementGeneric
 
     protected void CalculateEffectiveValues()
     {
-        if (m_isGrounded)
+        if (m_isGrounded || CanFly)
         {
             m_effectiveAcceleration = m_acceleration;
             m_effectiveDeacceleration = m_deacceleration;
@@ -80,42 +79,72 @@ public class PlayerTestController : MovementGeneric
         m_effectiveDeacceleration *= DeaccelerationCoef;
     }
 
-    void CalculateVelocity(float deltaTime)
+    void CalculateVelocity(float deltaTime, Vector3 movDir, float movDirMagnitude)
     {
-        float verticalFallSpeed = Vector3.Dot(SlopeNormal, Velocity);
-
-        float fallMagn, fallMaxDiff = -verticalFallSpeed - m_maxFallSpeed;
-
-        if (fallMaxDiff < 0)
-        { //speed under maxFallSpeed
-            fallMagn = Min(-fallMaxDiff, m_mass * deltaTime);
-        }
-        else
-        { //speed equal to maxFallSpeed or higher
-            fallMagn = -Min(fallMaxDiff, m_effectiveDeacceleration * deltaTime);
-        }
-
+        movDir.Normalize();
+        Vector3 slope = m_slopeNormal;
+        float verticalFallSpeed = Vector3.Dot(slope, Velocity);
+        float fallMagn = 0, fallMaxDiff = -verticalFallSpeed - m_maxFallSpeed; //todo
         //remove vertical factor from the velocity to calculate the horizontal plane velocity easier
-        Vector3 horizontalVelocity = Velocity - SlopeNormal * verticalFallSpeed;
+        Vector3 effectiveVelocity = Velocity;
 
-        float currentSpeed = horizontalVelocity.magnitude;
-        float dotMovementVelDir = Vector3.Dot(m_effectiveMovementDir, currentSpeed > 0.00001F ? horizontalVelocity / currentSpeed : Zero3);
+        if (!CanFly)
+        {
+            //remove vertical component of velocity if we can't fly
+            effectiveVelocity.x -= slope.x * verticalFallSpeed;
+            effectiveVelocity.y -= slope.y * verticalFallSpeed;
+            effectiveVelocity.z -= slope.z * verticalFallSpeed;
 
-        float desiredSpeed = m_speed * m_movementDirMagnitude;
+            if (fallMaxDiff < 0)
+                fallMagn = Min(-fallMaxDiff, m_mass * deltaTime); //speed under maxFallSpeed         
+            else
+                fallMagn = -Min(fallMaxDiff, m_effectiveDeacceleration * deltaTime);//speed equal to maxFallSpeed or higher
+        }
+
+        float currentSpeed = effectiveVelocity.magnitude;
+        float dotMovementVelDir = Vector3.Dot(movDir, currentSpeed > 0.00001F ? effectiveVelocity / currentSpeed : Zero3);
+
+        float desiredSpeed = m_speed * movDirMagnitude;
         float speedInDesiredDir = currentSpeed * Max(0, dotMovementVelDir);
 
-        Vector3 unwantedVelocity = horizontalVelocity - m_effectiveMovementDir * Min(speedInDesiredDir, desiredSpeed);
+        Vector3 unwantedVelocity = effectiveVelocity - movDir * Min(speedInDesiredDir, desiredSpeed);
         float unwantedSpeed = unwantedVelocity.magnitude;
-        unwantedVelocity = unwantedSpeed > 0.00001F ? unwantedVelocity / unwantedSpeed : Zero3; //normalised
+        if (unwantedSpeed > 0.00001F) GfTools.Div3(ref unwantedVelocity, unwantedSpeed);
 
         float accMagn = Min(Max(0, desiredSpeed - speedInDesiredDir), deltaTime * m_effectiveAcceleration);
         float deaccMagn = Min(unwantedSpeed, m_effectiveDeacceleration * deltaTime);
 
-        // Debug.Log("The Added deacc is: " + (unwantedVelocity));
-        // Debug.Log("The Added acc is: " + (m_effectiveMovementDir * accMagn));
-        //Debug.Log("The Added vertical is: " + (SlopeNormal * fallMagn));
+        //GfTools.Mult3(ref movDir, accMagn);
+        GfTools.Mult3(ref unwantedVelocity, deaccMagn);
+        GfTools.Mult3(ref slope, fallMagn);
 
-        Velocity += m_effectiveMovementDir * accMagn - unwantedVelocity * deaccMagn - SlopeNormal * fallMagn;
+        GfTools.Add3(ref Velocity, movDir * accMagn); //add acceleration
+        GfTools.Minus3(ref Velocity, unwantedVelocity);//add deacceleration
+        GfTools.Minus3(ref Velocity, slope); //add vertical speed change
+
+        //ROTATION SECTION
+        if (movDir != Vector3.zero)
+        {
+            float dot = Vector3.Dot(movDir, UpVec);
+            Vector3 desiredForwardVec = movDir;
+            //remove vertical component of velocity if we can't fly
+            desiredForwardVec.x -= UpVec.x * dot;
+            desiredForwardVec.y -= UpVec.y * dot;
+            desiredForwardVec.z -= UpVec.z * dot;
+            desiredForwardVec.Normalize();
+
+            float turnAmount = m_turnSpeed * deltaTime;
+            float angleDistance = -GfTools.SignedAngle(desiredForwardVec, transform.forward, UpVec); //angle between the current and desired rotation
+            float degreesMovement = Sign(angleDistance) * Min(System.MathF.Abs(angleDistance), turnAmount);
+
+            m_transform.Rotate(degreesMovement * UpVec, Space.World);
+            // m_transform.rotation = m_desiredRotation;
+            // Quaternion.
+
+            //Debug.Log("The angle is: " + angleDistance);
+        }
+
+
     }
 
     void CalculateJump()
@@ -126,7 +155,8 @@ public class PlayerTestController : MovementGeneric
             Velocity = Velocity - UpVec * Vector3.Dot(UpVec, Velocity);
             Velocity = Velocity + UpVec * m_jumpForce;
             m_isGrounded = false;
-            Debug.Log("I HAVE JUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUMPED");
+            m_jumpedThisFrame = true;
+            // Debug.Log("I HAVE JUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUMPED");
             DetachFromParent();
         }
 
@@ -134,16 +164,15 @@ public class PlayerTestController : MovementGeneric
 
     protected override void MgOnCollision(MgCollisionStruct collision)
     {
-        //        Debug.Log("I came into collision WITH " + collision.collider.name);
         Transform collisionTrans = collision.collider.transform;
-        bool auxGrounded = CheckGround(collision);
+        //Debug.Log("I came into collision WITH " + collision.collider.name + " with an angle of: " + collision.angle + " and the normal is: " + collision.normal + " and the distance: " + collision.distance);
 
-        if (auxGrounded && m_parentTransform == null && !collision.pushback)
+        if (!m_jumpedThisFrame && collision.isGrounded && collisionTrans != m_parentTransform)
         {
-            // Debug.Break();
+            //Debug.Break();
             SetParentTransform(collisionTrans);
         }
 
-        m_touchedParent |= m_parentTransform == collisionTrans;
+        m_touchedParent |= collision.isGrounded && m_parentTransform == collisionTrans;
     }
 }
