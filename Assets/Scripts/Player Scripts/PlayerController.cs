@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour
     private bool invertedY = false;
     private bool releasedJumpButton = false;
 
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -65,7 +67,6 @@ public class PlayerController : MonoBehaviour
             }
 
             Vector3 movementDir = cameraForward + cameraRight;
-
             movement.SetMovementDir(movementDir, upVec);
 
             /*
@@ -155,6 +156,8 @@ public class PlayerController : MonoBehaviour
             CalculateJump();
             GetMovementInput();
         }
+
+        cameraController.Upvec = movement.UpVecEstimated();
 
         movement.Move(deltaTime);
         cameraController.Move(deltaTime);

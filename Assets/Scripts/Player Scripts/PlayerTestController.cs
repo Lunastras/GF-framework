@@ -24,6 +24,7 @@ public class PlayerTestController : MovementGeneric
 
     [SerializeField]
     private bool breakWhenUnparent = true;
+
     public float AccelerationCoef = 1;
     public float DeaccelerationCoef = 1;
     private float m_effectiveDeacceleration;
@@ -102,14 +103,14 @@ public class PlayerTestController : MovementGeneric
         }
 
         float currentSpeed = effectiveVelocity.magnitude;
-        float dotMovementVelDir = Vector3.Dot(movDir, currentSpeed > 0.00001F ? effectiveVelocity / currentSpeed : Zero3);
+        float dotMovementVelDir = Vector3.Dot(movDir, currentSpeed > 0.000001F ? effectiveVelocity / currentSpeed : Zero3);
 
         float desiredSpeed = m_speed * movDirMagnitude;
         float speedInDesiredDir = currentSpeed * Max(0, dotMovementVelDir);
 
         Vector3 unwantedVelocity = effectiveVelocity - movDir * Min(speedInDesiredDir, desiredSpeed);
         float unwantedSpeed = unwantedVelocity.magnitude;
-        if (unwantedSpeed > 0.00001F) GfTools.Div3(ref unwantedVelocity, unwantedSpeed);
+        if (unwantedSpeed > 0.000001F) GfTools.Div3(ref unwantedVelocity, unwantedSpeed);
 
         float accMagn = Min(Max(0, desiredSpeed - speedInDesiredDir), deltaTime * m_effectiveAcceleration);
         float deaccMagn = Min(unwantedSpeed, m_effectiveDeacceleration * deltaTime);
@@ -125,26 +126,19 @@ public class PlayerTestController : MovementGeneric
         //ROTATION SECTION
         if (movDir != Vector3.zero)
         {
-            float dot = Vector3.Dot(movDir, UpVec);
-            Vector3 desiredForwardVec = movDir;
-            //remove vertical component of velocity if we can't fly
-            desiredForwardVec.x -= UpVec.x * dot;
-            desiredForwardVec.y -= UpVec.y * dot;
-            desiredForwardVec.z -= UpVec.z * dot;
-            desiredForwardVec.Normalize();
+            Vector3 desiredForwardVec = GfTools.RemoveAxis(movDir, UpVec);
+            Vector3 forwardVec = GfTools.RemoveAxis(transform.forward, UpVec);
 
             float turnAmount = m_turnSpeed * deltaTime;
-            float angleDistance = -GfTools.SignedAngle(desiredForwardVec, transform.forward, UpVec); //angle between the current and desired rotation
-            float degreesMovement = Sign(angleDistance) * Min(System.MathF.Abs(angleDistance), turnAmount);
+            float angleDistance = -GfTools.SignedAngle(desiredForwardVec, forwardVec, UpVec); //angle between the current and desired rotation
+            float degreesMovement = Min(System.MathF.Abs(angleDistance), turnAmount);
 
-            m_transform.Rotate(degreesMovement * UpVec, Space.World);
-            // m_transform.rotation = m_desiredRotation;
-            // Quaternion.
-
-            //Debug.Log("The angle is: " + angleDistance);
+            if (degreesMovement > 0.05f)
+            {
+                Quaternion angleAxis = Quaternion.AngleAxis(Sign(angleDistance) * degreesMovement, UpVec);
+                m_transform.rotation = angleAxis * m_transform.rotation;
+            }
         }
-
-
     }
 
     void CalculateJump()

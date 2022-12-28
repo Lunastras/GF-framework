@@ -66,6 +66,10 @@ public class CameraController : MonoBehaviour
 
     private Vector3 desiredPosition;
 
+    public Vector3 Upvec = Vector3.up;
+
+    private readonly Vector3 UPDIR = new Vector3(0, 1, 0);
+
 
     // Start is called before the first frame update
     void Start()
@@ -78,18 +82,21 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     public void Move(float deltaTime)
     {
-        yaw += Input.GetAxisRaw("Mouse X") * sensitivity * Time.deltaTime;
-        pitch -= Input.GetAxisRaw("Mouse Y") * sensitivity * Time.deltaTime;
+        yaw += Input.GetAxisRaw("Mouse X") * sensitivity * deltaTime;
+        pitch -= Input.GetAxisRaw("Mouse Y") * sensitivity * deltaTime;
         pitch = Mathf.Clamp(pitch, pitchMin, pitchMax);
 
-        transform.rotation = Quaternion.Euler(pitch, yaw, 0);
-        currentRotation = Vector3.SmoothDamp(currentRotation, new Vector3(pitch, yaw), ref refRotationVelocity, rotationSmoothTime);
-        transform.eulerAngles = currentRotation;
+        Quaternion upvecCorrection = GfTools.RotationTo(UPDIR, Upvec);
+        Quaternion desiredRotation = upvecCorrection * Quaternion.Euler(pitch, yaw, 0);
 
-        Vector3 desiredTargetPos = mainTarget.position + offset;
+        //currentRotation = Vector3.SmoothDamp(currentRotation, desiredRotation.eulerAngles, ref refRotationVelocity, rotationSmoothTime);
+        //transform.eulerAngles = currentRotation;
+        transform.rotation = desiredRotation;
+
+        Vector3 desiredTargetPos = mainTarget.position; /*+ upvecCorrection * offset;*/
         currentTargetPos = Vector3.SmoothDamp(currentTargetPos, desiredTargetPos, ref refTargetPosVelocity, movementSmoothTime);
 
-        timeUntilPhysCheck -= Time.deltaTime;
+        timeUntilPhysCheck -= deltaTime;
 
         Vector3 forward = transform.forward;
 

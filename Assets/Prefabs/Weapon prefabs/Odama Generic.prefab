@@ -4966,7 +4966,7 @@ MonoBehaviour:
   odamaValues:
     dstFromParent: 1.5
     rotationSpeed: 1
-    parentMoveSmoothness: 0.1
+    parentMoveSmoothness: 0.05
     bopSpeed: 1
     bopRange: 0.5
     positionOffset: {x: 0, y: -0.2, z: 0}

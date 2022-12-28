@@ -24,6 +24,9 @@ public abstract class MovementGeneric : MonoBehaviour
     [SerializeField]
     private QueryTriggerInteraction m_queryTrigger;
 
+    [SerializeField]
+    private Transform m_sphericalParent;
+
     protected Transform m_transform;
 
     protected float m_previousPhysDeltaTime;
@@ -73,19 +76,23 @@ public abstract class MovementGeneric : MonoBehaviour
 
     private float m_lastParentMovDeltaTime;
 
-    private bool m_interpolateThisFrame;
+    private bool m_interpolateThisFrame = false;
     private bool m_validatedParentVertical; //whether the vertical movement of the parent was accounted to the actor's position
 
     private ArchetypeCollision m_archetype;
     static readonly protected Vector3 Zero3 = new Vector3(0, 0, 0);
+    static readonly protected Vector3 INITIAL_UP = Vector3.up;
+
 
     private readonly float TRACE_SKIN = 0.01F;
     private readonly float TRACEBIAS = 0.1F;
-    private readonly float DOWNPULL = 0.09F;
+    private readonly float DOWNPULL = 0.1F;
     private const int MAX_PUSHBACKS = 8; // # of iterations in our Pushback() funcs
     private const int MAX_BUMPS = 6; // # of iterations in our Move() funcs                      // a hit buffer.
     private const float MIN_DISPLACEMENT = 0.000000001F; // min squared length of a displacement vector required for a Move() to proceed.
     private const float MIN_PUSHBACK_DEPTH = 0.00001F;
+
+    private Quaternion m_upVecRotCorrection = Quaternion.identity;
 
     #endregion
 
@@ -96,6 +103,7 @@ public abstract class MovementGeneric : MonoBehaviour
         //Application.targetFrameRate = 60;
         // Time.timeScale = 0.1f;
         m_slopeNormal = UpVec;
+
         InternalStart();
     }
     protected abstract void InternalStart();
@@ -219,16 +227,25 @@ public abstract class MovementGeneric : MonoBehaviour
         if (m_interpolateThisFrame)
         {
             float correctionFactor = 1.0f - m_accumulatedTimefactor;
-            Vector3 movementCorrection = m_interpolationMovement * correctionFactor;
-            m_transform.position += movementCorrection;
             m_accumulatedTimefactor = m_previousLerpAlpha = 0;
-            Quaternion correctedRotation = Quaternion.LerpUnclamped(Quaternion.identity, m_interpolationRotation, correctionFactor);
-            //halfRotation = m_interpolationRotation;
+
+            m_transform.position += m_interpolationMovement * correctionFactor;
+            Quaternion correctedRotation = GfTools.QuaternionFraction(m_interpolationRotation, correctionFactor);
             m_transform.rotation = m_transform.rotation * correctedRotation;
+            m_interpolationRotation = Quaternion.identity;
         }
 
         Quaternion currentRotation = m_transform.rotation;
-        m_interpolationRotation = Quaternion.identity;
+
+        //DELLME
+        if (m_sphericalParent)
+        {
+            UpVec = (transform.position - m_sphericalParent.position).normalized;
+            transform.rotation = Quaternion.Inverse(m_upVecRotCorrection) * transform.rotation;
+            m_upVecRotCorrection = GfTools.RotationTo(INITIAL_UP, UpVec);
+            transform.rotation = m_upVecRotCorrection * transform.rotation;
+        }
+        //DELLME
 
         BeforePhysChecks(deltaTime);
 
@@ -274,6 +291,7 @@ public abstract class MovementGeneric : MonoBehaviour
                 {
                     MgCollisionStruct collision = new MgCollisionStruct(normal, UpVec, otherc, mindistance, position - normal * mindistance, true);
                     collision.isGrounded = CheckGround(collision);
+                    m_isGrounded |= collision.isGrounded;
                     MgOnCollision(collision);
 
                     if (!groundCheckPhase)/* resolve pushback using closest exit distance if no downpull was added*/
@@ -329,8 +347,9 @@ public abstract class MovementGeneric : MonoBehaviour
                     GfTools.Mult3(ref traceDir, _dist);
                     GfTools.Add3(ref position, traceDir);
 
-                    MgOnCollision(collision);
                     DetermineGeometryType(ref Velocity, ref lastNormal, collision, ref geometryclips, ref position);
+
+                    MgOnCollision(collision);
                 }
                 else /* Discovered noting along our linear path */
                 {
@@ -358,8 +377,7 @@ public abstract class MovementGeneric : MonoBehaviour
             m_transform.position = position;
 
 
-        if (!m_isGrounded)
-            m_slopeNormal = UpVec;
+        if (!m_isGrounded) m_slopeNormal = UpVec;
 
         AfterPhysChecks(deltaTime);
     }
@@ -456,6 +474,7 @@ public abstract class MovementGeneric : MonoBehaviour
             }
 
             // GfTools.Minus3(ref velocity, Vector3.Project(velocity, collision.normal));
+            //velocity = Vector3.ProjectOnPlane(velocity, collision.normal);
             GfTools.Minus3(ref velocity, (Vector3.Dot(velocity, collision.normal)) * collision.normal);
         }
     }
@@ -544,6 +563,7 @@ public abstract class MovementGeneric : MonoBehaviour
         m_forceParented |= (forceParent && parent);
         if (parent != m_parentTransform && (forceParent || !m_forceParented))
         {
+            Debug.Log("I am setting the parent, IsGrounded is now: " + m_isGrounded);
             if (m_parentTransform) DetachFromParent(addVelocityFromPreviousParent, true);
             m_adjustedVelocityToParent = m_validatedParentVertical = false;
             m_timeOfLastParentPosUpdate = m_timeOfLastParentRotUpdate = Time.time;
@@ -611,36 +631,21 @@ public abstract class MovementGeneric : MonoBehaviour
     public Vector3 MovementDirComputed()
     {
         Vector3 movDir = MovementDirRaw;
-        if (!UpVec.Equals(MovementDirUpVec) && !movDir.Equals(Zero3))
+
+        if (!CanFly) GfTools.RemoveAxis(ref movDir, MovementDirUpVec); //remove vertical component
+
+        if (!m_slopeNormal.Equals(MovementDirUpVec) && !movDir.Equals(Zero3)) //project on plane
         {
-            Debug.Log("i got here! for some reason...");
-            movDir = GfTools.RotationTo(MovementDirUpVec, UpVec) * MovementDirRaw;
+            Vector3 auxMovDir = movDir;
 
-            //  Vector3 movDirNoVert = movDir - UpVec * Vector3.Dot(UpVec, movDir);
-            //  Vector3 rawMov = GfTools.RotationTo(MovementDirUpVec, UpVec) * MovementDirRaw;
-            // rawMov -= UpVec * Vector3.Dot(UpVec, rawMov);
+            movDir = GfTools.RotationTo(MovementDirUpVec, m_slopeNormal) * movDir;
+            if (!MovementDirUpVec.Equals(UpVec)) auxMovDir = GfTools.RotationTo(MovementDirUpVec, UpVec) * auxMovDir;
 
-            // float angle = GfTools.SignedAngle(movDirNoVert, rawMov, UpVec);
-            // movDir = Quaternion.AngleAxis(angle, UpVec) * movDir;
-        }
+            GfTools.RemoveAxis(ref auxMovDir, m_slopeNormal);
+            Vector3 horizontalMovDir = GfTools.RemoveAxis(movDir, m_slopeNormal);
 
-        if (!m_slopeNormal.Equals(UpVec))
-        {
-            Vector3 auxMov = movDir;
-            float magnitude = movDir.magnitude;
-            GfTools.Minus3(ref movDir, Vector3.Dot(movDir, m_slopeNormal) * m_slopeNormal);
-
-            // movDir = Vector3.ProjectOnPlane(movDir.normalized, m_slopeNormal);
-
-            movDir.Normalize();
-            GfTools.Mult3(ref movDir, magnitude);
-
-            Debug.Log("movDir is: " + auxMov + " projection is: " + movDir);
-        }
-
-        if (!CanFly)
-        {
-            GfTools.Minus3(ref movDir, UpVec * Vector3.Dot(UpVec, movDir));
+            float angleDiff = GfTools.SignedAngle(horizontalMovDir, auxMovDir, m_slopeNormal);
+            movDir = Quaternion.AngleAxis(-angleDiff, m_slopeNormal) * movDir;
         }
 
         return movDir;
@@ -649,6 +654,14 @@ public abstract class MovementGeneric : MonoBehaviour
     public virtual void SetMovementDir(Vector3 dir)
     {
         SetMovementDir(dir, Vector3.up);
+    }
+
+    public Vector3 UpVecEstimated()
+    {
+        if (m_sphericalParent)
+            return (transform.position - m_sphericalParent.position).normalized;
+        else
+            return UpVec;
     }
 
     /**PhysCheckGivenDelta
