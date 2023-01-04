@@ -54,14 +54,13 @@ public class GfTools
     /*
     Implementation from quat.rotationTo function from toji/gl-matrix on github, found in quat.js
     */
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Quaternion RotationTo(Vector3 initial, Vector3 final)
+    public static Quaternion RotationTo(Vector3 initial, Vector3 final, Vector3 horizontalVector)
     {
         float dot = Vector3.Dot(initial, final);
         if (dot < -0.9999999) //opposite vectors
         {
             Debug.Log("OPPOSITE VECTOR");
-            Vector3 cross = Vector3.Cross(Vector3.right, initial);
+            Vector3 cross = Vector3.Cross(horizontalVector, initial);
             if (cross.magnitude < 0.0000001)
                 cross = Vector3.Cross(Vector3.up, initial);
             return Quaternion.AngleAxis(180, cross.normalized);
@@ -75,6 +74,11 @@ public class GfTools
         {
             return Quaternion.identity;
         }
+    }
+
+    public static Quaternion RotationTo(Vector3 initial, Vector3 final)
+    {
+        return RotationTo(initial, final, Vector3.forward);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -126,16 +126,16 @@ public class PlayerTestController : MovementGeneric
         //ROTATION SECTION
         if (movDir != Vector3.zero)
         {
-            Vector3 desiredForwardVec = GfTools.RemoveAxis(movDir, UpVec);
-            Vector3 forwardVec = GfTools.RemoveAxis(transform.forward, UpVec);
+            Vector3 desiredForwardVec = GfTools.RemoveAxis(movDir, m_rotationUpVec);
+            Vector3 forwardVec = GfTools.RemoveAxis(transform.forward, m_rotationUpVec);
 
             float turnAmount = m_turnSpeed * deltaTime;
-            float angleDistance = -GfTools.SignedAngle(desiredForwardVec, forwardVec, UpVec); //angle between the current and desired rotation
+            float angleDistance = -GfTools.SignedAngle(desiredForwardVec, forwardVec, m_rotationUpVec); //angle between the current and desired rotation
             float degreesMovement = Min(System.MathF.Abs(angleDistance), turnAmount);
 
             if (degreesMovement > 0.05f)
             {
-                Quaternion angleAxis = Quaternion.AngleAxis(Sign(angleDistance) * degreesMovement, UpVec);
+                Quaternion angleAxis = Quaternion.AngleAxis(Sign(angleDistance) * degreesMovement, m_rotationUpVec);
                 m_transform.rotation = angleAxis * m_transform.rotation;
             }
         }

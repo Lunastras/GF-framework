@@ -31,6 +31,13 @@ public abstract class MovementGeneric : MonoBehaviour
 
     protected float m_previousPhysDeltaTime;
 
+    //Used to keep track of the supposed current up direction
+    //because the rotation is incremented, floating point errors make the rotation inaccurate
+    //this value is used to identify and correct these calculation errors, as the UpVec might not actually be equal to the real
+    //rotation up vector
+    protected Vector3 m_rotationUpVec = Vector3.up;
+
+
     //private new Rigidbody rigidbody;
     private Collider m_collider;
 
@@ -65,6 +72,7 @@ public abstract class MovementGeneric : MonoBehaviour
 
     private Vector3 m_interpolationMovement;
     private Quaternion m_interpolationRotation;
+    private Quaternion m_interpolationUpDirRot;
 
     protected Quaternion m_rotationToApply;
 
@@ -171,10 +179,10 @@ public abstract class MovementGeneric : MonoBehaviour
 
                 if (MovementDirRaw == Zero3) //not working properly, gotta fix
                 {
-                    GfTools.Minus3(ref vecFromParent, UpVec * Vector3.Dot(UpVec, vecFromParent));
-                    GfTools.Minus3(ref newVecFromParent, UpVec * Vector3.Dot(UpVec, newVecFromParent));
-                    float rotationDegrees = GfTools.SignedAngle(vecFromParent, newVecFromParent, UpVec);
-                    m_transform.Rotate(UpVec * rotationDegrees, Space.World);
+                    GfTools.RemoveAxis(ref vecFromParent, m_rotationUpVec);
+                    GfTools.RemoveAxis(ref newVecFromParent, m_rotationUpVec);
+                    float rotationDegrees = GfTools.SignedAngle(vecFromParent, newVecFromParent, m_rotationUpVec);
+                    m_transform.rotation = Quaternion.AngleAxis(rotationDegrees, m_rotationUpVec) * m_transform.rotation;
                 }
 
                 m_parentDeltaTimeRot = System.MathF.Max(deltaTime, currentTime - m_timeOfLastParentRotUpdate);
@@ -221,6 +229,7 @@ public abstract class MovementGeneric : MonoBehaviour
         #endregion
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void PhysCheck(float deltaTime)
     {
@@ -240,10 +249,17 @@ public abstract class MovementGeneric : MonoBehaviour
         //DELLME
         if (m_sphericalParent)
         {
-            UpVec = (transform.position - m_sphericalParent.position).normalized;
-            transform.rotation = Quaternion.Inverse(m_upVecRotCorrection) * transform.rotation;
-            m_upVecRotCorrection = GfTools.RotationTo(INITIAL_UP, UpVec);
-            transform.rotation = m_upVecRotCorrection * transform.rotation;
+            Vector3 newUpVec = (transform.position - m_sphericalParent.position).normalized;
+            m_upVecRotCorrection = Quaternion.FromToRotation(UpVec, newUpVec);
+            m_transform.rotation = m_upVecRotCorrection * m_transform.rotation;
+            m_rotationUpVec = m_upVecRotCorrection * m_rotationUpVec;
+            Quaternion errorCorrection = Quaternion.FromToRotation(m_rotationUpVec, UpVec);
+            m_rotationUpVec = errorCorrection * m_rotationUpVec;
+            m_transform.rotation = errorCorrection * m_transform.rotation;
+
+            Debug.Log("Offset angle is: " + GfTools.Angle(UpVec, transform.up) + " and the error tracker is: " + GfTools.Angle(UpVec, m_rotationUpVec));
+
+            UpVec = newUpVec;
         }
         //DELLME
 

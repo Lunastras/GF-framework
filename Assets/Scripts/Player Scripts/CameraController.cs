@@ -68,8 +68,13 @@ public class CameraController : MonoBehaviour
 
     public Vector3 Upvec = Vector3.up;
 
-    private readonly Vector3 UPDIR = new Vector3(0, 1, 0);
+    private Vector3 previousUp = Vector3.up;
 
+    private static readonly Vector3 UPDIR = Vector3.up;
+
+    private Quaternion m_lastAppliedRot = Quaternion.identity;
+
+    private float m_oldUpvecDotSign;
 
     // Start is called before the first frame update
     void Start()
@@ -79,21 +84,54 @@ public class CameraController : MonoBehaviour
         aimTarget = null;
     }
 
-    // Update is called once per frame
-    public void Move(float deltaTime)
+    public void UpdateRotation(float deltaTime)
     {
         yaw += Input.GetAxisRaw("Mouse X") * sensitivity * deltaTime;
         pitch -= Input.GetAxisRaw("Mouse Y") * sensitivity * deltaTime;
         pitch = Mathf.Clamp(pitch, pitchMin, pitchMax);
+        /*
 
-        Quaternion upvecCorrection = GfTools.RotationTo(UPDIR, Upvec);
-        Quaternion desiredRotation = upvecCorrection * Quaternion.Euler(pitch, yaw, 0);
+        Quaternion upvecCorrection;
+        float currentSign = Mathf.Sign(Vector3.Dot(UPDIR, Upvec));
 
-        //currentRotation = Vector3.SmoothDamp(currentRotation, desiredRotation.eulerAngles, ref refRotationVelocity, rotationSmoothTime);
-        //transform.eulerAngles = currentRotation;
-        transform.rotation = desiredRotation;
+        if (Vector3.Dot(UPDIR, Upvec) < 0)
+            upvecCorrection = Quaternion.FromToRotation(-UPDIR, Upvec) * Quaternion.FromToRotation(UPDIR, -UPDIR);
+        else
+            upvecCorrection = Quaternion.FromToRotation(UPDIR, Upvec);
 
-        Vector3 desiredTargetPos = mainTarget.position; /*+ upvecCorrection * offset;*/
+        if (m_oldUpvecDotSign != currentSign)
+        {
+            Vector3 horizontalVector = GfTools.RemoveAxis(Upvec, UPDIR);
+            horizontalVector.Normalize();
+            float angle = 2 * GfTools.SignedAngle(Vector3.forward, horizontalVector, UPDIR);
+            yaw += currentSign * angle;
+        }
+
+        m_oldUpvecDotSign = currentSign;
+        */
+
+        Quaternion mouseRot = Quaternion.Euler(pitch, yaw, 0);
+        mouseRot = Quaternion.identity;
+        Quaternion desiredRot = Quaternion.Inverse(m_lastAppliedRot) * transform.rotation;
+        desiredRot = Quaternion.FromToRotation(desiredRot * UPDIR, Upvec) * desiredRot;
+
+
+        m_lastAppliedRot = Quaternion.AngleAxis(yaw, Upvec);
+        m_lastAppliedRot = m_lastAppliedRot * Quaternion.AngleAxis(pitch, desiredRot * Vector3.right);
+
+        desiredRot = m_lastAppliedRot * desiredRot;
+        transform.rotation = desiredRot;
+
+
+        // transform.rotation = upvecCorrection * mouseRot;
+    }
+
+    // Update is called once per frame
+    public void Move(float deltaTime)
+    {
+        Quaternion upvecCorrection = Quaternion.FromToRotation(UPDIR, Upvec);
+
+        Vector3 desiredTargetPos = mainTarget.position + upvecCorrection * offset;
         currentTargetPos = Vector3.SmoothDamp(currentTargetPos, desiredTargetPos, ref refTargetPosVelocity, movementSmoothTime);
 
         timeUntilPhysCheck -= deltaTime;
@@ -123,8 +161,8 @@ public class CameraController : MonoBehaviour
 
         currentTargetDst = Mathf.SmoothDamp(currentTargetDst, currentDesiredDst, ref refDistanceVel, distanceSmoothTime);
 
-        transform.position = currentTargetPos - forward * currentTargetDst;
-        //transform.position = currentTargetPos - forward * dstFromtarget;
+        // transform.position = currentTargetPos - forward * currentTargetDst;
+        transform.position = desiredTargetPos - forward * dstFromtarget;
 
     }
 }

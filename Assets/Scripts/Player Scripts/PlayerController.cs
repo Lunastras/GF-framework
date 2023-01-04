@@ -150,14 +150,15 @@ public class PlayerController : MonoBehaviour
     {
         float deltaTime = Time.deltaTime;
 
+        cameraController.Upvec = movement.UpVecEstimated();
+        cameraController.UpdateRotation(deltaTime);
+
         //only get input for movement if physics will be checked
         if (movement.PhysCheckGivenDelta(deltaTime))
         {
             CalculateJump();
             GetMovementInput();
         }
-
-        cameraController.Upvec = movement.UpVecEstimated();
 
         movement.Move(deltaTime);
         cameraController.Move(deltaTime);
