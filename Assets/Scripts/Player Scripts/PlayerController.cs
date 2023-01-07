@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     private WeaponFiring m_weaponFiring;
 
     [SerializeField]
-    private MovementGeneric m_movement;
+    private GfMovementGeneric m_movement;
 
     [SerializeField]
     //misc
@@ -26,22 +26,18 @@ public class PlayerController : MonoBehaviour
     //misc
     private float m_timeBetweenPhysChecks = 0.02f;
 
-    [SerializeField]
-    //misc
-    private bool m_invertedY = false;
     private bool m_releasedJumpButton = false;
 
     private float m_timeUntilPhysChecks = 0;
     //misc
     private Transform m_playerCamera;
 
-
     // Start is called before the first frame update
     void Start()
     {
         if (m_movement == null)
         {
-            m_movement = GetComponent<MovementGeneric>();
+            m_movement = GetComponent<GfMovementGeneric>();
             if (null == m_movement)
                 Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
 
@@ -81,7 +77,7 @@ public class PlayerController : MonoBehaviour
             Vector3 cameraForward = m_playerCamera.forward * input.y;
             Vector3 cameraRight = m_playerCamera.right * input.x;
 
-            Vector3 upVec = m_movement.UpVec;
+            Vector3 upVec = m_movement.UpvecRotation();
 
             if (!m_movement.CanFly)
             {
@@ -158,8 +154,19 @@ public class PlayerController : MonoBehaviour
         if (m_fixedUpdatePhysics)
         {
             float physDelta = Time.fixedDeltaTime;
-            m_movement.UpdatePhysics(physDelta, physDelta); //actually the current deltatime   
+            m_movement.UpdatePhysics(physDelta); //actually the current deltatime   
         }
+    }
+
+    private void PreMoveCalculations(float deltaTime)
+    {
+        m_cameraController.m_upvec = m_movement.UpvecRotation();
+        m_cameraController.UpdateRotation(deltaTime);
+
+        CalculateJump();
+        GetMovementInput();
+
+        m_movement.Move(deltaTime);
     }
 
     void LateUpdate()
@@ -169,18 +176,12 @@ public class PlayerController : MonoBehaviour
 
         float deltaTime = Time.deltaTime;
 
-        m_cameraController.m_upvec = m_movement.UpvecRotation();
-        m_cameraController.UpdateRotation(deltaTime);
-
-        CalculateJump();
-        GetMovementInput();
-
-        m_movement.Move(deltaTime);
+        PreMoveCalculations(deltaTime);
 
         if (!m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
         {
             float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks + m_timeUntilPhysChecks);
-            m_movement.UpdatePhysics(physDelta, m_timeBetweenPhysChecks); //actually the current deltatime   
+            m_movement.UpdatePhysics(physDelta); //actually the current deltatime   
             m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
         }
 

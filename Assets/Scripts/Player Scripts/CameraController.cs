@@ -38,6 +38,9 @@ public class CameraController : MonoBehaviour
     [SerializeField]
     private float m_distanceSmoothTime = 0.04f;
 
+    [SerializeField]
+    private bool m_invertedY = false;
+
     //Internal script variables
 
     private Vector3 m_refRotationVelocity;
@@ -79,8 +82,11 @@ public class CameraController : MonoBehaviour
 
     public void UpdateRotation(float deltaTime)
     {
+        float pitchCoef = 1;
+        if (m_invertedY) pitchCoef = -1;
+
         m_yaw += Input.GetAxisRaw("Mouse X") * m_sensitivity * deltaTime;
-        m_pitch -= Input.GetAxisRaw("Mouse Y") * m_sensitivity * deltaTime;
+        m_pitch += Input.GetAxisRaw("Mouse Y") * m_sensitivity * deltaTime * pitchCoef;
         m_pitch = Mathf.Clamp(m_pitch, m_pitchMin, m_pitchMax);
 
         Quaternion mouseRot = Quaternion.Euler(m_pitch, m_yaw, 0);

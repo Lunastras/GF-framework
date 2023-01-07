@@ -7,11 +7,11 @@ public class OutOfBoundsRespawn : MonoBehaviour
     public float respawnYCoord = -10;
     public Transform respawnPoint;
     private Vector3 respawnPosition;
-    private MovementGeneric movement;
+    private GfMovementGeneric movement;
     // Start is called before the first frame update
     void Start()
     {
-        movement = GetComponent<MovementGeneric>();
+        movement = GetComponent<GfMovementGeneric>();
         if (respawnPoint)
         {
             transform.position = respawnPoint.position;
@@ -31,7 +31,7 @@ public class OutOfBoundsRespawn : MonoBehaviour
             transform.position = respawnPosition;
             if (movement != null)
             {
-                movement.Velocity = Vector3.zero;
+                movement.m_velocity = Vector3.zero;
             }
         }
     }

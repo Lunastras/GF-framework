@@ -4,7 +4,7 @@ using UnityEngine;
 
 using static System.MathF;
 
-public class PlayerTestController : MovementGeneric
+public class GfMovementSimple : GfMovementGeneric
 {
     [SerializeField]
     private float m_acceleration = 10;
@@ -22,9 +22,6 @@ public class PlayerTestController : MovementGeneric
     [SerializeField]
     private float m_turnSpeed = 10;
 
-    [SerializeField]
-    private bool breakWhenUnparent = true;
-
     public float AccelerationCoef = 1;
     public float DeaccelerationCoef = 1;
     private float m_effectiveDeacceleration;
@@ -35,6 +32,9 @@ public class PlayerTestController : MovementGeneric
 
     //whether we touched the current parent this frame or not
     private bool m_touchedParent;
+
+    [SerializeField]
+    private bool breakWhenUnparent = true;
 
     // Start is called before the first frame update
     protected override void InternalStart()
@@ -58,7 +58,7 @@ public class PlayerTestController : MovementGeneric
         if (!m_touchedParent && null != m_parentTransform)
         {
             Debug.Log("I haven't touched " + m_parentTransform.name + " this frame");
-            DetachFromParent();
+            DetachFromParentTransform();
             if (breakWhenUnparent) Debug.Break();
         }
 
@@ -84,10 +84,10 @@ public class PlayerTestController : MovementGeneric
     {
         movDir.Normalize();
         Vector3 slope = m_slopeNormal;
-        float verticalFallSpeed = Vector3.Dot(slope, Velocity);
+        float verticalFallSpeed = Vector3.Dot(slope, m_velocity);
         float fallMagn = 0, fallMaxDiff = -verticalFallSpeed - m_maxFallSpeed; //todo
         //remove vertical factor from the velocity to calculate the horizontal plane velocity easier
-        Vector3 effectiveVelocity = Velocity;
+        Vector3 effectiveVelocity = m_velocity;
 
         if (!CanFly)
         {
@@ -119,9 +119,9 @@ public class PlayerTestController : MovementGeneric
         GfTools.Mult3(ref unwantedVelocity, deaccMagn);
         GfTools.Mult3(ref slope, fallMagn);
 
-        GfTools.Add3(ref Velocity, movDir * accMagn); //add acceleration
-        GfTools.Minus3(ref Velocity, unwantedVelocity);//add deacceleration
-        GfTools.Minus3(ref Velocity, slope); //add vertical speed change
+        GfTools.Add3(ref m_velocity, movDir * accMagn); //add acceleration
+        GfTools.Minus3(ref m_velocity, unwantedVelocity);//add deacceleration
+        GfTools.Minus3(ref m_velocity, slope); //add vertical speed change
 
         //ROTATION SECTION
         if (movDir != Vector3.zero)
@@ -146,12 +146,12 @@ public class PlayerTestController : MovementGeneric
         if (JumpTrigger)
         {
             JumpTrigger = false;
-            Velocity = Velocity - UpVec * Vector3.Dot(UpVec, Velocity);
-            Velocity = Velocity + UpVec * m_jumpForce;
+            m_velocity = m_velocity - m_upVec * Vector3.Dot(m_upVec, m_velocity);
+            m_velocity = m_velocity + m_upVec * m_jumpForce;
             m_isGrounded = false;
             m_jumpedThisFrame = true;
             // Debug.Log("I HAVE JUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUMPED");
-            DetachFromParent();
+            DetachFromParentTransform();
         }
 
     }

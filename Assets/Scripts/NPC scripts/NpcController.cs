@@ -6,7 +6,7 @@ public class NpcController : MonoBehaviour
 {
 
     [SerializeField]
-    protected MovementGeneric simpleMovement;
+    protected GfMovementGeneric simpleMovement;
 
     //how often the NPC will check if they have direct contact with the target
     //if it's smaller than 0, it will never use raycast checks;
@@ -56,7 +56,7 @@ public class NpcController : MonoBehaviour
     {
         if (simpleMovement == null)
         {
-            simpleMovement = GetComponent<MovementGeneric>();
+            simpleMovement = GetComponent<GfMovementGeneric>();
         }
     }
 
@@ -118,19 +118,19 @@ public class NpcController : MonoBehaviour
 
             float dotTargetView = Vector3.Dot(transform.forward, dirToTarget);
 
-            auxCanSeeTarget = unlimitedFov || (distanceFromTarget <= lineOfSightLength 
+            auxCanSeeTarget = unlimitedFov || (distanceFromTarget <= lineOfSightLength
                                 && Mathf.Cos(fieldOfViewDegrees / 2.0f * Mathf.Deg2Rad) <= dotTargetView);
 
             //check if uses raycast
             if (targetCheckCooldown >= 0 && auxCanSeeTarget)
             {
-               // Debug.Log("CHECKIES target RAY 2");
+                // Debug.Log("CHECKIES target RAY 2");
                 timeUntilNextTargetCheck = targetCheckCooldown * GfRandom.Range(0.5f, 1.5f);
 
                 Vector3 offsetSource = Vector3.up;
                 Vector3 offsetDest = Vector3.up * 1.0f;
 
-                dirToTarget =  (target.position + offsetDest) - (transform.position + offsetSource);
+                dirToTarget = (target.position + offsetDest) - (transform.position + offsetSource);
                 distanceFromTarget = dirToTarget.magnitude;
                 dirToTarget = dirToTarget.normalized;
 
@@ -157,14 +157,15 @@ public class NpcController : MonoBehaviour
         bool canSeeTarget = CheckCanSeeTarget(destination.TransformDest, lineOfSightLength, NpcState.CHASING_TARGET == npcState);
 
         Vector3 targetPosition = destination.LastKnownPosition();
-       // Debug.Log("TARGET POSITION IS " + targetPosition);
-       // Debug.Log("REALPOSITION IS " + destination.RealPosition());
+        // Debug.Log("TARGET POSITION IS " + targetPosition);
+        // Debug.Log("REALPOSITION IS " + destination.RealPosition());
 
         if (canSeeTarget)
         {
             timeUntilLosetarget = TargetTrackingTimeWindow;
             npcState = NpcState.CHASING_TARGET;
-        } else
+        }
+        else
         {
             npcState = NpcState.SEARCHING_TARGET;
         }
@@ -199,7 +200,8 @@ public class NpcController : MonoBehaviour
                     if (canSeeTarget)
                     {
                         npcState = NpcState.CHASING_TARGET;
-                    } else
+                    }
+                    else
                     {
                         LostTargetBehaviour();
                     }
@@ -294,7 +296,7 @@ public class NpcController : MonoBehaviour
     private bool CheckArrivedAtDestination()
     {
         Vector3 targetPosition = destination.LastKnownPosition();
-       // Debug.Log("CHECKING IF I ARRIVED AT " + targetPosition);
+        // Debug.Log("CHECKING IF I ARRIVED AT " + targetPosition);
         //Debug.Log("the name of the target is: " + destination.TransformDest.name);
         Vector3 dirToTarget = targetPosition - transform.position;
 
