@@ -68,16 +68,6 @@ public class PlayerController : MonoBehaviour
 
             Vector3 movementDir = cameraForward + cameraRight;
             movement.SetMovementDir(movementDir, upVec);
-
-            /*
-            targetYDeg = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + playerCamera.eulerAngles.y;
-            Vector2 movementDir2Norm = GfTools.Degree2Vector2(targetYDeg);
-
-
-            float yDir = playerCamera.forward.y;
-            yDir *= invertedY ? -1 : 1;
-
-            movement.SetMovementDir(new Vector3(movementDir2Norm.x, yDir, movementDir2Norm.y));*/
         }
         else
         {
@@ -150,7 +140,7 @@ public class PlayerController : MonoBehaviour
     {
         float deltaTime = Time.deltaTime;
 
-        cameraController.Upvec = movement.UpVecEstimated();
+        cameraController.Upvec = movement.UpvecRotation();
         cameraController.UpdateRotation(deltaTime);
 
         //only get input for movement if physics will be checked

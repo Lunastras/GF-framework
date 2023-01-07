@@ -448,13 +448,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CanFly: 0
-  m_useInterpolation: 0
+  m_useInterpolation: 1
   m_speed: 12
   m_mass: 45
   m_stepOffset: 0.3
   m_slopeLimit: 45
   m_upperSlopeLimit: 110
-  m_timeBetweenPhysChecks: 0
+  m_timeBetweenPhysChecks: 0.02
   m_queryTrigger: 1
   m_sphericalParent: {fileID: 450051792}
   JumpTrigger: 0

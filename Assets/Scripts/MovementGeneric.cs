@@ -100,8 +100,6 @@ public abstract class MovementGeneric : MonoBehaviour
     private const float MIN_DISPLACEMENT = 0.000000001F; // min squared length of a displacement vector required for a Move() to proceed.
     private const float MIN_PUSHBACK_DEPTH = 0.00001F;
 
-    private Quaternion m_upVecRotCorrection = Quaternion.identity;
-
     #endregion
 
     private void Start()
@@ -224,6 +222,8 @@ public abstract class MovementGeneric : MonoBehaviour
 
             m_transform.position += m_interpolationMovement * timefactor;
             m_transform.rotation *= Quaternion.LerpUnclamped(Quaternion.identity, m_interpolationRotation, timefactor);
+
+            UpdateSphericalOrientation();
         }
 
         #endregion
@@ -244,25 +244,8 @@ public abstract class MovementGeneric : MonoBehaviour
             m_interpolationRotation = Quaternion.identity;
         }
 
+        UpdateSphericalOrientation();
         Quaternion currentRotation = m_transform.rotation;
-
-        //DELLME
-        if (m_sphericalParent)
-        {
-            Vector3 newUpVec = (transform.position - m_sphericalParent.position).normalized;
-            m_upVecRotCorrection = Quaternion.FromToRotation(UpVec, newUpVec);
-            m_transform.rotation = m_upVecRotCorrection * m_transform.rotation;
-            m_rotationUpVec = m_upVecRotCorrection * m_rotationUpVec;
-            Quaternion errorCorrection = Quaternion.FromToRotation(m_rotationUpVec, UpVec);
-            m_rotationUpVec = errorCorrection * m_rotationUpVec;
-            m_transform.rotation = errorCorrection * m_transform.rotation;
-
-            Debug.Log("Offset angle is: " + GfTools.Angle(UpVec, transform.up) + " and the error tracker is: " + GfTools.Angle(UpVec, m_rotationUpVec));
-
-            UpVec = newUpVec;
-        }
-        //DELLME
-
         BeforePhysChecks(deltaTime);
 
         m_interpolateThisFrame = m_useInterpolation; //&& Time.deltaTime < m_timeBetweenPhysChecks;
@@ -390,12 +373,34 @@ public abstract class MovementGeneric : MonoBehaviour
             }
         }
         else
+        {
             m_transform.position = position;
+            UpdateSphericalOrientation();
+        }
 
 
         if (!m_isGrounded) m_slopeNormal = UpVec;
 
         AfterPhysChecks(deltaTime);
+    }
+
+    private void UpdateSphericalOrientation()
+    {
+        if (m_sphericalParent)
+        {
+            Vector3 newUpVec = (transform.position - m_sphericalParent.position).normalized;
+
+            Quaternion upVecRotCorrection = Quaternion.FromToRotation(UpVec, newUpVec);
+            m_transform.rotation = upVecRotCorrection * m_transform.rotation;
+            m_rotationUpVec = upVecRotCorrection * m_rotationUpVec;
+
+            upVecRotCorrection = Quaternion.FromToRotation(m_rotationUpVec, UpVec); //correct any floating point errors
+            m_transform.rotation = upVecRotCorrection * m_transform.rotation;
+            m_rotationUpVec = upVecRotCorrection * m_rotationUpVec;
+
+            UpVec = newUpVec;
+            Debug.Log("Offset angle is: " + GfTools.Angle(UpVec, transform.up) + " and the error tracker is: " + GfTools.Angle(UpVec, m_rotationUpVec));
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -678,6 +683,12 @@ public abstract class MovementGeneric : MonoBehaviour
             return (transform.position - m_sphericalParent.position).normalized;
         else
             return UpVec;
+    }
+
+    //The orientation's upvec without any external rotations, should be used when rotating the character
+    public Vector3 UpvecRotation()
+    {
+        return m_rotationUpVec;
     }
 
     /**PhysCheckGivenDelta
