@@ -20,8 +20,6 @@ public abstract class MovementGeneric : MonoBehaviour
     [SerializeField]
     protected float m_upperSlopeLimit = 100;
     [SerializeField]
-    private float m_timeBetweenPhysChecks = 0.02f;
-    [SerializeField]
     private QueryTriggerInteraction m_queryTrigger;
 
     [SerializeField]
@@ -71,34 +69,30 @@ public abstract class MovementGeneric : MonoBehaviour
     private bool m_forceParented = false;
 
     private Vector3 m_interpolationMovement;
-    private Quaternion m_interpolationRotation;
-    private Quaternion m_interpolationUpDirRot;
+    private Quaternion m_interpolationRotation = Quaternion.identity;
 
-    protected Quaternion m_rotationToApply;
+    private float m_timeBetweenPhysChecks = 0.02f;
 
     private float m_previousLerpAlpha;
 
     private float m_accumulatedTimefactor = 0;
 
-    private float m_timeUntilPhysChecks = 0;
+    // private float m_timeUntilPhysChecks = 0;
 
-    private float m_lastParentMovDeltaTime;
+    private double m_timeOfLastPhysCheck;
 
     private bool m_interpolateThisFrame = false;
     private bool m_validatedParentVertical; //whether the vertical movement of the parent was accounted to the actor's position
 
     private ArchetypeCollision m_archetype;
     static readonly protected Vector3 Zero3 = new Vector3(0, 0, 0);
-    static readonly protected Vector3 INITIAL_UP = Vector3.up;
-
-
     private readonly float TRACE_SKIN = 0.01F;
     private readonly float TRACEBIAS = 0.1F;
     private readonly float DOWNPULL = 0.1F;
     private const int MAX_PUSHBACKS = 8; // # of iterations in our Pushback() funcs
     private const int MAX_BUMPS = 6; // # of iterations in our Move() funcs                      // a hit buffer.
     private const float MIN_DISPLACEMENT = 0.000000001F; // min squared length of a displacement vector required for a Move() to proceed.
-    private const float MIN_PUSHBACK_DEPTH = 0.00001F;
+    private const float MIN_PUSHBACK_DEPTH = 0.000001F;
 
     #endregion
 
@@ -206,19 +200,17 @@ public abstract class MovementGeneric : MonoBehaviour
 
         #region CalculateMovement
 
-        if ((m_timeUntilPhysChecks -= deltaTime) <= 0)
+        if (m_interpolateThisFrame)
         {
-            m_previousPhysDeltaTime = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks + m_timeUntilPhysChecks);
-            PhysCheck(m_previousPhysDeltaTime); //actually the current deltatime   
-            m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
-        }
-        else if (m_interpolateThisFrame)
-        {
+            float timeSincePhysCheck = (float)(Time.timeAsDouble - m_timeOfLastPhysCheck);
             float timeBetweenChecks = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks);
-            float alpha = (timeBetweenChecks - m_timeUntilPhysChecks) / timeBetweenChecks;
+            float alpha = System.MathF.Min(1.0f, timeSincePhysCheck / timeBetweenChecks);
             float timefactor = alpha - m_previousLerpAlpha;
             m_previousLerpAlpha = alpha;
             m_accumulatedTimefactor += timefactor;
+
+            Debug.Log("I am interpolation, the time factor added is: " + m_accumulatedTimefactor);
+
 
             m_transform.position += m_interpolationMovement * timefactor;
             m_transform.rotation *= Quaternion.LerpUnclamped(Quaternion.identity, m_interpolationRotation, timefactor);
@@ -230,8 +222,7 @@ public abstract class MovementGeneric : MonoBehaviour
     }
 
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void PhysCheck(float deltaTime)
+    public void UpdatePhysics(float deltaTime, float timeBetweenChecks)
     {
         if (m_interpolateThisFrame)
         {
@@ -243,6 +234,10 @@ public abstract class MovementGeneric : MonoBehaviour
             m_transform.rotation = m_transform.rotation * correctedRotation;
             m_interpolationRotation = Quaternion.identity;
         }
+
+        m_timeBetweenPhysChecks = timeBetweenChecks;
+        //m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
+        m_timeOfLastPhysCheck = Time.timeAsDouble;
 
         UpdateSphericalOrientation();
         Quaternion currentRotation = m_transform.rotation;
@@ -689,16 +684,6 @@ public abstract class MovementGeneric : MonoBehaviour
     public Vector3 UpvecRotation()
     {
         return m_rotationUpVec;
-    }
-
-    /**PhysCheckGivenDelta
-    Check if physics will be checked when Move is called with the given deltaTime
-    @param1 deltaTime Value that would be passed to the Move function
-    @return bool Wheteher or not the physics will be checked with the given delta
-    */
-    public bool PhysCheckGivenDelta(float deltaTime)
-    {
-        return m_timeUntilPhysChecks - deltaTime <= 0;
     }
 
     public virtual void SetMovementDir(Vector3 dir, Vector3 upVec)

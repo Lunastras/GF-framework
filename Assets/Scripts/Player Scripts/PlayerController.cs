@@ -5,43 +5,66 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField]
-    private WeaponFiring weaponFiring;
+    private WeaponFiring m_weaponFiring;
 
     [SerializeField]
-    private MovementGeneric movement;
-
-    [SerializeField]
-    //misc
-    private LoadoutManager loadoutManager;
+    private MovementGeneric m_movement;
 
     [SerializeField]
     //misc
-    private Transform playerCamera;
+    private LoadoutManager m_loadoutManager;
 
     [SerializeField]
     //misc
-    private CameraController cameraController;
+    private CameraController m_cameraController;
 
     [SerializeField]
     //misc
-    private bool invertedY = false;
-    private bool releasedJumpButton = false;
+    private bool m_fixedUpdatePhysics = true;
 
+    [SerializeField]
+    //misc
+    private float m_timeBetweenPhysChecks = 0.02f;
+
+    [SerializeField]
+    //misc
+    private bool m_invertedY = false;
+    private bool m_releasedJumpButton = false;
+
+    private float m_timeUntilPhysChecks = 0;
+    //misc
+    private Transform m_playerCamera;
 
 
     // Start is called before the first frame update
     void Start()
     {
-        if (playerCamera == null)
-            playerCamera = Camera.main.transform;
+        if (m_movement == null)
+        {
+            m_movement = GetComponent<MovementGeneric>();
+            if (null == m_movement)
+                Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
+
+        }
+
+        if (m_cameraController == null)
+        {
+            m_playerCamera = Camera.main.transform;
+            m_cameraController = m_playerCamera.GetComponent<CameraController>();
+            if (null == m_cameraController)
+                Debug.LogError("ERROR: The main camera does not have a CameraController component. Please add it to the main camera.");
+            else
+                m_cameraController.SetMainTarget(m_movement.transform);
+        }
+        else m_playerCamera = m_cameraController.transform;
 
 
-        if (movement == null)
-            movement = GetComponent<MovementGeneric>();
-
-
-        if (weaponFiring == null)
-            weaponFiring = GetComponent<WeaponFiring>();
+        if (m_weaponFiring == null)
+        {
+            m_weaponFiring = GetComponent<WeaponFiring>();
+            if (null == m_weaponFiring)
+                Debug.LogError("ERROR: The gameobject does not have a WeaponFiring component! Please add on to the object");
+        }
     }
 
 
@@ -55,23 +78,23 @@ public class PlayerController : MonoBehaviour
             //float effectiveMagnitude = System.MathF.Min(1.0f, System.MathF.Max(input.x, input.y));
             if (movementDirMagnitude > 1) GfTools.Div2(ref input, movementDirMagnitude);
 
-            Vector3 cameraForward = playerCamera.forward * input.y;
-            Vector3 cameraRight = playerCamera.right * input.x;
+            Vector3 cameraForward = m_playerCamera.forward * input.y;
+            Vector3 cameraRight = m_playerCamera.right * input.x;
 
-            Vector3 upVec = movement.UpVec;
+            Vector3 upVec = m_movement.UpVec;
 
-            if (!movement.CanFly)
+            if (!m_movement.CanFly)
             {
                 GfTools.Minus3(ref cameraForward, upVec * Vector3.Dot(upVec, cameraForward));
                 cameraForward.Normalize();
             }
 
             Vector3 movementDir = cameraForward + cameraRight;
-            movement.SetMovementDir(movementDir, upVec);
+            m_movement.SetMovementDir(movementDir, upVec);
         }
         else
         {
-            movement.SetMovementDir(Vector3.zero);
+            m_movement.SetMovementDir(Vector3.zero);
         }
 
 
@@ -81,76 +104,86 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetAxisRaw("Jump") > 0.8f)
         {
-            if (releasedJumpButton)
+            if (m_releasedJumpButton)
             {
-                releasedJumpButton = false;
-                movement.JumpTrigger = true;
+                m_releasedJumpButton = false;
+                m_movement.JumpTrigger = true;
             }
         }
         else
         {
-            releasedJumpButton = true;
+            m_releasedJumpButton = true;
         }
     }
 
     private bool wasFiring = false;
     private void GetFireInput()
     {
-        if (!weaponFiring)
+        if (!m_weaponFiring)
             return;
 
         if (Input.GetAxisRaw("Fire1") > 0.2f)
         {
             wasFiring = true;
-            weaponFiring.Fire();
+            m_weaponFiring.Fire();
         }
         else if (wasFiring)
         {
             wasFiring = false;
-            weaponFiring.ReleaseFire();
+            m_weaponFiring.ReleaseFire();
         }
     }
 
     private void GetWeaponScrollInput()
     {
-        if (loadoutManager == null)
+        if (m_loadoutManager == null)
             return;
 
         float wheelValue = Input.GetAxisRaw("Mouse ScrollWheel");
         if (wheelValue >= 0.1f)
         {
             Debug.Log("MOUSE UP");
-            loadoutManager.NextLoadout();
+            m_loadoutManager.NextLoadout();
         }
         else if (wheelValue <= -0.1f)
         {
             Debug.Log("MOUSE DOWN");
-            loadoutManager.PreviousLoadout();
+            m_loadoutManager.PreviousLoadout();
         }
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        GetFireInput();
-        GetWeaponScrollInput();
+        if (m_fixedUpdatePhysics)
+        {
+            float physDelta = Time.fixedDeltaTime;
+            m_movement.UpdatePhysics(physDelta, physDelta); //actually the current deltatime   
+        }
     }
 
     void LateUpdate()
     {
+        GetFireInput();
+        GetWeaponScrollInput();
+
         float deltaTime = Time.deltaTime;
 
-        cameraController.Upvec = movement.UpvecRotation();
-        cameraController.UpdateRotation(deltaTime);
+        m_cameraController.m_upvec = m_movement.UpvecRotation();
+        m_cameraController.UpdateRotation(deltaTime);
 
-        //only get input for movement if physics will be checked
-        if (movement.PhysCheckGivenDelta(deltaTime))
+        CalculateJump();
+        GetMovementInput();
+
+        m_movement.Move(deltaTime);
+
+        if (!m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
         {
-            CalculateJump();
-            GetMovementInput();
+            float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks + m_timeUntilPhysChecks);
+            m_movement.UpdatePhysics(physDelta, m_timeBetweenPhysChecks); //actually the current deltatime   
+            m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
         }
 
-        movement.Move(deltaTime);
-        cameraController.Move(deltaTime);
+        m_cameraController.Move(deltaTime);
     }
 }

@@ -3,121 +3,94 @@
 public class CameraController : MonoBehaviour
 {
     [SerializeField]
-    private Transform mainTarget;
+    private Transform m_mainTarget;
 
     [SerializeField]
-    private float sensitivity = 1;
+    private float m_sensitivity = 1;
 
     [SerializeField]
-    private Vector3 offset;
+    private Vector3 m_offset;
 
     [SerializeField]
-    private float physCheckInterval = 0.2f;
+    private float m_physCheckInterval = 0.2f;
 
     [SerializeField]
-    private float dstFromtarget = 6;
+    private float m_dstFromtarget = 6;
 
     [SerializeField]
-    private float collisionRadius = 1;
+    private float m_collisionRadius = 1;
 
     [SerializeField]
-    private float minDstFromtarget = 4;
+    private float m_minDstFromtarget = 4;
 
     [SerializeField]
-    private float pitchMin = -40;
+    private float m_pitchMin = -89;
 
     [SerializeField]
-    private float pitchMax = 85;
+    private float m_pitchMax = 85;
 
     [SerializeField]
-    private float rotationSmoothTime = 0.04f;
+    private float m_rotationSmoothTime = 0.04f;
 
     [SerializeField]
-    private float movementSmoothTime = 0.04f;
+    private float m_movementSmoothTime = 0.04f;
 
     [SerializeField]
-    private float distanceSmoothTime = 0.04f;
+    private float m_distanceSmoothTime = 0.04f;
 
     //Internal script variables
 
-    private Vector3 refRotationVelocity;
-    private Vector3 currentRotation;
-    private float distanceSmoothSpeed;
+    private Vector3 m_refRotationVelocity;
+    private Vector3 m_refTargetPosVelocity;
+    private float m_refDistanceVel;
 
-    private float yaw;
-    private float pitch;
-    private Camera cam;
+    private Vector3 m_currentRotation;
+    private float m_distanceSmoothSpeed;
 
-    private Vector3 currentTargetPos;
-    private float currentTargetDst;
-    private float currentDesiredDst;
+    private float m_yaw;
+    private float m_pitch;
+
+    private Vector3 m_currentTargetPos;
+    private float m_currentTargetDst;
+    private float m_currentDesiredDst;
 
 
-    private float timeUntilPhysCheck;
+    private float m_timeUntilPhysCheck;
 
-    private Transform aimTarget;
+    private Transform m_aimTarget;
 
-    private bool collidingWithSmth = false;
+    private bool m_collidingWithSmth = false;
 
-    private RaycastHit raycastHit;
+    private RaycastHit m_raycastHit;
 
-    private Vector3 refTargetPosVelocity;
-    private float refDistanceVel;
 
-    private Vector3 desiredPosition;
 
-    public Vector3 Upvec = Vector3.up;
-
-    private Vector3 previousUp = Vector3.up;
+    public Vector3 m_upvec = Vector3.up;
 
     private static readonly Vector3 UPDIR = Vector3.up;
 
     private Quaternion m_lastAppliedRot = Quaternion.identity;
 
-    private float m_oldUpvecDotSign;
-
     // Start is called before the first frame update
     void Start()
     {
-        cam = GetComponent<Camera>();
-
-        aimTarget = null;
+        m_aimTarget = null;
     }
 
     public void UpdateRotation(float deltaTime)
     {
-        yaw += Input.GetAxisRaw("Mouse X") * sensitivity * deltaTime;
-        pitch -= Input.GetAxisRaw("Mouse Y") * sensitivity * deltaTime;
-        pitch = Mathf.Clamp(pitch, pitchMin, pitchMax);
-        /*
+        m_yaw += Input.GetAxisRaw("Mouse X") * m_sensitivity * deltaTime;
+        m_pitch -= Input.GetAxisRaw("Mouse Y") * m_sensitivity * deltaTime;
+        m_pitch = Mathf.Clamp(m_pitch, m_pitchMin, m_pitchMax);
 
-        Quaternion upvecCorrection;
-        float currentSign = Mathf.Sign(Vector3.Dot(UPDIR, Upvec));
-
-        if (Vector3.Dot(UPDIR, Upvec) < 0)
-            upvecCorrection = Quaternion.FromToRotation(-UPDIR, Upvec) * Quaternion.FromToRotation(UPDIR, -UPDIR);
-        else
-            upvecCorrection = Quaternion.FromToRotation(UPDIR, Upvec);
-
-        if (m_oldUpvecDotSign != currentSign)
-        {
-            Vector3 horizontalVector = GfTools.RemoveAxis(Upvec, UPDIR);
-            horizontalVector.Normalize();
-            float angle = 2 * GfTools.SignedAngle(Vector3.forward, horizontalVector, UPDIR);
-            yaw += currentSign * angle;
-        }
-
-        m_oldUpvecDotSign = currentSign;
-        */
-
-        Quaternion mouseRot = Quaternion.Euler(pitch, yaw, 0);
+        Quaternion mouseRot = Quaternion.Euler(m_pitch, m_yaw, 0);
         mouseRot = Quaternion.identity;
         Quaternion desiredRot = Quaternion.Inverse(m_lastAppliedRot) * transform.rotation;
-        desiredRot = Quaternion.FromToRotation(desiredRot * UPDIR, Upvec) * desiredRot;
+        desiredRot = Quaternion.FromToRotation(desiredRot * UPDIR, m_upvec) * desiredRot;
 
 
-        m_lastAppliedRot = Quaternion.AngleAxis(yaw, Upvec);
-        m_lastAppliedRot = m_lastAppliedRot * Quaternion.AngleAxis(pitch, desiredRot * Vector3.right);
+        m_lastAppliedRot = Quaternion.AngleAxis(m_yaw, m_upvec);
+        m_lastAppliedRot = m_lastAppliedRot * Quaternion.AngleAxis(m_pitch, desiredRot * Vector3.right);
 
         desiredRot = m_lastAppliedRot * desiredRot;
         transform.rotation = desiredRot;
@@ -129,41 +102,46 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     public void Move(float deltaTime)
     {
-        Quaternion upvecCorrection = Quaternion.FromToRotation(UPDIR, Upvec);
+        Quaternion upvecCorrection = Quaternion.FromToRotation(UPDIR, m_upvec);
 
-        Vector3 desiredTargetPos = mainTarget.position + upvecCorrection * offset;
-        currentTargetPos = Vector3.SmoothDamp(currentTargetPos, desiredTargetPos, ref refTargetPosVelocity, movementSmoothTime);
+        Vector3 desiredTargetPos = m_mainTarget.position + upvecCorrection * m_offset;
+        m_currentTargetPos = Vector3.SmoothDamp(m_currentTargetPos, desiredTargetPos, ref m_refTargetPosVelocity, m_movementSmoothTime);
 
-        timeUntilPhysCheck -= deltaTime;
+        m_timeUntilPhysCheck -= deltaTime;
 
         Vector3 forward = transform.forward;
 
-        if (timeUntilPhysCheck <= 0)
+        if (m_timeUntilPhysCheck <= 0)
         {
-            timeUntilPhysCheck = physCheckInterval;
+            m_timeUntilPhysCheck = m_physCheckInterval;
 
             int layermask = GfPhysics.NonCharacterCollisions();
             Collider[] colliders = GfPhysics.GetCollidersArray();
-            currentDesiredDst = dstFromtarget;
+            m_currentDesiredDst = m_dstFromtarget;
 
-            if (collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(transform.position, 2.0f * collisionRadius, colliders, layermask))
+            if (m_collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(transform.position, 2.0f * m_collisionRadius, colliders, layermask))
             {
                 RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
-                collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, collisionRadius, -forward, raycastHits, dstFromtarget, layermask);
+                m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, m_collisionRadius, -forward, raycastHits, m_dstFromtarget, layermask);
 
-                if (collidingWithSmth)
+                if (m_collidingWithSmth)
                 {
-                    raycastHit = raycastHits[0];
-                    currentDesiredDst = Mathf.Max(raycastHit.distance, minDstFromtarget);
+                    m_raycastHit = raycastHits[0];
+                    m_currentDesiredDst = Mathf.Max(m_raycastHit.distance, m_minDstFromtarget);
                 }
             }
         }
 
-        currentTargetDst = Mathf.SmoothDamp(currentTargetDst, currentDesiredDst, ref refDistanceVel, distanceSmoothTime);
+        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_currentDesiredDst, ref m_refDistanceVel, m_distanceSmoothTime);
 
         // transform.position = currentTargetPos - forward * currentTargetDst;
-        transform.position = desiredTargetPos - forward * dstFromtarget;
+        transform.position = desiredTargetPos - forward * m_dstFromtarget;
 
+    }
+
+    public void SetMainTarget(Transform target)
+    {
+        m_mainTarget = target;
     }
 }
 

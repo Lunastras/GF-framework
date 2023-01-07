@@ -429,12 +429,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a3315c7d66094d40b4a0551cbff94d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weaponFiring: {fileID: 0}
-  movement: {fileID: 413798920}
-  loadoutManager: {fileID: 0}
-  playerCamera: {fileID: 917058816}
-  cameraController: {fileID: 1686971780}
-  invertedY: 0
+  m_weaponFiring: {fileID: 0}
+  m_movement: {fileID: 0}
+  m_loadoutManager: {fileID: 0}
+  m_cameraController: {fileID: 0}
+  m_fixedUpdatePhysics: 1
+  m_timeBetweenPhysChecks: 0.1
+  m_invertedY: 0
 --- !u!114 &413798920
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -454,9 +455,8 @@ MonoBehaviour:
   m_stepOffset: 0.3
   m_slopeLimit: 45
   m_upperSlopeLimit: 110
-  m_timeBetweenPhysChecks: 0.02
   m_queryTrigger: 1
-  m_sphericalParent: {fileID: 450051792}
+  m_sphericalParent: {fileID: 0}
   JumpTrigger: 0
   Velocity: {x: 0, y: -0.000000029802322, z: 0}
   UpVec: {x: 0, y: 1, z: 0}
@@ -809,6 +809,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
+      propertyPath: m_offset.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+        type: 3}
       propertyPath: mainTarget
       value: 
       objectReference: {fileID: 413798917}
@@ -824,8 +829,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
+      propertyPath: m_sensitivity
+      value: 1800
+      objectReference: {fileID: 0}
+    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+        type: 3}
       propertyPath: collisionRadius
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+        type: 3}
+      propertyPath: m_dstFromtarget
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -846,6 +861,11 @@ PrefabInstance:
         type: 3}
       propertyPath: distanceSmoothTime
       value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+        type: 3}
+      propertyPath: m_minDstFromtarget
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -919,12 +939,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 239bd930e80146d49937810266bc593c, type: 3}
---- !u!4 &917058816 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3676997061914269401, guid: 239bd930e80146d49937810266bc593c,
-    type: 3}
-  m_PrefabInstance: {fileID: 791159494}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &957716198
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1505,18 +1519,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1476646637}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1686971780 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
-    type: 3}
-  m_PrefabInstance: {fileID: 791159494}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62b84bf63db85d041923bbe7d9522058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1739277403 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 916576515994448418, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca,
