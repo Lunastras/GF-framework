@@ -5,12 +5,17 @@ using UnityEngine;
 public abstract class StatsCharacter : MonoBehaviour
 {
     [SerializeField]
-    private CharacterTypes characterType;
+    private CharacterTypes m_characterType;
+
+    private int m_characterIndex = -1;
+
+    protected bool m_initialised = false;
 
     // Start is called before the first frame update
     void Start()
     {
         HostilityManager.AddCharacter(this);
+        m_initialised = true;
     }
 
     public abstract void Damage(float damage, StatsCharacter enemy = null);
@@ -19,15 +24,15 @@ public abstract class StatsCharacter : MonoBehaviour
 
     public CharacterTypes GetCharacterType()
     {
-        return characterType;
+        return m_characterType;
     }
 
     public void SetCharacterType(CharacterTypes type)
     {
-        if (characterType != type)
+        if (m_characterType != type)
         {
             HostilityManager.RemoveCharacter(this);
-            characterType = type;
+            m_characterType = type;
             HostilityManager.AddCharacter(this);
         }
     }
@@ -44,6 +49,17 @@ public abstract class StatsCharacter : MonoBehaviour
 
     private void OnEnable()
     {
-        HostilityManager.AddCharacter(this);
+        if (m_initialised)
+            HostilityManager.AddCharacter(this);
+    }
+
+    public int GetCharacterIndex()
+    {
+        return m_characterIndex;
+    }
+
+    public void SetCharacterIndex(int index)
+    {
+        m_characterIndex = index;
     }
 }

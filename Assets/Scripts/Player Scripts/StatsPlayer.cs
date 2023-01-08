@@ -30,12 +30,13 @@ public class StatsPlayer : StatsCharacter
 
     private void Start()
     {
+        Debug.Log(" player stats");
         currentHealth = maxHealth;
 
         if (null == playerGun)
-            playerGun = FindObjectOfType<WeaponFiring>();      
+            playerGun = FindObjectOfType<WeaponFiring>();
 
-        if (null == loadoutManager)     
+        if (null == loadoutManager)
             loadoutManager = GetComponent<LoadoutManager>();
 
         if (null == audioSource)
@@ -47,6 +48,7 @@ public class StatsPlayer : StatsCharacter
             }
         }
 
+        m_initialised = true;
         HostilityManager.AddCharacter(this);
     }
 
@@ -75,7 +77,7 @@ public class StatsPlayer : StatsCharacter
     public override void Kill()
     {
         isDead = true;
-       // Debug.Log("I DIED");
+        // Debug.Log("I DIED");
     }
 
     public void AddPoints(PickItemBehaviour.PickUpTypes itemType, float value)

@@ -73,11 +73,16 @@ public class CameraController : MonoBehaviour
     private static readonly Vector3 UPDIR = Vector3.up;
 
     private Quaternion m_lastAppliedRot = Quaternion.identity;
+    private Quaternion m_previousDesiredRot = Quaternion.identity;
+
+    private Quaternion m_rotVel = Quaternion.identity;
 
     // Start is called before the first frame update
     void Start()
     {
         m_aimTarget = null;
+        m_currentTargetDst = m_dstFromtarget;
+        m_currentDesiredDst = m_dstFromtarget;
     }
 
     public void UpdateRotation(float deltaTime)
@@ -91,7 +96,7 @@ public class CameraController : MonoBehaviour
 
         Quaternion mouseRot = Quaternion.Euler(m_pitch, m_yaw, 0);
         mouseRot = Quaternion.identity;
-        Quaternion desiredRot = Quaternion.Inverse(m_lastAppliedRot) * transform.rotation;
+        Quaternion desiredRot = Quaternion.Inverse(m_lastAppliedRot) * m_previousDesiredRot;
         desiredRot = Quaternion.FromToRotation(desiredRot * UPDIR, m_upvec) * desiredRot;
 
 
@@ -99,7 +104,9 @@ public class CameraController : MonoBehaviour
         m_lastAppliedRot = m_lastAppliedRot * Quaternion.AngleAxis(m_pitch, desiredRot * Vector3.right);
 
         desiredRot = m_lastAppliedRot * desiredRot;
-        transform.rotation = desiredRot;
+        transform.rotation = GfTools.QuatSmoothDamp(transform.rotation, desiredRot, ref m_rotVel, m_rotationSmoothTime);
+
+        m_previousDesiredRot = desiredRot;
 
 
         // transform.rotation = upvecCorrection * mouseRot;
@@ -117,31 +124,27 @@ public class CameraController : MonoBehaviour
 
         Vector3 forward = transform.forward;
 
-        if (m_timeUntilPhysCheck <= 0)
+        if (m_timeUntilPhysCheck <= 0 && false)
         {
             m_timeUntilPhysCheck = m_physCheckInterval;
 
             int layermask = GfPhysics.NonCharacterCollisions();
-            Collider[] colliders = GfPhysics.GetCollidersArray();
             m_currentDesiredDst = m_dstFromtarget;
 
-            if (m_collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(transform.position, 2.0f * m_collisionRadius, colliders, layermask))
-            {
-                RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
-                m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, m_collisionRadius, -forward, raycastHits, m_dstFromtarget, layermask);
+            RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
+            m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, m_collisionRadius, -forward, raycastHits, m_dstFromtarget, layermask);
 
-                if (m_collidingWithSmth)
-                {
-                    m_raycastHit = raycastHits[0];
-                    m_currentDesiredDst = Mathf.Max(m_raycastHit.distance, m_minDstFromtarget);
-                }
+            if (m_collidingWithSmth)
+            {
+                m_raycastHit = raycastHits[0];
+                m_currentDesiredDst = Mathf.Max(m_raycastHit.distance, m_minDstFromtarget);
             }
         }
 
         m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_currentDesiredDst, ref m_refDistanceVel, m_distanceSmoothTime);
 
         // transform.position = currentTargetPos - forward * currentTargetDst;
-        transform.position = desiredTargetPos - forward * m_dstFromtarget;
+        transform.position = m_currentTargetPos - forward * m_currentTargetDst;
 
     }
 

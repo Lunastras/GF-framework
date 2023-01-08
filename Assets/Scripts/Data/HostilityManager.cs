@@ -6,216 +6,151 @@ using System;
 public class HostilityManager : MonoBehaviour
 {
     [System.Serializable]
-    private class CharacterTypesAssociation
+    protected struct BoolArray
     {
-        public CharacterTypes parent;
-        public CharacterTypes[] associations;
-
-        public bool mutual = false;
+        [SerializeField]
+        public bool[] boolArray;
     }
 
-    [SerializeField]
-    private CharacterTypesAssociation[] associationsEnemiesWith;
+    protected List<StatsCharacter>[] m_instantiatedCharacters;
+    private static HostilityManager hostilityManager = null;
+    protected int m_numTypes = 0;
 
     [SerializeField]
-    private CharacterTypesAssociation[] associationsCanDamage;
-
-    private Dictionary<CharacterTypes, HashSet<StatsCharacter>> instantiatedCharacters;
-
-    //Contains the list of hostile types of the given character type.
-    private Dictionary<CharacterTypes, HashSet<CharacterTypes>> enemiesWithDict { get; set; }
-    private Dictionary<CharacterTypes, HashSet<CharacterTypes>> canDamageDict { get; set; }
-
-    private Dictionary<CharacterTypes, Dictionary<CharacterTypes, HashSet<StatsCharacter>>> enemiesListDict { get; set; }
-    public static HostilityManager hostilityManager;
+    protected BoolArray[] m_enemiesWith;
+    [SerializeField]
+    protected BoolArray[] m_canDamage;
 
     private void Awake()
     {
         hostilityManager = this;
 
-        instantiatedCharacters = new();
-        enemiesWithDict = new();
-        canDamageDict = new();
-        enemiesListDict = new();
-
         foreach (int i in Enum.GetValues(typeof(CharacterTypes)))
+            ++m_numTypes;
+
+        Debug.Log("I have types: " + m_numTypes);
+
+        m_instantiatedCharacters = new List<StatsCharacter>[m_numTypes];
+
+        CorrectSizeBoolArray(m_enemiesWith, m_numTypes);
+        CorrectSizeBoolArray(m_canDamage, m_numTypes);
+
+        for (int i = 0; i < m_numTypes; ++i)
         {
-            CharacterTypes currentType = (CharacterTypes)i;
-            enemiesWithDict.Add(currentType, new HashSet<CharacterTypes>());
-            canDamageDict.Add(currentType, new HashSet<CharacterTypes>());
-            instantiatedCharacters.Add(currentType, new HashSet<StatsCharacter>());
+            m_instantiatedCharacters[i] = new List<StatsCharacter>(1);
 
-            Dictionary<CharacterTypes, HashSet<StatsCharacter>> enemiesList = new();
-
-            foreach (CharacterTypes enemyType in enemiesWithDict[currentType])
-            {
-                enemiesList.Add(enemyType, instantiatedCharacters[enemyType]);
-            }
+            for (int j = 0; j < m_numTypes; ++j)
+                CorrectSizeBool(m_enemiesWith[i].boolArray, m_numTypes);
         }
-
-        foreach (CharacterTypesAssociation association in associationsEnemiesWith)
-        {
-            AddEnemiesWithAssociation(association.parent, association.associations, association.mutual);
-        }
-
-        foreach (CharacterTypesAssociation association in associationsCanDamage)
-        {
-            AddDamageAssociation(association.parent, association.associations, association.mutual);
-        }
-
-        UpdateEnemyListDictionary();
-
-        //deinitialize the values
-        associationsCanDamage = associationsEnemiesWith = null;
     }
 
-    private static void UpdateEnemyListDictionary()
+    private static void CorrectSizeBoolArray(BoolArray[] array, int size)
     {
-        foreach (int i in Enum.GetValues(typeof(CharacterTypes)))
+        if (null == array)
         {
-            CharacterTypes currentType = (CharacterTypes)i;
+            array = new BoolArray[size];
+        }
+        else if (array.Length != size)
+        {
+            BoolArray[] newArray = new BoolArray[size];
+            Array.Copy(array, newArray, System.Math.Min(size, array.Length));
+            array = newArray;
+        }
+    }
 
-            Dictionary<CharacterTypes, HashSet<StatsCharacter>> enemiesList = new();
-
-            foreach (CharacterTypes enemyType in hostilityManager.enemiesWithDict[currentType])
-            {
-                enemiesList.Add(enemyType, hostilityManager.instantiatedCharacters[enemyType]);
-            }
-
-            if (!hostilityManager.enemiesListDict.ContainsKey(currentType))
-            {
-                hostilityManager.enemiesListDict.Add(currentType, enemiesList);
-            }
-            else
-            {
-                hostilityManager.enemiesListDict[currentType] = enemiesList;
-            }
+    private static void CorrectSizeBool(bool[] array, int size)
+    {
+        if (null == array)
+        {
+            array = new bool[size];
+        }
+        else if (array.Length != size)
+        {
+            bool[] newArray = new bool[size];
+            Array.Copy(array, newArray, System.Math.Min(size, array.Length));
+            array = newArray;
         }
     }
 
     public static bool CanDamage(CharacterTypes a, CharacterTypes b)
     {
-       // Debug.Log("Asked if " + a + " can damage " + b);
-        return hostilityManager.canDamageDict[a].Contains(b);
+        return hostilityManager.m_canDamage[(int)a].boolArray[(int)b];
     }
 
     public static bool CanDamage(StatsCharacter a, StatsCharacter b)
-    {       
+    {
         return CanDamage(a.GetCharacterType(), b.GetCharacterType());
     }
 
-    public static Dictionary<CharacterTypes, HashSet<StatsCharacter>> GetEnemiesList(StatsCharacter a)
+    public static bool EnemyWith(CharacterTypes a, CharacterTypes b)
     {
-        return GetEnemiesList(a.GetCharacterType());
+        return hostilityManager.m_enemiesWith[(int)a].boolArray[(int)b];
     }
 
-    public static Dictionary<CharacterTypes, HashSet<StatsCharacter>> GetEnemiesList(CharacterTypes a)
+    public static bool EnemyWith(StatsCharacter a, StatsCharacter b)
     {
-        return hostilityManager.enemiesListDict[a];
+        return EnemyWith(a.GetCharacterType(), b.GetCharacterType());
+    }
+
+    public static List<StatsCharacter> GetCharactersOfType(CharacterTypes type)
+    {
+        return hostilityManager.m_instantiatedCharacters[(int)type];
+    }
+
+    public static List<StatsCharacter> GetEnemiesList(StatsCharacter self, StatsCharacter enemy)
+    {
+        return GetEnemiesList(self.GetCharacterType(), enemy.GetCharacterType());
+    }
+
+    public static List<StatsCharacter> GetEnemiesList(CharacterTypes self, CharacterTypes enemy)
+    {
+        int enemyIndex = (int)enemy;
+        if (hostilityManager.m_enemiesWith[(int)self].boolArray[enemyIndex])
+            return hostilityManager.m_instantiatedCharacters[enemyIndex];
+        else
+            return null;
     }
 
     public static void AddCharacter(StatsCharacter character)
     {
-        if (character != null && null != hostilityManager)
-            hostilityManager.instantiatedCharacters[character.GetCharacterType()].Add(character);
+        int characterIndex = character.GetCharacterIndex();
+
+        if (character != null && characterIndex < 0)
+        {
+            List<StatsCharacter> list = hostilityManager.m_instantiatedCharacters[(int)character.GetCharacterType()];
+            int index = list.Capacity;
+            list.Add(character);
+            character.SetCharacterIndex(index);
+        }
     }
 
     public static void RemoveCharacter(StatsCharacter character)
     {
-        if (character != null && null != hostilityManager)
-            hostilityManager.instantiatedCharacters[character.GetCharacterType()].Remove(character);
-    }
+        int characterIndex = character.GetCharacterIndex();
+        List<StatsCharacter> list = hostilityManager.m_instantiatedCharacters[(int)character.GetCharacterType()];
+        int lastCharacterIndex = list.Capacity - 1;
 
-    public static void AddEnemiesWithAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
-    {
-        foreach (CharacterTypes charType in associations)
+        if (-1 < characterIndex && characterIndex <= lastCharacterIndex)
         {
-            hostilityManager.enemiesWithDict[parent].Add(charType);
-            if (mutual)
-            {
-                hostilityManager.enemiesWithDict[charType].Add(parent);
-            }
+            StatsCharacter lastCharacter = list[lastCharacterIndex];
+            lastCharacter.SetCharacterIndex(characterIndex);
+            list[characterIndex] = lastCharacter;
+            list.RemoveAt(lastCharacterIndex);
         }
-
-        UpdateEnemyListDictionary();
     }
 
-    public static void AddDamageAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
+    public static void SetCanDamage(CharacterTypes a, CharacterTypes b, bool value, bool mutual = false)
     {
-        foreach (CharacterTypes charType in associations)
-        {
-            hostilityManager.canDamageDict[parent].Add(charType);
-            if (mutual)
-            {
-                hostilityManager.canDamageDict[charType].Add(parent);
-            }
-        }
+        hostilityManager.m_canDamage[(int)a].boolArray[(int)b] = value;
+        if (mutual) hostilityManager.m_canDamage[(int)b].boolArray[(int)a] = value;
 
-        UpdateEnemyListDictionary();
     }
 
-    public static void RemoveDamageAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
+    public static void SetEnemyWith(CharacterTypes a, CharacterTypes b, bool value, bool mutual = false)
     {
-        foreach (CharacterTypes charType in associations)
-        {
-            hostilityManager.canDamageDict[parent].Remove(charType);
-            if (mutual)
-            {
-                hostilityManager.canDamageDict[charType].Remove(parent);
-            }
-        }
-
-        UpdateEnemyListDictionary();
+        hostilityManager.m_enemiesWith[(int)a].boolArray[(int)b] = value;
+        if (mutual) hostilityManager.m_enemiesWith[(int)b].boolArray[(int)a] = value;
     }
-
-    public static void RemoveEnemiesWithAssociation(CharacterTypes parent, CharacterTypes[] associations, bool mutual = true)
-    {
-        foreach (CharacterTypes charType in associations)
-        {
-            hostilityManager.canDamageDict[parent].Remove(charType);
-            if (mutual)
-            {
-                hostilityManager.enemiesWithDict[charType].Remove(parent);
-            }
-        }
-
-        UpdateEnemyListDictionary();
-    }
-
 }
 
-internal class IntPairMap<T>
-{
 
-    private Dictionary<float, T> dictionary;
-
-    public IntPairMap()
-    {
-        dictionary = new Dictionary<float, T>();
-    }
-
-    public void Add(int a, int b, T value)
-    {
-        dictionary.Add(Hash(a, b), value);
-    }
-
-    public T Get(int a, int b)
-    {
-        return dictionary[Hash(a, b)];
-    }
-
-    private float Hash(int a, int b)
-    {
-        //swap numbers
-        if (a > b)
-        {
-            a += b;
-            b = a - b;
-            a -= b;
-        }
-
-        return ((a << 19) | (b << 7));
-    }
-
-
-}

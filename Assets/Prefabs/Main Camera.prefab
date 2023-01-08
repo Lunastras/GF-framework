@@ -98,18 +98,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62b84bf63db85d041923bbe7d9522058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainTarget: {fileID: 0}
-  sensitivity: 600
-  offset: {x: 0, y: 1.8, z: 0}
-  physCheckInterval: 0.2
-  dstFromtarget: 9
-  collisionRadius: 1
-  minDstFromtarget: 1
-  pitchMin: -40
-  pitchMax: 85
-  rotationSmoothTime: 0.01
-  movementSmoothTime: 0.04
-  distanceSmoothTime: 0.1
+  m_mainTarget: {fileID: 0}
+  m_sensitivity: 1800
+  m_offset: {x: 0, y: 1, z: 0}
+  m_physCheckInterval: 0.2
+  m_dstFromtarget: 16
+  m_collisionRadius: 1
+  m_minDstFromtarget: 3
+  m_pitchMin: -89.99
+  m_pitchMax: 89.99
+  m_rotationSmoothTime: 0.02
+  m_movementSmoothTime: 0.02
+  m_distanceSmoothTime: 0.02
+  m_invertedY: 1
+  m_upvec: {x: 0, y: 1, z: 0}
 --- !u!114 &3676997061914269402
 MonoBehaviour:
   m_ObjectHideFlags: 0

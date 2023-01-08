@@ -25,6 +25,15 @@ public class GfTools
         return new Vector2(Mathf.Sin(rad), Mathf.Cos(rad));
     }
 
+    //Thank you andrew-lukasik on the unity forum for this
+    //https://answers.unity.com/questions/1872216/how-to-transformrotate-a-vector-onto-the-same-plan.html
+    public static void StraightProjectOnPlane(ref Vector3 vector, Vector3 plane, Vector3 upVec)
+    {
+        GfTools.RemoveAxis(ref vector, upVec);
+        new Plane { normal = plane }.Raycast(new Ray { origin = vector, direction = upVec }, out float Y);
+        GfTools.Add3(ref vector, upVec * Y);
+    }
+
     /*
     Implementation from quat.rotationTo function from toji/gl-matrix on github, found in quat.js
     */
@@ -103,8 +112,6 @@ public class GfTools
     public static Vector3 RemoveAxis(Vector3 leftHand, Vector3 rightHand) { RemoveAxis(ref leftHand, rightHand); return leftHand; }
 
 
-
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Minus2(ref Vector2 leftHand, Vector2 rightHand) { leftHand.x -= rightHand.x; leftHand.y -= rightHand.y; }
 
@@ -157,6 +164,35 @@ public class GfTools
         r.w = t_ + coef * a.w;
         r.Normalize();
         return r;
+    }
+
+    //https://gist.github.com/maxattack/4c7b4de00f5c1b95a33b
+    public static Quaternion QuatSmoothDamp(Quaternion rot, Quaternion target, ref Quaternion deriv, float time)
+    {
+        if (Time.deltaTime < Mathf.Epsilon) return rot;
+        // account for double-cover
+        var Dot = Quaternion.Dot(rot, target);
+        var Multi = Dot > 0f ? 1f : -1f;
+        target.x *= Multi;
+        target.y *= Multi;
+        target.z *= Multi;
+        target.w *= Multi;
+        // smooth damp (nlerp approx)
+        var Result = new Vector4(
+            Mathf.SmoothDamp(rot.x, target.x, ref deriv.x, time),
+            Mathf.SmoothDamp(rot.y, target.y, ref deriv.y, time),
+            Mathf.SmoothDamp(rot.z, target.z, ref deriv.z, time),
+            Mathf.SmoothDamp(rot.w, target.w, ref deriv.w, time)
+        ).normalized;
+
+        // ensure deriv is tangent
+        var derivError = Vector4.Project(new Vector4(deriv.x, deriv.y, deriv.z, deriv.w), Result);
+        deriv.x -= derivError.x;
+        deriv.y -= derivError.y;
+        deriv.z -= derivError.z;
+        deriv.w -= derivError.w;
+
+        return new Quaternion(Result.x, Result.y, Result.z, Result.w);
     }
 
     // public static bool Equals(Quaternion lefHhand, Quaternion rightHand)

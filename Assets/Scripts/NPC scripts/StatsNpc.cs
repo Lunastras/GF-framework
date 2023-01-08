@@ -68,23 +68,27 @@ public class StatsNpc : StatsCharacter
         }
 
         damageFrom = new Dictionary<GameObject, float>(maxSizeDamageDictionary);
-
+        m_initialised = true;
         HostilityManager.AddCharacter(this);
-       // ParticleDamage.AddCollider(transform);
+        // ParticleDamage.AddCollider(transform);
     }
 
     private void OnEnable()
     {
-        currentHealth = maxHealth;
-        ClearDamageList();
+        if (m_initialised)
+        {
+            currentHealth = maxHealth;
+            ClearDamageList();
 
-        HostilityManager.AddCharacter(this);
+            HostilityManager.AddCharacter(this);
 
-        if (null != graphics)
-            graphics.SetActive(true);
+            if (null != graphics)
+                graphics.SetActive(true);
 
-        if (null != objectCollider)
-            objectCollider.enabled = true;
+            if (null != objectCollider)
+                objectCollider.enabled = true;
+        }
+
     }
 
     // Update is called once per frame
@@ -127,7 +131,7 @@ public class StatsNpc : StatsCharacter
 
     public void ClearDamageList()
     {
-        if(null != damageFrom)
+        if (null != damageFrom)
             damageFrom.Clear();
 
         biggestDamageReceived = 0;

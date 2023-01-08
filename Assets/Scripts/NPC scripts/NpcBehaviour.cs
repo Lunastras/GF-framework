@@ -86,8 +86,8 @@ public class NpcBehaviour : NpcController
             turret = GetComponent<ParticleSingleHit>();
     }
 
-    private GameObject CheckForEnemiesAround()
-    {
+    private GameObject CheckForEnemiesAround() //TODO
+    {   /*
         Dictionary<CharacterTypes, HashSet<StatsCharacter>> enemyDict = HostilityManager.GetEnemiesList(statsNpc);
         foreach (CharacterTypes type in enemyDict.Keys)
         {
@@ -99,7 +99,7 @@ public class NpcBehaviour : NpcController
                     return character.gameObject;
                 }
             }
-        }
+        }*/
 
         return null;
     }

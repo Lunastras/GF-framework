@@ -59,6 +59,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
     protected uint m_parentTransformPriority = 0;
     protected uint m_parentSphericalPriority = 0;
 
+    protected bool m_reverseSphericalUpVec = false;
+
     private bool m_adjustedVelocityToParent;  // whether or not the velocity was adjusted to that of the parent upon parenting
 
     private Quaternion m_parentLastRot;
@@ -99,7 +101,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     private const float MIN_PUSHBACK_DEPTH = 0.000001F;
     private const float SMOOTH_TIME = 1.0f;
 
-
+    protected float m_gravityCoef = 1.0f;
 
     #endregion
 
@@ -242,6 +244,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         double currentTime = Time.timeAsDouble;
         m_timeBetweenPhysChecks = (float)(currentTime - m_timeOfLastPhysCheck);
         m_timeOfLastPhysCheck = currentTime;
+        m_previousPhysDeltaTime = deltaTime;
 
         UpdateSphericalOrientation(deltaTime, false);
         Quaternion currentRotation = m_transform.rotation;
@@ -388,6 +391,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         if (m_parentSpherical)
         {
             m_upVec = (transform.position - m_parentSpherical.position).normalized;
+            if (m_reverseSphericalUpVec) m_upVec = -m_upVec;
         }
 
         if (rotateOrientation && m_upVec != m_rotationUpVec)
@@ -556,7 +560,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
             if (!filterout && _hit.collider.isTrigger)
             {
                 MgCollisionStruct ownCollision = new MgCollisionStruct(-_hit.normal, m_upVec, m_collider, _hit.distance, _hit.point - position, false);
-                bool test = GfMovementTriggerable.InvokeTrigger(_col.gameObject, ownCollision, this);
+                GfMovementTriggerable trigger = _col.GetComponent<GfMovementTriggerable>();
+                if (trigger) trigger.MgOnTrigger(ownCollision, this);
                 filterout = true;
             }
 
@@ -641,12 +646,13 @@ public abstract class GfMovementGeneric : MonoBehaviour
         }
     }
 
-    public void SetParentSpherical(Transform parent, float smoothTime, uint priority = 0)
+    public void SetParentSpherical(Transform parent, float smoothTime, uint priority = 0, bool reverseUpVec = false)
     {
         if (parent && parent != m_parentSpherical && m_parentSphericalPriority <= priority)
         {
             m_parentSpherical = parent;
             m_parentSphericalPriority = priority;
+            m_reverseSphericalUpVec = reverseUpVec;
 
             if (smoothTime > 0)
             {
@@ -663,6 +669,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         {
             m_parentSpherical = null;
             m_parentSphericalPriority = 0;
+            m_reverseSphericalUpVec = false;
 
             if (smoothTime > 0)
             {
@@ -685,6 +692,15 @@ public abstract class GfMovementGeneric : MonoBehaviour
         DetachFromParentSpherical(priority, upVec, smoothTime);
     }
 
+    public void SetGravityCoef(float gravityCoef)
+    {
+        m_gravityCoef = gravityCoef;
+    }
+
+    public float GetGravityCoef()
+    {
+        return m_gravityCoef;
+    }
 
     public Vector3 GetParentVelocity(float time, float deltaTime)
     {
@@ -718,18 +734,15 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         if (!CanFly) GfTools.RemoveAxis(ref movDir, MovementDirUpVec); //remove vertical component
 
-        if (!m_slopeNormal.Equals(MovementDirUpVec) && !movDir.Equals(Zero3)) //project on plane
+        if ((!m_upVec.Equals(MovementDirUpVec)) && !movDir.Equals(Zero3)) //project on plane
+            movDir = GfTools.RotationTo(MovementDirUpVec, m_upVec) * movDir;
+
+        if (!m_slopeNormal.Equals(m_upVec) && !CanFly)
         {
-            Vector3 auxMovDir = movDir;
-
-            movDir = GfTools.RotationTo(MovementDirUpVec, m_slopeNormal) * movDir;
-            if (!MovementDirUpVec.Equals(m_upVec)) auxMovDir = GfTools.RotationTo(MovementDirUpVec, m_upVec) * auxMovDir;
-
-            GfTools.RemoveAxis(ref auxMovDir, m_slopeNormal);
-            Vector3 horizontalMovDir = GfTools.RemoveAxis(movDir, m_slopeNormal);
-
-            float angleDiff = GfTools.SignedAngle(horizontalMovDir, auxMovDir, m_slopeNormal);
-            movDir = Quaternion.AngleAxis(-angleDiff, m_slopeNormal) * movDir;
+            float mag = movDir.magnitude;
+            GfTools.StraightProjectOnPlane(ref movDir, m_slopeNormal, m_upVec);
+            movDir.Normalize();
+            GfTools.Mult3(ref movDir, mag);
         }
 
         return movDir;

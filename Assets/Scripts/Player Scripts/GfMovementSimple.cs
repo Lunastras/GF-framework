@@ -33,6 +33,10 @@ public class GfMovementSimple : GfMovementGeneric
     //whether we touched the current parent this frame or not
     private bool m_touchedParent;
 
+    private float m_currentRotationSpeed = 0;
+    private float m_rotationSmoothRef = 0;
+
+
     [SerializeField]
     private bool breakWhenUnparent = true;
 
@@ -96,8 +100,10 @@ public class GfMovementSimple : GfMovementGeneric
             effectiveVelocity.y -= slope.y * verticalFallSpeed;
             effectiveVelocity.z -= slope.z * verticalFallSpeed;
 
+            Debug.Log("m_gravityCoef is: " + m_gravityCoef);
+
             if (fallMaxDiff < 0)
-                fallMagn = Min(-fallMaxDiff, m_mass * deltaTime); //speed under maxFallSpeed         
+                fallMagn = Min(-fallMaxDiff, m_mass * deltaTime * m_gravityCoef); //speed under maxFallSpeed         
             else
                 fallMagn = -Min(fallMaxDiff, m_effectiveDeacceleration * deltaTime);//speed equal to maxFallSpeed or higher
         }
