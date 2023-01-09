@@ -406,7 +406,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 413798913}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -433,8 +433,8 @@ MonoBehaviour:
   m_movement: {fileID: 0}
   m_loadoutManager: {fileID: 0}
   m_cameraController: {fileID: 0}
-  m_fixedUpdatePhysics: 1
-  m_timeBetweenPhysChecks: 0
+  m_fixedUpdatePhysics: 0
+  m_timeBetweenPhysChecks: 0.02
 --- !u!114 &413798920
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -466,7 +466,7 @@ MonoBehaviour:
   m_turnSpeed: 400
   AccelerationCoef: 1
   DeaccelerationCoef: 1
-  breakWhenUnparent: 0
+  breakWhenUnparent: 1
 --- !u!136 &413798921
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -873,6 +873,21 @@ PrefabInstance:
       propertyPath: m_sensitivity
       value: 800
       objectReference: {fileID: 0}
+    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+        type: 3}
+      propertyPath: m_distanceSmoothTime
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+        type: 3}
+      propertyPath: m_movementSmoothTime
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+        type: 3}
+      propertyPath: m_rotationSmoothTime
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269401, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: m_RootOrder
@@ -1117,7 +1132,7 @@ MonoBehaviour:
   m_priority: 0
   m_upVec: {x: 0, y: 1, z: 1}
   m_gravityCoef: 1
-  m_reverseSphericalUpVec: 1
+  m_reverseSphericalUpVec: 0
 --- !u!135 &1218518021
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1768,7 +1783,7 @@ MonoBehaviour:
   m_smoothTime: 0.7
   m_priority: 0
   m_upVec: {x: 0, y: 1, z: 0}
-  m_gravityCoef: -1
+  m_gravityCoef: 1
   m_reverseSphericalUpVec: 0
 --- !u!65 &2101215508
 BoxCollider:

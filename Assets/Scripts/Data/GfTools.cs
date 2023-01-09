@@ -104,8 +104,7 @@ public class GfTools
 
     public static void RemoveAxis(ref Vector3 leftHand, Vector3 rightHand)
     {
-        float dot = Vector3.Dot(leftHand, rightHand);
-        Mult3(ref rightHand, dot);
+        Mult3(ref rightHand, Vector3.Dot(leftHand, rightHand));
         Minus3(ref leftHand, rightHand);
     }
 

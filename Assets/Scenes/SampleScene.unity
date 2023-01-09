@@ -3114,7 +3114,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotation: {x: 0, y: 10, z: 0}
-  speedMultiplier: 100
+  speedMultiplier: 4
 --- !u!65 &1157863713
 BoxCollider:
   m_ObjectHideFlags: 0

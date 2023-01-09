@@ -33,6 +33,8 @@ public class PlatformMovement : MonoBehaviour
     public bool isWaiting = false;
     private bool arrivedAtDest = false;
 
+    private Rigidbody m_rb;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -48,6 +50,15 @@ public class PlatformMovement : MonoBehaviour
 
             Destroy(positionsParent.gameObject);
         }
+
+        m_rb = GetComponent<Rigidbody>();
+        if (null == m_rb)
+        {
+            m_rb = gameObject.AddComponent<Rigidbody>();
+        }
+
+        m_rb.isKinematic = true;
+        m_rb.interpolation = RigidbodyInterpolation.Interpolate;
     }
 
     private void Start()
@@ -63,6 +74,8 @@ public class PlatformMovement : MonoBehaviour
         {
             Destroy(this);
         }
+
+
     }
 
 
@@ -78,7 +91,7 @@ public class PlatformMovement : MonoBehaviour
         return speed;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         // Debug.Log("uhuh ");
 
@@ -126,13 +139,16 @@ public class PlatformMovement : MonoBehaviour
 
         if (currentSpeed > distanceFromDestination)
         {
-            transform.position = positions[currentDestination];
+            m_rb.MovePosition(positions[currentDestination]);
+
+            // transform.position = positions[currentDestination];
             StartCoroutine(ArrivedAtDestination());
         }
         else
         {
 
-            transform.position += currentSpeed * vecBetweenPosAndDest.normalized;
+            m_rb.MovePosition(transform.position + currentSpeed * vecBetweenPosAndDest.normalized);
+            // transform.position += currentSpeed * vecBetweenPosAndDest.normalized;
             // Debug.Log("Movement of platform is : " + currentSpeed * vecBetweenPosAndDest.normalized);
             // Debug.Log("akaka I am getting here " + (currentSpeed * vecBetweenPosAndDest.normalized));
 
@@ -161,7 +177,6 @@ public class PlatformMovement : MonoBehaviour
 
             if (currentSpeed > distanceFromDestination)
             {
-                transform.position = positions[currentDestination];
                 yield return new WaitForSeconds(waitTimeOnArrival);
 
                 if (isGoingBackWards)
@@ -192,11 +207,6 @@ public class PlatformMovement : MonoBehaviour
                     }
                 }
             }
-            else
-            {
-                transform.position += currentSpeed * vecBetweenPosAndDest.normalized;
-            }
-
             yield return new WaitForFixedUpdate();
         }
     }

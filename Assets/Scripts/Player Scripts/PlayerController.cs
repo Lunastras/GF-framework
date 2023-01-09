@@ -61,6 +61,8 @@ public class PlayerController : MonoBehaviour
             if (null == m_weaponFiring)
                 Debug.LogError("ERROR: The gameobject does not have a WeaponFiring component! Please add on to the object");
         }
+
+        //Physics.autoSyncTransforms |= !m_fixedUpdatePhysics;
     }
 
 
@@ -154,7 +156,7 @@ public class PlayerController : MonoBehaviour
         if (m_fixedUpdatePhysics)
         {
             float physDelta = Time.fixedDeltaTime;
-            m_movement.UpdatePhysics(physDelta); //actually the current deltatime   
+            m_movement.UpdatePhysics(physDelta, true); //actually the current deltatime   
         }
     }
 
@@ -181,7 +183,7 @@ public class PlayerController : MonoBehaviour
         if (!m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
         {
             float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks + m_timeUntilPhysChecks);
-            m_movement.UpdatePhysics(physDelta); //actually the current deltatime   
+            m_movement.UpdatePhysics(physDelta, false); //actually the current deltatime   
             m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
         }
 

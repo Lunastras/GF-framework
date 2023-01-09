@@ -100,8 +100,6 @@ public class GfMovementSimple : GfMovementGeneric
             effectiveVelocity.y -= slope.y * verticalFallSpeed;
             effectiveVelocity.z -= slope.z * verticalFallSpeed;
 
-            Debug.Log("m_gravityCoef is: " + m_gravityCoef);
-
             if (fallMaxDiff < 0)
                 fallMagn = Min(-fallMaxDiff, m_mass * deltaTime * m_gravityCoef); //speed under maxFallSpeed         
             else
@@ -155,7 +153,6 @@ public class GfMovementSimple : GfMovementGeneric
             m_velocity = m_velocity - m_upVec * Vector3.Dot(m_upVec, m_velocity);
             m_velocity = m_velocity + m_upVec * m_jumpForce;
             m_isGrounded = false;
-            m_jumpedThisFrame = true;
             // Debug.Log("I HAVE JUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUMPED");
             DetachFromParentTransform();
         }
@@ -166,8 +163,7 @@ public class GfMovementSimple : GfMovementGeneric
     {
         Transform collisionTrans = collision.collider.transform;
         //Debug.Log("I came into collision WITH " + collision.collider.name + " with an angle of: " + collision.angle + " and the normal is: " + collision.normal + " and the distance: " + collision.distance);
-
-        if (!m_jumpedThisFrame && collision.isGrounded && collisionTrans != m_parentTransform)
+        if (collision.isGrounded && collisionTrans != m_parentTransform)
         {
             //Debug.Break();
             SetParentTransform(collisionTrans);
