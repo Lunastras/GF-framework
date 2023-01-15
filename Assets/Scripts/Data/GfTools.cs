@@ -122,6 +122,20 @@ public class GfTools
 
     public static void Div2(ref Vector2 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; }
 
+    public static void Normalize(ref Vector3 vector)
+    {
+        float mag = vector.magnitude;
+        if (mag > 0.0000001f)
+        {
+            float inv = 1.0f / mag;
+
+            vector.x *= inv;
+            vector.y *= inv;
+            vector.z *= inv;
+        }
+        else vector.x = vector.y = vector.z = 0;
+    }
+
     /*Props to allista from the kerbal space program forum for this incredible function*/
     public static float Angle(Vector3 a, Vector3 b)
     {

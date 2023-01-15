@@ -1,60 +1,69 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static System.MathF;
 
 public class Sprite3DAnimator : MonoBehaviour
 {
     [SerializeField]
-    public Transform objectTransform;
+    private Transform m_objectTransform;
 
     [SerializeField]
-    private SpriteRenderer spriteRenderer;
+    private SpriteRenderer m_spriteRenderer;
 
     [SerializeField]
-    public AnimationSpriteState[] animationStates;
+    private AnimationSpriteState[] m_animationStates;
 
-    public float speedMultiplier { get; set; }
-
-    public float timeUntilNextFrame { get; protected set; }
-
-    public bool playing { get; protected set; }
-    public Animation currentAnimation { get; protected set; }
-    public int currentFrame { get; protected set; }
-    public bool loop { get; protected set; }
     //public int numTi
+    [SerializeField]
+    public int m_playAnimationOnStart = 0;
 
-    public int playAnimationOnStart = 0;
+    [SerializeField]
+    protected Vector3 m_defaultCameraUpvec = Vector3.up;
 
-    private AnimationSpriteState currentState;
-    private int currentViewIndex;
+    public float SpeedMultiplier { get; set; } = 1;
 
-    private int currentStateIndex = -1;
+    public float TimeUntilNextFrame { get; protected set; }
+
+    public bool Playing { get; protected set; }
+    public Animation CurrentAnimation { get; protected set; }
+    public int CurrentFrame { get; protected set; }
+    public bool Loop { get; protected set; }
 
 
+    private AnimationSpriteState m_currentState;
+    private int m_currentViewIndex;
+
+    private int m_currentStateIndex = -1;
+
+    private static CameraController m_cameraController;
+    private static Transform m_cameraTransform;
 
     // private Dictionary<string, AnimationSpriteState> statesDictionary;
     // private Dictionary<string, int> stateStartIndex;
 
     void Awake()
     {
-        PlayState(playAnimationOnStart);
+        m_cameraTransform = Camera.main.transform;
+        m_cameraController = m_cameraTransform.GetComponent<CameraController>();
 
-        if (!spriteRenderer)
-            spriteRenderer = GetComponent<SpriteRenderer>();
+        PlayState(m_playAnimationOnStart);
 
-        if (!objectTransform)
+        if (!m_spriteRenderer)
+            m_spriteRenderer = GetComponent<SpriteRenderer>();
+
+        if (!m_objectTransform)
             //most likely not something you want because 
-            //3d quads will most likely follow the camera
-            objectTransform = transform;
+            //3d quads will probably follow the camera
+            m_objectTransform = transform;
     }
 
     protected void FixedUpdate()
     {
         UpdateStateIndex();
-        timeUntilNextFrame = Mathf.Max(-1, timeUntilNextFrame - Time.deltaTime * speedMultiplier); //
-        //Debug.Log("The until next frame " + timeUntilNextFrame);
+        TimeUntilNextFrame -= Time.deltaTime * SpeedMultiplier;
 
-        if (timeUntilNextFrame <= 0)
+        if (TimeUntilNextFrame <= 0)
             NextFrame();
     }
 
@@ -64,128 +73,137 @@ public class Sprite3DAnimator : MonoBehaviour
     {
         bool isMirrored = false;
 
-        int numberSides = currentState.animations.Length * (currentState.rotationMode != RotationModes.NO_REPEAT ? 2 : 1);
+        int numberSides = m_currentState.animations.Length * (m_currentState.rotationMode != RotationModes.NO_REPEAT ? 2 : 1);
+        if (m_currentState.hasBackAndFrontSprites) numberSides -= 2;
         // numberSides -= 2 * ()
 
         float degreesBetweenSteps = 360.0f / (float)numberSides;
 
-        Vector3 mainCameraForward = Camera.main.transform.forward;
-        Vector2 transForward = new Vector2(objectTransform.forward.x, objectTransform.forward.z);
-        Vector2 cameraForward = new Vector2(mainCameraForward.x, mainCameraForward.z);
+        Vector3 upVec = null != m_cameraController ? m_cameraController.m_upvec : m_defaultCameraUpvec;
+        Vector3 mainCameraForward = m_cameraTransform.forward;
+        Vector3 transForward = m_objectTransform.forward;
+        GfTools.RemoveAxis(ref mainCameraForward, upVec);
+        GfTools.RemoveAxis(ref transForward, upVec);
 
-        float dot = Vector2.Dot(transForward, cameraForward);
-        float det = transForward.x * cameraForward.y - transForward.y * cameraForward.x;
-        float angleToCamera = Mathf.Atan2(det, dot) * Mathf.Rad2Deg;
+        float angleToCamera = GfTools.SignedAngle(mainCameraForward, transForward, upVec);
+        if (angleToCamera < 0) angleToCamera += 360;
 
-        angleToCamera += degreesBetweenSteps / 2 + currentState.rotationOffsetCounter;
+        angleToCamera += degreesBetweenSteps / 2 + m_currentState.rotationOffsetDegrees;
+        angleToCamera = angleToCamera % 360;
 
-        angleToCamera += (angleToCamera < 0) ? 360f : 0f;
-        currentViewIndex = (int)(angleToCamera / degreesBetweenSteps);
 
-        float numSidesDiv2 = numberSides / 2 + 1;
+        m_currentViewIndex = (int)(angleToCamera / degreesBetweenSteps);
 
-        switch (currentState.rotationMode)
+        float numSidesDiv2 = numberSides / 2;
+
+        switch (m_currentState.rotationMode)
         {
             case (RotationModes.MIRROR_LEFT):
-                isMirrored = currentViewIndex > numSidesDiv2;
-                currentViewIndex = isMirrored ? (numberSides - currentViewIndex) : currentViewIndex;
+                isMirrored = m_currentViewIndex > numSidesDiv2;
+                m_currentViewIndex = isMirrored ? (numberSides - m_currentViewIndex) : m_currentViewIndex;
+
                 break;
 
-            case (RotationModes.MIRROR_RIGHT):
+            case (RotationModes.MIRROR_RIGHT): //todo
+                m_currentViewIndex = numberSides - m_currentViewIndex;
+
                 break;
 
-            case (RotationModes.NO_MIRROR):
+            case (RotationModes.NO_MIRROR)://todo
+                m_currentViewIndex = isMirrored ? (numberSides - m_currentViewIndex) : m_currentViewIndex;
                 break;
 
-            case (RotationModes.NO_REPEAT):
+            case (RotationModes.NO_REPEAT)://todo
                 break;
         }
 
-        currentViewIndex = Mathf.Min(currentViewIndex, currentState.animations.Length - 1);
-        spriteRenderer.flipX = isMirrored;
+        m_currentViewIndex = (int)Min(m_currentViewIndex, m_currentState.animations.Length - 1);
+        m_spriteRenderer.flipX = isMirrored;
+        // Debug.Log("The angle is: " + angleToCamera + " with a view index of: " + m_currentViewIndex + " and num sides: " + numberSides);
     }
 
     protected void OnEnable()
     {
-        PlayState(playAnimationOnStart);
+        PlayState(m_playAnimationOnStart);
     }
 
     protected void OnDisable()
     {
-        playing = false;
-        currentAnimation = null;
+        Playing = false;
+        CurrentAnimation = null;
     }
 
     public AnimationSpriteState GetState(int stateId)
     {
-        return animationStates[stateId];
+        return m_animationStates[stateId];
     }
 
     protected void UpdateStateIndex()
     {
         CalculateAnimationIndex();
 
-        currentAnimation = currentState.animations[currentViewIndex];
-        playing = true;
-        spriteRenderer.sprite = currentAnimation.frames[currentFrame];
+        CurrentAnimation = m_currentState.animations[m_currentViewIndex];
+        Playing = true;
+        m_spriteRenderer.sprite = CurrentAnimation.frames[CurrentFrame];
     }
 
     public void PlayState(int stateIndex, bool loops = true, int startFrame = 0)
     {
-        if (stateIndex != currentStateIndex)
+        if (stateIndex != m_currentStateIndex)
         {
-            currentState = animationStates[stateIndex];
-            currentStateIndex = stateIndex;
-            InternalForcePlay(currentState.animations[stateIndex], loop, startFrame);
+            m_currentState = m_animationStates[stateIndex];
+            m_currentStateIndex = stateIndex;
+            InternalForcePlay(m_currentState.animations[stateIndex], Loop, startFrame);
         }
     }
 
     public void ForcePlayState(int stateIndex, bool loops = true, int startFrame = 0)
     {
-        currentState = animationStates[stateIndex];
-        currentStateIndex = stateIndex;
-        InternalForcePlay(currentState.animations[currentViewIndex], loops, startFrame);
+        m_currentState = m_animationStates[stateIndex];
+        m_currentStateIndex = stateIndex;
+        InternalForcePlay(m_currentState.animations[m_currentViewIndex], loops, startFrame);
     }
 
     protected void InternalForcePlay(Animation animation, bool loop = true, int startFrame = 0)
     {
         startFrame = Mathf.Min(startFrame, animation.frames.Length - 1);
-        this.loop = loop;
-        currentAnimation = animation;
-        currentFrame = startFrame;
-        playing = true;
-        spriteRenderer.sprite = animation.frames[currentFrame];
-        timeUntilNextFrame = currentAnimation.timeUntilNextFrame[Mathf.Min(currentAnimation.timeUntilNextFrame.Length - 1, currentFrame)];
+        this.Loop = loop;
+        CurrentAnimation = animation;
+        CurrentFrame = startFrame;
+        Playing = true;
+        m_spriteRenderer.sprite = animation.frames[CurrentFrame];
+        TimeUntilNextFrame = CurrentAnimation.timeUntilNextFrame[(int)Min(CurrentAnimation.timeUntilNextFrame.Length - 1, CurrentFrame)];
     }
 
 
     protected void NextFrame()
     {
-        currentFrame++;
-        timeUntilNextFrame = currentAnimation.timeUntilNextFrame[Mathf.Min(currentAnimation.timeUntilNextFrame.Length - 1, currentFrame)];
-       // Debug.Log("The next frame is in " + timeUntilNextFrame);
+        CurrentFrame++;
+        TimeUntilNextFrame += CurrentAnimation.timeUntilNextFrame[(int)Min(CurrentAnimation.timeUntilNextFrame.Length - 1, CurrentFrame)];
+        // Debug.Log("The next frame is in " + timeUntilNextFrame);
 
-        if (currentFrame >= currentAnimation.frames.Length)
+        if (CurrentFrame >= CurrentAnimation.frames.Length)
         {
-            if (loop)
+            if (Loop)
             {
-                currentFrame = 0;
+                CurrentFrame = 0;
             }
             else
             {
-                currentFrame = currentAnimation.frames.Length - 1;
-                int nextStateId = currentState.nextState;
-                if (0 <= nextStateId && animationStates.Length > nextStateId)
+                CurrentFrame = CurrentAnimation.frames.Length - 1;
+                int nextStateId = m_currentState.nextState;
+                if (0 <= nextStateId && m_animationStates.Length > nextStateId)
                 {
-                    ForcePlayState(currentState.nextState, true, 0);
-                } else
+                    ForcePlayState(m_currentState.nextState, true, 0);
+                }
+                else
                 {
-                    currentFrame--;
+                    CurrentFrame--;
                 }
             }
         }
 
-        spriteRenderer.sprite = currentAnimation.frames[currentFrame];
+        m_spriteRenderer.sprite = CurrentAnimation.frames[CurrentFrame];
     }
 }
 
@@ -220,7 +238,10 @@ public class AnimationSpriteState
     [SerializeField]
     public int nextState = -1;
     [SerializeField]
-    public float rotationOffsetCounter;
+    public float rotationOffsetDegrees;
+
+    [SerializeField]
+    public bool hasBackAndFrontSprites; //whether or not the animation contain frames from behind or the front
 
     [SerializeField]
     public RotationModes rotationMode;

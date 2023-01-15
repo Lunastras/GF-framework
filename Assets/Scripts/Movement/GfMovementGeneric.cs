@@ -99,7 +99,9 @@ public abstract class GfMovementGeneric : MonoBehaviour
     private const int MAX_BUMPS = 6; // # of iterations in our Move() funcs                      // a hit buffer.
     private const float MIN_DISPLACEMENT = 0.000000001F; // min squared length of a displacement vector required for a Move() to proceed.
     private const float MIN_PUSHBACK_DEPTH = 0.000001F;
-    private const float SMOOTH_TIME = 1.0f;
+    private const float SMOOTH_TIME = 0.5f;
+
+    private const float MAX_ANGLE_NO_SMOOTH = 5f;
 
     protected float m_gravityCoef = 1.0f;
 
@@ -289,7 +291,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
             {
                 Collider otherc = colliderbuffer[ci];
                 Transform othert = otherc.transform;
-                Debug.Log("I got into a collision!");
 
                 if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherc,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
@@ -310,8 +311,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("but compute penetration sucks!");
-
                     // MgOnCollision(new MgCollisionStruct(normal, UpVec, otherc, mindistance, position - normal * mindistance, false, true, false));
                     --numCollisions;
                 }
@@ -402,7 +401,10 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         if (rotateOrientation && m_upVec != m_rotationUpVec)
         {
-            //float angleDifference = GfTools.Angle(m_upVec, m_rotationUpVec);
+            float angleDifference = GfTools.Angle(m_upVec, m_rotationUpVec);
+            if (MAX_ANGLE_NO_SMOOTH <= angleDifference && 1.0f <= m_rotationSmoothProgress)
+                m_rotationSmoothProgress = 0;
+
             Quaternion upVecRotCorrection;
 
             if (m_rotationSmoothProgress < 1.0f)
@@ -509,12 +511,10 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
             if (collision.angle < m_slopeLimit)
             {
-                GfTools.Minus3(ref velocity, m_slopeNormal * dotSlopeVel);
                 m_slopeNormal = collision.normal;
+                GfTools.RemoveAxis(ref velocity, m_slopeNormal);
             }
 
-            // GfTools.Minus3(ref velocity, Vector3.Project(velocity, collision.normal));
-            //velocity = Vector3.ProjectOnPlane(velocity, collision.normal);
             GfTools.Minus3(ref velocity, (Vector3.Dot(velocity, collision.normal)) * collision.normal);
         }
     }
