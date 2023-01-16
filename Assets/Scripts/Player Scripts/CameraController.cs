@@ -9,7 +9,7 @@ public class CameraController : MonoBehaviour
     private float m_sensitivity = 1;
 
     [SerializeField]
-    private Vector3 m_offset;
+    private Vector3 m_offset = Vector3.zero;
 
     [SerializeField]
     private float m_physCheckInterval = 0.2f;

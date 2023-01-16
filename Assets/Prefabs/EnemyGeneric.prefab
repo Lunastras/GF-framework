@@ -98,8 +98,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2207ab5f81a11cd46b4b1e3c66bff1e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  quadSpriteValues:
-    xFollowFactor: 0
+  m_xFollowFactor: 0.2
+  m_movement: {fileID: 7829947440163271455}
+  m_defaultUpvec: {x: 0, y: 1, z: 0}
+  m_defaultCameraUpvec: {x: 0, y: 1, z: 0}
 --- !u!1 &4547767586303620511
 GameObject:
   m_ObjectHideFlags: 0
@@ -146,10 +148,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageData:
-    damage: 10
-    canDamageSelf: 0
-  statsCharacter: {fileID: 0}
+  m_damage: 10
+  m_canDamageSelf: 0
+  m_statsCharacter: {fileID: 0}
 --- !u!199 &3626822765685253527
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -230,7 +231,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4547767586303620511}
   serializedVersion: 8
-  lengthInSec: 0.5
+  lengthInSec: 10
   simulationSpeed: 5
   stopAction: 0
   cullingMode: 0
@@ -305,7 +306,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 3
+      scalar: 20
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -849,7 +850,7 @@ ParticleSystem:
         m_RotationOrder: 4
   ShapeModule:
     serializedVersion: 6
-    enabled: 0
+    enabled: 1
     type: 4
     angle: 25
     length: 5
@@ -1056,7 +1057,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 15
+      scalar: 100
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -4940,10 +4941,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4759944753111975126}
   - component: {fileID: 7288493412668972908}
-  - component: {fileID: 5363898957465585475}
-  - component: {fileID: 1652595365150299445}
+  - component: {fileID: 7829947440163271455}
   - component: {fileID: 1372938329087745302}
   - component: {fileID: 7866579364068057338}
+  - component: {fileID: 1060890680}
   m_Layer: 12
   m_Name: EnemyGeneric
   m_TagString: Untagged
@@ -4982,23 +4983,7 @@ CapsuleCollider:
   m_Height: 3
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &5363898957465585475
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4759944753111975130}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 80
-  m_CollisionDetection: 0
---- !u!114 &1652595365150299445
+--- !u!114 &7829947440163271455
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5007,19 +4992,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 4759944753111975130}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64c21996f372c0e4b935fa4a36165b7e, type: 3}
+  m_Script: {fileID: 11500000, guid: 20e2ae2ae88333a46905526272233837, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 4
-  canFly: 1
-  canMove: 1
-  mass: 35
-  jumpPower: 15
-  speedSmoothing: 0.3
-  terminalVelocity: 100
-  acceleration: 2
-  maxSpeed: 8
-  groundedCheckInterval: 0.1
+  CanFly: 1
+  m_useInterpolation: 1
+  m_speed: 5
+  m_mass: 35
+  m_stepOffset: 0.3
+  m_slopeLimit: 45
+  m_upperSlopeLimit: 100
+  m_queryTrigger: 2
+  JumpTrigger: 0
+  m_velocity: {x: 0, y: 0, z: 0}
+  m_acceleration: 30
+  m_deacceleration: 30
+  m_midAirAcceleration: 10
+  m_midAirDeacceleration: 10
+  m_maxFallSpeed: 40
+  m_jumpForce: 40
+  m_turnSpeed: 10
+  AccelerationCoef: 1
+  DeaccelerationCoef: 1
+  breakWhenUnparent: 0
 --- !u!114 &1372938329087745302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5032,23 +5027,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1650e1ef77aadd74bb3eab0891bd102b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  simpleMovement: {fileID: 0}
-  targetCheckCooldown: 3
-  stateUpdateCoolDown: 0.15
-  fieldOfViewDegrees: 250
-  lineOfSightLength: 80
-  hostileValues:
-    likelyHoodToCircleTarget: 0.6
-    timeBetweenPhases: 4
-    timeBetweenFire: 2.5
-    varianceInValues: 0.2
-    runsIfLowHealth: 1
-  turret: {fileID: 0}
-  intervalBetweenWalkPhases: 4
-  intervalBetweenEnemyChecks: 2
-  varianceRate: 0.35
-  walkSpeedMultiplyer: 0.5
-  maxDstFromSpawnWalk: 10
+  m_movement: {fileID: 0}
+  m_targetCheckCooldown: 1
+  m_stateUpdateCoolDown: 0.05
+  m_fieldOfViewDegrees: 180
+  m_lineOfSightLength: 40
+  m_targetTrackingTimeWindow: 5
+  m_hostileValues:
+    m_likelyHoodToCircleTarget: 0.5
+    m_timeBetweenPhases: 4
+    m_timeBetweenFire: 3
+    m_varianceInValues: 0.2
+    m_runsIfLowHealth: 1
+  m_turret: {fileID: 0}
+  m_intervalBetweenWalkPhases: 2
+  m_intervalBetweenEnemyChecks: 0.5
+  m_varianceRate: 0
+  m_walkSpeedMultiplyer: 0.5
+  m_maxDstFromSpawnWalk: 10
 --- !u!114 &7866579364068057338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5061,31 +5057,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc0cd145eb83aeb4091ff21fb63c9f26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterType: 2
-  maxHealth: 100
-  graphics: {fileID: 4372195452012348834}
-  damageSound:
-    clip: {fileID: 8300000, guid: 0c5b647354c22304a9ae8c2cff48c266, type: 3}
+  m_characterType: 2
+  m_maxHealth: 1000
+  m_graphics: {fileID: 0}
+  m_damageSound:
+    clip: {fileID: 0}
     isMusic: 0
-    volume: 0.1
+    volume: 0.5
     volumeVariance: 0
     pitch: 1
     pitchVariance: 0
     loop: 0
     mixerGroup: {fileID: 0}
-  deathSound:
-    clip: {fileID: 8300000, guid: 3de99b229ce91c545933bf05cd6c5530, type: 3}
+  m_deathSound:
+    clip: {fileID: 0}
     isMusic: 0
-    volume: 0.1
+    volume: 0.5
     volumeVariance: 0
     pitch: 1
     pitchVariance: 0
     loop: 0
     mixerGroup: {fileID: 0}
-  itemDropsAfterDeath:
-  - {fileID: 1638784938448980617, guid: 3fa6d1718b0a7c7458a0344ae7aba8a7, type: 3}
-  dropsToSpawn: 05000000
-  npcController: {fileID: 0}
-  objectCollider: {fileID: 0}
-  turret: {fileID: 0}
-  audioSource: {fileID: 0}
+  m_itemDropsAfterDeath: []
+  m_dropsToSpawn: 
+  m_lowHealthThreshold: 0.3
+  m_aggroDamage: 20
+  m_npcController: {fileID: 0}
+  m_objectCollider: {fileID: 0}
+  m_turret: {fileID: 0}
+  m_audioSource: {fileID: 0}
+--- !u!114 &1060890680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4cd1385a8c60444f86a8646420fab6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_turretPhases:
+  - particleSystems:
+    - {fileID: 996019745373869235}
+  m_timeBetweenPhases: []
+  m_statsCharacter: {fileID: 0}
+  m_autoPlay: 0
+  m_autoRestarts: 0

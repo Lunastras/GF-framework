@@ -5,48 +5,30 @@ using UnityEngine;
 public class WeaponMaster : MonoBehaviour
 {
     [SerializeField]
-    private GameObject fireSourceTemplate;
+    public GameObject[] m_weapons;
 
-    [SerializeField]
-    private Transform activeFireSourcesParent;
-
-    [SerializeField]
-    public GameObject[] weapons;
-
-    private static WeaponMaster instance = null;
+    private static WeaponMaster m_instance = null;
 
     void Awake()
     {
-        if (instance != null)
+        if (m_instance != null)
         {
-            Destroy(instance);
+            Destroy(m_instance);
         }
 
-        instance = this;
+        m_instance = this;
     }
 
     public static GameObject GetWeapon(int index)
     {
-        if (0 > index || instance.weapons.Length <= index)
+        if (0 > index || m_instance.m_weapons.Length <= index)
             return null;
 
-        return instance.weapons[index];
+        return m_instance.m_weapons[index];
     }
 
     public static int NumWeapons()
     {
-        return instance.weapons.Length;
+        return m_instance.m_weapons.Length;
     }
-
-    public static GameObject GetTemplate()
-    {
-        return instance.fireSourceTemplate;
-    }
-
-    public static Transform GetActiveFireSourcesParent()
-    {
-        return instance.activeFireSourcesParent;
-    }
-
-
 }

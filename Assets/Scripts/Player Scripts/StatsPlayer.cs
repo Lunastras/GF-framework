@@ -5,46 +5,45 @@ using UnityEngine;
 public class StatsPlayer : StatsCharacter
 {
     [SerializeField]
-    protected float maxHealth = 200;
-
-    public bool isDead { get; protected set; }
+    protected float m_maxHealth = 200;
 
     [SerializeField]
-    protected Sound damageSound;
+    protected Sound m_damageSound;
     [SerializeField]
-    protected Sound deathSound;
+    protected Sound m_deathSound;
 
     [SerializeField]
-    private WeaponFiring playerGun;
+    private WeaponFiring m_playerGun;
 
     [SerializeField]
-    private Sound itemPickUpSound;
+    private Sound m_itemPickUpSound;
 
     [SerializeField]
-    private LoadoutManager loadoutManager;
+    private LoadoutManager m_loadoutManager;
 
-    private float currentHealth;
+    private float m_currentHealth;
 
     [SerializeField]
-    private AudioSource audioSource;
+    private AudioSource m_audioSource;
+
+    public bool IsDead { get; protected set; }
 
     private void Start()
     {
-        Debug.Log(" player stats");
-        currentHealth = maxHealth;
+        m_currentHealth = m_maxHealth;
 
-        if (null == playerGun)
-            playerGun = FindObjectOfType<WeaponFiring>();
+        if (null == m_playerGun)
+            m_playerGun = FindObjectOfType<WeaponFiring>();
 
-        if (null == loadoutManager)
-            loadoutManager = GetComponent<LoadoutManager>();
+        if (null == m_loadoutManager)
+            m_loadoutManager = GetComponent<LoadoutManager>();
 
-        if (null == audioSource)
+        if (null == m_audioSource)
         {
-            audioSource = GetComponent<AudioSource>();
-            if (null == audioSource)
+            m_audioSource = GetComponent<AudioSource>();
+            if (null == m_audioSource)
             {
-                audioSource = gameObject.AddComponent<AudioSource>();
+                m_audioSource = gameObject.AddComponent<AudioSource>();
             }
         }
 
@@ -54,35 +53,35 @@ public class StatsPlayer : StatsCharacter
 
     public override void Damage(float damage, StatsCharacter enemy = null)
     {
-        if (isDead && false)
+        if (IsDead && false)
             return;
 
-        float damagePercent = damage / maxHealth;
-        loadoutManager.AddExpPercent(-damagePercent);
+        float damagePercent = damage / m_maxHealth;
+        m_loadoutManager.AddExpPercent(-damagePercent);
 
-        currentHealth -= damage;
-        currentHealth = Mathf.Max(0, currentHealth);
+        m_currentHealth -= damage;
+        m_currentHealth = Mathf.Max(0, m_currentHealth);
 
         // Debug.Log("I HAVE BEEN DAMAGED, i have " + currentHealth + "hp");
 
-        damageSound.Play(audioSource);
+        m_damageSound.Play(m_audioSource);
 
-        if (currentHealth == 0)
+        if (m_currentHealth == 0)
         {
-            isDead = true;
+            IsDead = true;
             Kill();
         }
     }
 
     public override void Kill()
     {
-        isDead = true;
+        IsDead = true;
         // Debug.Log("I DIED");
     }
 
     public void AddPoints(PickItemBehaviour.PickUpTypes itemType, float value)
     {
-        itemPickUpSound.Play(audioSource);
+        m_itemPickUpSound.Play(m_audioSource);
 
         switch (itemType)
         {
@@ -91,7 +90,7 @@ public class StatsPlayer : StatsCharacter
                 break;
 
             case (PickItemBehaviour.PickUpTypes.POWER):
-                loadoutManager.AddExpPoints(value);
+                m_loadoutManager.AddExpPoints(value);
                 break;
         }
 

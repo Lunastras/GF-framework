@@ -7,12 +7,12 @@ public class NpcBehaviour : NpcController
     [System.Serializable]
     public class HostileValues
     {
-        public float likelyHoodToCircleTarget = 0.0f;
-        public float timeBetweenPhases = 4;
+        public float m_likelyHoodToCircleTarget = 0.0f;
+        public float m_timeBetweenPhases = 4;
 
-        public float timeBetweenFire = 5;
-        public float varianceInValues = 0.2f;
-        public bool runsIfLowHealth = true;
+        public float m_timeBetweenFire = 5;
+        public float m_varianceInValues = 0.2f;
+        public bool m_runsIfLowHealth = true;
     }
 
     protected enum EngageModes
@@ -24,40 +24,40 @@ public class NpcBehaviour : NpcController
 
 
     [SerializeField]
-    protected HostileValues hostileValues;
+    protected HostileValues m_hostileValues;
 
     [SerializeField]
-    protected ParticleSingleHit turret;
+    protected ParticleTurret m_turret;
 
     [SerializeField]
-    protected float intervalBetweenWalkPhases = 4.0f;
+    protected float m_intervalBetweenWalkPhases = 4.0f;
 
     [SerializeField]
-    protected float intervalBetweenEnemyChecks = 4.0f;
+    protected float m_intervalBetweenEnemyChecks = 4.0f;
 
     [SerializeField]
-    protected float varianceRate = 0.5f;
+    protected float m_varianceRate = 0.5f;
 
     [SerializeField]
-    protected float walkSpeedMultiplyer = 0.5f;
+    protected float m_walkSpeedMultiplyer = 0.5f;
 
     //The maximum distance from spawn until it goes back while walking
     [SerializeField]
-    protected float maxDstFromSpawnWalk = 10;
+    protected float m_maxDstFromSpawnWalk = 10;
 
-    private float timeOfNextWalkChange = 0;
+    private float m_timeOfNextWalkChange = 0;
 
-    private Vector3 spawnPos;
+    private Vector3 m_spawnPos;
 
-    protected float timeOfChangePhase = 0;
+    protected float m_timeOfChangePhase = 0;
 
-    protected float timeOfFireChange = 0;
-    protected EngageModes currentPhase;
+    protected float m_timeOfFireChange = 0;
+    protected EngageModes m_currentPhase;
 
-    private StatsNpc statsNpc;
+    private StatsNpc m_statsNpc;
 
-    private float timeOfNextEnemyCheck = 0;
-    float desiredYDir = 0;
+    private float m_timeOfNextEnemyCheck = 0;
+    float m_desiredYDir = 0;
 
 
 
@@ -74,32 +74,40 @@ public class NpcBehaviour : NpcController
         // GetDestinationManager().isEma();
 
         // destinations.SetDestination(GameManager.gameManager.GetPlayer(), true, true);
-        spawnPos = transform.position;
+        m_spawnPos = transform.position;
 
         float randomRadian = GfRandom.Range(0, Mathf.PI * 2.0f);
-        simpleMovement.SetMovementDir(new Vector3(Mathf.Cos(randomRadian), desiredYDir, Mathf.Sin(randomRadian)));
+        m_movement.SetMovementDir(-new Vector3(Mathf.Cos(randomRadian), m_desiredYDir, Mathf.Sin(randomRadian)).normalized, m_movement.UpVecEffective());
 
-        if (null == statsNpc)
-            statsNpc = GetComponent<StatsNpc>();
+        if (null == m_statsNpc)
+            m_statsNpc = GetComponent<StatsNpc>();
 
-        if (null == turret)
-            turret = GetComponent<ParticleSingleHit>();
+        if (null == m_turret)
+            m_turret = GetComponent<ParticleTurret>();
+
+        if (m_turret)
+            m_turret.SetStatsCharacter(m_statsNpc);
     }
 
-    private GameObject CheckForEnemiesAround() //TODO
-    {   /*
-        Dictionary<CharacterTypes, HashSet<StatsCharacter>> enemyDict = HostilityManager.GetEnemiesList(statsNpc);
-        foreach (CharacterTypes type in enemyDict.Keys)
+    private GameObject CheckForEnemiesAround()
+    {
+        int numTypes = HostilityManager.GetNumTypes();
+        for (int i = 0; i < numTypes; ++i)
         {
-            foreach (StatsCharacter character in enemyDict[type])
+            List<StatsCharacter> enemyList = HostilityManager.GetEnemiesList((int)(m_statsNpc.GetCharacterType()), i);
+            if (null != enemyList)
             {
-                // Debug.Log("currently checked enemy is " + character.name);
-                if (CheckCanSeeTarget(character.transform, lineOfSightLength / 2.0f, false, false, true))
+                int listLength = enemyList.Capacity;
+                for (int j = 0; j < listLength; ++j)
                 {
-                    return character.gameObject;
+                    StatsCharacter character = enemyList[i];
+                    if (CheckCanSeeTarget(character.transform, m_lineOfSightLength / 2.0f, false, false, true))
+                    {
+                        return character.gameObject;
+                    }
                 }
             }
-        }*/
+        }
 
         return null;
     }
@@ -108,49 +116,48 @@ public class NpcBehaviour : NpcController
     protected override void EngageEnemyBehaviour(Vector3 dirToTarget)
     {
         float currentTime = Time.time;
-        if (currentTime > timeOfChangePhase)
+        if (currentTime > m_timeOfChangePhase)
         {
-            timeOfChangePhase = currentTime + hostileValues.timeBetweenPhases
-                                * (1.0f + GfRandom.Range(-hostileValues.varianceInValues, hostileValues.varianceInValues));
+            m_timeOfChangePhase = currentTime + m_hostileValues.m_timeBetweenPhases
+                                * (1.0f + GfRandom.Range(-m_hostileValues.m_varianceInValues, m_hostileValues.m_varianceInValues));
 
             float randomNumber = GfRandom.GetRandomNum();
-            desiredYDir = GfRandom.Range(-0.9f, 0.2f);
+            m_desiredYDir = GfRandom.Range(-0.9f, 0.2f);
 
             // Debug.Log("random num: " + randomNumber + " and circle likelyhood: " + hostileValues.likelyHoodToCircleTarget);
 
-            if (randomNumber > hostileValues.likelyHoodToCircleTarget) //approach target
+            if (randomNumber > m_hostileValues.m_likelyHoodToCircleTarget) //approach target
             {
                 //Debug.Log("APPROACH");
-                currentPhase = EngageModes.APPROACH;
+                m_currentPhase = EngageModes.APPROACH;
             }
             else
             {
                 //Debug.Log("CIRCLE");
-                currentPhase = (randomNumber >= hostileValues.likelyHoodToCircleTarget / 2.0f)
+                m_currentPhase = (randomNumber >= m_hostileValues.m_likelyHoodToCircleTarget / 2.0f)
                             ? EngageModes.CIRLCE_CLOCKWISE : EngageModes.CIRCLE_COUNTER;
             }
         }
 
-        if (currentTime > timeOfFireChange)
+        if (currentTime > m_timeOfFireChange)
         {
 
-            if (!destination.WasDestroyed() && null != turret)
+            if (!m_destination.WasDestroyed() && null != m_turret)
             {
-                Transform enemyTransform = destination.TransformDest;
-                turret.target = enemyTransform;
-                turret.Play();
-                //PauseMovement(turret.GetCurrentPhaseLength());
+                Transform enemyTransform = m_destination.TransformDest;
+                m_turret.SetTarget(enemyTransform);
+                m_turret.Play(true);
             }
 
-            timeOfFireChange = currentTime + hostileValues.timeBetweenFire
-                                * (1 + GfRandom.Range(-hostileValues.varianceInValues, hostileValues.varianceInValues));
+            m_timeOfFireChange = currentTime + m_hostileValues.m_timeBetweenFire
+                                * (1 + GfRandom.Range(-m_hostileValues.m_varianceInValues, m_hostileValues.m_varianceInValues));
         }
 
 
         Vector2 horizontalDir = new Vector2(dirToTarget.x, dirToTarget.z);
         Vector2 newDir;
 
-        switch (currentPhase)
+        switch (m_currentPhase)
         {
             case EngageModes.CIRLCE_CLOCKWISE:
                 newDir = new Vector2(-horizontalDir.y, horizontalDir.x);
@@ -167,77 +174,66 @@ public class NpcBehaviour : NpcController
                 break;
         }
 
-        horizontalDir *= 1 + Mathf.Abs(desiredYDir);
+        horizontalDir *= 1 + Mathf.Abs(m_desiredYDir);
 
-        simpleMovement.SetMovementDir(new Vector3(horizontalDir.x, desiredYDir, horizontalDir.y));
+        m_movement.SetMovementDir(new Vector3(horizontalDir.x, m_desiredYDir, horizontalDir.y).normalized, m_movement.UpVecEffective());
     }
 
 
     protected override void NoDestinationsBehaviour()
     {
-        currentSpeedMultiplier = walkSpeedMultiplyer;
-        if (Time.time >= timeOfNextWalkChange)
+        m_currentSpeedMultiplier = m_walkSpeedMultiplyer;
+        if (Time.time >= m_timeOfNextWalkChange)
         {
-            statsNpc.ClearDamageList();
-            // turret.Pause();
+            m_timeOfNextWalkChange = Time.time + m_intervalBetweenWalkPhases * (1 - GfRandom.Range(-m_varianceRate, m_varianceRate));
 
-            timeOfNextWalkChange = Time.time + intervalBetweenWalkPhases * (1 - GfRandom.Range(-varianceRate, varianceRate));
-
-            float movementDirMagnitude = simpleMovement.MovementDirRaw.magnitude;
+            float movementDirMagnitude = m_movement.MovementDirRaw.magnitude;
 
             if (movementDirMagnitude > 0.9f)
             {
-                simpleMovement.SetMovementDir(Vector3.zero);
+                m_movement.SetMovementDir(Vector3.zero);
             }
             else
             {
-                Vector3 dirToSpawn = spawnPos - transform.position;
+                Vector3 dirToSpawn = m_spawnPos - transform.position;
                 dirToSpawn.y = 0;
-                desiredYDir = (GfRandom.GetRandomNum() * 2.0f) - 1.0f;
+                m_desiredYDir = (GfRandom.GetRandomNum() * 2.0f) - 1.0f;
 
-                if (dirToSpawn.magnitude >= maxDstFromSpawnWalk)
+                if (dirToSpawn.magnitude >= m_maxDstFromSpawnWalk)
                 {
-                    simpleMovement.SetMovementDir(dirToSpawn);
+                    m_movement.SetMovementDir(dirToSpawn.normalized, m_movement.UpVecEffective());
                 }
                 else
                 {
                     float randomRadian = GfRandom.Range(0, Mathf.PI * 2.0f);
-                    simpleMovement.SetMovementDir(new Vector3(Mathf.Cos(randomRadian), desiredYDir, Mathf.Sin(randomRadian)));
+                    m_movement.SetMovementDir(new Vector3(Mathf.Cos(randomRadian), m_desiredYDir, Mathf.Sin(randomRadian)).normalized, m_movement.UpVecEffective());
                 }
             }
         }
 
-        if (Time.time >= timeOfNextEnemyCheck)
+        if (Time.time >= m_timeOfNextEnemyCheck)
         {
-            timeOfNextEnemyCheck = Time.time + intervalBetweenEnemyChecks * (1 - GfRandom.Range(-varianceRate, varianceRate));
+            m_timeOfNextEnemyCheck = Time.time + m_intervalBetweenEnemyChecks * (1 - GfRandom.Range(-m_varianceRate, m_varianceRate));
             //  Debug.Log("I am check for enemies around me");
             GameObject target = CheckForEnemiesAround();
-            if (target != null)
-            {
-                //Debug.Log("Found SOMETHING AA " + target.name);
-                SetDestination(target.transform, true, true);
-            }
-            else
-            {
-                // Debug.Log("Found nothing");
-            }
+            if (target != null) SetDestination(target.transform, true, true);
         }
     }
 
     protected override void LowLifeBehaviour(Vector3 dirToTarget)
     {
         Debug.Log("i have low life");
-        simpleMovement.SetMovementDir(-dirToTarget);
-        turret.Stop();
+        m_movement.SetMovementDir(-dirToTarget.normalized, m_movement.UpVecEffective());
+        m_turret.Stop();
     }
 
 
     protected override void LostTargetBehaviour()
     {
-        // Debug.Log("i lost the target");
+        Debug.Log("i lost the target");
         PauseMovement(1);
-        simpleMovement.SetMovementDir(Vector3.zero);
-        turret.Stop();
+        m_movement.SetMovementDir(Vector3.zero, m_movement.UpVecEffective());
+        m_turret.Stop();
         npcState = NpcState.NO_DESTINATION;
         SetDestination(null);
     }
@@ -245,8 +241,8 @@ public class NpcBehaviour : NpcController
     protected override void DestinationDestroyedBehaviour()
     {
         Debug.Log("enemy was destroyed");
-        simpleMovement.SetMovementDir(Vector3.zero);
-        turret.Stop();
+        m_movement.SetMovementDir(Vector3.zero, m_movement.UpVecEffective());
+        m_turret.Stop();
         npcState = NpcState.NO_DESTINATION;
         SetDestination(null);
     }

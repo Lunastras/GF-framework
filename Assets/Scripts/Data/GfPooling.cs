@@ -121,32 +121,31 @@ public class GfPooling : MonoBehaviour
             forceDestroy &= !keepActive;
 
             bool destroyObject = true;
-            if(keepActive && !instance.pools.ContainsKey(objectToDestroy.name))
+            if (keepActive && !instance.pools.ContainsKey(objectToDestroy.name))
                 Pool(objectToDestroy, 1, false);
 
             if (!forceDestroy && instance.pools.TryGetValue(objectToDestroy.name, out PoolClass currentPool))
             {
                 if (currentPool.parent.childCount < currentPool.capacity)
                 {
-                    Debug.Log("Put into pool: " + objectToDestroy.name);
-
                     objectToDestroy.SetActive(keepActive);
                     objectToDestroy.transform.SetParent(currentPool.parent);
                     destroyObject = false;
-                                        
-                    if(keepActive) {
+
+                    if (keepActive)
+                    {
                         objectToDestroy.transform.position = new Vector3(99999999, 99999999, 99999999);
                     }
                 }
                 else
                 {
                     destroyObject = objectToDestroy.transform.parent != currentPool.parent;
-                   // Debug.Log("Pool " + currentPool.parent.name + " is full, it has numofchildren: " + currentPool.parent.childCount + " the current object is " + objectToDestroy.name);
+                    // Debug.Log("Pool " + currentPool.parent.name + " is full, it has numofchildren: " + currentPool.parent.childCount + " the current object is " + objectToDestroy.name);
                 }
             }
             else
             {
-               // Debug.Log("Object not found in dictionary");
+                // Debug.Log("Object not found in dictionary");
             }
 
             if (destroyObject)
@@ -196,14 +195,14 @@ public class GfPooling : MonoBehaviour
         {
             if (PoolSizeAvailable(objectToDestroy) == 0)
                 Pool(objectToDestroy, 1, false);
-            
+
             instance.StartCoroutine(DestroyCoroutine(objectToDestroy, delay, forceDestroy, keepActive));
         }
     }
 
     public static void DestroyInsert(GameObject objectToDestroy, bool forceDestroy = false, bool keepActive = false)
     {
-        if (null != objectToDestroy) 
+        if (null != objectToDestroy)
         {
             if (PoolSizeAvailable(objectToDestroy) == 0)
                 Pool(objectToDestroy, 1, false);

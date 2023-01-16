@@ -7,119 +7,106 @@ using UnityEngine.UI;
 public class WeaponFiring : MonoBehaviour
 {
     [SerializeField]
-    private Transform fireSource;
+    private Transform m_aimTransform;
 
     [SerializeField]
-    private StatsCharacter statsCharacter;
+    private StatsCharacter m_statsCharacter;
 
     [SerializeField]
-    private float distanceUpdateInterval = 0.05f;
+    private float m_distanceUpdateInterval = 0.05f;
 
     [SerializeField]
-    private float distanceOffset;
+    private float m_distanceOffset;
 
     // [SerializeField]
     // private bool canFire = true;
 
     [SerializeField]
-    private float maxFireDistance = 100;
+    private float m_maxFireDistance = 100;
 
-    public int currentLevel { get; set; }
+    private WeaponBasic[] m_weapons = null;
 
-    private WeaponBasic[] weapons = null;
+    private RaycastHit m_lastRayHit;
 
-    private RaycastHit lastRayHit;
+    private bool m_hitAnObject;
 
-    private bool hitAnObject;
+    private int m_numWeapons = 0;
 
-    private int numWeapons = 0;
-
-    private float timeUntilNextUpdate;
+    private double m_timeOflastCheck = 0;
 
     // Start is called before the first frame update
     void Awake()
     {
-        if (null == fireSource)
-        {
-            fireSource = transform;
-        }
-        fireSource = Camera.main.transform;
+        if (null == m_aimTransform)
+            m_aimTransform = transform;
 
-        //currentExp = new List<float>();
+        if (m_statsCharacter == null)
+            m_statsCharacter = GetComponent<StatsCharacter>();
 
-        lastRayHit = new RaycastHit();
-
-        if (statsCharacter == null)
-        {
-            statsCharacter = GetComponent<StatsCharacter>();
-        }
+        m_lastRayHit = new RaycastHit();
     }
 
 
     public void SetWeaponArray(WeaponBasic[] weaponArray, int numWeapons = -1)
     {
-        weapons = weaponArray;
+        m_weapons = weaponArray;
 
         if (numWeapons < 0)
-            numWeapons = weapons.Length;
+            numWeapons = m_weapons.Length;
 
-        this.numWeapons = numWeapons;
-    }
-
-    private void FixedUpdate()
-    {
-        timeUntilNextUpdate -= Time.deltaTime;
+        this.m_numWeapons = numWeapons;
     }
 
     // Update is called once per frame
     public void Fire()
     {
-        Vector3 fireTargetDir = fireSource.forward;
+        Vector3 fireTargetDir = m_aimTransform.forward;
+        double currentTime = Time.timeAsDouble;
 
-        if (timeUntilNextUpdate < 0)
+        if ((currentTime - m_timeOflastCheck) >= m_distanceUpdateInterval)
         {
-            timeUntilNextUpdate = distanceUpdateInterval;
+            m_timeOflastCheck = Time.timeAsDouble;
 
-            Ray ray = new(fireSource.position, fireTargetDir);
+            Ray ray = new(m_aimTransform.position, fireTargetDir);
             RaycastHit[] rayHits = GfPhysics.GetRaycastHits();
 
-            hitAnObject = 0 != Physics.RaycastNonAlloc(ray, rayHits, maxFireDistance, ~GfPhysics.IgnoreLayers());
+            m_hitAnObject = 0 != Physics.RaycastNonAlloc(ray, rayHits, m_maxFireDistance, ~GfPhysics.IgnoreLayers() - (int)Mathf.Pow(2, (gameObject.layer)));
 
-            if (hitAnObject)
+            if (m_hitAnObject)
             {
-                lastRayHit = rayHits[0];
-                lastRayHit.distance += distanceOffset;
+                m_lastRayHit = rayHits[0];
+                m_lastRayHit.distance += m_distanceOffset;
             }
-            else 
-            { 
-                lastRayHit.distance = maxFireDistance;
+            else
+            {
+                m_lastRayHit.distance = m_maxFireDistance;
             }
         }
 
-        lastRayHit.point = fireSource.position + fireTargetDir * lastRayHit.distance;
-      //  Debug.Log("THE POSITION OF THE CAMERA IS " + fireSource.forward);
-       // Debug.Log("THE POSITION OF THE CAMERA IS ");
+        m_lastRayHit.point = m_aimTransform.position + fireTargetDir * m_lastRayHit.distance;
 
-      //  Debug.DrawRay(fireSource.position, fireTargetDir * 100f, Color.green, 0.1f);
+        for (int i = 0; i < m_numWeapons; ++i)
+            m_weapons[i].Fire(m_lastRayHit, m_hitAnObject);
 
-
-        for (int i = 0; i < numWeapons; ++i)
-            weapons[i].Fire(lastRayHit, hitAnObject);
-        
     }
 
     public void ReleaseFire()
     {
-        for (int i = 0; i < numWeapons; ++i)
+        for (int i = 0; i < m_numWeapons; ++i)
         {
-            if (weapons[i] != null && weapons[i].gameObject.activeSelf)
-                weapons[i].ReleasedFire(lastRayHit, hitAnObject);
+            if (m_weapons[i] != null && m_weapons[i].gameObject.activeSelf)
+                m_weapons[i].ReleasedFire(m_lastRayHit, m_hitAnObject);
         }
     }
 
     public StatsCharacter GetStatsCharacter()
     {
-        return statsCharacter;
+        return m_statsCharacter;
+    }
+
+    public void SetStatsCharacter(StatsCharacter character)
+    {
+        m_statsCharacter = character;
     }
 
 }

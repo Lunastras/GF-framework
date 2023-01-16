@@ -15,63 +15,63 @@ public class HitBoxBehaviour : HitBoxGeneric
     }
 
     [SerializeField]
-    protected float damage = 5;
+    protected float m_damage = 5;
 
     [SerializeField]
-    protected bool canDamageSelf = false;
+    protected bool m_canDamageSelf = false;
 
     [SerializeField]
-    protected int hitsPerTarget = 1;
+    protected int m_hitsPerTarget = 1;
 
     [SerializeField]
-    protected int maxHitsTotal = 1;
+    protected int m_maxHitsTotal = 1;
 
     [SerializeField]
-    private float damageCoolDown = 0.1f;
+    private float m_damageCoolDown = 0.1f;
 
     [SerializeField]
-    protected int maxTargets = 1;
+    protected int m_maxTargets = 1;
 
     [SerializeField]
-    protected bool destroysObjectWhenDone = false;
+    protected bool m_destroysObjectWhenDone = false;
 
     [SerializeField]
-    protected float lifeSpan = 1.0f;
+    protected float m_lifeSpan = 1.0f;
 
-    protected int totalHitCount = 0;
+    protected int m_totalHitCount = 0;
 
-    protected Dictionary<StatsCharacter, HitInfo> hitTargets = null;
+    protected Dictionary<StatsCharacter, HitInfo> m_hitTargets = null;
 
-    private float timeOfDisable;
+    private float m_timeOfDisable;
 
-    private HitInfo[] hitInfoStockPile = null;
+    private HitInfo[] m_hitInfoStockPile = null;
 
-    private int lastHitInfoIndex = -1;
+    private int m_lastHitInfoIndex = -1;
 
     // Start is called before the first frame update
     void Awake()
     {
-        hitTargets = new Dictionary<StatsCharacter, HitInfo>(maxTargets);
-        hitInfoStockPile = new HitInfo[maxTargets];
-        for (int i = 0; i < hitInfoStockPile.Length; i++)
+        m_hitTargets = new Dictionary<StatsCharacter, HitInfo>(m_maxTargets);
+        m_hitInfoStockPile = new HitInfo[m_maxTargets];
+        for (int i = 0; i < m_hitInfoStockPile.Length; i++)
         {
-            hitInfoStockPile[i] = new HitInfo();
+            m_hitInfoStockPile[i] = new HitInfo();
         }
     }
     public void Initialize()
     {
-        lastHitInfoIndex = maxTargets - 1;
+        m_lastHitInfoIndex = m_maxTargets - 1;
 
         // Debug.Log("bullet spawned");
-        if (lifeSpan > 0.0f && destroysObjectWhenDone)
+        if (m_lifeSpan > 0.0f && m_destroysObjectWhenDone)
         {
             // Debug.Log("Called GF detroy");
-            GfPooling.Destroy(gameObject, lifeSpan);
+            GfPooling.Destroy(gameObject, m_lifeSpan);
         }
 
-        timeOfDisable = Time.time + lifeSpan;
+        m_timeOfDisable = Time.time + m_lifeSpan;
 
-        hitTargets.Clear();
+        m_hitTargets.Clear();
     }
 
     void OnEnable()
@@ -79,16 +79,9 @@ public class HitBoxBehaviour : HitBoxGeneric
         Initialize();
     }
 
-    protected virtual bool HitTarget(StatsCharacter target)
+    protected virtual bool HitTarget(StatsCharacter target, float damageMultiplier)
     {
-        target.Damage(damage, characterStats);
-
-        return true;
-    }
-
-    protected virtual bool HitNonDamageTarget(StatsCharacter target)
-    {
-        // target.Damage(damage, characterStats);
+        target.Damage(m_damage, characterStats);
 
         return true;
     }
@@ -103,7 +96,7 @@ public class HitBoxBehaviour : HitBoxGeneric
     public override void CollisionBehaviour(Collider other)
     {
         //Debug.Log("AAA I HIT " + other.name);
-        if (null == hitTargets && Time.time >= timeOfDisable)
+        if (null == m_hitTargets && Time.time >= m_timeOfDisable)
             return;
 
         StatsCharacter collisionStats = other.GetComponent<StatsCharacter>();
@@ -112,52 +105,48 @@ public class HitBoxBehaviour : HitBoxGeneric
             bool willDamage = false;
 
             bool hitSelf = characterStats == collisionStats;
-            bool canDamageEnemy = HostilityManager.CanDamage(characterStats, collisionStats);
+            float damageMultiplier = HostilityManager.DamageMultiplier(characterStats, collisionStats);
 
             //check if it can damage target
-            if ((!hitSelf && canDamageEnemy) || (hitSelf && canDamageSelf))
+            if (!hitSelf || (hitSelf && m_canDamageSelf))
             {
-                if (hitTargets.ContainsKey(collisionStats))
+                if (m_hitTargets.ContainsKey(collisionStats))
                 {
 
-                    willDamage = hitTargets[collisionStats].hitCount < hitsPerTarget
-                                && hitTargets[collisionStats].nextTimeOfDamage <= Time.time;
+                    willDamage = m_hitTargets[collisionStats].hitCount < m_hitsPerTarget
+                                && m_hitTargets[collisionStats].nextTimeOfDamage <= Time.time;
 
                 }
-                else if (hitTargets.Count < maxTargets)
+                else if (m_hitTargets.Count < m_maxTargets)
                 {
 
                     willDamage = true;
-                    hitTargets.Add(collisionStats, hitInfoStockPile[lastHitInfoIndex--]);
+                    m_hitTargets.Add(collisionStats, m_hitInfoStockPile[m_lastHitInfoIndex--]);
                 }
 
                 if (collisionStats != null && willDamage)
                 {
-                    if (HitTarget(collisionStats))
+                    if (HitTarget(collisionStats, damageMultiplier))
                     {
-                        totalHitCount++;
-                        hitTargets[collisionStats].hitCount++;
-                        hitTargets[collisionStats].nextTimeOfDamage = Time.time + damageCoolDown;
+                        m_totalHitCount++;
+                        m_hitTargets[collisionStats].hitCount++;
+                        m_hitTargets[collisionStats].nextTimeOfDamage = Time.time + m_damageCoolDown;
 
-                        bool destroyHitbox = (hitTargets[collisionStats].hitCount >= hitsPerTarget
-                                        && hitTargets.Count >= maxTargets)
-                                        || totalHitCount >= maxHitsTotal;
+                        bool destroyHitbox = (m_hitTargets[collisionStats].hitCount >= m_hitsPerTarget
+                                        && m_hitTargets.Count >= m_maxTargets)
+                                        || m_totalHitCount >= m_maxHitsTotal;
 
                         if (destroyHitbox)
                         {
                             OnDestroyBehaviour(willDamage);
 
-                            if (destroysObjectWhenDone)
+                            if (m_destroysObjectWhenDone)
                             {
                                 GfPooling.Destroy(gameObject);
                             }
                         }
                     }
                 }
-            }
-            else
-            {
-                HitNonDamageTarget(collisionStats);
             }
         }
         else
@@ -173,31 +162,31 @@ public class HitBoxBehaviour : HitBoxGeneric
 
     public void SetDamage(int value)
     {
-        damage = value;
+        m_damage = value;
     }
 
     public void SetMaxHitsTotal(int value)
     {
-        maxHitsTotal = value;
+        m_maxHitsTotal = value;
     }
     public void SeHitsPertarget(int value)
     {
-        hitsPerTarget = value;
+        m_hitsPerTarget = value;
     }
 
     public void SetDamageCoolDown(float value)
     {
-        damageCoolDown = value;
+        m_damageCoolDown = value;
     }
 
     public void SetMaxTargets(int value)
     {
-        hitsPerTarget = value;
+        m_hitsPerTarget = value;
     }
 
     public void SetDestroysObjectWhenDone(bool value)
     {
-        destroysObjectWhenDone = value;
+        m_destroysObjectWhenDone = value;
     }
 }
 

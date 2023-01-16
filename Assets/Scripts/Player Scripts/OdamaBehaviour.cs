@@ -4,123 +4,110 @@ using UnityEngine;
 
 public class OdamaBehaviour : MonoBehaviour
 {
-    private Transform parent = null;
+    [SerializeField]
+    private Transform m_parent = null;
+    [SerializeField]
+    public float m_dstFromParent = 1;
+    [SerializeField]
+    public float m_rotationSpeed = 1;
+    [SerializeField]
+    public float m_parentMoveSmoothness = 0.02f;
+    [SerializeField]
+    public float m_bopSpeed = 1;
+    [SerializeField]
+    public float m_bopRange = 0.5f;
+    [SerializeField]
+    public Vector3 m_positionOffset;
 
     [SerializeField]
-    private  OdamaBehaviourValues odamaValues;
+    private float m_physCheckInterval = 0.2f;
 
     [SerializeField]
-    private float physCheckInterval = 0.2f;
+    private GfMovementGeneric m_parentMovement;
 
-    private float currentTargetDst = 0;
-    private float timeUntilPhysCheck;
+    private float m_currentTargetDst = 0;
+    private float m_timeUntilPhysCheck;
 
-    private bool collidingWithSmth = false;
+    private bool m_collidingWithSmth = false;
 
-    private RaycastHit raycastHit;
+    private const float RADIUS = 0.7f;
+    private readonly static Vector3 UPDIR = Vector3.up;
 
-    private const float collisionRadius = 0.7f;
+    private float m_currentBopValue;
 
-    private float currentBopValue;
+    private float m_currentRotationRelativeToParentRad = 0;
 
-    private float currentRotationRelativeToParentRad = 0;
-
-    private Vector3 distanceSmoothVelocity;
-    private Vector3 desiredPos;
+    private Vector3 m_distanceSmoothVelocity;
+    private Vector3 m_desiredPos;
 
     // private CharacterController
     // Start is called before the first frame update
     void Start()
     {
-        currentTargetDst = odamaValues.dstFromParent;
-        currentBopValue = Random.Range(0, 10);
+        m_currentTargetDst = m_dstFromParent;
+        m_currentBopValue = Random.Range(0, 10);
 
-        odamaValues.parentMoveSmoothness *= Random.Range(1f, 2f);
+        m_parentMoveSmoothness *= Random.Range(1f, 2f);
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        Vector3 dirFromPlayer = odamaValues.positionOffset 
-                                    + new Vector3(Mathf.Cos(currentRotationRelativeToParentRad) * odamaValues.dstFromParent,
-                                                  Mathf.Sin(currentBopValue) * odamaValues.bopRange, 
-                                                  Mathf.Sin(currentRotationRelativeToParentRad) * odamaValues.dstFromParent);
+        Vector3 dirFromPlayer = m_positionOffset
+                                    + new Vector3(Mathf.Cos(m_currentRotationRelativeToParentRad) * m_dstFromParent,
+                                                  Mathf.Sin(m_currentBopValue) * m_bopRange,
+                                                  Mathf.Sin(m_currentRotationRelativeToParentRad) * m_dstFromParent);
 
         dirFromPlayer = dirFromPlayer.normalized;
 
-        timeUntilPhysCheck -= Time.deltaTime;
-
-        if (timeUntilPhysCheck <= 0)
+        if (m_parentMovement && m_parentMovement.UpvecRotation() != UPDIR)
         {
-            timeUntilPhysCheck = physCheckInterval;
+            dirFromPlayer = Quaternion.FromToRotation(UPDIR, m_parentMovement.UpvecRotation()) * dirFromPlayer;
+        }
+
+        m_timeUntilPhysCheck -= Time.deltaTime;
+
+        if (m_timeUntilPhysCheck <= 0)
+        {
+            m_timeUntilPhysCheck = m_physCheckInterval;
 
             int layermask = GfPhysics.NonCharacterCollisions();
             Collider[] colliders = GfPhysics.GetCollidersArray();
-            currentTargetDst = odamaValues.dstFromParent;
+            m_currentTargetDst = m_dstFromParent;
 
-            if (collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(transform.position, collisionRadius, colliders, layermask))
+            if (m_collidingWithSmth || 0 < Physics.OverlapSphereNonAlloc(transform.position, RADIUS, colliders, layermask))
             {
                 RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
-                collidingWithSmth = 0 < Physics.SphereCastNonAlloc(parent.position, collisionRadius, dirFromPlayer, raycastHits, odamaValues.dstFromParent, layermask);
+                m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(m_parent.position, RADIUS, dirFromPlayer, raycastHits, m_dstFromParent, layermask);
 
-                if (collidingWithSmth)
+                if (m_collidingWithSmth)
                 {
-                    raycastHit = raycastHits[0];
-                    currentTargetDst = raycastHit.distance;
+                    m_currentTargetDst = raycastHits[0].distance;
                 }
-            }     
+            }
         }
 
-        desiredPos = currentTargetDst * dirFromPlayer + parent.position;
-        
-        currentRotationRelativeToParentRad += Time.deltaTime * odamaValues.rotationSpeed;
-        currentBopValue += Time.deltaTime * odamaValues.bopSpeed;
+        m_currentTargetDst = m_dstFromParent;
+
+        m_desiredPos = m_currentTargetDst * dirFromPlayer + m_parent.position;
+
+        m_currentRotationRelativeToParentRad += Time.deltaTime * m_rotationSpeed;
+        m_currentBopValue += Time.deltaTime * m_bopSpeed;
     }
 
     private void Update()
     {
-        transform.position = Vector3.SmoothDamp(transform.position, desiredPos, ref distanceSmoothVelocity, odamaValues.parentMoveSmoothness);
+        transform.position = Vector3.SmoothDamp(transform.position, m_desiredPos, ref m_distanceSmoothVelocity, m_parentMoveSmoothness);
     }
 
     public void SetAngle(float angle)
     {
-        currentRotationRelativeToParentRad = angle * Mathf.Deg2Rad;
+        m_currentRotationRelativeToParentRad = angle * Mathf.Deg2Rad;
     }
 
-    public void SetParent(Transform parent)
+    public void SetParent(GfMovementGeneric parent)
     {
-        this.parent = parent;
+        this.m_parent = parent.transform;
+        m_parentMovement = parent;
     }
-
-    public void SetOdamaValues(OdamaBehaviourValues values)
-    {
-        odamaValues = values;
-    }
-
-    public OdamaBehaviourValues GetOdamaValues()
-    {
-        return odamaValues;
-    }
-}
-
-[System.Serializable]
-public struct OdamaBehaviourValues
-{
-    public OdamaBehaviourValues(float dstFromParent = 1.5f, float rotationSpeed = 0.8f, float parentMoveSmoothness = 0.25f, float bopSpeed = 3f, float bopRange = 0.4f)
-    {
-        this.dstFromParent = dstFromParent;
-        this.rotationSpeed = rotationSpeed;
-        this.parentMoveSmoothness = parentMoveSmoothness;
-        this.bopSpeed = bopSpeed;
-        this.bopRange = bopRange;
-
-        positionOffset = new Vector3(0, -0.1f, 0);
-    }
-
-    public float dstFromParent;
-    public float rotationSpeed;
-    public float parentMoveSmoothness;
-    public float bopSpeed;
-    public float bopRange;
-    public Vector3 positionOffset;
 }

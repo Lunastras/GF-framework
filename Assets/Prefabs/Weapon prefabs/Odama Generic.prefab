@@ -130,10 +130,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageData:
-    damage: 10
-    canDamageSelf: 0
-  statsCharacter: {fileID: 0}
+  m_damage: 10
+  m_canDamageSelf: 0
+  m_statsCharacter: {fileID: 0}
 --- !u!199 &5347368421892561561
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -4963,14 +4962,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53fefe2c2f768304f8fe7d18a14d771c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  odamaValues:
-    dstFromParent: 1.5
-    rotationSpeed: 1
-    parentMoveSmoothness: 0.05
-    bopSpeed: 1
-    bopRange: 0.5
-    positionOffset: {x: 0, y: -0.2, z: 0}
-  physCheckInterval: 0.2
+  m_parent: {fileID: 0}
+  m_dstFromParent: 1
+  m_rotationSpeed: 2
+  m_parentMoveSmoothness: 0.02
+  m_bopSpeed: 1
+  m_bopRange: 0.2
+  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_physCheckInterval: 0.2
+  m_parentMovement: {fileID: 0}
 --- !u!114 &1040287679046681609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5100,17 +5100,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4cd1385a8c60444f86a8646420fab6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  turretPhases:
+  m_turretPhases:
   - particleSystems:
     - {fileID: 3910709376094881180}
   - particleSystems:
     - {fileID: 7388481883849276434}
   - particleSystems:
     - {fileID: 4606038829875334573}
-  timeBetweenPhases: []
-  statsCharacter: {fileID: 0}
-  autoPlay: 0
-  autoRestarts: 0
+  m_timeBetweenPhases: []
+  m_statsCharacter: {fileID: 0}
+  m_autoPlay: 0
+  m_autoRestarts: 0
 --- !u!1 &1756110801747613470
 GameObject:
   m_ObjectHideFlags: 0
@@ -5157,10 +5157,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageData:
-    damage: 15
-    canDamageSelf: 0
-  statsCharacter: {fileID: 0}
+  m_damage: 10
+  m_canDamageSelf: 0
+  m_statsCharacter: {fileID: 0}
 --- !u!199 &3643809342232116430
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -9986,10 +9985,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageData:
-    damage: 10
-    canDamageSelf: 0
-  statsCharacter: {fileID: 0}
+  m_damage: 10
+  m_canDamageSelf: 0
+  m_statsCharacter: {fileID: 0}
 --- !u!198 &4641846789704900177
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -14848,8 +14846,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2207ab5f81a11cd46b4b1e3c66bff1e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  quadSpriteValues:
-    xFollowFactor: 1
+  m_xFollowFactor: 1
+  m_movement: {fileID: 0}
+  m_defaultUpvec: {x: 0, y: 1, z: 0}
+  m_defaultCameraUpvec: {x: 0, y: 1, z: 0}
 --- !u!212 &8518876018121909150
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -14948,10 +14948,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageData:
-    damage: 30
-    canDamageSelf: 0
-  statsCharacter: {fileID: 0}
+  m_damage: 10
+  m_canDamageSelf: 0
+  m_statsCharacter: {fileID: 0}
 --- !u!199 &3743803346136855252
 ParticleSystemRenderer:
   serializedVersion: 6

@@ -9,34 +9,28 @@ using System.Runtime.CompilerServices;
 public class ParticleTrigerSingleDamage : ParticleTrigger
 {
     [SerializeField]
-    protected StatsCharacter statsCharacter;
-
+    protected StatsCharacter m_statsCharacter;
     [SerializeField]
-    ParticleSingleDamageStruct damageData;
+    protected float m_damage;
+    [SerializeField]
+    protected bool m_canDamageSelf;
 
     protected override void InternalAwake()
     {
-        statsCharacter = null == statsCharacter ? GetComponent<StatsCharacter>() : statsCharacter;
+        m_statsCharacter = null == m_statsCharacter ? GetComponent<StatsCharacter>() : m_statsCharacter;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     override protected void CollisionBehaviour(ref ParticleSystem.Particle particle, GameObject hitObject)
     {
         StatsCharacter collisionStats = hitObject.GetComponent<StatsCharacter>();
         if (collisionStats != null)
         {
-            bool hitSelf = statsCharacter == collisionStats;
-            bool canDamageEnemy = HostilityManager.CanDamage(statsCharacter, collisionStats);
+            bool hitSelf = m_statsCharacter == collisionStats;
+            float damageMultiplier = HostilityManager.DamageMultiplier(m_statsCharacter, collisionStats);
 
             //check if it can damage target
-            if ((!hitSelf && canDamageEnemy) || (hitSelf && damageData.canDamageSelf))
-            {
+            if (!hitSelf || (hitSelf && m_canDamageSelf))
                 HitTarget(ref particle, collisionStats);
-            }
-            else
-            {
-                HitNonDamageTarget(ref particle, collisionStats);
-            }
         }
         else
         {
@@ -47,30 +41,12 @@ public class ParticleTrigerSingleDamage : ParticleTrigger
     protected virtual void HitTarget(ref ParticleSystem.Particle particle, StatsCharacter target)
     {
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
-        target.Damage(damageData.damage, statsCharacter);
+        target.Damage(m_damage, m_statsCharacter);
         particle.remainingLifetime = 0;
-    }
-
-    protected virtual void HitNonDamageTarget(ref ParticleSystem.Particle particle, StatsCharacter target)
-    {
-        // target.Damage(damage, characterStats);
     }
 
     protected virtual void HitCollision(ref ParticleSystem.Particle particle, GameObject hitObject)
     {
 
     }
-}
-
-[System.Serializable]
-public class ParticleSingleDamageStruct
-{
-    public ParticleSingleDamageStruct(float damage = 1, bool canDamageSelf = false)
-    {
-        this.damage = damage;
-        this.canDamageSelf = canDamageSelf;
-    }
-
-    public float damage;
-    public bool canDamageSelf;
 }

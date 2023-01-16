@@ -31,11 +31,6 @@ public class QuadSpriteGraphics : MonoBehaviour
         m_transform = transform;
     }
 
-    // Update is called once per frame
-
-    private static readonly float THRESHOLD_CALCULATION = 0.99f;
-
-
     void Update()
     {
         Vector3 upVec = null != m_movement ? m_movement.UpvecRotation() : m_defaultUpvec;

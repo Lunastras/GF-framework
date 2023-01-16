@@ -29,18 +29,11 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
         }
     }
 
-    protected virtual bool HitTarget(StatsCharacter target)
+    protected virtual bool HitTarget(StatsCharacter target, float damageMultiplier)
     {
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
         target.Damage(hitBoxValues.damage, characterStats);
         GfPooling.Destroy(gameObject);
-
-        return true;
-    }
-
-    protected virtual bool HitNonDamageTarget(StatsCharacter target)
-    {
-        // target.Damage(damage, characterStats);
 
         return true;
     }
@@ -62,17 +55,11 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
         if (collisionStats != null)
         {
             bool hitSelf = characterStats == collisionStats;
-            bool canDamageEnemy = HostilityManager.CanDamage(characterStats, collisionStats);
+            float damageMultiplier = HostilityManager.DamageMultiplier(characterStats, collisionStats);
 
             //check if it can damage target
-            if ((!hitSelf && canDamageEnemy) || (hitSelf && hitBoxValues.canDamageSelf))
-            {
-                HitTarget(collisionStats);
-            }
-            else
-            {
-                HitNonDamageTarget(collisionStats);
-            }
+            if (!hitSelf || (hitSelf && hitBoxValues.canDamageSelf))
+                HitTarget(collisionStats, damageMultiplier);
         }
         else
         {

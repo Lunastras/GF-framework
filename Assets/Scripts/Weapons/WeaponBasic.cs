@@ -28,11 +28,11 @@ public class WeaponBasic : MonoBehaviour
     {
         turret.Stop();
     }
-    
+
 
     private void Start()
     {
-        if(null == turret)
+        if (null == turret)
         {
             turret = GetComponent<ParticleTurret>();
         }
@@ -54,11 +54,11 @@ public class WeaponBasic : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(destroyWhenDone && !turret.IsAlive(true))
+        if (destroyWhenDone && !turret.IsAlive(true))
         {
             destroyWhenDone = false;
             GfPooling.DestroyInsert(gameObject);
-        }       
+        }
     }
 
     public void SetStatsCharacter(StatsCharacter value)
@@ -86,10 +86,10 @@ public class WeaponBasic : MonoBehaviour
     {
         Vector3 dirBullet = (hit.point - transform.position).normalized;
 
-       // Debug.Log("I GOT HERE ehehe");
+        // Debug.Log("I GOT HERE ehehe");
         turret.SetRotation(Quaternion.LookRotation(dirBullet));
 
-        turret.Play(currentLevel);      
+        turret.Play(false, currentLevel);
     }
 
     protected virtual void InternalReleasedFire(RaycastHit hit, int currentLevel, bool hitAnObject)
@@ -113,7 +113,7 @@ public class WeaponBasic : MonoBehaviour
     {
         if (weaponValues.levelReleaseFireSounds.Length > 0)
             GetReleaseFireSound().Play(audioSource);
-        
+
         InternalReleasedFire(hit, currentLevel, hitAnObject);
     }
 
@@ -194,15 +194,15 @@ public class WeaponBasic : MonoBehaviour
             nextLevelProgress = lowerExp / upperExp;
         }
 
-       // auxCurrentLevel = Mathf.Min(auxCurrentLevel, GetNumPhases() - 1);
+        // auxCurrentLevel = Mathf.Min(auxCurrentLevel, GetNumPhases() - 1);
         currentLevel = auxCurrentLevel;
         //if((forceUpdate || (auxCurrentLevel >= 0 && currentLevel != auxCurrentLevel)) && (weaponValues.particleSystems.Length > 0 && null != weaponValues.particleSystems[currentLevel]))
-       // {
-            //Debug.Log("Name of the object on rn is " + gameObject.name);
-           // Debug.Log("The current level is " + currentLevel + " and the current weapon count level is " + weaponValues.particleSystems.Length);
-           // currentLevel = auxCurrentLevel;
-           // turret.GetSystem().SetParticleSystemHit(weaponValues.particleSystems[currentLevel]);
-           // fireReleased = true;
+        // {
+        //Debug.Log("Name of the object on rn is " + gameObject.name);
+        // Debug.Log("The current level is " + currentLevel + " and the current weapon count level is " + weaponValues.particleSystems.Length);
+        // currentLevel = auxCurrentLevel;
+        // turret.GetSystem().SetParticleSystemHit(weaponValues.particleSystems[currentLevel]);
+        // fireReleased = true;
         //}
     }
 

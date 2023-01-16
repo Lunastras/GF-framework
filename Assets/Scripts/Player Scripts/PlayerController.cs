@@ -46,13 +46,15 @@ public class PlayerController : MonoBehaviour
         if (m_cameraController == null)
         {
             m_playerCamera = Camera.main.transform;
-            m_cameraController = m_playerCamera.GetComponent<CameraController>();
-            if (null == m_cameraController)
-                Debug.LogError("ERROR: The main camera does not have a CameraController component. Please add it to the main camera.");
-            else
-                m_cameraController.SetMainTarget(m_movement.transform);
+
         }
         else m_playerCamera = m_cameraController.transform;
+
+        m_cameraController = m_playerCamera.GetComponent<CameraController>();
+        if (null == m_cameraController)
+            Debug.LogError("ERROR: The main camera does not have a CameraController component. Please add it to the main camera.");
+        else
+            m_cameraController.SetMainTarget(m_movement.transform);
 
 
         if (m_weaponFiring == null)

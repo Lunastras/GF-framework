@@ -5,21 +5,14 @@ using System;
 
 public class HostilityManager : MonoBehaviour
 {
-    [System.Serializable]
-    protected struct BoolArray
-    {
-        [SerializeField]
-        public bool[] boolArray;
-    }
-
     protected List<StatsCharacter>[] m_instantiatedCharacters;
     private static HostilityManager hostilityManager = null;
     protected int m_numTypes = 0;
 
     [SerializeField]
-    protected BoolArray[] m_enemiesWith;
+    protected StructArray<bool>[] m_typesEnemiesWith;
     [SerializeField]
-    protected BoolArray[] m_canDamage;
+    protected StructArray<float>[] m_typesDamageMultiplier;
 
     private void Awake()
     {
@@ -28,63 +21,32 @@ public class HostilityManager : MonoBehaviour
         foreach (int i in Enum.GetValues(typeof(CharacterTypes)))
             ++m_numTypes;
 
-        Debug.Log("I have types: " + m_numTypes);
-
         m_instantiatedCharacters = new List<StatsCharacter>[m_numTypes];
 
-        CorrectSizeBoolArray(m_enemiesWith, m_numTypes);
-        CorrectSizeBoolArray(m_canDamage, m_numTypes);
+        Array.Resize<StructArray<bool>>(ref m_typesEnemiesWith, m_numTypes);
+        Array.Resize<StructArray<float>>(ref m_typesDamageMultiplier, m_numTypes);
 
         for (int i = 0; i < m_numTypes; ++i)
         {
             m_instantiatedCharacters[i] = new List<StatsCharacter>(1);
-
-            for (int j = 0; j < m_numTypes; ++j)
-                CorrectSizeBool(m_enemiesWith[i].boolArray, m_numTypes);
+            Array.Resize<bool>(ref m_typesEnemiesWith[i].array, m_numTypes);
+            Array.Resize<float>(ref m_typesDamageMultiplier[i].array, m_numTypes);
         }
     }
 
-    private static void CorrectSizeBoolArray(BoolArray[] array, int size)
+    public static float DamageMultiplier(CharacterTypes a, CharacterTypes b)
     {
-        if (null == array)
-        {
-            array = new BoolArray[size];
-        }
-        else if (array.Length != size)
-        {
-            BoolArray[] newArray = new BoolArray[size];
-            Array.Copy(array, newArray, System.Math.Min(size, array.Length));
-            array = newArray;
-        }
+        return hostilityManager.m_typesDamageMultiplier[(int)a].array[(int)b];
     }
 
-    private static void CorrectSizeBool(bool[] array, int size)
+    public static float DamageMultiplier(StatsCharacter a, StatsCharacter b)
     {
-        if (null == array)
-        {
-            array = new bool[size];
-        }
-        else if (array.Length != size)
-        {
-            bool[] newArray = new bool[size];
-            Array.Copy(array, newArray, System.Math.Min(size, array.Length));
-            array = newArray;
-        }
-    }
-
-    public static bool CanDamage(CharacterTypes a, CharacterTypes b)
-    {
-        return hostilityManager.m_canDamage[(int)a].boolArray[(int)b];
-    }
-
-    public static bool CanDamage(StatsCharacter a, StatsCharacter b)
-    {
-        return CanDamage(a.GetCharacterType(), b.GetCharacterType());
+        return DamageMultiplier(a.GetCharacterType(), b.GetCharacterType());
     }
 
     public static bool EnemyWith(CharacterTypes a, CharacterTypes b)
     {
-        return hostilityManager.m_enemiesWith[(int)a].boolArray[(int)b];
+        return hostilityManager.m_typesEnemiesWith[(int)a].array[(int)b];
     }
 
     public static bool EnemyWith(StatsCharacter a, StatsCharacter b)
@@ -104,9 +66,13 @@ public class HostilityManager : MonoBehaviour
 
     public static List<StatsCharacter> GetEnemiesList(CharacterTypes self, CharacterTypes enemy)
     {
-        int enemyIndex = (int)enemy;
-        if (hostilityManager.m_enemiesWith[(int)self].boolArray[enemyIndex])
-            return hostilityManager.m_instantiatedCharacters[enemyIndex];
+        return GetEnemiesList((int)self, (int)enemy);
+    }
+
+    public static List<StatsCharacter> GetEnemiesList(int self, int enemy)
+    {
+        if (hostilityManager.m_typesEnemiesWith[self].array[enemy])
+            return hostilityManager.m_instantiatedCharacters[enemy];
         else
             return null;
     }
@@ -139,18 +105,28 @@ public class HostilityManager : MonoBehaviour
         }
     }
 
-    public static void SetCanDamage(CharacterTypes a, CharacterTypes b, bool value, bool mutual = false)
+    public static void SetDamageMultiplier(CharacterTypes a, CharacterTypes b, float value, bool mutual = false)
     {
-        hostilityManager.m_canDamage[(int)a].boolArray[(int)b] = value;
-        if (mutual) hostilityManager.m_canDamage[(int)b].boolArray[(int)a] = value;
+        hostilityManager.m_typesDamageMultiplier[(int)a].array[(int)b] = value;
+        if (mutual) hostilityManager.m_typesDamageMultiplier[(int)b].array[(int)a] = value;
 
     }
 
     public static void SetEnemyWith(CharacterTypes a, CharacterTypes b, bool value, bool mutual = false)
     {
-        hostilityManager.m_enemiesWith[(int)a].boolArray[(int)b] = value;
-        if (mutual) hostilityManager.m_enemiesWith[(int)b].boolArray[(int)a] = value;
+        hostilityManager.m_typesEnemiesWith[(int)a].array[(int)b] = value;
+        if (mutual) hostilityManager.m_typesEnemiesWith[(int)b].array[(int)a] = value;
     }
+
+    public static int GetNumTypes() { return hostilityManager.m_numTypes; }
+}
+
+//Used to visualise matrices in the editor
+[System.Serializable]
+public struct StructArray<T>
+{
+    [SerializeField]
+    public T[] array;
 }
 
 

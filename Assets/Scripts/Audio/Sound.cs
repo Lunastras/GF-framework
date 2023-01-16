@@ -27,7 +27,10 @@ public class Sound
 
     public float Length()
     {
-        return clip.length;
+        if (null != clip)
+            return clip.length;
+        else
+            return 0;
     }
 
     //very arbitrary number, but it makes the touhou sounds closer to the original games
@@ -35,7 +38,7 @@ public class Sound
 
     public void Play(AudioSource source, float volume = 1, float pitch = 1)
     {
-        if(source.clip != clip)
+        if (source.clip != clip)
         {
             source.clip = clip;
         }

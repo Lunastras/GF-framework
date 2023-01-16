@@ -6,84 +6,91 @@ using System;
 public class LoadoutManager : MonoBehaviour
 {
     [SerializeField]
-    private Transform odamasParent;
+    private GfMovementGeneric m_parentMovement;
 
     [SerializeField]
-    private WeaponFiring weaponFiring;
+    private WeaponFiring m_weaponFiring;
 
     [SerializeField]
-    public HudManager hudManager = null;
+    public HudManager m_hudManager = null;
 
-    private int[] weaponsInInventory;
+    private int[] m_weaponsInInventory;
 
-    private int odamaCapacity = 2;
+    private int m_odamaCapacity = 2;
 
-    private WeaponLoadOut[] loadOuts;
+    private WeaponLoadOut[] m_loadOuts;
 
-    private int currentLoadOutIndex = 0;
+    private int m_currentLoadOutIndex = 0;
 
 
     //if -1, all loadouts are empty
-    private int indexOfLastLoadout = -1;
+    private int m_indexOfLastLoadout = -1;
 
     public static readonly int MAX_ODAMA = 4;
     public static readonly int MAX_LOADOUTS = 6;
 
-    private WeaponBasic[] weapons = null;
+    private WeaponBasic[] m_weapons = null;
 
-    private int numWeapons = 0;
+    private int m_numWeapons = 0;
+    private Transform m_odamasParent;
 
-    private Transform inactiveOdamasParent;
 
-    private Dictionary<String, Transform> inactiveOdamas;
+    private Transform m_inactiveOdamasParent;
+
+    private Dictionary<String, Transform> m_inactiveOdamas;
 
     // Start is called before the first frame update
     void Start()
     {
-        hudManager.SetMaxNumSliders(MAX_ODAMA);
+        m_hudManager.SetMaxNumSliders(MAX_ODAMA);
 
-        weapons = new WeaponBasic[MAX_ODAMA];
+        m_weapons = new WeaponBasic[MAX_ODAMA];
         for (int i = 0; i < MAX_ODAMA; ++i)
         {
-            weapons[i] = null;
+            m_weapons[i] = null;
         }
 
-        if (odamasParent == null)
+        if (m_odamasParent == null)
         {
-            odamasParent = transform;
+            m_odamasParent = transform;
         }
 
-        inactiveOdamasParent = new GameObject("Inactive Odamas").transform;
-        inactiveOdamasParent.parent = odamasParent;
+        m_inactiveOdamasParent = new GameObject("Inactive Odamas").transform;
+        m_inactiveOdamasParent.parent = m_odamasParent;
 
-        if (weaponFiring == null)
+        if (m_weaponFiring == null)
         {
-            weaponFiring = GetComponent<WeaponFiring>();
+            m_weaponFiring = GetComponent<WeaponFiring>();
         }
 
-        weaponsInInventory = new int[WeaponMaster.NumWeapons()];
+        if (null == m_parentMovement)
+        {
+            m_parentMovement = m_weaponFiring.GetComponent<GfMovementGeneric>();
+        }
 
-        inactiveOdamas = new(10);
+        m_weaponsInInventory = new int[WeaponMaster.NumWeapons()];
 
-        loadOuts = new WeaponLoadOut[MAX_LOADOUTS];
+        m_inactiveOdamas = new(10);
+
+        m_loadOuts = new WeaponLoadOut[MAX_LOADOUTS];
 
         for (int i = 0; i < MAX_LOADOUTS; ++i)
         {
-            loadOuts[i] = new WeaponLoadOut(MAX_ODAMA);
+            m_loadOuts[i] = new WeaponLoadOut(MAX_ODAMA);
         }
 
-        if (WeaponMaster.NumWeapons() > 0 && weaponsInInventory[0] == 0)
+        if (WeaponMaster.NumWeapons() > 0 && m_weaponsInInventory[0] == 0)
             AddOdamaToInventory(0);
 
-        if (-1 == indexOfLastLoadout)
+        if (-1 == m_indexOfLastLoadout)
         {
-            currentLoadOutIndex = 0;
+            m_currentLoadOutIndex = 0;
 
-            SetCurrentLoadout(currentLoadOutIndex);
+            SetCurrentLoadout(m_currentLoadOutIndex);
             ChangeLoadOutWeapon(0, 0, 0);
         }
 
-        SetCurrentLoadout(currentLoadOutIndex);
+        SetCurrentLoadout(m_currentLoadOutIndex);
 
         Test();
     }
@@ -112,7 +119,7 @@ public class LoadoutManager : MonoBehaviour
 
 
         //SetCurrentLoadout(1);
-      //  Debug.Log(" ");  
+        //  Debug.Log(" ");  
 
         // ChangeLoadOutWeapon(null, 0, 2);
     }
@@ -123,42 +130,42 @@ public class LoadoutManager : MonoBehaviour
     {
         //Debug.Log("I got here! weapon chaneg loadout");
 
-        bool loadoutWasEmpty = loadOuts[loadOutIndex].NoWeapons();
+        bool loadoutWasEmpty = m_loadOuts[loadOutIndex].NoWeapons();
         bool loadoutIsEmpty;
 
-        loadOuts[loadOutIndex].SetWeapon(newWeapon, weaponIndex);
+        m_loadOuts[loadOutIndex].SetWeapon(newWeapon, weaponIndex);
 
-        loadoutIsEmpty = loadOuts[loadOutIndex].NoWeapons();
+        loadoutIsEmpty = m_loadOuts[loadOutIndex].NoWeapons();
 
         if (loadoutIsEmpty != loadoutWasEmpty)
         {
             if (loadoutWasEmpty)
             {
-                WeaponLoadOut aux = loadOuts[++indexOfLastLoadout];
-                loadOuts[indexOfLastLoadout] = loadOuts[loadOutIndex];
-                loadOuts[loadOutIndex] = aux;
+                WeaponLoadOut aux = m_loadOuts[++m_indexOfLastLoadout];
+                m_loadOuts[m_indexOfLastLoadout] = m_loadOuts[loadOutIndex];
+                m_loadOuts[loadOutIndex] = aux;
             }
             else
             {
-                WeaponLoadOut aux = loadOuts[loadOutIndex];
-                loadOuts[loadOutIndex] = loadOuts[indexOfLastLoadout];
-                loadOuts[--indexOfLastLoadout] = aux;
+                WeaponLoadOut aux = m_loadOuts[loadOutIndex];
+                m_loadOuts[loadOutIndex] = m_loadOuts[m_indexOfLastLoadout];
+                m_loadOuts[--m_indexOfLastLoadout] = aux;
 
             }
         }
 
-        if (loadOutIndex == currentLoadOutIndex)
-            SetCurrentLoadout(currentLoadOutIndex);
+        if (loadOutIndex == m_currentLoadOutIndex)
+            SetCurrentLoadout(m_currentLoadOutIndex);
     }
 
     public void ChangeLoadOutWeapon(int newWeapon, int loadOutIndex, int weaponIndex)
     {
-        bool canAddOdama = !(-1 == newWeapon && weaponsInInventory[newWeapon] > 0);
+        bool canAddOdama = !(-1 == newWeapon && m_weaponsInInventory[newWeapon] > 0);
 
         loadOutIndex %= MAX_LOADOUTS;
         weaponIndex %= MAX_ODAMA;
 
-        int currentWeapon = loadOuts[loadOutIndex].weapons[weaponIndex];
+        int currentWeapon = m_loadOuts[loadOutIndex].weapons[weaponIndex];
 
         if (canAddOdama && newWeapon != currentWeapon)
         {
@@ -168,22 +175,23 @@ public class LoadoutManager : MonoBehaviour
 
     public void NextLoadout()
     {
-        SetCurrentLoadout(currentLoadOutIndex + 1);
+        SetCurrentLoadout(m_currentLoadOutIndex + 1);
     }
 
     public void PreviousLoadout()
     {
-        SetCurrentLoadout(currentLoadOutIndex + 1);
+        SetCurrentLoadout(m_currentLoadOutIndex + 1);
     }
 
     private GameObject GetOdama(GameObject reference)
     {
         GameObject objectToReturn = null;
-        if(inactiveOdamas.TryGetValue(reference.name, out Transform parent) && parent.childCount > 0) {
+        if (m_inactiveOdamas.TryGetValue(reference.name, out Transform parent) && parent.childCount > 0)
+        {
             objectToReturn = parent.GetChild(0).gameObject;
         }
 
-        if(null == objectToReturn)
+        if (null == objectToReturn)
         {
             objectToReturn = GfPooling.PoolInstantiate(reference);
         }
@@ -193,20 +201,20 @@ public class LoadoutManager : MonoBehaviour
 
     private void DestroyOdama(WeaponBasic weaponToDestroy)
     {
-        if(weaponToDestroy.IsAlive(true))
+        if (weaponToDestroy.IsAlive(true))
         {
             weaponToDestroy.destroyWhenDone = true;
-            inactiveOdamas.TryGetValue(weaponToDestroy.name, out Transform parent);
-            if(null == parent)
+            m_inactiveOdamas.TryGetValue(weaponToDestroy.name, out Transform parent);
+            if (null == parent)
             {
                 parent = new GameObject(weaponToDestroy + " Pool").transform;
-                parent.parent = inactiveOdamasParent;
-                inactiveOdamas.Add(weaponToDestroy.name, parent);               
+                parent.parent = m_inactiveOdamasParent;
+                m_inactiveOdamas.Add(weaponToDestroy.name, parent);
             }
 
             weaponToDestroy.transform.parent = parent;
             weaponToDestroy.transform.position = new Vector3(999999, 999999, 999999);
-        } 
+        }
         else
         {
             GfPooling.DestroyInsert(weaponToDestroy.gameObject);
@@ -215,41 +223,42 @@ public class LoadoutManager : MonoBehaviour
 
     public void InternalSetCurrentLoadout(int index)
     {
-        currentLoadOutIndex = index % Math.Max(1, indexOfLastLoadout + 1);
+        m_currentLoadOutIndex = index % Math.Max(1, m_indexOfLastLoadout + 1);
 
         int i = 0;
-        for (; i < numWeapons; ++i) {
-            weapons[i].StopFiring();
-            OdamaBehaviour ob = weapons[i].GetComponent<OdamaBehaviour>();
+        for (; i < m_numWeapons; ++i)
+        {
+            m_weapons[i].StopFiring();
+            OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
 
-            if(ob) 
+            if (ob)
                 ob.enabled = false;
-            
-            DestroyOdama(weapons[i]);
+
+            DestroyOdama(m_weapons[i]);
         }
 
-        numWeapons = loadOuts[currentLoadOutIndex].NumWeapons();
-        float angleBetweenOdamas = 360.0f / numWeapons;
+        m_numWeapons = m_loadOuts[m_currentLoadOutIndex].NumWeapons();
+        float angleBetweenOdamas = 360.0f / m_numWeapons;
 
-        for (i = 0; i < numWeapons; ++i)
-        {               
-            GameObject desiredWeapon = WeaponMaster.GetWeapon(loadOuts[currentLoadOutIndex].weapons[i]);
-            weapons[i] = GetOdama(desiredWeapon).GetComponent<WeaponBasic>();
-            weapons[i].destroyWhenDone = false;
+        for (i = 0; i < m_numWeapons; ++i)
+        {
+            GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadOuts[m_currentLoadOutIndex].weapons[i]);
+            m_weapons[i] = GetOdama(desiredWeapon).GetComponent<WeaponBasic>();
+            m_weapons[i].destroyWhenDone = false;
 
-            OdamaBehaviour ob = weapons[i].GetComponent<OdamaBehaviour>();
+            OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
             ob.SetAngle(i * angleBetweenOdamas);
-            ob.SetParent(weaponFiring.transform);
+            ob.SetParent(m_parentMovement);
             ob.enabled = true;
-                      
-            weapons[i].SetStatsCharacter(weaponFiring.GetStatsCharacter());  
-            weapons[i].transform.parent = odamasParent;
-            weapons[i].transform.position = weaponFiring.transform.position;
+
+            m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
+            m_weapons[i].transform.parent = m_odamasParent;
+            m_weapons[i].transform.position = m_weaponFiring.transform.position;
         }
 
         //refresh the levelweapons
         RefreshExpForWeapons();
-        weaponFiring.SetWeaponArray(weapons, numWeapons);
+        m_weaponFiring.SetWeaponArray(m_weapons, m_numWeapons);
     }
 
     public void SetCurrentLoadout(int index)
@@ -259,31 +268,31 @@ public class LoadoutManager : MonoBehaviour
 
     public void IncreaseOdamaCapacity(int count = 1)
     {
-        odamaCapacity = Mathf.Clamp(count + odamaCapacity, 1, MAX_ODAMA);
+        m_odamaCapacity = Mathf.Clamp(count + m_odamaCapacity, 1, MAX_ODAMA);
     }
 
     public void AddOdamaToInventory(int weapon, int count = 1)
     {
-        if (weaponsInInventory != null && null != WeaponMaster.GetWeapon(weapon))
+        if (m_weaponsInInventory != null && null != WeaponMaster.GetWeapon(weapon))
         {
-            weaponsInInventory[weapon] = Mathf.Min(count + weaponsInInventory[weapon], MAX_ODAMA);
+            m_weaponsInInventory[weapon] = Mathf.Min(count + m_weaponsInInventory[weapon], MAX_ODAMA);
         }
     }
 
     private void RefreshExpForWeapons()
     {
-        WeaponLoadOut loadOut = loadOuts[currentLoadOutIndex];
+        WeaponLoadOut loadOut = m_loadOuts[m_currentLoadOutIndex];
 
         int numWeapon = loadOut.NumWeapons();
         //Debug.Log("Switched weapon, the weapon count is " + numWeapon);
 
         while (--numWeapon >= 0)
         {
-            weapons[numWeapon].AddExpPoint(float.MinValue); //set exp to be 0
-            loadOut.expWeapons[numWeapon] = weapons[numWeapon].AddExpPoint(loadOut.expWeapons[numWeapon]);
+            m_weapons[numWeapon].AddExpPoint(float.MinValue); //set exp to be 0
+            loadOut.expWeapons[numWeapon] = m_weapons[numWeapon].AddExpPoint(loadOut.expWeapons[numWeapon]);
         }
 
-        hudManager.UpdateWeaponSliders(weapons, loadOuts[currentLoadOutIndex].NumWeapons());
+        m_hudManager.UpdateWeaponSliders(m_weapons, m_loadOuts[m_currentLoadOutIndex].NumWeapons());
     }
     /**
     *   Adds exp points to the weapons equipped in this moment
@@ -291,7 +300,7 @@ public class LoadoutManager : MonoBehaviour
     */
     public void AddExpPoints(float points)
     {
-        WeaponLoadOut loadOut = loadOuts[currentLoadOutIndex];
+        WeaponLoadOut loadOut = m_loadOuts[m_currentLoadOutIndex];
         points /= Mathf.Max(loadOut.numOfExpWeapons, 1.0f);
 
         int numWeapon = loadOut.NumWeapons();
@@ -299,10 +308,10 @@ public class LoadoutManager : MonoBehaviour
 
         while (--numWeapon >= 0)
         {
-            loadOut.expWeapons[numWeapon] = weapons[numWeapon].AddExpPoint(points);
+            loadOut.expWeapons[numWeapon] = m_weapons[numWeapon].AddExpPoint(points);
         }
 
-        hudManager.UpdateLevelWeaponSliders(weapons, loadOuts[currentLoadOutIndex].NumWeapons());
+        m_hudManager.UpdateLevelWeaponSliders(m_weapons, m_loadOuts[m_currentLoadOutIndex].NumWeapons());
     }
 
     /** Adds a fixed percentage of progress relative to the 
@@ -311,15 +320,15 @@ public class LoadoutManager : MonoBehaviour
    */
     public void AddExpPercent(float percent)
     {
-        WeaponLoadOut loadOut = loadOuts[currentLoadOutIndex];
+        WeaponLoadOut loadOut = m_loadOuts[m_currentLoadOutIndex];
         int numWeapon = loadOut.NumWeapons();
 
         while (--numWeapon >= 0)
         {
-            loadOut.expWeapons[numWeapon] = weapons[numWeapon].AddExpPercent(percent);
+            loadOut.expWeapons[numWeapon] = m_weapons[numWeapon].AddExpPercent(percent);
         }
 
-        hudManager.UpdateLevelWeaponSliders(weapons, loadOuts[currentLoadOutIndex].NumWeapons());
+        m_hudManager.UpdateLevelWeaponSliders(m_weapons, m_loadOuts[m_currentLoadOutIndex].NumWeapons());
     }
 
     public void UpdateWeaponHud()
@@ -370,8 +379,6 @@ public class WeaponLoadOut
 
     public void SetWeapon(int weapon, int index)
     {
-        //index %= weapons.Length;
-
         if (weapon != -1)
         {
             WeanponType weanponType = WeaponMaster.GetWeapon(weapon).GetComponent<WeaponBasic>().GetWeaponType();

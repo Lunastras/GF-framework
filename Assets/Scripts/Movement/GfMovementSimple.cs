@@ -61,7 +61,6 @@ public class GfMovementSimple : GfMovementGeneric
     {
         if (!m_touchedParent && null != m_parentTransform)
         {
-            Debug.Log("I haven't touched " + m_parentTransform.name + " this frame");
             DetachFromParentTransform();
             if (breakWhenUnparent) Debug.Break();
         }
