@@ -34,10 +34,10 @@ public class LoadoutManager : MonoBehaviour
     private int m_numWeapons = 0;
     private Transform m_odamasParent;
 
+    private Dictionary<String, List<GameObject>> m_inactiveOdamas;
 
-    private Transform m_inactiveOdamasParent;
+    private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
 
-    private Dictionary<String, Transform> m_inactiveOdamas;
 
     // Start is called before the first frame update
     void Start()
@@ -54,9 +54,6 @@ public class LoadoutManager : MonoBehaviour
         {
             m_odamasParent = transform;
         }
-
-        m_inactiveOdamasParent = new GameObject("Inactive Odamas").transform;
-        m_inactiveOdamasParent.parent = m_odamasParent;
 
         if (m_weaponFiring == null)
         {
@@ -186,15 +183,15 @@ public class LoadoutManager : MonoBehaviour
     private GameObject GetOdama(GameObject reference)
     {
         GameObject objectToReturn = null;
-        if (m_inactiveOdamas.TryGetValue(reference.name, out Transform parent) && parent.childCount > 0)
+        if (m_inactiveOdamas.TryGetValue(reference.name, out List<GameObject> list) && list.Count > 0)
         {
-            objectToReturn = parent.GetChild(0).gameObject;
+            int count = list.Count;
+            objectToReturn = list[count];
+            list.RemoveAt(count);
         }
 
         if (null == objectToReturn)
-        {
             objectToReturn = GfPooling.PoolInstantiate(reference);
-        }
 
         return objectToReturn;
     }
@@ -204,16 +201,12 @@ public class LoadoutManager : MonoBehaviour
         if (weaponToDestroy.IsAlive(true))
         {
             weaponToDestroy.destroyWhenDone = true;
-            m_inactiveOdamas.TryGetValue(weaponToDestroy.name, out Transform parent);
-            if (null == parent)
-            {
-                parent = new GameObject(weaponToDestroy + " Pool").transform;
-                parent.parent = m_inactiveOdamasParent;
-                m_inactiveOdamas.Add(weaponToDestroy.name, parent);
-            }
+            m_inactiveOdamas.TryGetValue(weaponToDestroy.name, out List<GameObject> list);
+            if (null == list)
+                m_inactiveOdamas.Add(weaponToDestroy.name, new(4));
 
-            weaponToDestroy.transform.parent = parent;
-            weaponToDestroy.transform.position = new Vector3(999999, 999999, 999999);
+            weaponToDestroy.transform.parent = null;
+            weaponToDestroy.transform.position = DESTROY_POSITION;
         }
         else
         {

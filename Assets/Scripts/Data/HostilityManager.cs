@@ -84,7 +84,7 @@ public class HostilityManager : MonoBehaviour
         if (character != null && characterIndex < 0)
         {
             List<StatsCharacter> list = hostilityManager.m_instantiatedCharacters[(int)character.GetCharacterType()];
-            int index = list.Capacity;
+            int index = list.Count;
             list.Add(character);
             character.SetCharacterIndex(index);
         }
@@ -94,7 +94,7 @@ public class HostilityManager : MonoBehaviour
     {
         int characterIndex = character.GetCharacterIndex();
         List<StatsCharacter> list = hostilityManager.m_instantiatedCharacters[(int)character.GetCharacterType()];
-        int lastCharacterIndex = list.Capacity - 1;
+        int lastCharacterIndex = list.Count - 1;
 
         if (-1 < characterIndex && characterIndex <= lastCharacterIndex)
         {

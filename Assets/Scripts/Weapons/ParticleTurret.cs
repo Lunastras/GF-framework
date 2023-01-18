@@ -32,6 +32,12 @@ public class ParticleTurret : MonoBehaviour
 
     private bool m_delayForcePlay = true;
 
+    public bool m_destoryWhenDone = false;
+
+    public GameObject m_objectToDestroy;
+
+    private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
+
     // Start is called before the first frame update
     void Start()
     {
@@ -44,11 +50,15 @@ public class ParticleTurret : MonoBehaviour
 
     private void Update()
     {
-        if (m_timeUntilUnpause <= 0)
+        if(m_destoryWhenDone && !IsAlive(true)) 
+        {
+            GfPooling.Destroy(m_objectToDestroy);
+        } 
+        else if (m_timeUntilUnpause <= 0)
         {
             if (m_autoPlay && m_firing)
             {
-                if (!IsAlive())
+                if (!IsAlive(true))
                 { //phase ended
                     ++m_currentPhaseIndex;
 
@@ -61,7 +71,6 @@ public class ParticleTurret : MonoBehaviour
 
 
                     if (playNext) Play();
-
                 }
             }
 
@@ -91,30 +100,27 @@ public class ParticleTurret : MonoBehaviour
         }
     }
 
-    public bool IsAlive(bool allPhases = false)
+    public bool IsAlive(bool onlyCurentPhase = false)
     {
         bool isPlaying = false;
 
-        if (allPhases)
+        if (onlyCurentPhase)
         {
+            ParticleSingleHit[] systems = m_turretPhases[m_currentPhaseIndex].particleSystems;
+            int length = systems.Length;
+            for (int i = 0; i < length && !isPlaying; ++i)
+                isPlaying |= systems[i].m_particleSystem.IsAlive(true);
+        }
+        else
+        {
+            
             for (int i = 0; i < m_turretPhases.Length && !isPlaying; ++i)
             {
                 ParticleSingleHit[] systems = m_turretPhases[i].particleSystems;
                 int length = systems.Length;
 
                 for (int j = 0; j < length && !isPlaying; ++j)
-                {
                     isPlaying |= systems[j].m_particleSystem.IsAlive(true);
-                }
-            }
-        }
-        else
-        {
-            ParticleSingleHit[] systems = m_turretPhases[m_currentPhaseIndex].particleSystems;
-            int length = systems.Length;
-            for (int i = 0; i < length && !isPlaying; ++i)
-            {
-                isPlaying |= systems[i].m_particleSystem.IsAlive(true);
             }
         }
 
@@ -199,7 +205,6 @@ public class ParticleTurret : MonoBehaviour
             int systemsLength = systems.Length;
             for (int j = 0; j < systemsLength; ++j)
                 systems[j].SetStatsCharacter(stats);
-
         }
     }
 
@@ -217,6 +222,25 @@ public class ParticleTurret : MonoBehaviour
         int systemsLength = systems.Length;
         for (int i = 0; i < systemsLength; ++i)
             systems[i].Target = target;
+    }
+
+    public void DestroyWhenDone(bool stopParticles = false) {
+        DestroyWhenDone(gameObject);
+    }
+
+    public void DestroyWhenDone(GameObject obj, bool stopParticles = false) {
+        m_destoryWhenDone = true;
+        m_objectToDestroy = obj;
+        Stop();
+        obj.transform.position = DESTROY_POSITION;
+        obj.transform.parent = null;
+
+        //if(stopParticles)
+
+    }
+
+    private void OnDisable() {
+        SetStatsCharacter(null);
     }
 }
 

@@ -108,6 +108,15 @@ public class GfTools
         Minus3(ref leftHand, rightHand);
     }
 
+    public static void RemoveAxisKeepMagnitude(ref Vector3 leftHand, Vector3 rightHand)
+    {
+        float mag = leftHand.magnitude;
+        Mult3(ref rightHand, Vector3.Dot(leftHand, rightHand));
+        Minus3(ref leftHand, rightHand);
+        leftHand.Normalize();
+        Mult3(ref leftHand, mag);
+    }
+
     public static Vector3 RemoveAxis(Vector3 leftHand, Vector3 rightHand) { RemoveAxis(ref leftHand, rightHand); return leftHand; }
 
 

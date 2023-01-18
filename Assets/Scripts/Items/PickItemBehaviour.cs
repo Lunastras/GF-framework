@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class PickItemBehaviour : MonoBehaviour
 {
-    public enum PickUpTypes { POWER, POINTS }
 
     [SerializeField]
-    private PickUpTypes itemType;
+    private CollectibleType itemType;
     [SerializeField]
     private float itemValue;
 
@@ -179,7 +178,7 @@ public class PickItemBehaviour : MonoBehaviour
         }
     }
 
-    public PickUpTypes GetItemType() { return itemType; }
+    public CollectibleType GetItemType() { return itemType; }
 
     public float GetValue() { return itemValue; }
 }

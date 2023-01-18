@@ -28,6 +28,10 @@ public class StatsNpc : StatsCharacter
 
     [SerializeField]
     protected float m_aggroDamage = 20;
+
+    [SerializeField]
+    protected GameObject m_mainGameObject;
+    
     [SerializeField]
     private NpcController m_npcController;
 
@@ -35,7 +39,7 @@ public class StatsNpc : StatsCharacter
     private Collider m_objectCollider;
 
     [SerializeField]
-    private ParticleSingleHit m_turret;
+    private ParticleTurret m_turret;
 
     [SerializeField]
     private AudioSource m_audioSource;
@@ -59,7 +63,10 @@ public class StatsNpc : StatsCharacter
             m_npcController = GetComponent<NpcController>();
 
         if (null == m_turret)
-            m_turret = GetComponent<ParticleSingleHit>();
+            m_turret = GetComponent<ParticleTurret>();
+
+        if (null == m_mainGameObject)
+            m_mainGameObject = gameObject;
 
         if (null == m_audioSource)
         {
@@ -92,12 +99,6 @@ public class StatsNpc : StatsCharacter
 
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     public override void Kill()
     {
         DeathParticles.PlaySystem(transform.position);
@@ -116,19 +117,16 @@ public class StatsNpc : StatsCharacter
         if (null != m_graphics)
             m_graphics.SetActive(false);
 
-        if (null != m_turret)
-            m_turret.Stop();
-
         if (null != m_objectCollider)
             m_objectCollider.enabled = false;
 
         if (null != m_npcController)
             m_npcController.PauseMovement();
 
-
         HostilityManager.RemoveCharacter(this);
 
-        GfPooling.Destroy(gameObject, m_deathSound.Length() * 2.0f);
+        if (null != m_turret)
+            m_turret.DestroyWhenDone(gameObject);
     }
 
     public override void Damage(float damage, StatsCharacter enemy = null)

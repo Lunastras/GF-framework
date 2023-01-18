@@ -104,7 +104,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetAxisRaw("Jump") > 0.8f)
         {
-            if (m_releasedJumpButton)
+            if (m_releasedJumpButton || true)
             {
                 m_releasedJumpButton = false;
                 m_movement.JumpTrigger = true;

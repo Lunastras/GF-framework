@@ -511,8 +511,9 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
             if (collision.angle < m_slopeLimit)
             {
-                m_slopeNormal = collision.normal;
                 GfTools.RemoveAxis(ref velocity, m_slopeNormal);
+                GfTools.RemoveAxis(ref velocity, collision.normal);
+                m_slopeNormal = collision.normal;
             }
 
             GfTools.Minus3(ref velocity, (Vector3.Dot(velocity, collision.normal)) * collision.normal);
@@ -737,8 +738,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public Vector3 MovementDirComputed()
     {
         Vector3 movDir = MovementDirRaw;
-
-        if (!CanFly) GfTools.RemoveAxis(ref movDir, MovementDirUpVec); //remove vertical component
+        if (!CanFly || m_isGrounded) GfTools.RemoveAxisKeepMagnitude(ref movDir, MovementDirUpVec); //remove vertical component
 
         if ((!m_upVec.Equals(MovementDirUpVec)) && !movDir.Equals(Zero3)) //project on plane
             movDir = GfTools.RotationTo(MovementDirUpVec, m_upVec) * movDir;

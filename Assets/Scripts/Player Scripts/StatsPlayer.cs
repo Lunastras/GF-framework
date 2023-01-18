@@ -26,10 +26,18 @@ public class StatsPlayer : StatsCharacter
     [SerializeField]
     private AudioSource m_audioSource;
 
+    public static StatsPlayer instance;
+
     public bool IsDead { get; protected set; }
+
+    private void Awake() {
+        Debug.Log("STARTTT");
+        instance =  this;
+    }
 
     private void Start()
     {
+                
         m_currentHealth = m_maxHealth;
 
         if (null == m_playerGun)
@@ -79,20 +87,26 @@ public class StatsPlayer : StatsCharacter
         // Debug.Log("I DIED");
     }
 
-    public void AddPoints(PickItemBehaviour.PickUpTypes itemType, float value)
+    public void AddPoints(CollectibleType itemType, float value)
     {
         m_itemPickUpSound.Play(m_audioSource);
 
         switch (itemType)
         {
-            case (PickItemBehaviour.PickUpTypes.POINTS):
+            case (CollectibleType.POINTS):
 
                 break;
 
-            case (PickItemBehaviour.PickUpTypes.POWER):
+            case (CollectibleType.POWER):
                 m_loadoutManager.AddExpPoints(value);
                 break;
         }
 
     }
+
+    void OnParticleTrigger() {
+        Debug.Log("TYrigger on playyer was called huuuh");
+    }
 }
+
+public enum CollectibleType { POWER, POINTS, HEALTH }

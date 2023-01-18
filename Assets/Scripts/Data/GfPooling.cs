@@ -8,12 +8,14 @@ public class GfPooling : MonoBehaviour
     private static GfPooling instance;
 
     //pools with the objects
-    private Dictionary<string, PoolClass> pools { get; set; }
+    private Dictionary<string, List<GameObject>> pools { get; set; }
 
     private Transform mainParent = null;
 
     [SerializeField]
     private InitializationPool[] poolsToInstantiate;
+
+    private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
 
     //a dictionary mapping a pooled object to its pool
 
@@ -21,7 +23,7 @@ public class GfPooling : MonoBehaviour
     {
         instance = this;
 
-        pools = new Dictionary<string, PoolClass>();
+        pools = new Dictionary<string, List<GameObject>>();
 
         mainParent = new GameObject().transform;
         mainParent.SetParent(transform);
@@ -29,34 +31,44 @@ public class GfPooling : MonoBehaviour
         foreach (InitializationPool poolsToCreate in poolsToInstantiate)
         {
             if (null != poolsToCreate.gameObject)
-                ResizePool(poolsToCreate.gameObject, poolsToCreate.instancesToPool);
+                Pool(poolsToCreate.gameObject, poolsToCreate.instancesToPool);
         }
 
         poolsToInstantiate = null;
     }
 
-    private static GameObject InternalInstantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent, bool instantiateInWorldSpace = true)
+    private static GameObject InternalInstantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent, bool instantiateInWorldSpace = true, bool mustBeInactive = true)
     {
         //Debug.Log("called to instantiate: " + objectToSpawn.name);
         GameObject spawnedObject = null;
 
         if (instance != null && objectToSpawn != null)
         {
-            bool forceInstantiate = true;
-            if (instance.pools.ContainsKey(objectToSpawn.name))
+            List<GameObject> currentPool;
+            if(instance.pools.TryGetValue(objectToSpawn.name, out currentPool))
             {
-                if (instance.pools[objectToSpawn.name].parent.childCount > 0)
+                int count = currentPool.Count; 
+                if (--count >= 0)
                 {
-                    spawnedObject = instance.pools[objectToSpawn.name].parent.GetChild(0).gameObject;
-                    spawnedObject.SetActive(true);
-                    //  Debug.Log("Instantiated from pool: " + spawnedObject);
+                    int i = count;
+                    if(mustBeInactive) 
+                        while (i >= 0 && currentPool[i--].activeSelf); //go through the list until an inactive element is found
 
-                    forceInstantiate = false;
+                    if(i >= 0) 
+                    {
+                        spawnedObject = currentPool[count];
+                        spawnedObject.SetActive(true);
+
+                        if(i != count) 
+                            currentPool[i] = currentPool[count];
+
+                        currentPool.RemoveAt(count);
+                    }
                 }
             }
-            if (forceInstantiate)
+            
+            if (null == spawnedObject)
             {
-                //Debug.Log("Forced instantiated: " + objectToSpawn);
                 spawnedObject = GameObject.Instantiate(objectToSpawn);
                 spawnedObject.name = objectToSpawn.name;
             }
@@ -79,44 +91,43 @@ public class GfPooling : MonoBehaviour
     }
 
 
-    public static GameObject Instantiate(GameObject objectToSpawn, Transform parent = null, bool instantiateInWorldSpace = false)
+    public static GameObject Instantiate(GameObject objectToSpawn, Transform parent = null, bool instantiateInWorldSpace = false, bool mustBeInactive = true)
     {
-        if (objectToSpawn != null)
-            return InternalInstantiate(objectToSpawn, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace);
-
-        return null;
+        return InternalInstantiate(objectToSpawn, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace, mustBeInactive);
     }
 
-    public static GameObject Instantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent = null)
+    public static GameObject Instantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent = null, bool mustBeInactive = true)
     {
-        return InternalInstantiate(objectToSpawn, position, rotation, parent, true);
+        return InternalInstantiate(objectToSpawn, position, rotation, parent, true, mustBeInactive);
     }
 
     /**
     *  Tries to instantiate from pool, if no more objects are in the pool, it will increase the size of the pool
     */
-    public static GameObject PoolInstantiate(GameObject objectToSpawn, Transform parent = null, bool instantiateInWorldSpace = false)
+    public static GameObject PoolInstantiate(GameObject objectToSpawn, Transform parent = null, bool instantiateInWorldSpace = false, bool mustBeInactive = true)
     {
         if (PoolSizeAvailable(objectToSpawn) == 0)
             Pool(objectToSpawn, 1);
 
-        return InternalInstantiate(objectToSpawn, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace);
+        return InternalInstantiate(objectToSpawn, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace, mustBeInactive);
     }
 
     /**
      *  Tries to instantiate from pool, if no more objects are in the pool, it will increase the size of the pool
      */
-    public static GameObject PoolInstantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent = null)
+    public static GameObject PoolInstantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent = null, bool mustBeInactive = true)
     {
         if (PoolSizeAvailable(objectToSpawn) == 0)
             Pool(objectToSpawn, 1);
 
-        return InternalInstantiate(objectToSpawn, position, rotation, parent, true);
+        return InternalInstantiate(objectToSpawn, position, rotation, parent, true, mustBeInactive);
     }
 
     private static void InternalDestroy(GameObject objectToDestroy, bool keepActive, bool forceDestroy)
     {
-        if (null != objectToDestroy)
+        bool isActive = objectToDestroy.activeSelf;
+        bool alreadyDestroyed = !isActive || objectToDestroy.transform.position.Equals(DESTROY_POSITION);
+        if (null != objectToDestroy && !alreadyDestroyed)
         {
             forceDestroy &= !keepActive;
 
@@ -124,28 +135,17 @@ public class GfPooling : MonoBehaviour
             if (keepActive && !instance.pools.ContainsKey(objectToDestroy.name))
                 Pool(objectToDestroy, 1, false);
 
-            if (!forceDestroy && instance.pools.TryGetValue(objectToDestroy.name, out PoolClass currentPool))
+            if (!forceDestroy && instance.pools.TryGetValue(objectToDestroy.name, out List<GameObject> currentPool))
             {
-                if (currentPool.parent.childCount < currentPool.capacity)
+                if (currentPool.Count < currentPool.Capacity)
                 {
                     objectToDestroy.SetActive(keepActive);
-                    objectToDestroy.transform.SetParent(currentPool.parent);
+                    currentPool.Add(objectToDestroy);
                     destroyObject = false;
 
                     if (keepActive)
-                    {
-                        objectToDestroy.transform.position = new Vector3(99999999, 99999999, 99999999);
-                    }
+                        objectToDestroy.transform.position = DESTROY_POSITION;
                 }
-                else
-                {
-                    destroyObject = objectToDestroy.transform.parent != currentPool.parent;
-                    // Debug.Log("Pool " + currentPool.parent.name + " is full, it has numofchildren: " + currentPool.parent.childCount + " the current object is " + objectToDestroy.name);
-                }
-            }
-            else
-            {
-                // Debug.Log("Object not found in dictionary");
             }
 
             if (destroyObject)
@@ -159,45 +159,21 @@ public class GfPooling : MonoBehaviour
     }
 
     //lmao good naming
-    public static void DestroyChildren(GameObject obj)
+    public static void DestroyChildren(GameObject obj, bool deleteSelf = false)
     {
         DestroyChildren(obj.transform);
     }
 
-    public static void DestroyChildren(Transform obj)
+    public static void DestroyChildren(Transform obj, bool deleteSelf = false)
     {
         while (obj.childCount > 0)
             GfPooling.Destroy(obj.GetChild(0).gameObject);
-    }
-
-    private static IEnumerator DestroyCoroutine(GameObject obj, float delay, bool forceDestroy = false, bool keepActive = false)
-    {
-        yield return new WaitForSeconds(delay);
-
-        InternalDestroy(obj, keepActive, forceDestroy);
-    }
-
-    private static void Destroy(GameObject objectToDestroy, float delay, bool forceDestroy = false)
-    {
-        if (null != objectToDestroy)
-            instance.StartCoroutine(DestroyCoroutine(objectToDestroy, delay, forceDestroy, false));
     }
 
     public static void Destroy(GameObject objectToDestroy, bool forceDestroy = false)
     {
         if (null != objectToDestroy)
             InternalDestroy(objectToDestroy, false, forceDestroy);
-    }
-
-    private static void DestroyInsert(GameObject objectToDestroy, float delay, bool forceDestroy = false, bool keepActive = false)
-    {
-        if (null != objectToDestroy)
-        {
-            if (PoolSizeAvailable(objectToDestroy) == 0)
-                Pool(objectToDestroy, 1, false);
-
-            instance.StartCoroutine(DestroyCoroutine(objectToDestroy, delay, forceDestroy, keepActive));
-        }
     }
 
     public static void DestroyInsert(GameObject objectToDestroy, bool forceDestroy = false, bool keepActive = false)
@@ -215,15 +191,15 @@ public class GfPooling : MonoBehaviour
     {
         if (ammount < -1 || null == pooledObject) return;
 
-        if (instance.pools.ContainsKey(pooledObject.name))
+        List<GameObject> currentPool;
+        if(instance.pools.TryGetValue(pooledObject.name, out currentPool))
         {
-            PoolClass currentPool = instance.pools[pooledObject.name];
 
-            while (currentPool.parent.childCount < currentPool.capacity && -1 != --ammount)
+            while (currentPool.Count < currentPool.Capacity && -1 != --ammount)
             {
                 GameObject obj = GameObject.Instantiate(pooledObject);
                 obj.SetActive(false);
-                obj.transform.SetParent(currentPool.parent);
+                currentPool.Add(obj);
                 obj.name = pooledObject.name;
             }
 
@@ -234,41 +210,55 @@ public class GfPooling : MonoBehaviour
         }
     }
 
-    private static void DestroyObjectsFromPool(Transform pool, int numInstances = -1)
+    private static void DestroyObjectsFromPool(List<GameObject> objects, int numInstances = -1)
     {
-        while (0 < pool.childCount && -1 != --numInstances)
+        int count = objects.Count;
+        int desiredCapacity = count - numInstances;
+        while (0 < count && -1 != --numInstances)
         {
-            GameObject.Destroy(pool.GetChild(0).gameObject);
+            --count;
+            GameObject.Destroy(objects[count]);
+            objects.RemoveAt(count);
         }
     }
 
-    public static void ClearPool(GameObject objectToClear = null, int numInstances = int.MaxValue, bool keepPool = false)
+    public static void ClearAll() {
+        foreach (string key in instance.pools.Keys)
+        {
+            DestroyObjectsFromPool(instance.pools[key], int.MaxValue);
+            instance.pools.Remove(key);
+        }
+    }
+
+    public static void TrimPool(GameObject obj, bool keepPoolIfEmpty = false)
+    {
+        if (null != obj)
+        {
+            List<GameObject> currentPool;
+            if(instance.pools.TryGetValue(obj.name, out currentPool))
+            {
+                if(currentPool.Count == 0 && !keepPoolIfEmpty) 
+                    instance.pools.Remove(obj.name);
+                else 
+                    currentPool.TrimExcess();
+            }
+        }
+    }
+
+    public static void ClearPool(GameObject objectToClear, int numInstances = int.MaxValue, bool keepPoolIfEmpty = false)
     {
         if (numInstances <= 0)
             return;
 
         if (null != objectToClear)
         {
-            if (instance.pools.ContainsKey(objectToClear.name))
+            List<GameObject> currentPool;
+            if(instance.pools.TryGetValue(objectToClear.name, out currentPool))
             {
-                PoolClass currentPool = instance.pools[objectToClear.name];
-                DestroyObjectsFromPool(currentPool.parent, numInstances);
-                currentPool.capacity -= numInstances;
+                DestroyObjectsFromPool(currentPool, numInstances);
 
-                if (currentPool.capacity <= 0 && !keepPool)
-                {
-                    GameObject.Destroy(currentPool.parent.gameObject);
+                if (!keepPoolIfEmpty && numInstances >= currentPool.Capacity)
                     instance.pools.Remove(objectToClear.name);
-                }
-            }
-        }
-        else
-        {
-            //remove everything;
-            foreach (string key in instance.pools.Keys)
-            {
-                DestroyObjectsFromPool(instance.pools[key].parent, numInstances);
-                instance.pools.Remove(key);
             }
         }
     }
@@ -282,69 +272,31 @@ public class GfPooling : MonoBehaviour
     public static void Pool(GameObject objectToPool, int numInstances, bool instantiateObjects = true)
     {
         if (numInstances < 0)
-        {
             ClearPool(objectToPool, -numInstances);
-        }
         else if (numInstances == 0)
-        {
             return;
-        }
-
         //Debug.Log("Pool request for " + numInstances + " " + objectToPool.name);
 
-        PoolClass currentPool = null;
-
-        if (!instance.pools.ContainsKey(objectToPool.name))
+        List<GameObject> currentPool;
+        if(instance.pools.TryGetValue(objectToPool.name, out currentPool))
         {
-            currentPool = new PoolClass();
-
-            instance.pools.Add(objectToPool.name, currentPool);
-            currentPool.capacity = numInstances;
-
-            Transform poolParent = new GameObject().transform;
-            poolParent.SetParent(instance.mainParent);
-            poolParent.name = objectToPool.name + " Pool";
-
-            currentPool.parent = poolParent;
+            currentPool = instance.pools[objectToPool.name];
+            int capacity = currentPool.Capacity;
+            //if we are over the instantiating limit, then double capacity
+            if(currentPool.Capacity == currentPool.Count) currentPool.Capacity += capacity; 
         }
         else
         {
-            currentPool = instance.pools[objectToPool.name];
-            currentPool.capacity += numInstances;
+            currentPool = new List<GameObject>(numInstances);
+            instance.pools.Add(objectToPool.name, currentPool);
         }
 
         while (instantiateObjects && 0 <= --numInstances)
         {
             GameObject obj = GameObject.Instantiate(objectToPool);
             obj.SetActive(false);
-            obj.transform.SetParent(currentPool.parent);
             obj.name = objectToPool.name;
-            // Debug.Log("creating an object for pool: " + objectToPool.name + " objects in pool: " + currentPool.parent.childCount);
-        }
-    }
-
-    public static void ResizePool(GameObject obj, int newSize, bool keepPool = false)
-    {
-        newSize = Mathf.Max(0, newSize);
-
-        // Debug.Log("Resize pool request for " + obj + " to " + (newSize));
-
-        if (instance.pools.ContainsKey(obj.name))
-        {
-            PoolClass currentPool = instance.pools[obj.name];
-            if (newSize > currentPool.capacity)
-            {
-                Pool(obj, newSize - currentPool.capacity);
-            }
-            else if (newSize < currentPool.capacity)
-            {
-                ClearPool(obj, currentPool.capacity - newSize, keepPool);
-            }
-        }
-        else
-        {
-            // Debug.Log("No pool for " + obj + ", creating it with size: " + (newSize));
-            Pool(obj, newSize);
+            currentPool.Add(obj);
         }
     }
 
@@ -355,27 +307,39 @@ public class GfPooling : MonoBehaviour
 
     public static int PoolSizeAvailable(GameObject objectPooled)
     {
-        return instance.pools.ContainsKey(objectPooled.name) ? instance.pools[objectPooled.name].parent.childCount : 0;
+        int ret = 0;
+        List<GameObject> pool;
+        if(instance.pools.TryGetValue(objectPooled.name, out pool)) 
+           ret = pool.Count;
+
+        return ret;
     }
 
-    public static GameObject GetObjectInPool(GameObject objectPool)
+    public static GameObject GetObjectInPool(GameObject objectPool, int index = 0)
     {
-        return (instance.pools.ContainsKey(objectPool.name) && PoolSizeAvailable(objectPool) > 0) ? instance.pools[objectPool.name].parent.GetChild(0).gameObject : null;
+        List<GameObject> pool;
+        GameObject ret = null;
+        if(instance.pools.TryGetValue(objectPool.name, out pool) && pool.Count > index) 
+           ret = pool[index];
+        
+        return ret;
     }
 
     public static int PoolSizeMax(GameObject objectPooled)
     {
-        return instance.pools.ContainsKey(objectPooled.name) ? instance.pools[objectPooled.name].capacity : 0;
+        List<GameObject> pool;
+        int ret = 0;
+        if(instance.pools.TryGetValue(objectPooled.name, out pool)) 
+           ret = pool.Capacity;
+
+        return ret;  
     }
 
-    public static Transform GetPoolParent(GameObject objectPooled)
+    public static List<GameObject> GetPoolList(GameObject objectPooled)
     {
-        if (instance.pools.ContainsKey(objectPooled.name))
-        {
-            return instance.pools[objectPooled.name].parent;
-        }
-
-        return null;
+        List<GameObject> pool;
+        instance.pools.TryGetValue(objectPooled.name, out pool);
+        return pool;  
     }
 }
 
@@ -384,11 +348,5 @@ public class InitializationPool
 {
     public GameObject gameObject;
     public int instancesToPool;
-}
-
-internal class PoolClass
-{
-    public int capacity;
-    public Transform parent;
 }
 

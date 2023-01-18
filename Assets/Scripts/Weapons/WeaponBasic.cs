@@ -47,14 +47,14 @@ public class WeaponBasic : MonoBehaviour
         }
     }
 
-    public bool IsAlive(bool allPhases = false)
+    public bool IsAlive(bool currentPhase = false)
     {
-        return turret.IsAlive(allPhases);
+        return turret.IsAlive(currentPhase);
     }
 
     private void FixedUpdate()
     {
-        if (destroyWhenDone && !turret.IsAlive(true))
+        if (destroyWhenDone && !turret.IsAlive())
         {
             destroyWhenDone = false;
             GfPooling.DestroyInsert(gameObject);

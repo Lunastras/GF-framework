@@ -31,23 +31,20 @@ public class HudManager : MonoBehaviour
     public void SetMaxNumSliders(int num)
     {
         weaponSliders = new WeaponLevelSlider[num];
-
         GfPooling.DestroyChildren(levelSlidersParent);
-        GfPooling.ResizePool(levelSliderPrefab, num);
 
         if(num > 0) {
-            Transform poolParent = GfPooling.GetPoolParent(levelSliderPrefab);
+            List<GameObject> poolParent = GfPooling.GetPoolList(levelSliderPrefab);
 
             for(int i = 0; i < num; ++i) {
                //Debug.Log("AAAA CREATING SHID FOR CHILD " + i);
-                weaponSliders[i] = poolParent.GetChild(0).GetComponent<WeaponLevelSlider>();
+                weaponSliders[i] = GfPooling.PoolInstantiate(levelSliderPrefab).GetComponent<WeaponLevelSlider>();
                 RectTransform weaponTransform = weaponSliders[i].GetComponent<RectTransform>();
                 weaponTransform.SetParent(levelSlidersParent);
 
                 Vector3 position = new Vector3(0, -i * (weaponTransform.rect.height + levelSlidersYOffset), 0);
                 weaponTransform.localPosition = position;
             }
-
            // Debug.Log("Num of children in sliders is: " + levelSlidersParent.childCount);
         }      
     }
