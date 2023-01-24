@@ -5,30 +5,47 @@ using UnityEngine;
 public class ParticlePlayerCollectible : ParticleTrigger
 {
     [SerializeField]
-    private float numPoints;
+    private float m_numPoints;
 
     [SerializeField]
-    private CollectibleType type;
+    private CollectibleType m_type;
+
+    [SerializeField]
+    private float m_destroyTime;
+    [SerializeField]
+    private ParticleHoming m_particleHoming;
+    [SerializeField]
+    private ParticleGravity m_particleGravity;
 
     // Start is called before the first frame update
     protected override void InternalAwake()
     {
-        
+        m_particleHoming = GetComponent<ParticleHoming>();
+        m_particleGravity = GetComponent<ParticleGravity>();
+        Transform player = GameManager.gameManager.GetPlayer();
+        m_particleSystem.trigger.AddCollider(player);
     }
 
-    private void Start() {
-        Collider cool = StatsPlayer.instance.GetComponent<Collider>();
-        m_particleSystem.trigger.AddCollider(cool);
+    private void OnParticleSystemStopped()
+    {
+        GfPooling.DestroyInsert(gameObject);
     }
+
+
+
+    public ParticleHoming GetParticleHoming() { return m_particleHoming; }
+    public ParticleGravity GetParticleGravity() { return m_particleGravity; }
+    public ParticleSystem GetParticleSystem() { return m_particleSystem; }
 
     protected override void CollisionBehaviour(ref ParticleSystem.Particle particle, GameObject hitObject)
     {
         StatsPlayer playerStats = hitObject.GetComponent<StatsPlayer>();
 
-        if(playerStats) {
-            playerStats.AddPoints(type, numPoints);
-            particle.position = DESTROY_POS;
-            particle.velocity = Vector3.zero;
+        if (playerStats && particle.remainingLifetime >= m_destroyTime)
+        {
+            m_particleHoming.SetTarget(playerStats.transform);
+            playerStats.AddPoints(m_type, m_numPoints);
+            particle.remainingLifetime = m_destroyTime;
         }
     }
 }

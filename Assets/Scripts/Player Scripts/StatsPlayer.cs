@@ -30,14 +30,14 @@ public class StatsPlayer : StatsCharacter
 
     public bool IsDead { get; protected set; }
 
-    private void Awake() {
-        Debug.Log("STARTTT");
-        instance =  this;
+    private void Awake()
+    {
+        instance = this;
     }
 
     private void Start()
     {
-                
+
         m_currentHealth = m_maxHealth;
 
         if (null == m_playerGun)
@@ -104,7 +104,8 @@ public class StatsPlayer : StatsCharacter
 
     }
 
-    void OnParticleTrigger() {
+    void OnParticleTrigger()
+    {
         Debug.Log("TYrigger on playyer was called huuuh");
     }
 }

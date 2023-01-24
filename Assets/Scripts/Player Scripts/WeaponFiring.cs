@@ -70,7 +70,7 @@ public class WeaponFiring : MonoBehaviour
             Ray ray = new(m_aimTransform.position, fireTargetDir);
             RaycastHit[] rayHits = GfPhysics.GetRaycastHits();
 
-            m_hitAnObject = 0 != Physics.RaycastNonAlloc(ray, rayHits, m_maxFireDistance, ~GfPhysics.IgnoreLayers() - (int)Mathf.Pow(2, (gameObject.layer)));
+            m_hitAnObject = 0 != Physics.RaycastNonAlloc(ray, rayHits, m_maxFireDistance, GfPhysics.CharacterCollisions() - (int)Mathf.Pow(2, (gameObject.layer)));
 
             if (m_hitAnObject)
             {

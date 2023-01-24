@@ -49,11 +49,9 @@ public class GfMovementSimple : GfMovementGeneric
     {
         m_touchedParent = m_jumpedThisFrame = false;
         Vector3 movDir = MovementDirComputed();
-        float magnitude = movDir.magnitude;
-        if (magnitude > 0.000001f) GfTools.Div3(ref movDir, magnitude); //normalise
 
         CalculateEffectiveValues();
-        CalculateVelocity(deltaTime, movDir, magnitude);
+        CalculateVelocity(deltaTime, movDir);
         CalculateJump();
     }
 
@@ -83,10 +81,12 @@ public class GfMovementSimple : GfMovementGeneric
         m_effectiveDeacceleration *= DeaccelerationCoef;
     }
 
-    void CalculateVelocity(float deltaTime, Vector3 movDir, float movDirMagnitude)
+    void CalculateVelocity(float deltaTime, Vector3 movDir)
     {
-        movDir.Normalize();
         Vector3 slope = m_slopeNormal;
+        float movDirMagnitude = movDir.magnitude;
+        if (movDirMagnitude > 0.000001f) GfTools.Div3(ref movDir, movDirMagnitude); //normalise
+
         float verticalFallSpeed = Vector3.Dot(slope, m_velocity);
         float fallMagn = 0, fallMaxDiff = -verticalFallSpeed - m_maxFallSpeed; //todo
         //remove vertical factor from the velocity to calculate the horizontal plane velocity easier
@@ -106,12 +106,23 @@ public class GfMovementSimple : GfMovementGeneric
         }
 
         float currentSpeed = effectiveVelocity.magnitude;
-        float dotMovementVelDir = Vector3.Dot(movDir, currentSpeed > 0.000001F ? effectiveVelocity / currentSpeed : Zero3);
+        float dotMovementVelDir = 0;
+        if (currentSpeed > 0.000001F)
+        {
+            Vector3 velDir = effectiveVelocity;
+            GfTools.Div3(ref velDir, currentSpeed);
+            dotMovementVelDir = Vector3.Dot(movDir, velDir);
+        }
 
         float desiredSpeed = m_speed * movDirMagnitude;
         float speedInDesiredDir = currentSpeed * Max(0, dotMovementVelDir);
 
-        Vector3 unwantedVelocity = effectiveVelocity - movDir * Min(speedInDesiredDir, desiredSpeed);
+        float minAux = Min(speedInDesiredDir, desiredSpeed);
+        Vector3 unwantedVelocity = effectiveVelocity;
+        unwantedVelocity.x -= movDir.x * minAux;
+        unwantedVelocity.y -= movDir.y * minAux;
+        unwantedVelocity.z -= movDir.z * minAux;
+
         float unwantedSpeed = unwantedVelocity.magnitude;
         if (unwantedSpeed > 0.000001F) GfTools.Div3(ref unwantedVelocity, unwantedSpeed);
 

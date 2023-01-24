@@ -130,7 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_damage: 10
+  m_damage: 1
   m_canDamageSelf: 0
   m_statsCharacter: {fileID: 0}
 --- !u!199 &5347368421892561561
@@ -1039,7 +1039,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 8
+      scalar: 5
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -5111,6 +5111,8 @@ MonoBehaviour:
   m_statsCharacter: {fileID: 0}
   m_autoPlay: 0
   m_autoRestarts: 0
+  m_destoryWhenDone: 0
+  m_objectToDestroy: {fileID: 0}
 --- !u!1 &1756110801747613470
 GameObject:
   m_ObjectHideFlags: 0
@@ -5157,7 +5159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_damage: 10
+  m_damage: 1.6
   m_canDamageSelf: 0
   m_statsCharacter: {fileID: 0}
 --- !u!199 &3643809342232116430
@@ -9985,7 +9987,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_damage: 10
+  m_damage: 3
   m_canDamageSelf: 0
   m_statsCharacter: {fileID: 0}
 --- !u!198 &4641846789704900177
@@ -14948,7 +14950,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_damage: 10
+  m_damage: 1
   m_canDamageSelf: 0
   m_statsCharacter: {fileID: 0}
 --- !u!199 &3743803346136855252

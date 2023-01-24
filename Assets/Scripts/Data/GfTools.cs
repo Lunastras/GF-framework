@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using Unity.Jobs;
+using Unity.Mathematics;
+
+using static Unity.Mathematics.math;
+
 
 public class GfTools
 {
@@ -151,6 +156,14 @@ public class GfTools
         Vector3 abm = a * b.magnitude;
         Vector3 bam = b * a.magnitude;
         return 2 * Mathf.Atan2((abm - bam).magnitude, (abm + bam).magnitude) * Mathf.Rad2Deg;
+    }
+
+    /*Props to allista from the kerbal space program forum for this incredible function*/
+    public static float Angle(float3 a, float3 b)
+    {
+        float3 abm = a * length(b);
+        float3 bam = b * length(a);
+        return 2.0f * atan2(length(abm - bam), length(abm + bam)) * Mathf.Rad2Deg;
     }
 
     public static float SignedAngle(Vector3 from, Vector3 to, Vector3 axis)

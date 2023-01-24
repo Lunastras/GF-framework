@@ -87,7 +87,7 @@ public class ParticleSingleHit : ParticleCollision
 
     protected virtual void HitCollision(GameObject other, ParticleCollisionEvent collisionEvent)
     {
-        DustParticles.PlaySystem(collisionEvent.intersection, collisionEvent.normal);
+        GameParticles.PlayParticleDust(collisionEvent.intersection, collisionEvent.normal);
     }
 
     protected override void CollisionBehaviour(GameObject other, ParticleCollisionEvent collisionEvent)

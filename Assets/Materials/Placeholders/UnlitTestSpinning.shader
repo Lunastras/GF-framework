@@ -31,7 +31,8 @@ Shader "Unlit/UnlitTestSpinning"
             {
                 float4 vertex : POSITION;
                 float4 uv : TEXCOORD0;
-                float2 uv1 : TEXCOORD1;
+                float4 uv1 : TEXCOORD1;
+                float2 uv2 : TEXCOORD2;
                 uint instanceID : SV_InstanceID;
                 uint vertexID : SV_VertexID;
             };
@@ -78,24 +79,63 @@ Shader "Unlit/UnlitTestSpinning"
 		        outVec3.z = (num8 - num11) * inVec3.x + (num9 + num10) * inVec3.y + (1.0f - (num4 + num5)) * inVec3.z;
             }
 
+            void quatMult(in float4 lhs, in float4 rhs, out float4 outQuat) 
+            {  
+                outQuat = float4(
+                lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
+                lhs.w * rhs.y + lhs.y * rhs.w + lhs.z * rhs.x - lhs.x * rhs.z,
+                lhs.w * rhs.z + lhs.z * rhs.w + lhs.x * rhs.y - lhs.y * rhs.x,
+                lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z);
+            }
+
+            void quatFromTo(in float3 initial, in float3 final, out float4 outQuat) 
+            { 
+                float dotf = dot(initial, final); 
+                if (dotf < -0.9999999f) //opposite vectors
+                {
+                    float3 crossf = cross(float3(1,0,0), initial);
+                    if (length(crossf) < 0.0000001f)
+                        crossf = cross(float3(0,1,0), initial);
+                    angleAxis(0, 1, normalize(crossf), outQuat); //(in float cosRadiansHalf, in float sinRadiansHalf, float3 axisNormalised, out float4 quat) 
+                } 
+                else if (dotf < 0.9999999f) // normal case
+                {
+                    float3 crossf = cross(initial, final);
+                    outQuat = normalize(float4(crossf.x, crossf.y, crossf.z, 1 + dotf));
+                }
+                else //vectors are identical, dot = 1
+                {
+                    outQuat = float4(0,0,0,1);
+                }
+            }
+
             v2f vert (appdata v)
             {
                 v2f o;
-                float3 upvec = float3(0,1,0); 
-                float time = _Time.y * 3.0f + 100.0f * v.uv.z;
-                float timeSin = sin(time);
+                float time = _Time.y * 3.0f + 100.0f * v.uv.z; 
+                float timeSin = sin(time);   
 
-                v.vertex.y += 0.3f * timeSin; 
+                float3 upDir = float3(v.uv1.z,v.uv1.w,v.uv2.x);
+                if(v.uv2.y == 1) {
+                    upDir -= v.vertex.xyz;
+                    upDir = normalize(upDir);
+                }
+
                 float3 center = float3(v.uv.w, v.uv1.x, v.uv1.y);
                 float3 objectPos = v.vertex.xyz - center;
+
+                objectPos.y += 0.3f * timeSin; 
 
                 timeSin = sin(time * 0.2);
                 float timeCos = cos(time * 0.2);
 
-                float4 quat;
+                float4 rotationQuat;
+                float4 verticalCorrectionQuat;
                 float3 currentPos;
-                angleAxis(timeCos, timeSin, upvec, quat);
-                quatVec3Mult(quat, objectPos, objectPos);
+                angleAxis(timeCos, timeSin, upDir, rotationQuat);
+                quatFromTo(float3(0,1,0), upDir, verticalCorrectionQuat);
+                quatMult(rotationQuat, verticalCorrectionQuat, rotationQuat);
+                quatVec3Mult(rotationQuat, objectPos, objectPos);
 
                 objectPos += center;
         

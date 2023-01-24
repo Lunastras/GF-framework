@@ -13,7 +13,14 @@ public class StatsNpc : StatsCharacter
     protected GameObject m_graphics;
 
     [SerializeField]
+    protected GfMovementGeneric m_movement;
+
+
+    [SerializeField]
     protected Sound m_damageSound;
+
+    [SerializeField]
+    protected int m_powerItemsToDrop = 5;
 
     [SerializeField]
     protected Sound m_deathSound;
@@ -31,7 +38,7 @@ public class StatsNpc : StatsCharacter
 
     [SerializeField]
     protected GameObject m_mainGameObject;
-    
+
     [SerializeField]
     private NpcController m_npcController;
 
@@ -59,6 +66,10 @@ public class StatsNpc : StatsCharacter
         if (null == m_objectCollider)
             m_objectCollider = GetComponent<Collider>();
 
+
+        if (null == m_movement)
+            m_movement = GetComponent<GfMovementGeneric>();
+
         if (null == m_npcController)
             m_npcController = GetComponent<NpcController>();
 
@@ -77,9 +88,10 @@ public class StatsNpc : StatsCharacter
             }
         }
 
+        m_currentHealth = m_maxHealth;
+
         m_initialised = true;
         HostilityManager.AddCharacter(this);
-        // ParticleDamage.AddCollider(transform);
     }
 
     private void OnEnable()
@@ -87,6 +99,7 @@ public class StatsNpc : StatsCharacter
         if (m_initialised)
         {
             m_currentHealth = m_maxHealth;
+
 
             HostilityManager.AddCharacter(this);
 
@@ -101,7 +114,8 @@ public class StatsNpc : StatsCharacter
 
     public override void Kill()
     {
-        DeathParticles.PlaySystem(transform.position);
+        GameParticles.PlayDeathDust(transform.position);
+        GameParticles.PlayPowerItems(transform.position, m_powerItemsToDrop, m_movement);
         IsDead = true;
 
         m_deathSound.Play(m_audioSource);
@@ -110,7 +124,19 @@ public class StatsNpc : StatsCharacter
         {
             for (int j = 0; j < m_dropsToSpawn[Mathf.Min(m_dropsToSpawn[i], m_dropsToSpawn.Length - 1)]; j++)
             {
-                GfPooling.Instantiate(m_itemDropsAfterDeath[i]).transform.position = transform.position;
+                GameObject obj = GfPooling.Instantiate(m_itemDropsAfterDeath[i]);
+                obj.transform.position = transform.position;
+                SimpleGravity simpleGravity = obj.GetComponent<SimpleGravity>();
+                if (simpleGravity)
+                {
+                    Transform sphericalParent = m_movement.GetParentSpherical();
+                    if (sphericalParent)
+                        simpleGravity.SetSphericalParent(sphericalParent);
+                    else
+                        simpleGravity.SetDefaultGravityDir(-m_movement.UpVecEffective());
+
+                    simpleGravity.SetGravityCoef(m_movement.GetGravityCoef());
+                }
             }
         }
 
@@ -136,8 +162,6 @@ public class StatsNpc : StatsCharacter
 
         m_currentHealth -= damage;
         m_currentHealth = Mathf.Max(0, m_currentHealth);
-
-        //Debug.Log("I HAVE BEEN DAMAGED, i have " + currentHealth + "hp");
 
         if (m_currentHealth <= m_maxHealth * m_lowHealthThreshold)
         {

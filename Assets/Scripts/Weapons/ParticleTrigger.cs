@@ -8,9 +8,10 @@ using System.Runtime.CompilerServices;
 
 public abstract class ParticleTrigger : MonoBehaviour
 {
+    [SerializeField]
     protected ParticleSystem m_particleSystem;
 
-    private static List<ParticleSystem.Particle> m_particlesList = null;
+    public static List<ParticleSystem.Particle> m_particlesList = null;
 
     protected static readonly Vector3 DESTROY_POS = new(100000000, -100000000, 100000000);
 
@@ -30,24 +31,21 @@ public abstract class ParticleTrigger : MonoBehaviour
         if (m_particlesList == null)
             return;
 
-        int numEnter = m_particleSystem.GetTriggerParticles(ParticleSystemTriggerEventType.Inside, m_particlesList, out var colliderData);
-        Debug.Log("trigger called bbyy, numenter was:  " + numEnter);
+        int numEnter = m_particleSystem.GetTriggerParticles(ParticleSystemTriggerEventType.Enter, m_particlesList, out var colliderData);
 
         for (int i = 0; i < numEnter; ++i)
         {
             ParticleSystem.Particle particle = m_particlesList[i];
-            if (colliderData.GetColliderCount(i) > 0)
+            int colliderCount = colliderData.GetColliderCount(i);
+            for (int j = 0; j < colliderCount; ++j)
             {
-                GameObject hitObject = colliderData.GetCollider(i, 0).gameObject;
-                Debug.Log("Okee let's go through all of them, I HIT: " + hitObject.name);
-
+                GameObject hitObject = colliderData.GetCollider(i, j).gameObject;
                 CollisionBehaviour(ref particle, hitObject);
-
                 m_particlesList[i] = particle;
             }
         }
 
-        m_particleSystem.SetTriggerParticles(ParticleSystemTriggerEventType.Inside, m_particlesList);
+        m_particleSystem.SetTriggerParticles(ParticleSystemTriggerEventType.Enter, m_particlesList);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

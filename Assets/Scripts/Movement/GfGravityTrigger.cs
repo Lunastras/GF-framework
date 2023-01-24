@@ -47,4 +47,24 @@ public class GfGravityTrigger : GfMovementTriggerable
         if (m_upVec.sqrMagnitude < 0.000001f)
             m_upVec = UPDIR;
     }
+
+    public void SetGravityCoef(float coef)
+    {
+        m_gravityCoef = coef;
+    }
+
+    public float GetGravityCoef()
+    {
+        return m_gravityCoef;
+    }
+
+    public Transform GetSphericalParent()
+    {
+        return m_sphericalParent;
+    }
+
+    public void SphericalParent(Transform parent)
+    {
+        m_sphericalParent = parent;
+    }
 }
