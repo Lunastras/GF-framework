@@ -10,7 +10,7 @@ using System;
 
 using static Unity.Mathematics.math;
 
-public class QuadFollowCamera : JobChild
+public class QuadFollowCamera : MonoBehaviour
 {
     [SerializeField]
     public float m_xFollowFactor;
@@ -27,9 +27,9 @@ public class QuadFollowCamera : JobChild
     private static CameraController m_cameraController;
     private static Transform m_cameraTransform;
 
-    private NativeArray<Quaternion> m_rotation;
-
     private Transform m_transform;
+
+    private static readonly Vector3 RIGHT3 = Vector3.right;
 
     bool m_hasAJob;
     bool m_initialised;
@@ -40,44 +40,23 @@ public class QuadFollowCamera : JobChild
         m_cameraTransform = Camera.main.transform;
         m_cameraController = m_cameraTransform.GetComponent<CameraController>();
         if (null == m_cameraController) Debug.LogWarning("The main camera does not have the CameraController component. Default upvec of (0, 1, 0) for the camera has been set");
-        Init();
         m_transform = transform;
-        m_initialised = true;
     }
 
-    void OnEnable()
+    private void FixedUpdate()
     {
-        if (m_initialised)
-            Init();
-    }
+        Vector3 upVec = m_defaultUpvec;
+        if(m_movement)
+            upVec = m_movement.UpvecRotation();
 
-    void OnDisable()
-    {
-        Deinit();
-    }
+        Vector3 dirToCamera = m_cameraTransform.position;
+        GfTools.Minus3(ref dirToCamera, m_transform.position);
+        GfTools.Normalize(ref dirToCamera);
 
-    void OnDestroy()
-    {
-        Deinit();
-    }
+        float angle = GfTools.Angle(upVec, dirToCamera);
+        float auxAngle = 90f + m_xFollowFactor * (angle - 90f);
 
-    public override bool ScheduleJob(out JobHandle handle, float deltaTime, int batchSize = 512)
-    {
-        Vector3 upVec = null != m_movement ? m_movement.UpvecRotation() : m_defaultUpvec;
-        m_rotation = new(1, Allocator.TempJob);
-        QuadFollowCameraJob jobStruct = new QuadFollowCameraJob(m_rotation, m_transform.position, m_cameraTransform.position, upVec, m_xFollowFactor);
-        handle = jobStruct.Schedule();
-        m_hasAJob = true;
-        return true;
-    }
-
-    public override void OnJobFinished()
-    {
-        if (m_hasAJob)
-        {
-            transform.rotation = m_rotation[0];
-            m_rotation.Dispose();
-        }
+        transform.rotation = Quaternion.LookRotation(dirToCamera, upVec) * Quaternion.AngleAxis(auxAngle - angle, RIGHT3);
     }
 
     public void SetUpVec(Vector3 upVec)
@@ -86,31 +65,4 @@ public class QuadFollowCamera : JobChild
     }
 }
 
-public struct QuadFollowCameraJob : IJob
-{
-    NativeArray<Quaternion> m_rotation;
-    float3 m_currentPos;
-    float3 m_cameraPos;
-    float3 m_spriteUpVec;
-    float m_xFollowFactor;
-    //Note, if hasParent == true, then gravity3 MUST be normalised
-    public QuadFollowCameraJob(NativeArray<Quaternion> rotation, float3 currentPos, float3 cameraPos, float3 spriteUpVec, float xFollowFactor)
-    {
-        m_rotation = rotation;
-        m_currentPos = currentPos;
-        m_cameraPos = cameraPos;
-        m_xFollowFactor = xFollowFactor;
-        m_spriteUpVec = spriteUpVec;
-    }
-
-    public void Execute()
-    {
-        float3 dirToCamera = normalize(m_cameraPos - m_currentPos);
-
-        float angle = GfTools.Angle(m_spriteUpVec, dirToCamera);
-        float auxAngle = 90f + m_xFollowFactor * (angle - 90f);
-
-        m_rotation[0] = Quaternion.LookRotation(dirToCamera, m_spriteUpVec) * Quaternion.AngleAxis(auxAngle - angle, Vector3.right);
-    }
-}
 

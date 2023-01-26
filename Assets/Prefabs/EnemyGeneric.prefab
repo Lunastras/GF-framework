@@ -1057,7 +1057,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 10
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -4998,18 +4998,19 @@ MonoBehaviour:
   CanFly: 1
   m_useInterpolation: 1
   m_speed: 5
-  m_mass: 35
+  m_mass: 40
   m_stepOffset: 0.3
   m_slopeLimit: 45
   m_upperSlopeLimit: 100
   m_queryTrigger: 2
+  m_useDiscreteCollision: 1
   JumpTrigger: 0
   m_velocity: {x: 0, y: 0, z: 0}
   m_acceleration: 30
   m_deacceleration: 30
   m_midAirAcceleration: 10
   m_midAirDeacceleration: 10
-  m_maxFallSpeed: 40
+  m_maxFallSpeed: 60
   m_jumpForce: 40
   m_turnSpeed: 10
   AccelerationCoef: 1
@@ -5103,7 +5104,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_turretPhases:
-  - particleSystems: []
+  - particleSystems:
+    - {fileID: 996019745373869235}
   m_timeBetweenPhases: []
   m_statsCharacter: {fileID: 0}
   m_autoPlay: 0

@@ -122,6 +122,19 @@ public class GfTools
         Mult3(ref leftHand, mag);
     }
 
+    public static void QuatMultLocal(ref Quaternion lhs, Quaternion rhs)
+    {
+        float lhsx = lhs.x;
+        float lhsy = lhs.y;
+        float lhsz = lhs.z;
+        float lhsw = lhs.w;
+        
+        lhs.x = lhsw * rhs.x + lhsx * rhs.w + lhsy * rhs.z - lhsz * rhs.y;
+        lhs.y = lhsw * rhs.y + lhsy * rhs.w + lhsz * rhs.x - lhsx * rhs.z;
+        lhs.z= lhsw * rhs.z + lhsz * rhs.w + lhsx * rhs.y - lhsy * rhs.x;
+        lhs.w= lhsw * rhs.w - lhsx * rhs.x - lhsy * rhs.y - lhsz * rhs.z;
+    }
+
     public static Vector3 RemoveAxis(Vector3 leftHand, Vector3 rightHand) { RemoveAxis(ref leftHand, rightHand); return leftHand; }
 
 

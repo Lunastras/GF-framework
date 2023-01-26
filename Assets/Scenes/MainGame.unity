@@ -5099,18 +5099,19 @@ MonoBehaviour:
   CanFly: 0
   m_useInterpolation: 1
   m_speed: 9
-  m_mass: 35
+  m_mass: 45
   m_stepOffset: 0.3
   m_slopeLimit: 45
   m_upperSlopeLimit: 100
   m_queryTrigger: 0
+  m_useDiscreteCollision: 1
   JumpTrigger: 0
   m_velocity: {x: 0, y: 0, z: 0}
   m_acceleration: 27
   m_deacceleration: 35
   m_midAirAcceleration: 10
   m_midAirDeacceleration: 10
-  m_maxFallSpeed: 40
+  m_maxFallSpeed: 50
   m_jumpForce: 15
   m_turnSpeed: 400
   AccelerationCoef: 1
@@ -10465,13 +10466,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1c0949b6c48d0c4696b0effeda83a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  poolsToInstantiate:
-  - gameObject: {fileID: 1638784938448980617, guid: 3fa6d1718b0a7c7458a0344ae7aba8a7,
-      type: 3}
-    instancesToPool: 50
-  - gameObject: {fileID: 8027963763606321298, guid: ec3fec58a10a39b4a85f5c53a7da43ab,
-      type: 3}
-    instancesToPool: 10000
+  poolsToInstantiate: []
 --- !u!114 &1273476796
 MonoBehaviour:
   m_ObjectHideFlags: 0
