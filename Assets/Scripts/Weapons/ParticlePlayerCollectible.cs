@@ -28,10 +28,8 @@ public class ParticlePlayerCollectible : ParticleTrigger
 
     private void OnParticleSystemStopped()
     {
-        GfPooling.DestroyInsert(gameObject);
+        gameObject.SetActive(false);
     }
-
-
 
     public ParticleHoming GetParticleHoming() { return m_particleHoming; }
     public ParticleGravity GetParticleGravity() { return m_particleGravity; }
@@ -43,7 +41,6 @@ public class ParticlePlayerCollectible : ParticleTrigger
 
         if (playerStats && particle.remainingLifetime >= m_destroyTime)
         {
-            m_particleHoming.SetTarget(playerStats.transform);
             playerStats.AddPoints(m_type, m_numPoints);
             particle.remainingLifetime = m_destroyTime;
         }

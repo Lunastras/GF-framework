@@ -348,9 +348,9 @@ ParticleSystem:
         m_RotationOrder: 4
     startSpeed:
       serializedVersion: 2
-      minMaxState: 0
-      scalar: 100
-      minScalar: 5
+      minMaxState: 3
+      scalar: 120
+      minScalar: 30
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -4929,7 +4929,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 208445313}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -22.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5104,11 +5104,13 @@ MonoBehaviour:
   m_slopeLimit: 45
   m_upperSlopeLimit: 100
   m_queryTrigger: 0
-  m_useDiscreteCollision: 1
+  m_useSimpleCollision: 1
   JumpTrigger: 0
   m_velocity: {x: 0, y: 0, z: 0}
-  m_acceleration: 27
-  m_deacceleration: 35
+  m_maxOverlaps: 4
+  m_maxCasts: 4
+  m_acceleration: 40
+  m_deacceleration: 40
   m_midAirAcceleration: 10
   m_midAirDeacceleration: 10
   m_maxFallSpeed: 50
@@ -9981,7 +9983,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 757199232}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 29.7, y: 12.2, z: -7.2}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10002,8 +10004,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
+      propertyPath: m_offset.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
+        type: 3}
       propertyPath: m_offset.y
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -10018,12 +10025,12 @@ PrefabInstance:
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: m_sensitivity
-      value: 800
+      value: 400
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: m_dstFromtarget
-      value: 7
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -10038,7 +10045,7 @@ PrefabInstance:
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: m_movementSmoothTime
-      value: 0
+      value: 0.085
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -10108,7 +10115,7 @@ PrefabInstance:
     - target: {fileID: 3676997061914269406, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: field of view
-      value: 80
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269406, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -10466,7 +10473,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1c0949b6c48d0c4696b0effeda83a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  poolsToInstantiate: []
+  poolsToInstantiate:
+  - gameObject: {fileID: 2437669823507382512, guid: 01bb532d67b15fe4ab840cff6b4f7fba,
+      type: 3}
+    instancesToPool: 1000
 --- !u!114 &1273476796
 MonoBehaviour:
   m_ObjectHideFlags: 0

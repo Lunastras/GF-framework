@@ -25,6 +25,9 @@ public class NpcController : MonoBehaviour
     [SerializeField]
     private float m_targetTrackingTimeWindow = 5.0f;
 
+    [SerializeField]
+    private bool m_updatePhysicsValuesAutomatically = false;
+
     private float m_timeUntilUnpause;
     private float m_timeUntilNextTargetCheck = 0;
     private float m_timeUntilNextStateUpdate = 0;
@@ -85,7 +88,7 @@ public class NpcController : MonoBehaviour
 
         if (0 >= m_timeUntilUnpause && 0 >= m_timeUntilNextStateUpdate)
         {
-            m_timeUntilNextStateUpdate = m_stateUpdateCoolDown * GfRandom.Range(0.8f, 1.2f);
+            m_timeUntilNextStateUpdate = m_stateUpdateCoolDown * Random.Range(0.9f, 1.1f);
 
             if (m_destination.WasDestroyed() && NpcState.CHASING_TARGET == npcState)
             {
@@ -101,17 +104,14 @@ public class NpcController : MonoBehaviour
             {
                 NoDestinationsBehaviour();
             }
+
+            m_movement.UpdatePhysics(m_stateUpdateCoolDown, true, m_timeUntilNextStateUpdate, m_updatePhysicsValuesAutomatically);
         }
     }
 
     void LateUpdate()
     {
         m_movement.Move(Time.deltaTime);
-    }
-
-    void FixedUpdate()
-    {
-        m_movement.UpdatePhysics(Time.deltaTime);
     }
 
     protected bool CheckCanSeeTarget(Transform target, float lineOfSightLength, bool currentlySeesTarget, bool unlimitedFov = false, bool forceRayCast = false)

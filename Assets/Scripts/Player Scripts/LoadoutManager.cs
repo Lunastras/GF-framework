@@ -32,7 +32,6 @@ public class LoadoutManager : MonoBehaviour
     private WeaponBasic[] m_weapons = null;
 
     private int m_numWeapons = 0;
-    private Transform m_odamasParent;
 
     private Dictionary<String, List<GameObject>> m_inactiveOdamas;
 
@@ -48,11 +47,6 @@ public class LoadoutManager : MonoBehaviour
         for (int i = 0; i < MAX_ODAMA; ++i)
         {
             m_weapons[i] = null;
-        }
-
-        if (m_odamasParent == null)
-        {
-            m_odamasParent = transform;
         }
 
         if (m_weaponFiring == null)
@@ -241,11 +235,10 @@ public class LoadoutManager : MonoBehaviour
 
             OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
             ob.SetAngle(i * angleBetweenOdamas);
-            ob.SetParent(m_parentMovement);
             ob.enabled = true;
+            ob.SetParent(m_parentMovement);
 
             m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
-            m_weapons[i].transform.parent = m_odamasParent;
             m_weapons[i].transform.position = m_weaponFiring.transform.position;
         }
 

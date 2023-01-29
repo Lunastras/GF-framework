@@ -116,7 +116,6 @@ public class StatsNpc : StatsCharacter
     {
         GameParticles.PlayDeathDust(transform.position);
         GameParticles.PlayPowerItems(transform.position, m_powerItemsToDrop, m_movement);
-        IsDead = true;
 
         m_deathSound.Play(m_audioSource);
 
@@ -126,19 +125,16 @@ public class StatsNpc : StatsCharacter
             {
                 GameObject obj = GfPooling.Instantiate(m_itemDropsAfterDeath[i]);
                 obj.transform.position = transform.position;
-                SimpleGravity simpleGravity = obj.GetComponent<SimpleGravity>();
-                if (simpleGravity)
+                GfMovementGeneric objMovement = obj.GetComponent<GfMovementGeneric>();
+                if (objMovement)
                 {
-                    Transform sphericalParent = m_movement.GetParentSpherical();
-                    if (sphericalParent)
-                        simpleGravity.SetSphericalParent(sphericalParent);
-                    else
-                        simpleGravity.SetDefaultGravityDir(-m_movement.UpVecEffective());
-
-                    simpleGravity.SetGravityCoef(m_movement.GetGravityCoef());
+                    objMovement.CopyGravity(m_movement, 0);
                 }
             }
         }
+
+        IsDead = true;
+
 
         if (null != m_graphics)
             m_graphics.SetActive(false);
@@ -161,7 +157,6 @@ public class StatsNpc : StatsCharacter
             return;
 
         m_currentHealth -= damage;
-        m_currentHealth = Mathf.Max(0, m_currentHealth);
 
         if (m_currentHealth <= m_maxHealth * m_lowHealthThreshold)
         {
@@ -172,9 +167,8 @@ public class StatsNpc : StatsCharacter
             m_damageSound.Play(m_audioSource);
         }
 
-        if (m_currentHealth == 0)
+        if (m_currentHealth <= 0)
         {
-            IsDead = true;
             Kill();
         }
         else if (m_npcController != null && enemy != null && damage > 0)

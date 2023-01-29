@@ -51,26 +51,42 @@ public class GameParticles : MonoBehaviour
 
     public static void PlayPowerItems(Vector3 position, int numberToEmit, GfMovementGeneric movement = null)
     {
-        GameObject spawnedEmitter = GfPooling.Instantiate(m_instance.m_powerItemsPrefab);
+        if (GfPooling.PoolSizeAvailable(m_instance.m_powerItemsPrefab) == 0)
+            GfPooling.Pool(m_instance.m_powerItemsPrefab, 1);
 
-        spawnedEmitter.transform.position = position;
+        List<GameObject> emitors = GfPooling.GetPoolList(m_instance.m_powerItemsPrefab);
+        ParticlePlayerCollectible spawnedEmitter = null;
 
-        ParticlePlayerCollectible particleCollectible = spawnedEmitter.GetComponent<ParticlePlayerCollectible>();
-        if (particleCollectible)
+        if (null != emitors)
         {
-            particleCollectible.GetParticleSystem().Emit(numberToEmit);
-
-            ParticleGravity particleGravity = particleCollectible.GetParticleGravity();
-            if (particleGravity)
+            int count = emitors.Count;
+            for (int i = 0; i < count; ++i)
             {
-                Transform sphericalParent = movement.GetParentSpherical();
-                if (sphericalParent)
-                    particleGravity.SetSphericalParent(sphericalParent);
-                else
-                    particleGravity.SetDefaultGravityDir(-movement.UpVecEffective());
+                ParticlePlayerCollectible currentSystem = emitors[i].GetComponent<ParticlePlayerCollectible>(); //if this is null, something is very wrong
 
-                particleGravity.SetGravityCoef(movement.GetGravityCoef());
+                ParticleGravity pg = currentSystem.GetParticleGravity();
+                bool hasSameGravity = pg.HasSameGravity(movement);
+                if (hasSameGravity || !emitors[i].activeSelf)
+                {
+                    if (!hasSameGravity)
+                        pg.CopyGravity(movement);
+                    else
+                        pg.gameObject.SetActive(true);
+
+                    spawnedEmitter = currentSystem;
+
+                    break;
+                }
             }
         }
+
+        if (null == spawnedEmitter)
+        {
+            spawnedEmitter = GfPooling.PoolInstantiate(m_instance.m_powerItemsPrefab).GetComponent<ParticlePlayerCollectible>();
+            spawnedEmitter.GetParticleGravity().CopyGravity(movement);
+        }
+
+        spawnedEmitter.transform.position = position;
+        spawnedEmitter.GetParticleSystem().Emit(numberToEmit);
     }
 }

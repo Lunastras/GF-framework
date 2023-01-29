@@ -184,7 +184,7 @@ public class PlayerController : MonoBehaviour
 
         if (!m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
         {
-            float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks + m_timeUntilPhysChecks);
+            float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks - m_timeUntilPhysChecks);
             m_movement.UpdatePhysics(physDelta, false); //actually the current deltatime   
             m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
         }

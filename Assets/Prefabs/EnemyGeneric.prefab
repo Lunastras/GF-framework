@@ -195,7 +195,7 @@ ParticleSystemRenderer:
   m_SortingOrder: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
-  m_SortMode: 1
+  m_SortMode: 4
   m_MinParticleSize: 0
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
@@ -231,7 +231,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4547767586303620511}
   serializedVersion: 8
-  lengthInSec: 10
+  lengthInSec: 5
   simulationSpeed: 5
   stopAction: 0
   cullingMode: 0
@@ -359,7 +359,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 60
+      scalar: 10
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -850,7 +850,7 @@ ParticleSystem:
         m_RotationOrder: 4
   ShapeModule:
     serializedVersion: 6
-    enabled: 1
+    enabled: 0
     type: 4
     angle: 25
     length: 5
@@ -1057,7 +1057,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 3
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -4940,7 +4940,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4759944753111975126}
-  - component: {fileID: 7288493412668972908}
+  - component: {fileID: 6910084372030936651}
   - component: {fileID: 7829947440163271455}
   - component: {fileID: 1372938329087745302}
   - component: {fileID: 7866579364068057338}
@@ -4969,8 +4969,8 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!136 &7288493412668972908
-CapsuleCollider:
+--- !u!135 &6910084372030936651
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4979,9 +4979,8 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 1
-  m_Height: 3
-  m_Direction: 1
+  serializedVersion: 2
+  m_Radius: 1.3
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &7829947440163271455
 MonoBehaviour:
@@ -5003,9 +5002,11 @@ MonoBehaviour:
   m_slopeLimit: 45
   m_upperSlopeLimit: 100
   m_queryTrigger: 2
-  m_useDiscreteCollision: 1
+  m_useSimpleCollision: 1
   JumpTrigger: 0
   m_velocity: {x: 0, y: 0, z: 0}
+  m_maxOverlaps: 2
+  m_maxCasts: 0
   m_acceleration: 30
   m_deacceleration: 30
   m_midAirAcceleration: 10
@@ -5034,6 +5035,7 @@ MonoBehaviour:
   m_fieldOfViewDegrees: 180
   m_lineOfSightLength: 40
   m_targetTrackingTimeWindow: 5
+  m_updatePhysicsValuesAutomatically: 0
   m_hostileValues:
     m_likelyHoodToCircleTarget: 0.5
     m_timeBetweenPhases: 4

@@ -7,38 +7,38 @@ using static System.MathF;
 public class GfMovementSimple : GfMovementGeneric
 {
     [SerializeField]
-    private float m_acceleration = 10;
+    protected float m_acceleration = 45;
     [SerializeField]
-    private float m_deacceleration = 10;
+    protected float m_deacceleration = 40;
     [SerializeField]
-    private float m_midAirAcceleration = 10;
+    protected float m_midAirAcceleration = 20;
     [SerializeField]
-    private float m_midAirDeacceleration = 10;
+    protected float m_midAirDeacceleration = 15;
     [SerializeField]
-    private float m_maxFallSpeed = 40;
+    protected float m_maxFallSpeed = 40;
     [SerializeField]
-    private float m_jumpForce = 40;
+    protected float m_jumpForce = 40;
 
     [SerializeField]
-    private float m_turnSpeed = 10;
+    protected float m_turnSpeed = 10;
 
     public float AccelerationCoef = 1;
     public float DeaccelerationCoef = 1;
-    private float m_effectiveDeacceleration;
-    private float m_effectiveAcceleration;
+    protected float m_effectiveDeacceleration;
+    protected float m_effectiveAcceleration;
     public bool CanDoubleJump { get; protected set; }
     public bool CanExtendJump { get; protected set; }
-    private bool m_jumpedThisFrame = false;
+    protected bool m_jumpedThisFrame = false;
 
     //whether we touched the current parent this frame or not
-    private bool m_touchedParent;
+    protected bool m_touchedParent;
 
-    private float m_currentRotationSpeed = 0;
-    private float m_rotationSmoothRef = 0;
+    protected float m_currentRotationSpeed = 0;
+    protected float m_rotationSmoothRef = 0;
 
 
     [SerializeField]
-    private bool breakWhenUnparent = true;
+    protected bool breakWhenUnparent = true;
 
     // Start is called before the first frame update
     protected override void InternalStart()
@@ -81,7 +81,7 @@ public class GfMovementSimple : GfMovementGeneric
         m_effectiveDeacceleration *= DeaccelerationCoef;
     }
 
-    void CalculateVelocity(float deltaTime, Vector3 movDir)
+    protected virtual void CalculateVelocity(float deltaTime, Vector3 movDir)
     {
         Vector3 slope = m_slopeNormal;
         float movDirMagnitude = movDir.magnitude;
@@ -100,7 +100,7 @@ public class GfMovementSimple : GfMovementGeneric
             effectiveVelocity.z -= slope.z * verticalFallSpeed;
 
             if (fallMaxDiff < 0)
-                fallMagn = Min(-fallMaxDiff, m_mass * deltaTime * m_gravityCoef); //speed under maxFallSpeed         
+                fallMagn = Min(-fallMaxDiff, m_mass * deltaTime * System.MathF.Abs(m_gravityCoef)); //speed under maxFallSpeed         
             else
                 fallMagn = -Min(fallMaxDiff, m_effectiveDeacceleration * deltaTime);//speed equal to maxFallSpeed or higher
         }

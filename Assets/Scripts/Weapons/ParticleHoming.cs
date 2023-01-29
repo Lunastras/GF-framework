@@ -49,6 +49,7 @@ public class ParticleHoming : JobChild
 
     void OnDisable()
     {
+        m_mainTarget = null;
         Deinit();
     }
 
@@ -56,6 +57,7 @@ public class ParticleHoming : JobChild
     {
         Deinit();
     }
+
 
     public override bool ScheduleJob(out JobHandle handle, float deltaTime, int batchSize = 512)
     {

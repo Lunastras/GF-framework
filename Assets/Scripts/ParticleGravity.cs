@@ -44,6 +44,8 @@ public class ParticleGravity : JobChild
 
     protected bool m_hasAJob = false;
 
+    protected
+
     // Start is called before the first frame update
     void Start()
     {
@@ -111,7 +113,7 @@ public class ParticleGravity : JobChild
         }
     }
 
-    public Transform GetSphericalParent()
+    public Transform GetParentSpherical()
     {
         return m_sphericalParent;
     }
@@ -119,6 +121,49 @@ public class ParticleGravity : JobChild
     public void SetSphericalParent(Transform parent)
     {
         m_sphericalParent = parent;
+    }
+
+    public void CopyGravity(GfMovementGeneric movement)
+    {
+        Transform sphericalParent = movement.GetParentSpherical();
+        m_gravityCoef = movement.GetGravityCoef();
+
+        if (sphericalParent)
+            SetSphericalParent(sphericalParent);
+        else
+            SetDefaultGravityDir(-movement.UpVecEffective() * System.MathF.Sign(m_gravityCoef));
+    }
+
+    public void CopyGravity(ParticleGravity pg)
+    {
+        Transform sphericalParent = pg.GetParentSpherical();
+
+        if (sphericalParent)
+            SetSphericalParent(sphericalParent);
+        else
+            SetDefaultGravityDir(-pg.GetDefaultGravityDir());
+
+        m_gravityCoef = pg.GetGravityCoef();
+    }
+
+    public bool HasSameGravity(GfMovementGeneric movement)
+    {
+        Transform parentSphericalToCopy = movement.GetParentSpherical();
+        bool sameParent = parentSphericalToCopy == m_sphericalParent;
+        bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
+        bool sameCoefSign = System.MathF.Sign(m_gravityCoef) == System.MathF.Sign(movement.GetGravityCoef());
+
+        return sameCoefSign && ((sameParent && !nullParents) || (nullParents && (-movement.UpVecRaw()) == m_defaultGravityDir));
+    }
+
+    public bool HasSameGravity(ParticleGravity pg)
+    {
+        Transform parentSphericalToCopy = pg.GetParentSpherical();
+        bool sameParent = parentSphericalToCopy == m_sphericalParent;
+        bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
+        bool sameCoefSign = System.MathF.Sign(m_gravityCoef) == System.MathF.Sign(pg.GetGravityCoef());
+
+        return sameCoefSign && ((sameParent && !nullParents) || (nullParents && pg.GetDefaultGravityDir() == m_defaultGravityDir));
     }
 
     public Vector3 GetDefaultGravityDir() { return m_defaultGravityDir; }
@@ -133,8 +178,8 @@ public class ParticleGravity : JobChild
 
     public void SetGravityCoef(float coef)
     {
-        UpdateDefaultGravityCustomData();
         m_gravityCoef = coef;
+        UpdateDefaultGravityCustomData();
     }
 
     public float GetGravityCoef()

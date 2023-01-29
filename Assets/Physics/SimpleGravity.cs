@@ -7,106 +7,86 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using System;
 
-
+using static System.MathF;
 using static Unity.Mathematics.math;
 
-public class SimpleGravity : MonoBehaviour
+public class SimpleGravity : GfMovementSimple
 {
     [SerializeField]
-    protected bool m_useJobs = true;
-    [SerializeField]
-    protected float m_drag = 5;
+    protected float m_physUpdateInterval = 0.05f;
 
-    [SerializeField]
-    protected float m_terminalVelocity = 50;
-
-    [SerializeField]
-    protected Transform m_sphericalParent;
-
-    [SerializeField]
-    protected Vector3 m_defaultGravityDir = DOWNDIR;
-
-    [SerializeField]
-    protected float m_gravityCoef = 1;
-
-    [SerializeField]
-    protected QuadFollowCamera m_quadFollowCamera;
-
-    protected Rigidbody m_rb;
-
-    private static readonly Vector3 DOWNDIR = Vector3.down;
-
-    private Transform m_transform;
-
-    private float m_timeSinceLastCollision = 0;
-
-    void Awake()
+    protected float m_timeUntilPhys = 0;
+    protected override void BeforePhysChecks(float deltaTime)
     {
-        m_transform = GetComponent<Transform>();
-        m_rb = GetComponent<Rigidbody>();
-        SetDefaultGravityDir(m_defaultGravityDir);
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
+        m_touchedParent = false;
 
+        CalculateEffectiveValues();
+        CalculateVelocity(deltaTime, Zero3);
     }
 
-    private void FixedUpdate()
+    protected override void CalculateVelocity(float deltaTime, Vector3 movDir)
     {
-        Vector3 gravity3 = m_defaultGravityDir;
-        if (m_sphericalParent) {
-            gravity3 = (m_sphericalParent.position - transform.position);
-            float mag = gravity3.magnitude;
-            if (mag > 0.000001F) gravity3 /= mag;
-        }
+        Vector3 slope = m_slopeNormal;
+        float movDirMagnitude = movDir.magnitude;
+        if (movDirMagnitude > 0.000001f) GfTools.Div3(ref movDir, movDirMagnitude); //normalise
 
-        GfTools.Mult3(ref gravity3, m_rb.mass * Time.deltaTime);
+        float verticalFallSpeed = Vector3.Dot(slope, m_velocity);
+        float fallMagn = 0, fallMaxDiff = -verticalFallSpeed - m_maxFallSpeed; //todo
+        //remove vertical factor from the velocity to calculate the horizontal plane velocity easier
+        Vector3 effectiveVelocity = m_velocity;
 
-        m_rb.AddForce(gravity3, ForceMode.VelocityChange); 
-
-        if (m_quadFollowCamera)
-            m_quadFollowCamera.SetUpVec(-gravity3);
-
-        if (m_sphericalParent)
+        if (!CanFly)
         {
-            Quaternion correction = Quaternion.FromToRotation(m_transform.up, gravity3);
-            m_transform.rotation = correction * m_transform.rotation;
+            //remove vertical component of velocity if we can't fly
+            effectiveVelocity.x -= slope.x * verticalFallSpeed;
+            effectiveVelocity.y -= slope.y * verticalFallSpeed;
+            effectiveVelocity.z -= slope.z * verticalFallSpeed;
+
+            if (fallMaxDiff < 0)
+                fallMagn = Min(-fallMaxDiff, m_mass * deltaTime * m_gravityCoef); //speed under maxFallSpeed         
+            else
+                fallMagn = -Min(fallMaxDiff, m_effectiveDeacceleration * deltaTime);//speed equal to maxFallSpeed or higher
         }
+
+        float currentSpeed = effectiveVelocity.magnitude;
+        float dotMovementVelDir = 0;
+        if (currentSpeed > 0.000001F)
+        {
+            Vector3 velDir = effectiveVelocity;
+            GfTools.Div3(ref velDir, currentSpeed);
+            dotMovementVelDir = Vector3.Dot(movDir, velDir);
+        }
+
+        float desiredSpeed = m_speed * movDirMagnitude;
+        float speedInDesiredDir = currentSpeed * Max(0, dotMovementVelDir);
+
+        float minAux = Min(speedInDesiredDir, desiredSpeed);
+        Vector3 unwantedVelocity = effectiveVelocity;
+        unwantedVelocity.x -= movDir.x * minAux;
+        unwantedVelocity.y -= movDir.y * minAux;
+        unwantedVelocity.z -= movDir.z * minAux;
+
+        float unwantedSpeed = unwantedVelocity.magnitude;
+        if (unwantedSpeed > 0.000001F) GfTools.Div3(ref unwantedVelocity, unwantedSpeed);
+        float deaccMagn = Min(unwantedSpeed, m_effectiveDeacceleration * deltaTime);
+
+        GfTools.Mult3(ref unwantedVelocity, deaccMagn);
+        GfTools.Mult3(ref slope, fallMagn);
+
+        GfTools.Minus3(ref m_velocity, unwantedVelocity);//add deacceleration
+        GfTools.Minus3(ref m_velocity, slope); //add vertical speed change
     }
 
-    public Transform GetSphericalParent()
+    void Update()
     {
-        return m_sphericalParent;
-    }
+        float delta = Time.deltaTime;
+        Move(delta);
 
-    public void SetSphericalParent(Transform parent)
-    {
-        m_sphericalParent = parent;
-    }
-
-    public Vector3 GetDefaultGravityDir() { return m_defaultGravityDir; }
-    public void SetDefaultGravityDir(Vector3 upVec)
-    {
-        m_defaultGravityDir = upVec.normalized;
-        if (m_defaultGravityDir.sqrMagnitude < 0.000001f)
-            m_defaultGravityDir = DOWNDIR;
-
-        Quaternion correction = Quaternion.FromToRotation(m_transform.up, upVec);
-        m_transform.rotation = correction * m_transform.rotation;
-    }
-
-    public void SetGravityCoef(float coef)
-    {
-        m_gravityCoef = coef;
-    }
-
-    public float GetGravityCoef()
-    {
-        return m_gravityCoef;
-    }
-
-    private void OnCollisionEnter(Collision other) {
-        
+        m_timeUntilPhys -= delta;
+        if (m_timeUntilPhys <= 0)
+        {
+            UpdatePhysics(m_physUpdateInterval - m_timeUntilPhys, false);
+            m_timeUntilPhys += m_physUpdateInterval;
+        }
     }
 }

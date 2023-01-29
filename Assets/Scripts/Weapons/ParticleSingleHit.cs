@@ -20,10 +20,6 @@ public class ParticleSingleHit : ParticleCollision
     // public bool destroyWhenFinished { get; set; } = false;
 
     // private static Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>> releasedFireSources;
-    public void Play()
-    {
-        m_particleSystem.Play(true);
-    }
 
     private void OnEnable()
     {
@@ -62,11 +58,6 @@ public class ParticleSingleHit : ParticleCollision
             return;
 
         transform.LookAt(Target);
-    }
-
-    public void Stop()
-    {
-        m_particleSystem.Stop(true);
     }
 
     protected virtual bool HitTarget(StatsCharacter target, float damageMultiplier, ParticleCollisionEvent collisionEvent)

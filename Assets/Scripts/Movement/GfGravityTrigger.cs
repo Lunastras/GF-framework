@@ -19,9 +19,6 @@ public class GfGravityTrigger : GfMovementTriggerable
     [SerializeField]
     private float m_gravityCoef = 1.0f;
 
-    [SerializeField]
-    private bool m_reverseSphericalUpVec = false;
-
     private static readonly Vector3 UPDIR = Vector3.up;
 
     // Start is called before the first frame update
@@ -33,11 +30,9 @@ public class GfGravityTrigger : GfMovementTriggerable
     public override void MgOnTrigger(MgCollisionStruct collision, GfMovementGeneric movement)
     {
         if (m_sphericalParent)
-            movement.SetParentSpherical(m_sphericalParent, m_smoothTime, m_priority, m_reverseSphericalUpVec);
+            movement.SetParentSpherical(m_sphericalParent, m_smoothTime, m_priority, m_gravityCoef);
         else
-            movement.SetUpVec(m_upVec, m_smoothTime, m_priority);
-
-        movement.SetGravityCoef(m_gravityCoef);
+            movement.SetUpVec(m_upVec, m_smoothTime, m_priority, m_gravityCoef);
     }
 
     public Vector3 GetUpVec() { return m_upVec; }

@@ -43,10 +43,10 @@ public class QuadFollowCamera : MonoBehaviour
         m_transform = transform;
     }
 
-    private void FixedUpdate()
+    private void LateUpdate()
     {
         Vector3 upVec = m_defaultUpvec;
-        if(m_movement)
+        if (m_movement)
             upVec = m_movement.UpvecRotation();
 
         Vector3 dirToCamera = m_cameraTransform.position;
