@@ -135,7 +135,6 @@ public class StatsNpc : StatsCharacter
 
         IsDead = true;
 
-
         if (null != m_graphics)
             m_graphics.SetActive(false);
 
@@ -156,6 +155,9 @@ public class StatsNpc : StatsCharacter
         if (IsDead)
             return;
 
+        GameParticles.PlayDamageNumbers(transform.position, damage, m_movement.UpVecEffective());
+
+        return;
         m_currentHealth -= damage;
 
         if (m_currentHealth <= m_maxHealth * m_lowHealthThreshold)

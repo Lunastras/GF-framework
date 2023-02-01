@@ -8,14 +8,18 @@ public class GameParticles : MonoBehaviour
     protected ParticleSystem m_deathDustInstance;
     [SerializeField]
     protected ParticleSystem m_particleDustInstance;
+
+    [SerializeField]
+    protected ParticleSystem m_particleDmgNumbersInstance;
     [SerializeField]
     protected GameObject m_powerItemsPrefab;
+
 
     private static GameParticles m_instance;
 
     private static Transform m_transDeathDust;
     private static Transform m_transParticleDust;
-
+    private static Transform m_transDmgNumbersInstance;
 
     // Start is called before the first frame update
     void Start()
@@ -28,7 +32,28 @@ public class GameParticles : MonoBehaviour
 
         m_transDeathDust = m_deathDustInstance.transform;
         m_transParticleDust = m_particleDustInstance.transform;
+        m_transDmgNumbersInstance = m_particleDmgNumbersInstance.transform;
+    }
 
+    public static void PlayDamageNumbers(Vector3 position, float value, Vector3 upVec)
+    {
+        ParticleSystem.EmitParams emitParams = new();
+        emitParams.ResetStartLifetime();
+        emitParams.ResetAngularVelocity();
+        emitParams.ResetAxisOfRotation();
+        emitParams.ResetMeshIndex();
+        //emitParams.ResetPosition();
+        emitParams.ResetRandomSeed();
+        emitParams.ResetRotation();
+        emitParams.ResetStartColor();
+        emitParams.ResetStartSize();
+        //emitParams.ResetVelocity();
+
+        emitParams.velocity = Random.insideUnitSphere * value;
+        emitParams.position = position;
+        emitParams.axisOfRotation = upVec;
+
+        m_instance.m_particleDmgNumbersInstance.Emit(emitParams, 1);
     }
 
     public static void PlayDeathDust(Vector3 position)
