@@ -157,7 +157,7 @@ public class StatsNpc : StatsCharacter
 
         GameParticles.PlayDamageNumbers(transform.position, damage, m_movement.UpVecEffective());
 
-        return;
+       // return;
         m_currentHealth -= damage;
 
         if (m_currentHealth <= m_maxHealth * m_lowHealthThreshold)

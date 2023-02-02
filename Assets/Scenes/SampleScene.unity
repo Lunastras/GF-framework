@@ -3262,6 +3262,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnemyGeneric
       objectReference: {fileID: 0}
+    - target: {fileID: 7866579364068057338, guid: 6df6120ef64359346a9967a4589f3b71,
+        type: 3}
+      propertyPath: m_maxHealth
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 7866579364068057338, guid: 6df6120ef64359346a9967a4589f3b71,
+        type: 3}
+      propertyPath: m_powerItemsToDrop
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6df6120ef64359346a9967a4589f3b71, type: 3}
 --- !u!1 &975496530

@@ -49,7 +49,7 @@ public class GameParticles : MonoBehaviour
         emitParams.ResetStartSize();
         //emitParams.ResetVelocity();
 
-        emitParams.velocity = Random.insideUnitSphere * value;
+        emitParams.velocity = Random.insideUnitSphere.normalized * value;
         emitParams.position = position;
         emitParams.axisOfRotation = upVec;
 

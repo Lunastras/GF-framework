@@ -2,10 +2,7 @@ Shader "Unlit/ParticleDamageNumbers"
 {
     Properties
     {
-        //_MainTex ("Texture", 2D) = "white" {}
         _MainTex("Albedo (RGB)", 2DArray) = "white" {}
-
-        _MyArr ("Tex", 2DArray) = "" {}
     }
     SubShader
     {
@@ -28,6 +25,7 @@ Shader "Unlit/ParticleDamageNumbers"
             {
                 float4 vertex : POSITION;
                 float3 uv : TEXCOORD0;
+                fixed4 colour : COLOR;
             };
 
             struct v2f
@@ -36,6 +34,7 @@ Shader "Unlit/ParticleDamageNumbers"
                 float4 digits : TEXCOORD1; //the digits of the value
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
+                fixed4 colour : COLOR;
             };
 
             
@@ -51,7 +50,6 @@ Shader "Unlit/ParticleDamageNumbers"
                 const float DIGIT_OFFSET_HALF = (1.0 / 4.0) / 2.0; // DIGIT_OFFSET / 2.0
 
                 float value = round(v.uv.z);
-
                 value = min(value, MAX_VALUE);
                 
                 v2f o;
@@ -64,7 +62,7 @@ Shader "Unlit/ParticleDamageNumbers"
                 }
 
                 float startUvXCoord = 0.5 - (DIGIT_OFFSET_HALF * (numDigits % 2) + floor(numDigits / 2) * DIGIT_OFFSET);
-                
+                o.colour = v.colour;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = float4(TRANSFORM_TEX(v.uv, _MainTex), startUvXCoord, MAX_DECIMALS - numDigits);
                 UNITY_TRANSFER_FOG(o,o.vertex);
@@ -92,6 +90,7 @@ Shader "Unlit/ParticleDamageNumbers"
                     col = float4(startIndex == 1, 0, 0, 0);
                 }
 
+                col *= i.colour;
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
