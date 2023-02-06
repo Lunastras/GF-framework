@@ -25,6 +25,9 @@ public class ParticleHoming : JobChild
     [SerializeField]
     protected float m_maxSpeed = 50;
 
+    [SerializeField]
+    protected float m_targetRadius = 0.4f;
+
     protected NativeArray<ParticleSystem.Particle> m_particleList;
 
     protected int m_numActiveParticles = 0;
@@ -73,7 +76,10 @@ public class ParticleHoming : JobChild
 
             Vector3 targetPos = m_mainTarget.position;
 
-            ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPos, deltaTime, m_maxSpeed, m_acceleration, m_deacceleration);
+
+            Debug.Log("I am doing a job");
+
+            ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPos, deltaTime, m_maxSpeed, m_acceleration, m_deacceleration, m_targetRadius);
             handle = jobStruct.Schedule(m_numActiveParticles, min(batchSize, m_numActiveParticles));
             m_hasAJob = true;
         }
@@ -85,15 +91,11 @@ public class ParticleHoming : JobChild
     {
         if (m_hasAJob)
         {
+            Debug.Log("finished the iob");
+
             m_particleSystem.SetParticles(m_particleList, m_numActiveParticles);
             m_particleList.Dispose();
         }
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-
     }
 
     public Transform GetTarget()
@@ -116,8 +118,9 @@ public struct ParticleHomingJob : IJobParallelFor
     public float m_maxSpeed;
     public float m_acceleration;
     public float m_deacceleration;
+    public float m_targetRadius;
 
-    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, float3 targetPos, float deltaTime, float maxSpeed, float acceleration, float deacceleration)
+    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, float3 targetPos, float deltaTime, float maxSpeed, float acceleration, float deacceleration, float targetRadius)
     {
         m_targetPos = targetPos;
         m_particleList = particleList;
@@ -125,6 +128,7 @@ public struct ParticleHomingJob : IJobParallelFor
         m_maxSpeed = maxSpeed;
         m_acceleration = acceleration;
         m_deacceleration = deacceleration;
+        m_targetRadius = targetRadius;
     }
 
     public void Execute(int i)
@@ -134,7 +138,10 @@ public struct ParticleHomingJob : IJobParallelFor
         float3 velocity = particle.velocity;
 
         float3 dirToTarget = m_targetPos - currentPos;
-        normalize(dirToTarget);
+        float targetDist = length(dirToTarget);
+
+        if (targetDist > 0.000001F)
+            dirToTarget /= targetDist;
 
         float currentSpeed = length(velocity);
 
@@ -151,11 +158,12 @@ public struct ParticleHomingJob : IJobParallelFor
         float accMagn = min(max(0, m_maxSpeed - speedInDesiredDir), m_deltaTime * m_acceleration);
         float deaccMagn = min(unwantedSpeed, m_deacceleration * m_deltaTime);
 
-        velocity += dirToTarget * accMagn;
-        velocity -= unwantedVelocity * deaccMagn;
+        float coef = min(1, max(0, m_targetRadius - targetDist));
+        coef = 1;
+        velocity += dirToTarget * (accMagn * coef);
+        velocity -= unwantedVelocity * (deaccMagn * coef);
 
         particle.velocity = velocity;
-        particle.position = currentPos + float3(5.0f * m_deltaTime, 0, 0);
         m_particleList[i] = particle;
     }
 }

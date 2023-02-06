@@ -162,6 +162,7 @@ MonoBehaviour:
   m_acceleration: 200
   m_deacceleration: 500
   m_maxSpeed: 400
+  m_targetRadius: 3
 --- !u!198 &2430378333361387581
 ParticleSystem:
   m_ObjectHideFlags: 0

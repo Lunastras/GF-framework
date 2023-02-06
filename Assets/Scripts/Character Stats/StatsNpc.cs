@@ -118,6 +118,7 @@ public class StatsNpc : StatsCharacter
         GameParticles.PlayPowerItems(transform.position, m_powerItemsToDrop, m_movement);
 
         m_deathSound.Play(m_audioSource);
+        return;
 
         for (int i = 0; i < m_itemDropsAfterDeath.Length; i++)
         {
@@ -157,7 +158,7 @@ public class StatsNpc : StatsCharacter
 
         GameParticles.PlayDamageNumbers(transform.position, damage, m_movement.UpVecEffective());
 
-       // return;
+        // return;
         m_currentHealth -= damage;
 
         if (m_currentHealth <= m_maxHealth * m_lowHealthThreshold)

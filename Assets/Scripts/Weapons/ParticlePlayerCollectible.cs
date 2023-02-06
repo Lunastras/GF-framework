@@ -24,6 +24,7 @@ public class ParticlePlayerCollectible : ParticleTrigger
         m_particleGravity = GetComponent<ParticleGravity>();
         Transform player = GameManager.gameManager.GetPlayer();
         m_particleSystem.trigger.AddCollider(player);
+        m_particleHoming.SetTarget(player);
     }
 
     private void OnParticleSystemStopped()
