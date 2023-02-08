@@ -5006,7 +5006,7 @@ MonoBehaviour:
   JumpTrigger: 0
   m_velocity: {x: 0, y: 0, z: 0}
   m_maxOverlaps: 2
-  m_maxCasts: 0
+  m_maxCasts: 2
   m_acceleration: 30
   m_deacceleration: 30
   m_midAirAcceleration: 10
@@ -5031,7 +5031,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_movement: {fileID: 0}
   m_targetCheckCooldown: 1
-  m_stateUpdateCoolDown: 0.05
+  m_updateInterval: 0.05
+  m_usesFixedUpdate: 0
   m_fieldOfViewDegrees: 180
   m_lineOfSightLength: 40
   m_targetTrackingTimeWindow: 5
@@ -5061,7 +5062,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_characterType: 2
-  m_maxHealth: 5
+  m_maxHealth: 20000
   m_graphics: {fileID: 0}
   m_movement: {fileID: 0}
   m_damageSound:
@@ -5073,7 +5074,7 @@ MonoBehaviour:
     pitchVariance: 0
     loop: 0
     mixerGroup: {fileID: 0}
-  m_powerItemsToDrop: 2
+  m_powerItemsToDrop: 10
   m_deathSound:
     clip: {fileID: 0}
     isMusic: 0

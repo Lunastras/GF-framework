@@ -89,14 +89,14 @@ public class GameParticles : MonoBehaviour
             {
                 ParticlePlayerCollectible currentSystem = emitors[i].GetComponent<ParticlePlayerCollectible>(); //if this is null, something is very wrong
 
-                ParticleGravity pg = currentSystem.GetParticleGravity();
-                bool hasSameGravity = pg.HasSameGravity(movement);
+                ParticleHoming ph = currentSystem.GetParticleHoming();
+                bool hasSameGravity = ph.HasSameGravity(movement);
                 if (hasSameGravity || !emitors[i].activeSelf)
                 {
                     if (!hasSameGravity)
-                        pg.CopyGravity(movement);
+                        ph.CopyGravity(movement);
                     else
-                        pg.gameObject.SetActive(true);
+                        ph.gameObject.SetActive(true);
 
                     spawnedEmitter = currentSystem;
 
@@ -108,7 +108,7 @@ public class GameParticles : MonoBehaviour
         if (null == spawnedEmitter)
         {
             spawnedEmitter = GfPooling.PoolInstantiate(m_instance.m_powerItemsPrefab).GetComponent<ParticlePlayerCollectible>();
-            spawnedEmitter.GetParticleGravity().CopyGravity(movement);
+            spawnedEmitter.GetParticleHoming().CopyGravity(movement);
         }
 
         spawnedEmitter.transform.position = position;

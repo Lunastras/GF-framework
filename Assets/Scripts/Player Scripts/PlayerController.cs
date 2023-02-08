@@ -38,8 +38,8 @@ public class PlayerController : MonoBehaviour
         if (m_movement == null)
         {
             m_movement = GetComponent<GfMovementGeneric>();
-            if (null == m_movement)
-                Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
+          //  if (null == m_movement)
+               // Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
 
         }
 

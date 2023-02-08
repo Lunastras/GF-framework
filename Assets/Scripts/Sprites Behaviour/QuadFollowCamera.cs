@@ -7,7 +7,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using System;
 
-
 using static Unity.Mathematics.math;
 
 public class QuadFollowCamera : MonoBehaviour
@@ -20,9 +19,6 @@ public class QuadFollowCamera : MonoBehaviour
 
     [SerializeField]
     protected Vector3 m_defaultUpvec = Vector3.up;
-
-    [SerializeField]
-    protected Vector3 m_defaultCameraUpvec = Vector3.up;
 
     private static CameraController m_cameraController;
     private static Transform m_cameraTransform;

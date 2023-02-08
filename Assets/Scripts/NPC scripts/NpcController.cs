@@ -14,7 +14,10 @@ public class NpcController : MonoBehaviour
     protected float m_targetCheckCooldown;
 
     [SerializeField]
-    protected float m_stateUpdateCoolDown = 0.05f;
+    protected float m_updateInterval = 0.05f;
+
+    [SerializeField]
+    protected bool m_usesFixedUpdate = true;
 
     [SerializeField]
     protected float m_fieldOfViewDegrees = 180;
@@ -79,17 +82,38 @@ public class NpcController : MonoBehaviour
 
     void Update()
     {
-        float deltaTime = Time.deltaTime;
+        if(!m_usesFixedUpdate)
+        {
+            float deltaTime = Time.deltaTime;
+            m_timeUntilNextStateUpdate -= deltaTime;
 
-        m_timeUntilUnpause = Mathf.Max(-1, m_timeUntilUnpause - deltaTime);
+            if (0 >= m_timeUntilNextStateUpdate)
+            {
+                m_timeUntilNextStateUpdate = m_updateInterval;
+                StateUpdate(m_timeUntilNextStateUpdate, m_timeUntilNextStateUpdate);
+            }
+        }  
+    }
+
+    void FixedUpdate()
+    {
+        if(m_usesFixedUpdate)
+        {
+            float deltaTime = Time.deltaTime;
+            StateUpdate(deltaTime, deltaTime);
+        }
+        
+    }
+
+    void StateUpdate(float deltaTime, float timeUntilNextUpdate)
+    {
+        m_timeUntilUnpause -= deltaTime;
         m_timeUntilLosetarget = Mathf.Max(-1, m_timeUntilLosetarget - deltaTime);
         m_timeUntilNextTargetCheck = Mathf.Max(-1, m_timeUntilNextTargetCheck - deltaTime);
-        m_timeUntilNextStateUpdate = Mathf.Max(-1, m_timeUntilNextStateUpdate - deltaTime);
 
-        if (0 >= m_timeUntilUnpause && 0 >= m_timeUntilNextStateUpdate)
+        if (0 >= m_timeUntilUnpause)
         {
-            m_timeUntilNextStateUpdate = m_stateUpdateCoolDown * Random.Range(0.9f, 1.1f);
-
+            m_timeUntilUnpause = 0;
             if (m_destination.WasDestroyed() && NpcState.CHASING_TARGET == npcState)
             {
                 DestinationDestroyedBehaviour();
@@ -105,7 +129,7 @@ public class NpcController : MonoBehaviour
                 NoDestinationsBehaviour();
             }
 
-            m_movement.UpdatePhysics(m_stateUpdateCoolDown, true, m_timeUntilNextStateUpdate, m_updatePhysicsValuesAutomatically);
+            m_movement.UpdatePhysics(deltaTime, true, timeUntilNextUpdate, m_updatePhysicsValuesAutomatically);
         }
     }
 

@@ -6,11 +6,21 @@ Shader "Unlit/GfSprite"
     }
     SubShader
     {
-        Tags { "Queue" = "Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }
+		Tags
+        {
+            "Queue"="Transparent"
+            "IgnoreProjector"="True"
+            "RenderType"="Transparent"
+            "PreviewType"="Plane"
+            "CanUseSpriteAtlas"="True"
+        }
         LOD 100
 
         Blend SrcAlpha OneMinusSrcAlpha
-
+		Cull Off
+        Lighting Off
+        ZWrite Off
+		
         Pass
         {
             CGPROGRAM
@@ -39,8 +49,13 @@ Shader "Unlit/GfSprite"
 
             v2f vert (appdata v)
             {
+                v.vertex.w = 1;
+                v.vertex = mul(unity_ObjectToWorld, v.vertex);
+                v.vertex.w = 1;
+
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
+               // o.vertex = v.vertex;
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;

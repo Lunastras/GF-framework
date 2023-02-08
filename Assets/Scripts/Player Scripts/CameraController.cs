@@ -66,6 +66,8 @@ public class CameraController : MonoBehaviour
 
     private RaycastHit m_raycastHit;
 
+    private Camera m_camera;
+
 
 
     public Vector3 m_upvec = Vector3.up;
@@ -80,6 +82,8 @@ public class CameraController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        m_camera = GetComponent<Camera>();
+
         m_aimTarget = null;
         m_currentTargetDst = m_dstFromtarget;
         m_currentDesiredDst = m_dstFromtarget;
