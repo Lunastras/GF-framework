@@ -12,14 +12,7 @@ public class ParticleSingleHit : ParticleCollision
 
     [SerializeField]
     private StatsCharacter m_statsCharacter;
-
-    // public ParticleSingleHitSystem masterSystem { get; set; } 
-
     public Transform Target { get; set; } = null;
-
-    // public bool destroyWhenFinished { get; set; } = false;
-
-    // private static Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>> releasedFireSources;
 
     private void OnEnable()
     {
@@ -32,32 +25,18 @@ public class ParticleSingleHit : ParticleCollision
         m_statsCharacter = null;
     }
 
-    private void OnDestroy()
-    {
-        // if (releasedFireSources.ContainsKey(damageData))
-        // releasedFireSources[damageData].Remove(this);
-    }
-
     protected override void InternalAwake()
     {
         m_statsCharacter = null == m_statsCharacter ? GetComponent<StatsCharacter>() : m_statsCharacter;
-        //releasedFireSources = null == releasedFireSources ? new Dictionary<ParticleSingleDamageData, HashSet<ParticleSingleHit>>(23) : releasedFireSources;
     }
 
     private void FixedUpdate()
     {
-        /*
-        if (destroyWhenFinished && !particleSystem.IsAlive(true))
+        if (Target)
         {
-            ParticleSingleHit psd = this;
-            DestroyFiringSource(ref psd);
+            transform.LookAt(Target);
+            var mainModule = m_particleSystem.main;
         }
-        */
-
-        if (null == Target)
-            return;
-
-        transform.LookAt(Target);
     }
 
     protected virtual bool HitTarget(StatsCharacter target, float damageMultiplier, ParticleCollisionEvent collisionEvent)

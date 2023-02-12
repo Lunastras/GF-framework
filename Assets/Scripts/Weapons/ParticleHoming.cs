@@ -41,9 +41,6 @@ public class ParticleHoming : JobChild
     [SerializeField]
     protected Vector3 m_defaultGravityDir = DOWNDIR;
 
-    [SerializeField]
-    protected float m_gravityCoef = 1;
-
     private static readonly Vector3 DOWNDIR = Vector3.down;
 
     protected NativeArray<ParticleSystem.Particle> m_particleList;
@@ -71,7 +68,6 @@ public class ParticleHoming : JobChild
 
     void OnDisable()
     {
-        m_mainTarget = null;
         Deinit();
     }
 
@@ -80,21 +76,27 @@ public class ParticleHoming : JobChild
         Deinit();
     }
 
+    public void ResetToDefault()
+    {
+        m_mainTarget = m_sphericalParent = null;
+        m_defaultGravityDir = DOWNDIR;
+        UpdateDefaultGravityCustomData();
+    }
+
 
     public override bool ScheduleJob(out JobHandle handle, float deltaTime, int batchSize = 512)
     {
         m_hasAJob = false;
-        m_numActiveParticles = 0;
         m_numActiveParticles = m_particleSystem.particleCount;
-
         handle = default;
+        //Debug.Log("The num of particles i have is: " + m_numActiveParticles + " name is: " + gameObject.name);
         if (m_numActiveParticles > 0)
         {
             m_particleList = new(m_numActiveParticles, Allocator.TempJob);
             m_particleSystem.GetParticles(m_particleList, m_numActiveParticles);
 
             Vector3 targetPos = DOWNDIR;
-            if(m_mainTarget) targetPos = m_mainTarget.position;
+            if (m_mainTarget) targetPos = m_mainTarget.position;
 
             Vector3 gravity3 = m_defaultGravityDir;
             if (m_sphericalParent)
@@ -102,16 +104,15 @@ public class ParticleHoming : JobChild
                 gravity3 = m_sphericalParent.position;
 
                 var customData = m_particleSystem.customData;
-                float sign = Mathf.Sign(m_gravityCoef);
-                customData.SetVector(ParticleSystemCustomData.Custom1, 0, gravity3.x * sign);
-                customData.SetVector(ParticleSystemCustomData.Custom1, 1, gravity3.y * sign);
-                customData.SetVector(ParticleSystemCustomData.Custom1, 2, gravity3.z * sign);
+                customData.SetVector(ParticleSystemCustomData.Custom1, 0, gravity3.x);
+                customData.SetVector(ParticleSystemCustomData.Custom1, 1, gravity3.y);
+                customData.SetVector(ParticleSystemCustomData.Custom1, 2, gravity3.z);
                 customData.SetVector(ParticleSystemCustomData.Custom1, 3, 1); //1, position
             }
 
             ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPos, deltaTime, m_maxSpeed
             , m_acceleration, m_gravity, m_deacceleration, m_drag, m_targetRadius
-            , m_gravityCoef, gravity3, null != m_sphericalParent, null != m_mainTarget);
+            , gravity3, null != m_sphericalParent, null != m_mainTarget);
 
             handle = jobStruct.Schedule(m_numActiveParticles, min(32, m_numActiveParticles));
             m_hasAJob = true;
@@ -152,7 +153,6 @@ public class ParticleHoming : JobChild
     public void CopyGravity(GfMovementGeneric movement)
     {
         Transform sphericalParent = movement.GetParentSpherical();
-        m_gravityCoef = movement.GetGravityCoef();
 
         if (sphericalParent)
             SetSphericalParent(sphericalParent);
@@ -163,7 +163,6 @@ public class ParticleHoming : JobChild
     public void CopyGravity(ParticleHoming pg)
     {
         Transform sphericalParent = pg.GetParentSpherical();
-        m_gravityCoef = pg.GetGravityCoef();
 
         if (sphericalParent)
             SetSphericalParent(sphericalParent);
@@ -177,9 +176,8 @@ public class ParticleHoming : JobChild
         Transform parentSphericalToCopy = movement.GetParentSpherical();
         bool sameParent = parentSphericalToCopy == m_sphericalParent;
         bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
-        bool sameCoefSign = System.MathF.Sign(m_gravityCoef) == System.MathF.Sign(movement.GetGravityCoef());
 
-        return sameCoefSign && ((sameParent && !nullParents) || (nullParents && (-movement.UpVecRaw()) == m_defaultGravityDir));
+        return ((sameParent && !nullParents) || (nullParents && (-movement.UpVecRaw()) == m_defaultGravityDir));
     }
 
     public bool HasSameGravity(ParticleHoming pg)
@@ -187,9 +185,8 @@ public class ParticleHoming : JobChild
         Transform parentSphericalToCopy = pg.GetParentSpherical();
         bool sameParent = parentSphericalToCopy == m_sphericalParent;
         bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
-        bool sameCoefSign = System.MathF.Sign(m_gravityCoef) == System.MathF.Sign(pg.GetGravityCoef());
 
-        return sameCoefSign && ((sameParent && !nullParents) || (nullParents && pg.GetDefaultGravityDir() == m_defaultGravityDir));
+        return ((sameParent && !nullParents) || (nullParents && pg.GetDefaultGravityDir() == m_defaultGravityDir));
     }
 
     public Vector3 GetDefaultGravityDir() { return m_defaultGravityDir; }
@@ -202,26 +199,14 @@ public class ParticleHoming : JobChild
         UpdateDefaultGravityCustomData();
     }
 
-    public void SetGravityCoef(float coef)
-    {
-        m_gravityCoef = coef;
-        UpdateDefaultGravityCustomData();
-    }
-
-    public float GetGravityCoef()
-    {
-        return m_gravityCoef;
-    }
-
     //Updates the custom data for the particle system with the given default gravity dir
     private void UpdateDefaultGravityCustomData()
     {
         var customData = m_particleSystem.customData;
         customData.enabled = true;
-        float sign = Mathf.Sign(m_gravityCoef);
-        customData.SetVector(ParticleSystemCustomData.Custom1, 0, sign * m_defaultGravityDir.x);
-        customData.SetVector(ParticleSystemCustomData.Custom1, 1, sign * m_defaultGravityDir.y);
-        customData.SetVector(ParticleSystemCustomData.Custom1, 2, sign * m_defaultGravityDir.z);
+        customData.SetVector(ParticleSystemCustomData.Custom1, 0, m_defaultGravityDir.x);
+        customData.SetVector(ParticleSystemCustomData.Custom1, 1, m_defaultGravityDir.y);
+        customData.SetVector(ParticleSystemCustomData.Custom1, 2, m_defaultGravityDir.z);
         customData.SetVector(ParticleSystemCustomData.Custom1, 3, 0); //0, direction
     }
 }
@@ -244,11 +229,7 @@ public struct ParticleHomingJob : IJobParallelFor
     bool m_hasParent;
     bool m_hasTarget;
 
-    float m_gravityMultiplier;
-
-
-
-    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, float3 targetPos, float deltaTime, float maxSpeed, float acceleration,float gravity, float deacceleration, float drag, float targetRadius, float gravityMultiplier, float3 gravity3, bool hasParent, bool hasTarget)
+    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, float3 targetPos, float deltaTime, float maxSpeed, float acceleration, float gravity, float deacceleration, float drag, float targetRadius, float3 gravity3, bool hasParent, bool hasTarget)
     {
         m_targetPos = targetPos;
         m_particleList = particleList;
@@ -257,7 +238,6 @@ public struct ParticleHomingJob : IJobParallelFor
         m_acceleration = acceleration;
         m_deacceleration = deacceleration;
         m_targetRadius = targetRadius;
-        m_gravityMultiplier = gravityMultiplier;
         m_gravity3 = gravity3;
         m_hasParent = hasParent;
         m_hasTarget = hasTarget;
@@ -284,8 +264,8 @@ public struct ParticleHomingJob : IJobParallelFor
                     + dirToTarget * targetPosCoefF
                     + dirToPlanet * Convert.ToSingle(usesParentGravity);
 
-        float acceleration = m_acceleration * targetPosCoefF + m_gravity * abs(m_gravityMultiplier) * notTargetPosCoefF;
-        float deacceleration = m_deacceleration * targetPosCoefF +  m_drag * notTargetPosCoefF;
+        float acceleration = m_acceleration * targetPosCoefF + m_gravity * notTargetPosCoefF;
+        float deacceleration = m_deacceleration * targetPosCoefF + m_drag * notTargetPosCoefF;
 
         float targetDist = length(movDir);
 

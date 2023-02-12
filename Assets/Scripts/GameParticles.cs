@@ -79,27 +79,24 @@ public class GameParticles : MonoBehaviour
         if (GfPooling.PoolSizeAvailable(m_instance.m_powerItemsPrefab) == 0)
             GfPooling.Pool(m_instance.m_powerItemsPrefab, 1);
 
-        List<GameObject> emitors = GfPooling.GetPoolList(m_instance.m_powerItemsPrefab);
+        List<GameObject> emitters = GfPooling.GetPoolList(m_instance.m_powerItemsPrefab);
         ParticlePlayerCollectible spawnedEmitter = null;
 
-        if (null != emitors)
+        if (null != emitters)
         {
-            int count = emitors.Count;
+            int count = emitters.Count;
             for (int i = 0; i < count; ++i)
             {
-                ParticlePlayerCollectible currentSystem = emitors[i].GetComponent<ParticlePlayerCollectible>(); //if this is null, something is very wrong
+                ParticlePlayerCollectible currentSystem = emitters[i].GetComponent<ParticlePlayerCollectible>(); //if this is null, something is very wrong
 
                 ParticleHoming ph = currentSystem.GetParticleHoming();
                 bool hasSameGravity = ph.HasSameGravity(movement);
-                if (hasSameGravity || !emitors[i].activeSelf)
+                if (hasSameGravity || !emitters[i].activeSelf)
                 {
                     if (!hasSameGravity)
                         ph.CopyGravity(movement);
-                    else
-                        ph.gameObject.SetActive(true);
 
                     spawnedEmitter = currentSystem;
-
                     break;
                 }
             }
@@ -107,10 +104,11 @@ public class GameParticles : MonoBehaviour
 
         if (null == spawnedEmitter)
         {
-            spawnedEmitter = GfPooling.PoolInstantiate(m_instance.m_powerItemsPrefab).GetComponent<ParticlePlayerCollectible>();
-            spawnedEmitter.GetParticleHoming().CopyGravity(movement);
+            GfPooling.Pool(m_instance.m_powerItemsPrefab, 1);
+            spawnedEmitter = emitters[emitters.Count - 1].GetComponent<ParticlePlayerCollectible>();
         }
 
+        spawnedEmitter.gameObject.SetActive(true);
         spawnedEmitter.transform.position = position;
         spawnedEmitter.GetParticleSystem().Emit(numberToEmit);
     }

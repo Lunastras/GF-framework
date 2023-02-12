@@ -111,8 +111,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     private const float MAX_ANGLE_NO_SMOOTH = 5f;
 
-    protected float m_gravityCoef = 1.0f;
-
     #endregion
 
     private void Start()
@@ -488,12 +486,12 @@ public abstract class GfMovementGeneric : MonoBehaviour
     {
         if (m_parentSpherical)
         {
-            m_upVec = System.MathF.Sign(m_gravityCoef) * (transform.position - m_parentSpherical.position).normalized;
+            m_upVec = (transform.position - m_parentSpherical.position).normalized;
         }
 
         if (rotateOrientation && m_upVec != m_rotationUpVec)
         {
-            float angleDifference = GfTools.Angle(m_upVec, m_rotationUpVec);
+            float angleDifference = GfTools.AngleDeg(m_upVec, m_rotationUpVec);
             if (MAX_ANGLE_NO_SMOOTH <= angleDifference && 1.0f <= m_rotationSmoothProgress)
                 m_rotationSmoothProgress = 0;
 
@@ -745,13 +743,12 @@ public abstract class GfMovementGeneric : MonoBehaviour
         }
     }
 
-    public void SetParentSpherical(Transform parent, float smoothTime, uint priority = 0, float gravityCoef = 1)
+    public void SetParentSpherical(Transform parent, float smoothTime, uint priority = 0)
     {
         if (parent && parent != m_parentSpherical && m_gravityPriority <= priority)
         {
             m_parentSpherical = parent;
             m_gravityPriority = priority;
-            m_gravityCoef = gravityCoef;
 
             if (smoothTime > 0)
             {
@@ -771,17 +768,14 @@ public abstract class GfMovementGeneric : MonoBehaviour
             SetParentSpherical(sphericalParent, smoothTime, priority);
         else
             SetUpVec(movement.UpVecEffective(), smoothTime, priority);
-
-        m_gravityCoef = movement.GetGravityCoef();
     }
 
-    public void DetachFromParentSpherical(uint priority, Vector3 newUpVec, float smoothTime, float gravityCoef = 1)
+    public void DetachFromParentSpherical(uint priority, Vector3 newUpVec, float smoothTime)
     {
         if (m_gravityPriority <= priority)
         {
             m_parentSpherical = null;
             m_gravityPriority = priority;
-            m_gravityCoef = gravityCoef;
 
             if (smoothTime > 0)
             {
@@ -799,20 +793,9 @@ public abstract class GfMovementGeneric : MonoBehaviour
         DetachFromParentSpherical(priority, UPDIR, smoothTime);
     }
 
-    public void SetUpVec(Vector3 upVec, float smoothTime, uint priority = 0, float gravityCoef = 1)
+    public void SetUpVec(Vector3 upVec, float smoothTime, uint priority = 0)
     {
-        DetachFromParentSpherical(priority, upVec, smoothTime, gravityCoef);
-    }
-
-    public void SetGravityCoef(float gravityCoef)
-    {
-        m_upVec *= System.MathF.Sign(m_gravityCoef) * System.MathF.Sign(gravityCoef);
-        m_gravityCoef = gravityCoef;
-    }
-
-    public float GetGravityCoef()
-    {
-        return m_gravityCoef;
+        DetachFromParentSpherical(priority, upVec, smoothTime);
     }
 
     public Vector3 GetParentVelocity(double time, float deltaTime)
@@ -887,7 +870,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     public Vector3 UpVecRaw()
     {
-        return m_upVec * System.MathF.Sign(m_gravityCoef);
+        return m_upVec;
     }
 
     public Transform GetParentTransform()
@@ -934,7 +917,7 @@ public struct MgCollisionStruct
         this.collider = collider;
         this.normal = normal;
         this.point = point;
-        angle = GfTools.Angle(normal, upVec) + 0.00001F;
+        angle = GfTools.AngleDeg(normal, upVec) + 0.00001F;
         isGrounded = false;
     }
     public Collider collider;

@@ -128,11 +128,11 @@ public class GfTools
         float lhsy = lhs.y;
         float lhsz = lhs.z;
         float lhsw = lhs.w;
-        
+
         lhs.x = lhsw * rhs.x + lhsx * rhs.w + lhsy * rhs.z - lhsz * rhs.y;
         lhs.y = lhsw * rhs.y + lhsy * rhs.w + lhsz * rhs.x - lhsx * rhs.z;
-        lhs.z= lhsw * rhs.z + lhsz * rhs.w + lhsx * rhs.y - lhsy * rhs.x;
-        lhs.w= lhsw * rhs.w - lhsx * rhs.x - lhsy * rhs.y - lhsz * rhs.z;
+        lhs.z = lhsw * rhs.z + lhsz * rhs.w + lhsx * rhs.y - lhsy * rhs.x;
+        lhs.w = lhsw * rhs.w - lhsx * rhs.x - lhsy * rhs.y - lhsz * rhs.z;
     }
 
     public static Vector3 RemoveAxis(Vector3 leftHand, Vector3 rightHand) { RemoveAxis(ref leftHand, rightHand); return leftHand; }
@@ -164,15 +164,15 @@ public class GfTools
     }
 
     /*Props to allista from the kerbal space program forum for this incredible function*/
-    public static float Angle(Vector3 a, Vector3 b)
+    public static float AngleDeg(Vector3 a, Vector3 b)
     {
         Vector3 abm = a * b.magnitude;
         Vector3 bam = b * a.magnitude;
-        return 2 * Mathf.Atan2((abm - bam).magnitude, (abm + bam).magnitude) * Mathf.Rad2Deg;
+        return 2 * atan2((abm - bam).magnitude, (abm + bam).magnitude) * Mathf.Rad2Deg;
     }
 
     /*Props to allista from the kerbal space program forum for this incredible function*/
-    public static float Angle(float3 a, float3 b)
+    public static float AngleDeg(float3 a, float3 b)
     {
         float3 abm = a * length(b);
         float3 bam = b * length(a);
@@ -181,7 +181,7 @@ public class GfTools
 
     public static float SignedAngle(Vector3 from, Vector3 to, Vector3 axis)
     {
-        float unsignedAngle = Angle(from, to);
+        float unsignedAngle = AngleDeg(from, to);
 
         float cross_x = from.y * to.z - from.z * to.y;
         float cross_y = from.z * to.x - from.x * to.z;

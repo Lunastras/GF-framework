@@ -1,15 +1,22 @@
-//Get angle axis quaternion on given axisNormalised. sinRadiansHalf and cosRadiansHalf
+            //Get angle axis quaternion on given axisNormalised. sinRadiansHalf and cosRadiansHalf
             // are sin(radians * 0.5) and cos(radians * 0.5) respectively. This is done for optimisations reasons
-            float4 angleAxis(in float cosRadiansHalf, in float sinRadiansHalf, float3 axisNormalised) 
+            
+            float4 angleRadAxis(in float cosRadiansHalf, in float sinRadiansHalf, float3 axisNormalised) 
             {  
                 axisNormalised = axisNormalised * sinRadiansHalf;
                 float4 quat = float4(axisNormalised.x, axisNormalised.y, axisNormalised.z, cosRadiansHalf);
+                return normalize(quat);
+            }
 
-                //normalise
-                float scaleInv = 1.0f / sqrt(quat.x * quat.x + quat.y * quat.y + quat.z * quat.z + quat.w * quat.w);
-                quat *= scaleInv;
+            float4 angleRadAxis(in float angleRad, float3 axisNormalised) 
+            {  
+                angleRad *= 0.5;
+                return angleRadAxis(cos(angleRad), sin(angleRad), axisNormalised);
+            }
 
-                return quat;
+            float4 angleDegAxis(in float angleRad, float3 axisNormalised) 
+            {  
+                return angleRadAxis(angleRad * 0.0174532924, axisNormalised);
             }
 
             //Multiplies a quaternion with a vector3 
@@ -45,26 +52,35 @@
 
             float4 quatFromTo(in float3 initial, in float3 final) 
             { 
-                float4 outQuat;
+                float4 outQuat = float4(0,0,0,1);
                 float dotf = dot(initial, final); 
                 if (dotf < -0.9999999f) //opposite vectors
                 {
                     float3 crossf = cross(float3(1,0,0), initial);
                     if (length(crossf) < 0.0000001f)
                         crossf = cross(float3(0,1,0), initial);
-                    return angleAxis(0, 1, normalize(crossf)); //(in float cosRadiansHalf, in float sinRadiansHalf, float3 axisNormalised, out float4 quat) 
+                    return angleRadAxis(0, 1, normalize(crossf)); //(in float cosRadiansHalf, in float sinRadiansHalf, float3 axisNormalised, out float4 quat) 
                 } 
                 else if (dotf < 0.9999999f) // normal case
                 {
                     float3 crossf = cross(initial, final);
                     outQuat = normalize(float4(crossf.x, crossf.y, crossf.z, 1 + dotf));
                 }
-                else //vectors are identical, dot = 1
-                {
-                    outQuat = float4(0,0,0,1);
-                }
 
                 return outQuat;
+            }
+
+            /*Props to allista from the kerbal space program forum for this incredible function*/
+            float angleRad(float3 a, float3 b)
+            {
+                float3 abm = a * length(b);
+                float3 bam = b * length(a);
+                return 2 * atan2(length(abm - bam), length(abm + bam));
+            }
+
+            float angleDeg(float3 a, float3 b)
+            {       
+                return angleRad(a,b) * 57.29578;
             }
 
     

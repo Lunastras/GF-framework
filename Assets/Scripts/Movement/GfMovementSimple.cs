@@ -100,7 +100,7 @@ public class GfMovementSimple : GfMovementGeneric
             effectiveVelocity.z -= slope.z * verticalFallSpeed;
 
             if (fallMaxDiff < 0)
-                fallMagn = Min(-fallMaxDiff, m_mass * deltaTime * System.MathF.Abs(m_gravityCoef)); //speed under maxFallSpeed         
+                fallMagn = Min(-fallMaxDiff, m_mass * deltaTime); //speed under maxFallSpeed         
             else
                 fallMagn = -Min(fallMaxDiff, m_effectiveDeacceleration * deltaTime);//speed equal to maxFallSpeed or higher
         }

@@ -30,12 +30,17 @@ public class ParticlePlayerCollectible : ParticleTrigger
 
     private void OnParticleSystemStopped()
     {
+        m_particleHoming.ResetToDefault();
         gameObject.SetActive(false);
     }
 
-    private void OnEnable() {
-        Transform player = GameManager.gameManager.GetPlayer();
-        m_particleHoming.SetTarget(player);
+    private void OnEnable()
+    {
+        if (m_particleHoming && GameManager.gameManager)
+        {
+            Transform player = GameManager.gameManager.GetPlayer();
+            m_particleHoming.SetTarget(player);
+        }
     }
 
     public ParticleHoming GetParticleHoming() { return m_particleHoming; }

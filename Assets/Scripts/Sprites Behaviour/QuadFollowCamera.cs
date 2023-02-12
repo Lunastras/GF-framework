@@ -20,7 +20,6 @@ public class QuadFollowCamera : MonoBehaviour
     [SerializeField]
     protected Vector3 m_defaultUpvec = Vector3.up;
 
-    private static CameraController m_cameraController;
     private static Transform m_cameraTransform;
 
     private Transform m_transform;
@@ -34,8 +33,6 @@ public class QuadFollowCamera : MonoBehaviour
     void Start()
     {
         m_cameraTransform = Camera.main.transform;
-        m_cameraController = m_cameraTransform.GetComponent<CameraController>();
-        if (null == m_cameraController) Debug.LogWarning("The main camera does not have the CameraController component. Default upvec of (0, 1, 0) for the camera has been set");
         m_transform = transform;
     }
 
@@ -49,7 +46,7 @@ public class QuadFollowCamera : MonoBehaviour
         GfTools.Minus3(ref dirToCamera, m_transform.position);
         GfTools.Normalize(ref dirToCamera);
 
-        float angle = GfTools.Angle(upVec, dirToCamera);
+        float angle = GfTools.AngleDeg(upVec, dirToCamera);
         float auxAngle = 90f + m_xFollowFactor * (angle - 90f);
 
         transform.rotation = Quaternion.LookRotation(dirToCamera, upVec) * Quaternion.AngleAxis(auxAngle - angle, RIGHT3);

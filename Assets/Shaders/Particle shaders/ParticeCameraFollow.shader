@@ -30,19 +30,12 @@ Shader "Unlit/ParticleCameraFollow"
             #pragma multi_compile_fog
 
             #include "UnityCG.cginc"
-            #include "..\Quaternion.inc"
-
+            #include "..\Quaternion.hlsl"
+            #include "..\MatrixMath.hlsl"
+            
             sampler2D _MainTex;
             float4 _MainTex_ST;
             float _xFollowFactor;
-
-            /*Props to allista from the kerbal space program forum for this incredible function*/
-            float angleRadHalf(float3 a, float3 b)
-            {
-                float3 abm = a * length(b);
-                float3 bam = b * length(a);
-                return atan2(length(abm - bam), length(abm + bam));
-            }
 
             struct appdata 
             {
@@ -63,28 +56,30 @@ Shader "Unlit/ParticleCameraFollow"
 
             v2f vert (appdata v)
             {
-                v2f o;
                 
-                float3 upDir = float3(v.uv1.z,v.uv1.w,v.uv2.x);
-                if(v.uv2.y == 1) {
-                    upDir -= v.vertex.xyz;
-                    upDir = normalize(upDir);
-                }
+                float3 objCenter = float3(v.uv.w, v.uv1.x, v.uv1.y); //particle system center
 
-                float3 center = float3(v.uv.w, v.uv1.x, v.uv1.y);
-                float3 objectPos = v.vertex.xyz - center;
-                float3 dirToCamera = _WorldSpaceCameraPos - v.vertex.xyz;
+                float3 upDir = float3(v.uv1.z,v.uv1.w,v.uv2.x); 
+                upDir -= v.uv2.y * objCenter; //if the gravity vector is a position (aka v.uv2.y = 1), then substract, if it is a direction (aka v.uv2.y = 0), don't do anything
+                upDir = normalize(upDir);
+                upDir = float3(0,1,0); //delme
 
-                float halfPi = 1.57079632679;
-                float angle = 2 * angleRadHalf(upDir, dirToCamera); 
-                float auxAngleHalf = 0.5 * (halfPi + _xFollowFactor * (angle - halfPi) - angle);
+                float3 vertPos = v.vertex.xyz - objCenter;
+                float3 dirToCamera = normalize(_WorldSpaceCameraPos - objCenter);//v.vertex.xyz;
+                float3 rightDir = normalize(cross(upDir, dirToCamera));
+                float3x3 mat = LookRotation3x3(dirToCamera, upDir, rightDir);
+                vertPos = mul(mat, vertPos);
 
-                float4 quatRot =  angleAxis(cos(auxAngleHalf), sin(auxAngleHalf), float3(0, 1, 0));
-               // objectPos = quatVec3Mult(quatRot, objectPos);
+                float angle = angleDeg(upDir, dirToCamera); 
+                float auxAngle = 90 + _xFollowFactor * (angle - 90);
+                float4 quatRot =  angleDegAxis(auxAngle - angle, rightDir);
 
-                objectPos += center;
-                o.colour = v.colour;
-                o.vertex = UnityObjectToClipPos(objectPos);
+                vertPos = quatVec3Mult(quatRot, vertPos);
+
+                v2f o;
+                vertPos += objCenter;
+                o.colour = v.colour; 
+                o.vertex = UnityObjectToClipPos(vertPos);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
