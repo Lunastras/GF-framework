@@ -18,9 +18,9 @@ public abstract class StatsCharacter : MonoBehaviour
         m_initialised = true;
     }
 
-    public abstract void Damage(float damage, StatsCharacter enemy = null);
+    public abstract void Damage(float damage, float damageMultiplier = 1, StatsCharacter enemy = null, DamageSource weaponUsed = null);
 
-    public abstract void Kill();
+    public abstract void Kill(StatsCharacter killer = null,  DamageSource weaponUsed = null);
 
     public CharacterTypes GetCharacterType()
     {
@@ -52,6 +52,9 @@ public abstract class StatsCharacter : MonoBehaviour
         if (m_initialised)
             HostilityManager.AddCharacter(this);
     }
+
+    public virtual void OnDamageDealt(float damage, StatsCharacter damagedCharacter, DamageSource weaponUsed = null) {}
+    public virtual void OnCharacterKilled(StatsCharacter damagedCharacter, DamageSource weaponUsed = null) {}
 
     public int GetCharacterIndex()
     {

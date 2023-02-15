@@ -59,12 +59,17 @@ public class StatsPlayer : StatsCharacter
         HostilityManager.AddCharacter(this);
     }
 
-    public override void Damage(float damage, StatsCharacter enemy = null)
+    public override void Damage(float damage, float damageMultiplier = 1, StatsCharacter enemy = null, DamageSource weaponUsed = null)
     {
         if (IsDead && false)
             return;
 
+        if(enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
+        if(weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+        
+        damage *= damageMultiplier;
         float damagePercent = damage / m_maxHealth;
+
         m_loadoutManager.AddExpPercent(-damagePercent);
 
         m_currentHealth -= damage;
@@ -77,14 +82,17 @@ public class StatsPlayer : StatsCharacter
         if (m_currentHealth == 0)
         {
             IsDead = true;
-            Kill();
+            Kill(enemy, weaponUsed);
         }
     }
 
-    public override void Kill()
+    public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
     {
+        if(killer) killer.OnCharacterKilled(this);
+        if(weaponUsed) weaponUsed.OnCharacterKilled(this);
+
         IsDead = true;
-        // Debug.Log("I DIED");
+       // Debug.Log("I DIED");
     }
 
     public void AddPoints(CollectibleType itemType, float value)

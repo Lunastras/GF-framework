@@ -8,9 +8,6 @@ public class GfGravityTrigger : GfMovementTriggerable
     private Transform m_sphericalParent;
 
     [SerializeField]
-    private float m_smoothTime = 2.0f;
-
-    [SerializeField]
     private uint m_priority = 0;
 
     [SerializeField]
@@ -27,9 +24,9 @@ public class GfGravityTrigger : GfMovementTriggerable
     public override void MgOnTrigger(MgCollisionStruct collision, GfMovementGeneric movement)
     {
         if (m_sphericalParent)
-            movement.SetParentSpherical(m_sphericalParent, m_smoothTime, m_priority);
+            movement.SetParentSpherical(m_sphericalParent, m_priority);
         else
-            movement.SetUpVec(m_upVec, m_smoothTime, m_priority);
+            movement.SetUpVec(m_upVec, m_priority);
     }
 
     public Vector3 GetUpVec() { return m_upVec; }

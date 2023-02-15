@@ -61,9 +61,8 @@ Shader "Unlit/ParticleCameraFollow"
 
                 float3 upDir = float3(v.uv1.z,v.uv1.w,v.uv2.x); 
                 upDir -= v.uv2.y * objCenter; //if the gravity vector is a position (aka v.uv2.y = 1), then substract, if it is a direction (aka v.uv2.y = 0), don't do anything
-                upDir = normalize(upDir);
-                upDir = float3(0,1,0); //delme
-
+                upDir = -normalize(upDir);
+               // upDir = float3(0, -1, 0);
                 float3 vertPos = v.vertex.xyz - objCenter;
                 float3 dirToCamera = normalize(_WorldSpaceCameraPos - objCenter);//v.vertex.xyz;
                 float3 rightDir = normalize(cross(upDir, dirToCamera));

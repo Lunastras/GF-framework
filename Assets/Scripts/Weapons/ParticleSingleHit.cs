@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class ParticleSingleHit : ParticleCollision
+public class ParticleSingleHit : ParticleDamageSource
 {
     [SerializeField]
     private float m_damage = 10;
     [SerializeField]
     private bool m_canDamageSelf = false;
 
-    [SerializeField]
-    private StatsCharacter m_statsCharacter;
+   
     public Transform Target { get; set; } = null;
 
     private void OnEnable()
@@ -43,12 +42,12 @@ public class ParticleSingleHit : ParticleCollision
     {
         //  Debug.Log("GONNA DAMAJE IT " + target.name);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
-        target.Damage(m_damage, m_statsCharacter);
+        target.Damage(m_damage, damageMultiplier, m_statsCharacter, this);
 
         return true;
     }
 
-    protected virtual bool HitNonDamageTarget(StatsCharacter target, float damageMultiplier, ParticleCollisionEvent collisionEvent)
+    protected virtual bool HitNonDamageTarget(StatsCharacter target, ParticleCollisionEvent collisionEvent)
     {
         // target.Damage(damage, characterStats);
 
@@ -70,13 +69,9 @@ public class ParticleSingleHit : ParticleCollision
 
             //check if it can damage target
             if (!hitSelf || (hitSelf && m_canDamageSelf))
-            {
                 HitTarget(collisionStats, damageMultiplier, collisionEvent);
-            }
             else
-            {
-                HitNonDamageTarget(collisionStats, damageMultiplier, collisionEvent);
-            }
+                HitNonDamageTarget(collisionStats, collisionEvent);
         }
         else
         {
@@ -84,18 +79,7 @@ public class ParticleSingleHit : ParticleCollision
         }
     }
 
-    public void SetStatsCharacter(StatsCharacter value)
-    {
-        m_statsCharacter = value;
-
-        foreach (Transform child in transform)
-        {
-            child.GetComponent<ParticleSingleHit>().SetStatsCharacter(value);
-        }
-    }
-
-    public StatsCharacter GetStatsCharacter()
-    {
-        return m_statsCharacter;
-    }
+    public override void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
+    
+    public override void OnCharacterKilled(StatsCharacter damagedCharacter) { }
 }

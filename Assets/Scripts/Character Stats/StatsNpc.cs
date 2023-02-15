@@ -59,6 +59,8 @@ public class StatsNpc : StatsCharacter
     private StatsCharacter m_lastEnemy;
     private float m_damageFromLastEnemy = 0;
 
+    private Transform m_transform; 
+
     // Start is called before the first frame update
 
     void Start()
@@ -88,6 +90,8 @@ public class StatsNpc : StatsCharacter
             }
         }
 
+        m_transform = transform;
+
         m_currentHealth = m_maxHealth;
 
         m_initialised = true;
@@ -109,13 +113,17 @@ public class StatsNpc : StatsCharacter
             if (null != m_objectCollider)
                 m_objectCollider.enabled = true;
         }
-
     }
 
-    public override void Kill()
+    public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
     {
-        GameParticles.PlayDeathDust(transform.position);
-        GameParticles.PlayPowerItems(transform.position, m_powerItemsToDrop, m_movement);
+        if(killer) killer.OnCharacterKilled(this);
+        if(weaponUsed) weaponUsed.OnCharacterKilled(this);
+        Vector3 pos = m_transform.position;
+        GameParticles.PlayDeathDust(pos);
+        GameParticles.PlayPowerItems(pos, m_powerItemsToDrop, m_movement);
+        GameParticles.SpawnGrave(pos, m_movement);
+
 
         m_deathSound.Play(m_audioSource);
         return;
@@ -125,14 +133,15 @@ public class StatsNpc : StatsCharacter
             for (int j = 0; j < m_dropsToSpawn[Mathf.Min(m_dropsToSpawn[i], m_dropsToSpawn.Length - 1)]; j++)
             {
                 GameObject obj = GfPooling.Instantiate(m_itemDropsAfterDeath[i]);
-                obj.transform.position = transform.position;
+                obj.transform.position = m_transform.position;
                 GfMovementGeneric objMovement = obj.GetComponent<GfMovementGeneric>();
                 if (objMovement)
                 {
-                    objMovement.CopyGravity(m_movement, 0);
+                    objMovement.CopyGravity(m_movement);
                 }
             }
         }
+
 
         IsDead = true;
 
@@ -151,12 +160,16 @@ public class StatsNpc : StatsCharacter
             m_turret.DestroyWhenDone(gameObject);
     }
 
-    public override void Damage(float damage, StatsCharacter enemy = null)
+    public override void Damage(float damage, float damageMultiplier = 1, StatsCharacter enemy = null, DamageSource weaponUsed = null)
     {
         if (IsDead)
             return;
 
-        GameParticles.PlayDamageNumbers(transform.position, damage, m_movement.UpVecEffective());
+        if(enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
+        if(weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+
+        damage *= damageMultiplier;
+        GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.UpVecEffective());
 
         // return;
         m_currentHealth -= damage;
@@ -172,7 +185,7 @@ public class StatsNpc : StatsCharacter
 
         if (m_currentHealth <= 0)
         {
-            Kill();
+            Kill(enemy, weaponUsed);
         }
         else if (m_npcController != null && enemy != null && damage > 0)
         {

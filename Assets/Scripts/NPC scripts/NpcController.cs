@@ -89,7 +89,8 @@ public class NpcController : MonoBehaviour
 
             if (0 >= m_timeUntilNextStateUpdate)
             {
-                m_timeUntilNextStateUpdate = m_updateInterval;
+                float bias = Random.Range(0.9f, 1.1f);
+                m_timeUntilNextStateUpdate = m_updateInterval * bias;
                 StateUpdate(m_timeUntilNextStateUpdate, m_timeUntilNextStateUpdate);
             }
         }  

@@ -69,6 +69,7 @@ Shader "Unlit/GfSprite"
                     v.vertex = UnityPixelSnap (v.vertex);
                 #endif
 
+                /*
                 //cancel rotation of the object
                 float3 scale = float3(
                     length(unity_ObjectToWorld._m00_m10_m20),
@@ -94,9 +95,9 @@ Shader "Unlit/GfSprite"
                 float4 quatRot =  angleDegAxis(auxAngle - angle, rightDir);
 
                 vertPos = quatVec3Mult(quatRot, vertPos);
-
+                */
                 v2f o;
-                o.vertex = UnityObjectToClipPos(vertPos);
+                o.vertex = UnityObjectToClipPos(v.vertex.xyz);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;

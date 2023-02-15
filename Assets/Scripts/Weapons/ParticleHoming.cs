@@ -52,9 +52,12 @@ public class ParticleHoming : JobChild
     protected bool m_hasAJob = false;
 
     // Start is called before the first frame update
+
+    void Awake() {
+        if (null == m_particleSystem) m_particleSystem = GetComponent<ParticleSystem>();
+    }
     void Start()
     {
-        if (null == m_particleSystem) m_particleSystem = GetComponent<ParticleSystem>();
         Init();
         m_initialised = true;
         UpdateDefaultGravityCustomData();
@@ -68,6 +71,7 @@ public class ParticleHoming : JobChild
 
     void OnDisable()
     {
+        ResetToDefault();
         Deinit();
     }
 
@@ -121,6 +125,10 @@ public class ParticleHoming : JobChild
         return m_hasAJob;
     }
 
+    public ParticleSystem GetParticleSystem() {
+        return m_particleSystem;
+    }
+
     public override void OnJobFinished()
     {
         if (m_hasAJob)
@@ -152,12 +160,14 @@ public class ParticleHoming : JobChild
 
     public void CopyGravity(GfMovementGeneric movement)
     {
-        Transform sphericalParent = movement.GetParentSpherical();
+        if(movement) {
+            Transform sphericalParent = movement.GetParentSpherical();
 
-        if (sphericalParent)
-            SetSphericalParent(sphericalParent);
-        else
-            SetDefaultGravityDir(-movement.UpVecEffective());
+            if (sphericalParent)
+                SetSphericalParent(sphericalParent);
+            else
+                SetDefaultGravityDir(-movement.UpVecEffective());
+        }
     }
 
     public void CopyGravity(ParticleHoming pg)
@@ -173,11 +183,15 @@ public class ParticleHoming : JobChild
 
     public bool HasSameGravity(GfMovementGeneric movement)
     {
-        Transform parentSphericalToCopy = movement.GetParentSpherical();
-        bool sameParent = parentSphericalToCopy == m_sphericalParent;
-        bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
+        if(movement) {
+            Transform parentSphericalToCopy = movement.GetParentSpherical();
+            bool sameParent = parentSphericalToCopy == m_sphericalParent;
+            bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
 
-        return ((sameParent && !nullParents) || (nullParents && (-movement.UpVecRaw()) == m_defaultGravityDir));
+            return ((sameParent && !nullParents) || (nullParents && (-movement.UpVecRaw()) == m_defaultGravityDir));
+        } 
+
+        return false;   
     }
 
     public bool HasSameGravity(ParticleHoming pg)

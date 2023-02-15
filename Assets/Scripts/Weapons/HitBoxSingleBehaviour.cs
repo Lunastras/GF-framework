@@ -32,7 +32,7 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
     protected virtual bool HitTarget(StatsCharacter target, float damageMultiplier)
     {
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
-        target.Damage(hitBoxValues.damage, characterStats);
+        target.Damage(hitBoxValues.damage, damageMultiplier, target, this);
         GfPooling.Destroy(gameObject);
 
         return true;
@@ -82,6 +82,10 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
     {
         CollisionBehaviour(other);
     }
+
+    public override void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
+    
+    public override void OnCharacterKilled(StatsCharacter damagedCharacter) { }
 
 }
 

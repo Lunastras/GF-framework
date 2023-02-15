@@ -133,6 +133,6 @@ Material:
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
-    - _objectPosition: {r: 28.778093, g: 44.738213, b: 30.352053, a: 0}
-    - _upDir: {r: 1, g: 0, b: 0, a: 0}
+    - _objectPosition: {r: 31.778038, g: 32.34516, b: 35.31663, a: 0}
+    - _upDir: {r: 0, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []

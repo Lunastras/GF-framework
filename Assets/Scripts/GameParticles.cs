@@ -14,6 +14,8 @@ public class GameParticles : MonoBehaviour
     [SerializeField]
     protected GameObject m_powerItemsPrefab;
 
+    [SerializeField]
+    protected GameObject m_gravesParticlesPrefab;
 
     private static GameParticles m_instance;
 
@@ -62,54 +64,73 @@ public class GameParticles : MonoBehaviour
         m_instance.m_deathDustInstance.Play(true);
     }
 
-    public static void PlayParticleDust(Vector3 position, Quaternion rotation)
+    public static void PlayParticleDust(Vector3 position, Vector3 normal, int numParticles = 10)
     {
-        m_transParticleDust.position = position;
-        m_transParticleDust.rotation = rotation;
-        m_instance.m_particleDustInstance.Play(true);
+        ParticleSystem.EmitParams emitParams = new();
+       // emitParams.ResetStartLifetime();
+       // emitParams.ResetAngularVelocity();
+        //emitParams.ResetAxisOfRotation();
+        //emitParams.ResetMeshIndex();
+        //emitParams.ResetPosition();
+       // emitParams.ResetRandomSeed();
+        //emitParams.ResetRotation();
+       // emitParams.ResetStartColor();
+        //emitParams.ResetStartSize();
+        //emitParams.ResetVelocity();
+
+        emitParams.position = position;
+        //emitParams.axisOfRotation = normal;
+
+        m_transParticleDust.rotation = Quaternion.LookRotation(normal);
+
+        m_instance.m_particleDustInstance.Emit(emitParams, numParticles);
     }
 
-    public static void PlayParticleDust(Vector3 position, Vector3 normal)
-    {
-        PlayParticleDust(position, Quaternion.LookRotation(normal));
+    private static void EmitHomingParticleSystem(GameObject particleSystemPrefab, Vector3 position, int numberToEmit, GfMovementGeneric movement = null) {
+        if(particleSystemPrefab) {
+            List<GameObject> emitters = GfPooling.GetPoolList(particleSystemPrefab);
+            ParticleHoming spawnedEmitter = null;
+
+            if (null != emitters)
+            {
+                int count = emitters.Count;
+                for (int i = 0; i < count; ++i)
+                {
+                    ParticleHoming currentSystem = emitters[i].GetComponent<ParticleHoming>(); //if this is null, something is very wrong
+
+                    bool hasSameGravity = currentSystem.HasSameGravity(movement);
+                    if (hasSameGravity || !emitters[i].activeSelf)
+                    {
+                        if (movement && !hasSameGravity)
+                            currentSystem.CopyGravity(movement);
+
+                        spawnedEmitter = currentSystem;
+                        break;
+                    }
+                }
+            }
+
+            if (null == spawnedEmitter)
+            {
+                GfPooling.Pool(particleSystemPrefab, 1);
+                emitters = GfPooling.GetPoolList(particleSystemPrefab);
+                spawnedEmitter = emitters[emitters.Count - 1].GetComponent<ParticleHoming>();
+                spawnedEmitter.CopyGravity(movement);
+            }
+
+            spawnedEmitter.gameObject.SetActive(true);
+            spawnedEmitter.transform.position = position;
+            spawnedEmitter.GetParticleSystem().Emit(numberToEmit);
+        }   
     }
 
     public static void PlayPowerItems(Vector3 position, int numberToEmit, GfMovementGeneric movement = null)
-    {
-        if (GfPooling.PoolSizeAvailable(m_instance.m_powerItemsPrefab) == 0)
-            GfPooling.Pool(m_instance.m_powerItemsPrefab, 1);
+    {  
+        EmitHomingParticleSystem(m_instance.m_powerItemsPrefab, position, numberToEmit, movement);    
+    }
 
-        List<GameObject> emitters = GfPooling.GetPoolList(m_instance.m_powerItemsPrefab);
-        ParticlePlayerCollectible spawnedEmitter = null;
-
-        if (null != emitters)
-        {
-            int count = emitters.Count;
-            for (int i = 0; i < count; ++i)
-            {
-                ParticlePlayerCollectible currentSystem = emitters[i].GetComponent<ParticlePlayerCollectible>(); //if this is null, something is very wrong
-
-                ParticleHoming ph = currentSystem.GetParticleHoming();
-                bool hasSameGravity = ph.HasSameGravity(movement);
-                if (hasSameGravity || !emitters[i].activeSelf)
-                {
-                    if (!hasSameGravity)
-                        ph.CopyGravity(movement);
-
-                    spawnedEmitter = currentSystem;
-                    break;
-                }
-            }
-        }
-
-        if (null == spawnedEmitter)
-        {
-            GfPooling.Pool(m_instance.m_powerItemsPrefab, 1);
-            spawnedEmitter = emitters[emitters.Count - 1].GetComponent<ParticlePlayerCollectible>();
-        }
-
-        spawnedEmitter.gameObject.SetActive(true);
-        spawnedEmitter.transform.position = position;
-        spawnedEmitter.GetParticleSystem().Emit(numberToEmit);
+    public static void SpawnGrave(Vector3 position, GfMovementGeneric movement = null)
+    {  
+        EmitHomingParticleSystem(m_instance.m_gravesParticlesPrefab, position, 1, movement);    
     }
 }

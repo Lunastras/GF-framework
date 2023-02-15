@@ -81,7 +81,7 @@ public class HitBoxBehaviour : HitBoxGeneric
 
     protected virtual bool HitTarget(StatsCharacter target, float damageMultiplier)
     {
-        target.Damage(m_damage, characterStats);
+        target.Damage(m_damage, damageMultiplier, characterStats, this);
 
         return true;
     }

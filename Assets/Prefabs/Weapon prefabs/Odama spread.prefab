@@ -161,7 +161,7 @@ ParticleSystemRenderer:
   m_SortingOrder: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
-  m_SortMode: 4
+  m_SortMode: 1
   m_MinParticleSize: 0
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
@@ -4908,9 +4908,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
   m_damage: 8
   m_canDamageSelf: 0
-  m_statsCharacter: {fileID: 0}
 --- !u!1 &1040287679046681605
 GameObject:
   m_ObjectHideFlags: 0
@@ -5224,7 +5224,7 @@ ParticleSystemRenderer:
   m_SortingOrder: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
-  m_SortMode: 4
+  m_SortMode: 1
   m_MinParticleSize: 0
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
@@ -9971,9 +9971,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
   m_damage: 10
   m_canDamageSelf: 0
-  m_statsCharacter: {fileID: 0}
 --- !u!1 &2025400810752525424
 GameObject:
   m_ObjectHideFlags: 0
@@ -14759,7 +14759,7 @@ ParticleSystemRenderer:
   m_SortingOrder: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
-  m_SortMode: 4
+  m_SortMode: 1
   m_MinParticleSize: 0
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
@@ -14799,9 +14799,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
   m_damage: 10
   m_canDamageSelf: 0
-  m_statsCharacter: {fileID: 0}
 --- !u!1 &4940381399182415407
 GameObject:
   m_ObjectHideFlags: 0
@@ -14850,7 +14850,6 @@ MonoBehaviour:
   m_xFollowFactor: 1
   m_movement: {fileID: 0}
   m_defaultUpvec: {x: 0, y: 1, z: 0}
-  m_defaultCameraUpvec: {x: 0, y: 1, z: 0}
 --- !u!212 &8518876018121909150
 SpriteRenderer:
   m_ObjectHideFlags: 0

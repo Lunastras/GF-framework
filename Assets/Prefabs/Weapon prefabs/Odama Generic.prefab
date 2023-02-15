@@ -110,7 +110,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 271207518409766834}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.09, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -129,9 +129,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
   m_damage: 5
   m_canDamageSelf: 0
-  m_statsCharacter: {fileID: 0}
 --- !u!199 &5347368421892561561
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -176,7 +176,7 @@ ParticleSystemRenderer:
   m_SortingOrder: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
-  m_SortMode: 4
+  m_SortMode: 1
   m_MinParticleSize: 0
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
@@ -5158,9 +5158,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
   m_damage: 1.6
   m_canDamageSelf: 0
-  m_statsCharacter: {fileID: 0}
 --- !u!199 &3643809342232116430
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -5205,7 +5205,7 @@ ParticleSystemRenderer:
   m_SortingOrder: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
-  m_SortMode: 4
+  m_SortMode: 1
   m_MinParticleSize: 0
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
@@ -9986,9 +9986,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1ab6fb641ed0a544a26b5b1a99fd05c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
   m_damage: 3
   m_canDamageSelf: 0
-  m_statsCharacter: {fileID: 0}
 --- !u!198 &4641846789704900177
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -14740,7 +14740,7 @@ ParticleSystemRenderer:
   m_SortingOrder: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
-  m_SortMode: 4
+  m_SortMode: 1
   m_MinParticleSize: 0
   m_MaxParticleSize: 0.5
   m_CameraVelocityScale: 0
@@ -14850,7 +14850,6 @@ MonoBehaviour:
   m_xFollowFactor: 1
   m_movement: {fileID: 0}
   m_defaultUpvec: {x: 0, y: 1, z: 0}
-  m_defaultCameraUpvec: {x: 0, y: 1, z: 0}
 --- !u!212 &8518876018121909150
 SpriteRenderer:
   m_ObjectHideFlags: 0

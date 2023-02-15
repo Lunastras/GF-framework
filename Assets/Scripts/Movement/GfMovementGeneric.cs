@@ -21,9 +21,15 @@ public abstract class GfMovementGeneric : MonoBehaviour
     protected float m_upperSlopeLimit = 100;
     [SerializeField]
     private QueryTriggerInteraction m_queryTrigger;
+    [SerializeField]
+    private float m_fullRotationSeconds = 1; //the time it takes for the model to do a 180 degrees rotation
 
     [SerializeField]
     private bool m_useSimpleCollision = true;
+
+    [SerializeField]
+    private float m_maxAngleNoSmoothDeg = 5f;
+
     protected Transform m_parentSpherical;
 
     protected Transform m_transform;
@@ -79,8 +85,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     private float m_accumulatedTimefactor = 0;
 
-    private float m_rotationSmoothTime;
-    private float m_rotationSmoothProgress;
+    private float m_rotationSmoothSeconds;
+    private float m_rotationSmoothProgress = 1.0f;
 
     private Vector3 m_initialUpVec;
 
@@ -106,10 +112,11 @@ public abstract class GfMovementGeneric : MonoBehaviour
     private const float MIN_DISPLACEMENT = 0.000000001F; // min squared length of a displacement vector required for a Move() to proceed.
     private const float MIN_PUSHBACK_DEPTH = 0.000001F;
 
-    private float m_currentRotationSpeed;
+    private float m_refUpVecSmoothRot;
+
+    protected readonly static Quaternion IDENTITY_QUAT = Quaternion.identity;
 
 
-    private const float MAX_ANGLE_NO_SMOOTH = 5f;
 
     #endregion
 
@@ -217,7 +224,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public void Move(float deltaTime)
     {
         double currentTime = Time.timeAsDouble;
-        m_transform.position += GetParentMovement(m_transform.position, deltaTime, currentTime);
+        Vector3 movementThisFrame = GetParentMovement(m_transform.position, deltaTime, currentTime);
 
         if (m_interpolateThisFrame)
         {
@@ -228,11 +235,17 @@ public abstract class GfMovementGeneric : MonoBehaviour
             m_previousLerpAlpha = alpha;
             m_accumulatedTimefactor += timefactor;
 
-            m_transform.position += m_interpolationMovement * timefactor;
-            m_transform.rotation *= Quaternion.LerpUnclamped(Quaternion.identity, m_interpolationRotation, timefactor);
+            movementThisFrame.x += m_interpolationMovement.x * timefactor;
+            movementThisFrame.y += m_interpolationMovement.y * timefactor;
+            movementThisFrame.z += m_interpolationMovement.z * timefactor;
+
+            if(!m_interpolationRotation.Equals(IDENTITY_QUAT))
+                m_transform.rotation *= Quaternion.LerpUnclamped(IDENTITY_QUAT, m_interpolationRotation, timefactor);
 
             UpdateSphericalOrientation(deltaTime, true);
         }
+
+        m_transform.position += movementThisFrame;
     }
 
 
@@ -246,7 +259,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
             m_transform.position += m_interpolationMovement * correctionFactor;
             Quaternion correctedRotation = GfTools.QuaternionFraction(m_interpolationRotation, correctionFactor);
             m_transform.rotation = m_transform.rotation * correctedRotation;
-            m_interpolationRotation = Quaternion.identity;
+            m_interpolationRotation = IDENTITY_QUAT;
         }
 
         double currentTime = Time.timeAsDouble;
@@ -332,6 +345,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 GfTools.Add3(ref position, _trace);
 
             m_collisionArchetype.Overlap(position, layermask, m_queryTrigger, colliderbuffer, out numCollisions);
+
             ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer); /* filter ourselves out of the collider buffer */
             for (int ci = numCollisions - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
             {
@@ -482,6 +496,18 @@ public abstract class GfMovementGeneric : MonoBehaviour
         } // while (numbumps++ <= MAX_BUMPS && timefactor > 0)
     }
 
+    private const float INV_180 = 0.005555555555f;
+
+    public void UpdateSphericalOrientationInstant() {
+        Quaternion upVecRotCorrection = Quaternion.FromToRotation(m_rotationUpVec, m_upVec);
+        upVecRotCorrection = Quaternion.FromToRotation(m_rotationUpVec, m_upVec);
+
+        m_transform.rotation = upVecRotCorrection * m_transform.rotation;
+        m_rotationUpVec = upVecRotCorrection * m_rotationUpVec;
+
+        m_rotationSmoothProgress = 1;
+    }
+
     private void UpdateSphericalOrientation(float deltaTime, bool rotateOrientation)
     {
         if (m_parentSpherical)
@@ -489,29 +515,40 @@ public abstract class GfMovementGeneric : MonoBehaviour
             m_upVec = (transform.position - m_parentSpherical.position).normalized;
         }
 
-        if (rotateOrientation && m_upVec != m_rotationUpVec)
+        if (rotateOrientation && !m_upVec.Equals(m_rotationUpVec))
         {
             float angleDifference = GfTools.AngleDeg(m_upVec, m_rotationUpVec);
-            if (MAX_ANGLE_NO_SMOOTH <= angleDifference && 1.0f <= m_rotationSmoothProgress)
-                m_rotationSmoothProgress = 0;
+            
+            if (m_maxAngleNoSmoothDeg <= angleDifference) {
+                Debug.Log("There is a difference");
+                if(0.99f < m_rotationSmoothProgress) {
+                   // Debug.Break();
+                    m_rotationSmoothSeconds = angleDifference * INV_180 * m_fullRotationSeconds;
+                    m_rotationSmoothProgress = 0;
+                    m_initialUpVec = m_rotationUpVec;
+                    m_refUpVecSmoothRot = 0;
+                                        Debug.Log("ooh i am here");
 
+                }
+            }
+                
             Quaternion upVecRotCorrection;
 
             if (m_rotationSmoothProgress < 1.0f)
             {
-                m_rotationSmoothProgress = Mathf.SmoothDamp(m_rotationSmoothProgress, 1.0f, ref m_currentRotationSpeed, m_rotationSmoothTime);
+                Debug.Log("I am smoothing");
+                m_rotationSmoothProgress = Mathf.SmoothDamp(m_rotationSmoothProgress, 1, ref m_refUpVecSmoothRot, m_rotationSmoothSeconds);
                 Vector3 auxVec = Vector3.Lerp(m_initialUpVec, m_upVec, m_rotationSmoothProgress);
                 upVecRotCorrection = Quaternion.FromToRotation(m_rotationUpVec, auxVec);
             }
             else
             {
+                Debug.Log("I guess not");
                 upVecRotCorrection = Quaternion.FromToRotation(m_rotationUpVec, m_upVec);
             }
 
             m_transform.rotation = upVecRotCorrection * m_transform.rotation;
             m_rotationUpVec = upVecRotCorrection * m_rotationUpVec;
-
-            //Debug.Log("Offset angle is: " + GfTools.Angle(m_upVec, m_transform.up) + " and the error tracker is: " + GfTools.Angle(m_upVec, m_rotationUpVec));
         }
     }
 
@@ -743,59 +780,44 @@ public abstract class GfMovementGeneric : MonoBehaviour
         }
     }
 
-    public void SetParentSpherical(Transform parent, float smoothTime, uint priority = 0)
+    public void SetParentSpherical(Transform parent, uint priority = 0)
     {
         if (parent && parent != m_parentSpherical && m_gravityPriority <= priority)
         {
             m_parentSpherical = parent;
             m_gravityPriority = priority;
-
-            if (smoothTime > 0)
-            {
-                m_rotationSmoothTime = smoothTime;
-                m_rotationSmoothProgress = 0;
-                m_initialUpVec = m_rotationUpVec;
-            }
         }
     }
 
-    public void CopyGravity(GfMovementGeneric movement, float smoothTime)
+    public void CopyGravity(GfMovementGeneric movement)
     {
         uint priority = movement.m_gravityPriority;
         Transform sphericalParent = movement.GetParentSpherical();
 
         if (sphericalParent)
-            SetParentSpherical(sphericalParent, smoothTime, priority);
+            SetParentSpherical(sphericalParent, priority);
         else
-            SetUpVec(movement.UpVecEffective(), smoothTime, priority);
+            SetUpVec(movement.UpVecEffective(), priority);
     }
 
-    public void DetachFromParentSpherical(uint priority, Vector3 newUpVec, float smoothTime)
+    public void DetachFromParentSpherical(uint priority, Vector3 newUpVec)
     {
         if (m_gravityPriority <= priority)
         {
             m_parentSpherical = null;
             m_gravityPriority = priority;
-
-            if (smoothTime > 0)
-            {
-                m_rotationSmoothTime = smoothTime;
-                m_rotationSmoothProgress = 0;
-                m_initialUpVec = m_rotationUpVec;
-            }
-
             m_upVec = newUpVec;
         }
     }
 
     public void DetachFromParentSpherical(float smoothTime, uint priority = 0)
     {
-        DetachFromParentSpherical(priority, UPDIR, smoothTime);
+        DetachFromParentSpherical(priority, UPDIR);
     }
 
     public void SetUpVec(Vector3 upVec, float smoothTime, uint priority = 0)
     {
-        DetachFromParentSpherical(priority, upVec, smoothTime);
+        DetachFromParentSpherical(priority, upVec);
     }
 
     public Vector3 GetParentVelocity(double time, float deltaTime)
