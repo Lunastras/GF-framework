@@ -9,8 +9,12 @@ public class ParticleSingleHit : ParticleDamageSource
     private float m_damage = 10;
     [SerializeField]
     private bool m_canDamageSelf = false;
+    [SerializeField]
+    private Sound m_damageSound;
 
-   
+    [SerializeField]
+    private Sound m_collisionSound;
+
     public Transform Target { get; set; } = null;
 
     private void OnEnable()
@@ -42,6 +46,7 @@ public class ParticleSingleHit : ParticleDamageSource
     {
         //  Debug.Log("GONNA DAMAJE IT " + target.name);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
+        AudioManager.PlayAudio(m_damageSound, collisionEvent.intersection);
         target.Damage(m_damage, damageMultiplier, m_statsCharacter, this);
 
         return true;
@@ -50,12 +55,12 @@ public class ParticleSingleHit : ParticleDamageSource
     protected virtual bool HitNonDamageTarget(StatsCharacter target, ParticleCollisionEvent collisionEvent)
     {
         // target.Damage(damage, characterStats);
-
         return true;
     }
 
     protected virtual void HitCollision(GameObject other, ParticleCollisionEvent collisionEvent)
     {
+        AudioManager.PlayAudio(m_collisionSound, collisionEvent.intersection);
         GameParticles.PlayParticleDust(collisionEvent.intersection, collisionEvent.normal);
     }
 
@@ -80,6 +85,6 @@ public class ParticleSingleHit : ParticleDamageSource
     }
 
     public override void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
-    
+
     public override void OnCharacterKilled(StatsCharacter damagedCharacter) { }
 }

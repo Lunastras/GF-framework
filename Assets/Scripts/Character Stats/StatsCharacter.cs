@@ -5,6 +5,14 @@ using UnityEngine;
 public abstract class StatsCharacter : MonoBehaviour
 {
     [SerializeField]
+    protected float m_maxHealth = 200;
+
+    protected float m_maxHealthMultiplier = 1;
+
+    public bool IsDead { get; protected set; }
+    protected float m_currentHealth;
+
+    [SerializeField]
     private CharacterTypes m_characterType;
 
     private int m_characterIndex = -1;
@@ -20,7 +28,7 @@ public abstract class StatsCharacter : MonoBehaviour
 
     public abstract void Damage(float damage, float damageMultiplier = 1, StatsCharacter enemy = null, DamageSource weaponUsed = null);
 
-    public abstract void Kill(StatsCharacter killer = null,  DamageSource weaponUsed = null);
+    public abstract void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null);
 
     public CharacterTypes GetCharacterType()
     {
@@ -53,8 +61,8 @@ public abstract class StatsCharacter : MonoBehaviour
             HostilityManager.AddCharacter(this);
     }
 
-    public virtual void OnDamageDealt(float damage, StatsCharacter damagedCharacter, DamageSource weaponUsed = null) {}
-    public virtual void OnCharacterKilled(StatsCharacter damagedCharacter, DamageSource weaponUsed = null) {}
+    public virtual void OnDamageDealt(float damage, StatsCharacter damagedCharacter, DamageSource weaponUsed = null) { }
+    public virtual void OnCharacterKilled(StatsCharacter damagedCharacter, DamageSource weaponUsed = null) { }
 
     public int GetCharacterIndex()
     {
@@ -65,4 +73,13 @@ public abstract class StatsCharacter : MonoBehaviour
     {
         m_characterIndex = index;
     }
+
+    public float GetMaxHealthRaw() { return m_maxHealth; }
+    public float GetMaxHealthMultiplier() { return m_maxHealthMultiplier; }
+    public float GetMaxHealthEffective() { return m_maxHealth * m_maxHealthMultiplier; }
+    public float GetCurrentHealth() { return m_currentHealth; }
+    public void SetMaxHealthRaw(float maxHealth) { m_maxHealth = maxHealth; }
+    public void SetMaxHealthMultiplier(float maxHealthMultiplier) { m_maxHealthMultiplier = maxHealthMultiplier; }
+
+
 }

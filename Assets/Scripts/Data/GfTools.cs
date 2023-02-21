@@ -107,10 +107,10 @@ public class GfTools
     public static void Div3(ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }
     public static Vector3 Div3(Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; return leftHand; }
 
-    public static void RemoveAxis(ref Vector3 leftHand, Vector3 rightHand)
+    public static void RemoveAxis(ref Vector3 vector, Vector3 axis)
     {
-        Mult3(ref rightHand, Vector3.Dot(leftHand, rightHand));
-        Minus3(ref leftHand, rightHand);
+        Mult3(ref axis, Vector3.Dot(vector, axis));
+        Minus3(ref vector, axis);
     }
 
     public static void RemoveAxisKeepMagnitude(ref Vector3 leftHand, Vector3 rightHand)

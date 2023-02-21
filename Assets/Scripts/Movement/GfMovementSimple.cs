@@ -53,6 +53,7 @@ public class GfMovementSimple : GfMovementGeneric
         CalculateEffectiveValues();
         CalculateVelocity(deltaTime, movDir);
         CalculateJump();
+        CalculateRotation(deltaTime, movDir);
     }
 
     protected override void AfterPhysChecks(float deltaTime)
@@ -79,6 +80,26 @@ public class GfMovementSimple : GfMovementGeneric
         }
         m_effectiveAcceleration *= AccelerationCoef;
         m_effectiveDeacceleration *= DeaccelerationCoef;
+    }
+
+    protected virtual void CalculateRotation(float deltaTime, Vector3 movDir)
+    {
+        //ROTATION SECTION
+        if (movDir != Vector3.zero)
+        {
+            Vector3 desiredForwardVec = GfTools.RemoveAxis(movDir, m_rotationUpVec);
+            Vector3 forwardVec = GfTools.RemoveAxis(transform.forward, m_rotationUpVec);
+
+            float turnAmount = m_turnSpeed * deltaTime;
+            float angleDistance = -GfTools.SignedAngle(desiredForwardVec, forwardVec, m_rotationUpVec); //angle between the current and desired rotation
+            float degreesMovement = Min(System.MathF.Abs(angleDistance), turnAmount);
+
+            if (degreesMovement > 0.05f)
+            {
+                Quaternion angleAxis = Quaternion.AngleAxis(Sign(angleDistance) * degreesMovement, m_rotationUpVec);
+                m_transform.rotation = angleAxis * m_transform.rotation;
+            }
+        }
     }
 
     protected virtual void CalculateVelocity(float deltaTime, Vector3 movDir)
@@ -135,27 +156,10 @@ public class GfMovementSimple : GfMovementGeneric
 
         GfTools.Add3(ref m_velocity, movDir * accMagn); //add acceleration
         GfTools.Minus3(ref m_velocity, unwantedVelocity);//add deacceleration
-        GfTools.Minus3(ref m_velocity, slope); //add vertical speed change
-
-        //ROTATION SECTION
-        if (movDir != Vector3.zero)
-        {
-            Vector3 desiredForwardVec = GfTools.RemoveAxis(movDir, m_rotationUpVec);
-            Vector3 forwardVec = GfTools.RemoveAxis(transform.forward, m_rotationUpVec);
-
-            float turnAmount = m_turnSpeed * deltaTime;
-            float angleDistance = -GfTools.SignedAngle(desiredForwardVec, forwardVec, m_rotationUpVec); //angle between the current and desired rotation
-            float degreesMovement = Min(System.MathF.Abs(angleDistance), turnAmount);
-
-            if (degreesMovement > 0.05f)
-            {
-                Quaternion angleAxis = Quaternion.AngleAxis(Sign(angleDistance) * degreesMovement, m_rotationUpVec);
-                m_transform.rotation = angleAxis * m_transform.rotation;
-            }
-        }
+        GfTools.Minus3(ref m_velocity, slope); //add vertical speed change  
     }
 
-    void CalculateJump()
+    protected void CalculateJump()
     {
         if (JumpTrigger)
         {
@@ -172,12 +176,9 @@ public class GfMovementSimple : GfMovementGeneric
     protected override void MgOnCollision(MgCollisionStruct collision)
     {
         Transform collisionTrans = collision.collider.transform;
-        //Debug.Log("I came into collision WITH " + collision.collider.name + " with an angle of: " + collision.angle + " and the normal is: " + collision.normal + " and the distance: " + collision.distance);
+
         if (collision.isGrounded && collisionTrans != m_parentTransform)
-        {
-            //Debug.Break();
             SetParentTransform(collisionTrans);
-        }
 
         m_touchedParent |= collision.isGrounded && m_parentTransform == collisionTrans;
     }

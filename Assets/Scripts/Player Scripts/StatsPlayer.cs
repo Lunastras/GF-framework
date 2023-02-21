@@ -5,30 +5,33 @@ using UnityEngine;
 public class StatsPlayer : StatsCharacter
 {
     [SerializeField]
-    protected float m_maxHealth = 200;
-
-    [SerializeField]
-    protected Sound m_damageSound;
-    [SerializeField]
-    protected Sound m_deathSound;
-
-    [SerializeField]
     private WeaponFiring m_playerGun;
 
     [SerializeField]
-    private Sound m_itemPickUpSound;
-
-    [SerializeField]
     private LoadoutManager m_loadoutManager;
-
-    private float m_currentHealth;
 
     [SerializeField]
     private AudioSource m_audioSource;
 
     public static StatsPlayer instance;
 
-    public bool IsDead { get; protected set; }
+    private AudioSource m_audioObjectPickUp;
+    private AudioSource m_audioObjectDamageDealt;
+    private AudioSource m_audioObjectDamageReceived;
+
+
+    private Transform m_transform;
+
+    [SerializeField]
+    protected Sound m_damageSound;
+
+    [SerializeField]
+    protected Sound m_damageDealtSound;
+
+    [SerializeField]
+    protected Sound m_deathSound;
+    [SerializeField]
+    private Sound m_itemPickUpSound;
 
     private void Awake()
     {
@@ -37,6 +40,16 @@ public class StatsPlayer : StatsCharacter
 
     private void Start()
     {
+        m_transform = transform;
+
+        var objPickUp = AudioManager.GetAudioObject(m_transform);
+        var objDamageDealt = AudioManager.GetAudioObject(m_transform);
+        var objDamageReceived = AudioManager.GetAudioObject(m_transform);
+
+        m_audioObjectPickUp = objPickUp.GetAudioSource();
+        m_audioObjectDamageDealt = objDamageDealt.GetAudioSource();
+        m_audioObjectDamageReceived = objDamageReceived.GetAudioSource();
+
 
         m_currentHealth = m_maxHealth;
 
@@ -64,9 +77,11 @@ public class StatsPlayer : StatsCharacter
         if (IsDead && false)
             return;
 
-        if(enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
-        if(weaponUsed) weaponUsed.OnDamageDealt(damage, this);
-        
+        m_damageSound.Play(m_audioObjectDamageReceived);
+
+        if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
+        if (weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+
         damage *= damageMultiplier;
         float damagePercent = damage / m_maxHealth;
 
@@ -88,11 +103,11 @@ public class StatsPlayer : StatsCharacter
 
     public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
     {
-        if(killer) killer.OnCharacterKilled(this);
-        if(weaponUsed) weaponUsed.OnCharacterKilled(this);
+        if (killer) killer.OnCharacterKilled(this);
+        if (weaponUsed) weaponUsed.OnCharacterKilled(this);
 
         IsDead = true;
-       // Debug.Log("I DIED");
+        // Debug.Log("I DIED");
     }
 
     public void AddPoints(CollectibleType itemType, float value)
@@ -115,6 +130,20 @@ public class StatsPlayer : StatsCharacter
     void OnParticleTrigger()
     {
         Debug.Log("TYrigger on playyer was called huuuh");
+    }
+
+    public override void OnDamageDealt(float damage, StatsCharacter damagedCharacter, DamageSource weaponUsed = null)
+    {
+        bool lowHp = damagedCharacter.GetCurrentHealth() <= damagedCharacter.GetMaxHealthRaw() * 0.25f;
+
+        float volume = 1, pitch = 1;
+        if (lowHp)
+        {
+            volume = 1.5f;
+            pitch = 2;
+        }
+
+        m_damageDealtSound.Play(m_audioObjectDamageDealt, 0, volume, pitch);
     }
 }
 

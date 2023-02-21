@@ -15,7 +15,7 @@ public class QuadFollowCamera : MonoBehaviour
     public float m_xFollowFactor;
 
     [SerializeField]
-    protected GfMovementGeneric m_movement;
+    protected Transform m_transformCharacter; //couldn't come up with a better name, doo doo fart
 
     [SerializeField]
     protected Vector3 m_defaultUpvec = Vector3.up;
@@ -32,15 +32,16 @@ public class QuadFollowCamera : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        m_cameraTransform = Camera.main.transform;
         m_transform = transform;
+
+        if (null == m_transformCharacter)
+            m_transformCharacter = m_transform;
+        m_cameraTransform = Camera.main.transform;
     }
 
     private void LateUpdate()
     {
-        Vector3 upVec = m_defaultUpvec;
-        if (m_movement)
-            upVec = m_movement.UpvecRotation();
+        Vector3 upVec = m_transformCharacter.up;
 
         Vector3 dirToCamera = m_cameraTransform.position;
         GfTools.Minus3(ref dirToCamera, m_transform.position);

@@ -97,7 +97,7 @@ public class NpcBehaviour : NpcController
             List<StatsCharacter> enemyList = HostilityManager.GetEnemiesList((int)(m_statsNpc.GetCharacterType()), i);
             if (null != enemyList)
             {
-                int listLength = enemyList.Capacity;
+                int listLength = enemyList.Count;
                 for (int j = 0; j < listLength; ++j)
                 {
                     StatsCharacter character = enemyList[i];

@@ -5,11 +5,6 @@ using UnityEngine;
 public class StatsNpc : StatsCharacter
 {
     [SerializeField]
-    protected float m_maxHealth = 200;
-
-    public bool IsDead { get; protected set; }
-
-    [SerializeField]
     protected GameObject m_graphics;
 
     [SerializeField]
@@ -17,13 +12,7 @@ public class StatsNpc : StatsCharacter
 
 
     [SerializeField]
-    protected Sound m_damageSound;
-
-    [SerializeField]
     protected int m_powerItemsToDrop = 5;
-
-    [SerializeField]
-    protected Sound m_deathSound;
 
     [SerializeField]
     protected GameObject[] m_itemDropsAfterDeath;
@@ -40,26 +29,28 @@ public class StatsNpc : StatsCharacter
     protected GameObject m_mainGameObject;
 
     [SerializeField]
-    private NpcController m_npcController;
+    protected NpcController m_npcController;
 
     [SerializeField]
-    private Collider m_objectCollider;
+    protected Collider m_objectCollider;
 
     [SerializeField]
-    private ParticleTurret m_turret;
+    protected ParticleTurret m_turret;
+    protected AudioSource m_audioSource;
 
     [SerializeField]
-    private AudioSource m_audioSource;
-
-    protected float m_currentHealth;
+    protected Sound m_damageSound;
+    [SerializeField]
+    protected Sound m_deathSound;
+    [SerializeField]
 
     //The damage values in total from the enemies
-    private float m_biggestDamageReceived = 0;
+    protected float m_biggestDamageReceived = 0;
 
-    private StatsCharacter m_lastEnemy;
-    private float m_damageFromLastEnemy = 0;
+    protected StatsCharacter m_lastEnemy;
+    protected float m_damageFromLastEnemy = 0;
 
-    private Transform m_transform; 
+    protected Transform m_transform;
 
     // Start is called before the first frame update
 
@@ -92,7 +83,7 @@ public class StatsNpc : StatsCharacter
 
         m_transform = transform;
 
-        m_currentHealth = m_maxHealth;
+        m_currentHealth = GetMaxHealthEffective();
 
         m_initialised = true;
         HostilityManager.AddCharacter(this);
@@ -102,6 +93,7 @@ public class StatsNpc : StatsCharacter
     {
         if (m_initialised)
         {
+            m_maxHealthMultiplier = 1;
             m_currentHealth = m_maxHealth;
 
 
@@ -117,16 +109,14 @@ public class StatsNpc : StatsCharacter
 
     public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
     {
-        if(killer) killer.OnCharacterKilled(this);
-        if(weaponUsed) weaponUsed.OnCharacterKilled(this);
+        if (killer) killer.OnCharacterKilled(this);
+        if (weaponUsed) weaponUsed.OnCharacterKilled(this);
         Vector3 pos = m_transform.position;
         GameParticles.PlayDeathDust(pos);
         GameParticles.PlayPowerItems(pos, m_powerItemsToDrop, m_movement);
         GameParticles.SpawnGrave(pos, m_movement);
 
-
-        m_deathSound.Play(m_audioSource);
-        return;
+        //  return;
 
         for (int i = 0; i < m_itemDropsAfterDeath.Length; i++)
         {
@@ -142,6 +132,7 @@ public class StatsNpc : StatsCharacter
             }
         }
 
+        AudioManager.PlayAudio(m_deathSound, m_transform.position);
 
         IsDead = true;
 
@@ -165,8 +156,8 @@ public class StatsNpc : StatsCharacter
         if (IsDead)
             return;
 
-        if(enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
-        if(weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+        if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
+        if (weaponUsed) weaponUsed.OnDamageDealt(damage, this);
 
         damage *= damageMultiplier;
         GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.UpVecEffective());
@@ -174,7 +165,7 @@ public class StatsNpc : StatsCharacter
         // return;
         m_currentHealth -= damage;
 
-        if (m_currentHealth <= m_maxHealth * m_lowHealthThreshold)
+        if (m_currentHealth <= GetMaxHealthEffective() * m_lowHealthThreshold)
         {
             m_damageSound.Play(m_audioSource, 1.5f, 2);
         }
