@@ -9910,7 +9910,7 @@ MonoBehaviour:
   m_loadoutManager: {fileID: 430011280}
   m_cameraController: {fileID: 1744854589}
   m_fixedUpdatePhysics: 1
-  m_timeBetweenPhysChecks: 0.02
+  m_timeBetweenPhysChecks: 0
 --- !u!136 &413798921
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -10043,7 +10043,7 @@ MonoBehaviour:
   m_mass: 45
   m_stepOffset: 0.3
   m_slopeLimit: 45
-  m_upperSlopeLimit: 100
+  m_upperSlopeLimit: 130
   m_queryTrigger: 0
   m_fullRotationSeconds: 1
   m_useSimpleCollision: 0
@@ -10055,18 +10055,19 @@ MonoBehaviour:
   m_acceleration: 45
   m_deacceleration: 40
   m_midAirAcceleration: 20
-  m_midAirDeacceleration: 15
+  m_midAirDeacceleration: 10
   m_maxFallSpeed: 50
   m_jumpForce: 15
   m_turnSpeed: 500
   AccelerationCoef: 1
   DeaccelerationCoef: 1
   breakWhenUnparent: 0
+  m_wallRunDetachForce: 200
   m_maxWallRunSpeed: 17
   m_maxWallSlideSpeed: 10
-  m_wallrunNormalMaxDot: 0.7
-  m_wallrunSpeedRequired: 5
-  m_maxWallRunDistance: 15
+  m_wallrunNormalMaxDot: 0.8
+  m_wallrunSpeedRequired: 6
+  m_maxWallRunDistance: 11
 --- !u!1 &430011278
 GameObject:
   m_ObjectHideFlags: 0
@@ -10083,7 +10084,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &430011279
 Transform:
   m_ObjectHideFlags: 0
@@ -15094,6 +15095,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1372938329087745302, guid: 6df6120ef64359346a9967a4589f3b71,
+        type: 3}
+      propertyPath: m_usesFixedUpdate
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4759944753111975126, guid: 6df6120ef64359346a9967a4589f3b71,
         type: 3}
       propertyPath: m_RootOrder
@@ -15153,6 +15159,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: EnemyGeneric
+      objectReference: {fileID: 0}
+    - target: {fileID: 4759944753111975130, guid: 6df6120ef64359346a9967a4589f3b71,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6df6120ef64359346a9967a4589f3b71, type: 3}

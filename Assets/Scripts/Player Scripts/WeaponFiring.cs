@@ -24,13 +24,11 @@ public class WeaponFiring : MonoBehaviour
     [SerializeField]
     private float m_maxFireDistance = 100;
 
-    private WeaponBasic[] m_weapons = null;
+    private List<WeaponBasic> m_weapons = null;
 
     private RaycastHit m_lastRayHit;
 
     private bool m_hitAnObject;
-
-    private int m_numWeapons = 0;
 
     private double m_timeOflastCheck = 0;
 
@@ -47,14 +45,9 @@ public class WeaponFiring : MonoBehaviour
     }
 
 
-    public void SetWeaponArray(WeaponBasic[] weaponArray, int numWeapons = -1)
+    public void SetWeaponArray(List<WeaponBasic> weaponArray)
     {
         m_weapons = weaponArray;
-
-        if (numWeapons < 0)
-            numWeapons = m_weapons.Length;
-
-        this.m_numWeapons = numWeapons;
     }
 
     // Update is called once per frame
@@ -85,14 +78,14 @@ public class WeaponFiring : MonoBehaviour
 
         m_lastRayHit.point = m_aimTransform.position + fireTargetDir * m_lastRayHit.distance;
 
-        for (int i = 0; i < m_numWeapons; ++i)
+        for (int i = 0; null != m_weapons && i < m_weapons.Count; ++i)
             m_weapons[i].Fire(m_lastRayHit, m_hitAnObject);
 
     }
 
     public void ReleaseFire()
     {
-        for (int i = 0; i < m_numWeapons; ++i)
+        for (int i = 0; null != m_weapons && i < m_weapons.Count; ++i)
         {
             if (m_weapons[i] != null && m_weapons[i].gameObject.activeSelf)
                 m_weapons[i].ReleasedFire(m_lastRayHit, m_hitAnObject);

@@ -45,6 +45,8 @@ public class NpcController : MonoBehaviour
 
     protected float m_currentSpeedMultiplier;
 
+    private float m_stateCheckBias = 0;
+
     //the interval in seconds the npc will keep track
     //of the exact position of its target upon losing sight of it
 
@@ -89,9 +91,13 @@ public class NpcController : MonoBehaviour
 
             if (0 >= m_timeUntilNextStateUpdate)
             {
-                float bias = Random.Range(0.9f, 1.1f);
-                m_timeUntilNextStateUpdate = m_updateInterval * bias;
-                StateUpdate(m_timeUntilNextStateUpdate, m_timeUntilNextStateUpdate);
+                float stateDelta = m_updateInterval * m_stateCheckBias - m_timeUntilNextStateUpdate;
+                m_stateCheckBias = Random.Range(0.9f, 1.1f);
+                m_timeUntilNextStateUpdate = m_updateInterval * m_stateCheckBias + m_timeUntilNextStateUpdate;
+
+                stateDelta = System.MathF.Max(deltaTime, stateDelta);
+                m_timeUntilNextStateUpdate = System.MathF.Max(deltaTime, m_timeUntilNextStateUpdate);
+                StateUpdate(stateDelta, m_timeUntilNextStateUpdate);
             }
         }  
     }
@@ -103,7 +109,6 @@ public class NpcController : MonoBehaviour
             float deltaTime = Time.deltaTime;
             StateUpdate(deltaTime, deltaTime);
         }
-        
     }
 
     void StateUpdate(float deltaTime, float timeUntilNextUpdate)

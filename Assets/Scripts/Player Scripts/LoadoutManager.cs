@@ -18,7 +18,7 @@ public class LoadoutManager : MonoBehaviour
 
     private int m_odamaCapacity = 2;
 
-    private WeaponLoadOut[] m_loadOuts;
+    private List<WeaponLoadOut> m_loadOuts;
 
     private int m_currentLoadOutIndex = 0;
 
@@ -26,10 +26,10 @@ public class LoadoutManager : MonoBehaviour
     //if -1, all loadouts are empty
     private int m_indexOfLastLoadout = -1;
 
-    public static readonly int MAX_ODAMA = 4;
-    public static readonly int MAX_LOADOUTS = 6;
+   // public static readonly int MAX_ODAMA = 4;
+    //public static readonly int MAX_LOADOUTS = 6;
 
-    private WeaponBasic[] m_weapons = null;
+    private List<WeaponBasic> m_weapons = null;
 
     private int m_numWeapons = 0;
 
@@ -41,13 +41,9 @@ public class LoadoutManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        m_hudManager.SetMaxNumSliders(MAX_ODAMA);
+        m_hudManager.SetMaxNumSliders(4); //delme
 
-        m_weapons = new WeaponBasic[MAX_ODAMA];
-        for (int i = 0; i < MAX_ODAMA; ++i)
-        {
-            m_weapons[i] = null;
-        }
+        m_weapons = new(4);
 
         if (m_weaponFiring == null)
         {
@@ -63,12 +59,7 @@ public class LoadoutManager : MonoBehaviour
 
         m_inactiveOdamas = new(10);
 
-        m_loadOuts = new WeaponLoadOut[MAX_LOADOUTS];
-
-        for (int i = 0; i < MAX_LOADOUTS; ++i)
-        {
-            m_loadOuts[i] = new WeaponLoadOut(MAX_ODAMA);
-        }
+        m_loadOuts = new(4);
 
         if (WeaponMaster.NumWeapons() > 0 && m_weaponsInInventory[0] == 0)
             AddOdamaToInventory(0);
@@ -153,8 +144,7 @@ public class LoadoutManager : MonoBehaviour
     {
         bool canAddOdama = !(-1 == newWeapon && m_weaponsInInventory[newWeapon] > 0);
 
-        loadOutIndex %= MAX_LOADOUTS;
-        weaponIndex %= MAX_ODAMA;
+        loadOutIndex %= m_loadOuts.Count;
 
         int currentWeapon = m_loadOuts[loadOutIndex].weapons[weaponIndex];
 
@@ -244,7 +234,7 @@ public class LoadoutManager : MonoBehaviour
 
         //refresh the levelweapons
         RefreshExpForWeapons();
-        m_weaponFiring.SetWeaponArray(m_weapons, m_numWeapons);
+        m_weaponFiring.SetWeaponArray(m_weapons);
     }
 
     public void SetCurrentLoadout(int index)
@@ -254,14 +244,14 @@ public class LoadoutManager : MonoBehaviour
 
     public void IncreaseOdamaCapacity(int count = 1)
     {
-        m_odamaCapacity = Mathf.Clamp(count + m_odamaCapacity, 1, MAX_ODAMA);
+        m_odamaCapacity++;
     }
 
     public void AddOdamaToInventory(int weapon, int count = 1)
     {
         if (m_weaponsInInventory != null && null != WeaponMaster.GetWeapon(weapon))
         {
-            m_weaponsInInventory[weapon] = Mathf.Min(count + m_weaponsInInventory[weapon], MAX_ODAMA);
+            m_weaponsInInventory[weapon] = count + m_weaponsInInventory[weapon];
         }
     }
 
@@ -324,43 +314,23 @@ public class LoadoutManager : MonoBehaviour
 
 public class WeaponLoadOut
 {
-    public int[] weapons { get; private set; }
+    public List<int> weapons { get; private set; }
 
     //the numbers of weapons that use exp in the loadout
     public int numOfExpWeapons { get; private set; } = 0;
 
-    private int indexOfLastWeapon = -1;
-
-    public float[] expWeapons;
+    public List<float> expWeapons;
 
     public WeaponLoadOut(int maxWeapons)
     {
-        expWeapons = new float[maxWeapons];
-        weapons = new int[maxWeapons];
+        expWeapons = new(4);
+        weapons = new(4);
 
         for (int i = 0; i < maxWeapons; ++i)
         {
             weapons[i] = -1;
             expWeapons[i] = 0;
         }
-    }
-
-    public int GetCountOfWeapon(int weaponToCheck)
-    {
-        int count = 0;
-        int i = indexOfLastWeapon + 1;
-
-        while (--i > 0)
-            count += Convert.ToInt32(weapons[i] == weaponToCheck);
-
-        return count;
-    }
-
-    public bool ContainsWeapon(int weaponToCheck)
-    {
-        int i = indexOfLastWeapon;
-        while (weaponToCheck != weapons[i] && (--i > -1)) ;
-        return weaponToCheck != weapons[Mathf.Max(i, 0)];
     }
 
     public void SetWeapon(int weapon, int index)
@@ -407,18 +377,8 @@ public class WeaponLoadOut
         }
     }
 
-    public bool NoWeapons()
-    {
-        return indexOfLastWeapon == -1;
-    }
-
     public int NumWeapons()
     {
-        return (indexOfLastWeapon + 1);
-    }
-
-    public int NumNullWeapons()
-    {
-        return (weapons.Length - indexOfLastWeapon + 1);
+        return weapons.Count;
     }
 }

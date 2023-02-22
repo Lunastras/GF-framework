@@ -8,7 +8,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     [SerializeField]
     public bool CanFly;
     [SerializeField]
-    private bool m_useInterpolation;
+    protected bool m_useInterpolation;
     [SerializeField]
     protected float m_speed = 7;
     [SerializeField]
@@ -20,15 +20,15 @@ public abstract class GfMovementGeneric : MonoBehaviour
     [SerializeField]
     protected float m_upperSlopeLimit = 100;
     [SerializeField]
-    private QueryTriggerInteraction m_queryTrigger;
+    protected QueryTriggerInteraction m_queryTrigger;
     [SerializeField]
-    private float m_fullRotationSeconds = 1; //the time it takes for the model to do a 180 degrees rotation
+    protected float m_fullRotationSeconds = 1; //the time it takes for the model to do a 180 degrees rotation
 
     [SerializeField]
-    private bool m_useSimpleCollision = true;
+    protected bool m_useSimpleCollision = true;
 
     [SerializeField]
-    private float m_maxAngleNoSmoothDeg = 5f;
+    protected float m_maxAngleNoSmoothDeg = 5f;
 
     protected Transform m_parentSpherical;
 
@@ -110,7 +110,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     private readonly float TRACEBIAS = 0.1F;
     private readonly float DOWNPULL = 0.25F;
 
-    protected const float OVERLAP_SKIN = 0.2f;
+    protected const float OVERLAP_SKIN = 0.0f;
     private const float MIN_DISPLACEMENT = 0.000000001F; // min squared length of a displacement vector required for a Move() to proceed.
     private const float MIN_PUSHBACK_DEPTH = 0.000001F;
 
@@ -360,7 +360,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherc,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                 {
-                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_collisionArchetype, true);
+                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_collisionArchetype, true, true);
                     collision.isGrounded = CheckGround(collision);
                     m_isGrounded |= collision.isGrounded;
 
@@ -426,7 +426,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherc,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                 {
-                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_collisionArchetype, true);
+                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_collisionArchetype, true, true);
                     collision.isGrounded = CheckGround(collision);
                     m_isGrounded |= collision.isGrounded;
 
@@ -477,7 +477,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
                 m_collisionArchetype.Trace(position, traceDir, _tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, OVERLAP_SKIN, out numCollisions);/* prevent tunneling by using this skin length */
                 MgCollisionStruct collision = ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, position);
-                if (_i0 > -1) /* we found something in our trace */
+                
+                if (_i0 > -1 && collision.touched) /* we found something in our trace */
                 {
                     RaycastHit _closest = tracesbuffer[_i0];
                     collision.isGrounded = CheckGround(collision);
@@ -652,7 +653,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
             // may lead to unintended consequences for the end-user.
             if (!filterout && col.isTrigger)
             {
-                MgCollisionStruct ownCollision = new MgCollisionStruct(Zero3, m_upVec, col, Zero3, false, m_collisionArchetype, true);
+                MgCollisionStruct ownCollision = new MgCollisionStruct(Zero3, m_upVec, col, Zero3, false, m_collisionArchetype, true, false);
                 GfMovementTriggerable trigger = col.GetComponent<GfMovementTriggerable>();
                 if (trigger) trigger.MgOnTrigger(ownCollision, this);
                 filterout = true;
@@ -678,17 +679,17 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         for (int i = _tracesfound - 1; i >= 0; i--)
         {
-            _hits[i].distance -= _bias;
+            _hits[i].distance -= _bias + OVERLAP_SKIN;
             RaycastHit _hit = _hits[i];
             Collider _col = _hit.collider;
             float _tracelen = _hit.distance;
-            bool filterout = _tracelen < 0F || _col == _self;
+            bool filterout = _tracelen < -OVERLAP_SKIN || _col == _self;
 
-            MgCollisionStruct collision = new MgCollisionStruct(_hit.normal, m_upVec, _hit.collider, _hit.point, true, m_collisionArchetype, _tracelen >= OVERLAP_SKIN);
+            MgCollisionStruct collision = new MgCollisionStruct(_hit.normal, m_upVec, _hit.collider, _hit.point, true, m_collisionArchetype, _tracelen >= 0, false);
             // if we aren't already filtering ourselves out, check to see if we're a collider
             if (!filterout && _hit.collider.isTrigger && MgOnTriggerHit(collision))
             {
-                MgCollisionStruct ownCollision = new MgCollisionStruct(-_hit.normal, m_upVec, m_collider, _hit.point, true, m_collisionArchetype, true);
+                MgCollisionStruct ownCollision = new MgCollisionStruct(-_hit.normal, m_upVec, m_collider, _hit.point, true, m_collisionArchetype, true, false);
 
                 GfMovementTriggerable trigger = _col.GetComponent<GfMovementTriggerable>();
                 if (trigger) trigger.MgOnTrigger(ownCollision, this);
@@ -947,7 +948,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 public struct MgCollisionStruct
 {
 
-    public MgCollisionStruct(Vector3 normal, Vector3 upVec, Collider collider, Vector3 point, bool calculatedPoint, ArchetypeCollision archetypeCollision, bool touched)
+    public MgCollisionStruct(Vector3 normal, Vector3 upVec, Collider collider, Vector3 point, bool calculatedPoint, ArchetypeCollision archetypeCollision, bool touched, bool overlap)
     {
         this.collider = collider;
         this.normal = normal;
@@ -957,6 +958,7 @@ public struct MgCollisionStruct
         this.archetypeCollision = archetypeCollision;
         this.calculatedPoint = calculatedPoint;
         this.touched = touched;
+        this.overlap = overlap;
     }
     public Collider collider;
     public Vector3 normal;
@@ -970,6 +972,8 @@ public struct MgCollisionStruct
     private bool calculatedPoint;
 
     public bool touched;
+
+    public bool overlap;
 
     public Vector3 GetPoint()
     {

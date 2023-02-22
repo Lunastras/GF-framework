@@ -35,7 +35,7 @@ public class GfMovementSimple : GfMovementGeneric
 
     protected float m_currentRotationSpeed = 0;
     protected float m_rotationSmoothRef = 0;
-
+    
 
     [SerializeField]
     protected bool breakWhenUnparent = true;
@@ -159,7 +159,7 @@ public class GfMovementSimple : GfMovementGeneric
         GfTools.Minus3(ref m_velocity, slope); //add vertical speed change  
     }
 
-    protected void CalculateJump()
+    protected virtual void CalculateJump()
     {
         if (JumpTrigger)
         {

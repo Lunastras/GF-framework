@@ -17,15 +17,15 @@ public class AudioManager : MonoBehaviour
 
     void Awake()
     {
-
-    }
-
-    private void Start()
-    {
         if (m_instance)
             Destroy(m_instance);
 
         m_instance = this;
+    }
+
+    private void Start()
+    {
+        
     }
 
     public void Play(string sound)
