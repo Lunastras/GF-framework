@@ -12,7 +12,7 @@ public class HudManager : MonoBehaviour
     [SerializeField]
     private float levelSlidersYOffset = 0;
 
-  //  private Dictionary<GameObject, int> weaponFrequency;
+    //  private Dictionary<GameObject, int> weaponFrequency;
 
     [SerializeField]
     private RectTransform levelSlidersParent;
@@ -33,11 +33,13 @@ public class HudManager : MonoBehaviour
         weaponSliders = new WeaponLevelSlider[num];
         GfPooling.DestroyChildren(levelSlidersParent);
 
-        if(num > 0) {
+        if (num > 0)
+        {
             List<GameObject> poolParent = GfPooling.GetPoolList(levelSliderPrefab);
 
-            for(int i = 0; i < num; ++i) {
-               //Debug.Log("AAAA CREATING SHID FOR CHILD " + i);
+            for (int i = 0; i < num; ++i)
+            {
+                //Debug.Log("AAAA CREATING SHID FOR CHILD " + i);
                 weaponSliders[i] = GfPooling.PoolInstantiate(levelSliderPrefab).GetComponent<WeaponLevelSlider>();
                 RectTransform weaponTransform = weaponSliders[i].GetComponent<RectTransform>();
                 weaponTransform.SetParent(levelSlidersParent);
@@ -45,31 +47,37 @@ public class HudManager : MonoBehaviour
                 Vector3 position = new Vector3(0, -i * (weaponTransform.rect.height + levelSlidersYOffset), 0);
                 weaponTransform.localPosition = position;
             }
-           // Debug.Log("Num of children in sliders is: " + levelSlidersParent.childCount);
-        }      
+            // Debug.Log("Num of children in sliders is: " + levelSlidersParent.childCount);
+        }
     }
 
-    public void UpdateWeaponSliders(WeaponBasic[] weapons, int numWeapons)
+    public void UpdateWeaponSliders(List<WeaponBasic> weapons)
     {
+        int numWeapons = weapons.Count;
         //Debug.Log("called to update the level bars");
-        if(weapons != null) {
-            for(int i = 0; i < weapons.Length; ++i) 
-                weaponSliders[i].gameObject.SetActive(i < numWeapons);   
-        } else {
+        if (weapons != null)
+        {
+            for (int i = 0; i < 1; ++i)
+                weaponSliders[i].gameObject.SetActive(i < numWeapons);
+        }
+        else
+        {
             GfPooling.DestroyChildren(levelSlidersParent);
-        }     
+        }
 
-        UpdateLevelWeaponSliders(weapons, numWeapons);
+        UpdateLevelWeaponSliders(weapons);
     }
 
-    public void UpdateLevelWeaponSliders(WeaponBasic[] weapons, int numWeapons)
+    public void UpdateLevelWeaponSliders(List<WeaponBasic> weapons)
     {
+        int numWeapons = weapons.Count;
+
         //Debug.Log("called to update the levels");
-        for(int i = 0; i < numWeapons; ++i)
+        for (int i = 0; i < 1; ++i)
         {
-           // Debug.Log("UPDATING FOR INDEX " + i + " the currentxpis " + weapons[i].currentExp);
+            // Debug.Log("UPDATING FOR INDEX " + i + " the currentxpis " + weapons[i].currentExp);
             weaponSliders[i].SetLevelText(weapons[i].currentLevel);
-            weaponSliders[i].SetProgress(weapons[i].nextLevelProgress);            
+            weaponSliders[i].SetProgress(weapons[i].nextLevelProgress);
         }
     }
 

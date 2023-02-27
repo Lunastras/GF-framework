@@ -142,7 +142,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0
   m_collisionSound:
     m_clip: {fileID: 8300000, guid: 0126877a6a6bae04ea48ced54c12b348, type: 3}
@@ -152,7 +155,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0.98
 --- !u!199 &5347368421892561561
 ParticleSystemRenderer:
@@ -246,7 +252,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0
   m_deathSound:
     m_clip: {fileID: 0}
@@ -256,7 +265,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0
 --- !u!198 &8919609375452288820
 ParticleSystem:
@@ -5113,10 +5125,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_parent: {fileID: 0}
   m_dstFromParent: 1
-  m_rotationSpeed: 2
+  m_rotationSpeed: 1
   m_parentMoveSmoothness: 0.02
   m_bopSpeed: 1
-  m_bopRange: 0.2
+  m_bopRange: 0.5
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_physCheckInterval: 0.2
   m_parentMovement: {fileID: 0}
@@ -5321,7 +5333,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0
   m_collisionSound:
     m_clip: {fileID: 8300000, guid: 0126877a6a6bae04ea48ced54c12b348, type: 3}
@@ -5331,7 +5346,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0.98
 --- !u!199 &3643809342232116430
 ParticleSystemRenderer:
@@ -5425,7 +5443,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0
   m_deathSound:
     m_clip: {fileID: 0}
@@ -5435,7 +5456,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0
 --- !u!198 &580309125657722410
 ParticleSystem:
@@ -10299,7 +10323,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0
   m_collisionSound:
     m_clip: {fileID: 8300000, guid: 0126877a6a6bae04ea48ced54c12b348, type: 3}
@@ -10309,7 +10336,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0.98
 --- !u!199 &8096569865297368400
 ParticleSystemRenderer:
@@ -10403,7 +10433,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0
   m_deathSound:
     m_clip: {fileID: 0}
@@ -10413,7 +10446,10 @@ MonoBehaviour:
     m_volumeVariance: 0
     m_pitch: 1
     m_pitchVariance: 0
+    m_coolDownTime: 0.08
     m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
     m_spatialBlend: 0
 --- !u!198 &4641846789704900177
 ParticleSystem:
@@ -15298,7 +15334,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_xFollowFactor: 1
-  m_movement: {fileID: 0}
+  m_transformCharacter: {fileID: 0}
   m_defaultUpvec: {x: 0, y: 1, z: 0}
 --- !u!212 &8518876018121909150
 SpriteRenderer:

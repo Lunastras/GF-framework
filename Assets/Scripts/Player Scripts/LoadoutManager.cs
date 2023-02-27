@@ -9,6 +9,9 @@ public class LoadoutManager : MonoBehaviour
     private GfMovementGeneric m_parentMovement;
 
     [SerializeField]
+    private StatsCharacter m_statsCharacter;
+
+    [SerializeField]
     private WeaponFiring m_weaponFiring;
 
     [SerializeField]
@@ -16,24 +19,19 @@ public class LoadoutManager : MonoBehaviour
 
     private int[] m_weaponsInInventory;
 
-    private int m_odamaCapacity = 2;
+    [SerializeField]
+    private bool m_infiniteInventory = true;
 
-    private List<WeaponLoadOut> m_loadOuts;
+    private int m_weaponCapacity = 2;
+
+    private List<List<WeaponData>> m_loadouts;
 
     private int m_currentLoadOutIndex = 0;
 
-
-    //if -1, all loadouts are empty
-    private int m_indexOfLastLoadout = -1;
-
-   // public static readonly int MAX_ODAMA = 4;
+    // public static readonly int MAX_ODAMA = 4;
     //public static readonly int MAX_LOADOUTS = 6;
 
     private List<WeaponBasic> m_weapons = null;
-
-    private int m_numWeapons = 0;
-
-    private Dictionary<String, List<GameObject>> m_inactiveOdamas;
 
     private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
 
@@ -41,7 +39,7 @@ public class LoadoutManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        m_hudManager.SetMaxNumSliders(4); //delme
+        m_hudManager.SetMaxNumSliders(1); //delme
 
         m_weapons = new(4);
 
@@ -52,25 +50,20 @@ public class LoadoutManager : MonoBehaviour
 
         if (null == m_parentMovement)
         {
-            m_parentMovement = m_weaponFiring.GetComponent<GfMovementGeneric>();
+            m_parentMovement = GetComponent<GfMovementGeneric>();
+        }
+
+        if (null == m_statsCharacter)
+        {
+            m_statsCharacter = GetComponent<StatsCharacter>();
         }
 
         m_weaponsInInventory = new int[WeaponMaster.NumWeapons()];
 
-        m_inactiveOdamas = new(10);
-
-        m_loadOuts = new(4);
+        m_loadouts = new(4);
 
         if (WeaponMaster.NumWeapons() > 0 && m_weaponsInInventory[0] == 0)
             AddOdamaToInventory(0);
-
-        if (-1 == m_indexOfLastLoadout)
-        {
-            m_currentLoadOutIndex = 0;
-
-            SetCurrentLoadout(m_currentLoadOutIndex);
-            ChangeLoadOutWeapon(0, 0, 0);
-        }
 
         SetCurrentLoadout(m_currentLoadOutIndex);
 
@@ -79,79 +72,157 @@ public class LoadoutManager : MonoBehaviour
 
     private void Test()
     {
-        IncreaseOdamaCapacity(3);
+        AddLoadout(3);
+        Debug.Log("The loadout count is: " + m_loadouts.Count);
+        SetWeaponCapacity(4);
 
-        AddOdamaToInventory(1);
-        AddOdamaToInventory(1);
-        AddOdamaToInventory(1);
-        AddOdamaToInventory(0);
-        AddOdamaToInventory(0);
-        AddOdamaToInventory(0);
-
-        ChangeLoadOutWeapon(1, 1, 1);
-        ChangeLoadOutWeapon(1, 1, 2);
-        ChangeLoadOutWeapon(1, 1, 3);
-        ChangeLoadOutWeapon(0, 1, 3);
-        ChangeLoadOutWeapon(0, 1, 1);
-
-        ChangeLoadOutWeapon(0, 0, 2);
-        ChangeLoadOutWeapon(0, 0, 3);
-
-        ChangeLoadOutWeapon(1, 2, 3);
+        ChangeLoadOutWeapon(0, 0, 1);
+        ChangeLoadOutWeapon(0, 1, 2);
+        ChangeLoadOutWeapon(0, 2, 1);
+        ChangeLoadOutWeapon(0, 3, 2);
 
 
-        //SetCurrentLoadout(1);
-        //  Debug.Log(" ");  
 
-        // ChangeLoadOutWeapon(null, 0, 2);
+
+        SetCurrentLoadout(m_currentLoadOutIndex);
     }
 
-
-
-    private void InternalChangeLoadOutWeapon(int newWeapon, int loadOutIndex, int weaponIndex)
+    public bool ChangeLoadoutWeapon(int indexLoadout, int newWeapon, bool fillToCapacity)
     {
-        //Debug.Log("I got here! weapon chaneg loadout");
-
-        bool loadoutWasEmpty = m_loadOuts[loadOutIndex].NoWeapons();
-        bool loadoutIsEmpty;
-
-        m_loadOuts[loadOutIndex].SetWeapon(newWeapon, weaponIndex);
-
-        loadoutIsEmpty = m_loadOuts[loadOutIndex].NoWeapons();
-
-        if (loadoutIsEmpty != loadoutWasEmpty)
+        bool ret = false;
+        if (indexLoadout < m_loadouts.Count)
         {
-            if (loadoutWasEmpty)
-            {
-                WeaponLoadOut aux = m_loadOuts[++m_indexOfLastLoadout];
-                m_loadOuts[m_indexOfLastLoadout] = m_loadOuts[loadOutIndex];
-                m_loadOuts[loadOutIndex] = aux;
-            }
-            else
-            {
-                WeaponLoadOut aux = m_loadOuts[loadOutIndex];
-                m_loadOuts[loadOutIndex] = m_loadOuts[m_indexOfLastLoadout];
-                m_loadOuts[--m_indexOfLastLoadout] = aux;
+            int numWeapons = fillToCapacity ? m_weaponCapacity : m_loadouts[indexLoadout].Count;
+            bool nullWeapon = newWeapon < 0;
+            int weaponIndex;
 
+            while (--numWeapons >= 0)
+            {
+                weaponIndex = (nullWeapon || m_infiniteInventory || 0 < m_weaponsInInventory[newWeapon]) ? newWeapon : -1;
+                ret |= InternalChangeLoadOutWeapon(indexLoadout, numWeapons, newWeapon);
             }
+
         }
 
-        if (loadOutIndex == m_currentLoadOutIndex)
+        if (ret && indexLoadout == m_currentLoadOutIndex)
             SetCurrentLoadout(m_currentLoadOutIndex);
+
+        return ret;
     }
 
-    public void ChangeLoadOutWeapon(int newWeapon, int loadOutIndex, int weaponIndex)
+    public bool ChangeLoadOutWeapon(int indexLoadout, int indexWeapon, int newWeapon)
     {
-        bool canAddOdama = !(-1 == newWeapon && m_weaponsInInventory[newWeapon] > 0);
+        return InternalChangeLoadOutWeapon(newWeapon, indexLoadout, indexWeapon, false);
+    }
 
-        loadOutIndex %= m_loadOuts.Count;
-
-        int currentWeapon = m_loadOuts[loadOutIndex].weapons[weaponIndex];
-
-        if (canAddOdama && newWeapon != currentWeapon)
+    private bool InternalChangeLoadOutWeapon(int indexLoadout, int indexWeapon, int newWeapon, bool refreshLoadout = true)
+    {
+        bool ret = false;
+        if (indexLoadout < m_loadouts.Count)
         {
-            InternalChangeLoadOutWeapon(newWeapon, loadOutIndex, weaponIndex);
+            int currentWeapon = -1;
+            if (indexWeapon < m_loadouts[indexLoadout].Count)
+                currentWeapon = m_loadouts[indexLoadout][indexWeapon].weapon;
+
+            bool nullWeapon = newWeapon < 0;
+            bool hasWeapon = nullWeapon || (m_infiniteInventory || 0 < m_weaponsInInventory[newWeapon]);
+
+            if (hasWeapon && newWeapon != currentWeapon) //if negative, remove
+            {
+                if (newWeapon < 0) // if we need to remove weapon
+                {
+                    if (currentWeapon != -1) // if weapon exists
+                    {
+                        if (!m_infiniteInventory) m_weaponsInInventory[m_loadouts[indexLoadout][indexWeapon].weapon]++; //put back in inventory
+                        m_loadouts[indexLoadout].RemoveAt(indexWeapon);
+                        if (m_loadouts.Count == 0)
+                            m_loadouts.RemoveAt(indexLoadout);
+
+                        ret = true;
+                    }
+                }
+                else //add weapon to loadout
+                {
+                    if (!m_infiniteInventory) m_weaponsInInventory[newWeapon]--;
+
+                    if (currentWeapon == -1) // no weapon found
+                    {
+                        if (m_loadouts[indexLoadout].Count < m_weaponCapacity)
+                        {
+                            m_loadouts[indexLoadout].Add(new(newWeapon));
+                            ret = true;
+                        }
+                    }
+                    else
+                    {
+                        if (!m_infiniteInventory) m_weaponsInInventory[m_loadouts[indexLoadout][indexWeapon].weapon]++; //put back in inventory
+                        m_loadouts[indexLoadout][indexWeapon] = new(newWeapon, m_loadouts[indexLoadout][indexWeapon].weaponExp);
+                        ret = true;
+                    }
+                }
+
+                if (ret && refreshLoadout && indexLoadout == m_currentLoadOutIndex)
+                    SetCurrentLoadout(m_currentLoadOutIndex);
+            }
         }
+
+        return ret;
+    }
+
+    public void AddLoadout(int count = 1)
+    {
+        while (--count >= 0)
+            m_loadouts.Add(new(m_weaponCapacity));
+    }
+
+    public void RemoveLoadout(int index)
+    {
+        m_loadouts.RemoveAt(index);
+    }
+
+    public List<WeaponData> GetCurrentLoadout()
+    {
+        return m_loadouts[m_currentLoadOutIndex];
+    }
+
+    public List<WeaponData> GetLoadout(int indexLoadout)
+    {
+        return m_loadouts[indexLoadout];
+    }
+
+    public List<List<WeaponData>> GetLoadoutsList()
+    {
+        return m_loadouts;
+    }
+
+    public int GetCurrentLoadoutIndex()
+    {
+        return m_currentLoadOutIndex;
+    }
+
+    public int GetCountLoadouts()
+    {
+        return m_loadouts.Count;
+    }
+
+    public int GetCountWeapons(int indexLoadout)
+    {
+        return m_loadouts[indexLoadout].Count;
+    }
+
+    public int GetWeaponId(int indexLoadout, int indexWeapon)
+    {
+        return m_loadouts[indexLoadout][indexWeapon].weapon;
+    }
+
+    public float GetWeaponExp(int indexLoadout, int indexWeapon)
+    {
+        return m_loadouts[indexLoadout][indexWeapon].weaponExp;
+    }
+
+    public void RemoveWeapon(int indexLoadout, int indexWeapon)
+    {
+        ChangeLoadOutWeapon(-1, indexLoadout, indexWeapon);
     }
 
     public void NextLoadout()
@@ -164,77 +235,87 @@ public class LoadoutManager : MonoBehaviour
         SetCurrentLoadout(m_currentLoadOutIndex + 1);
     }
 
-    private GameObject GetOdama(GameObject reference)
+    public List<WeaponBasic> GetWeapons()
     {
-        GameObject objectToReturn = null;
-        if (m_inactiveOdamas.TryGetValue(reference.name, out List<GameObject> list) && list.Count > 0)
+        return m_weapons;
+    }
+
+    private WeaponBasic GetOdama(GameObject reference)
+    {
+        WeaponBasic objectToReturn = null;
+        List<GameObject> objList = GfPooling.GetPoolList(reference);
+        if (null != objList && 0 < objList.Count)
         {
-            int count = list.Count;
-            objectToReturn = list[count];
-            list.RemoveAt(count);
+            int listCount = objList.Count;
+            while (--listCount >= 0)
+            {
+                GameObject obj = objList[listCount];
+                WeaponBasic wb = obj.GetComponent<WeaponBasic>();
+                if (!obj.activeSelf || wb.GetStatsCharacter() == m_statsCharacter) //check if it is inactive or if they have the same character stats
+                {
+                    obj.SetActive(true);
+                    objectToReturn = wb;
+                    objList.RemoveAt(listCount);
+                    listCount = 0;
+                }
+            }
         }
 
         if (null == objectToReturn)
-            objectToReturn = GfPooling.PoolInstantiate(reference);
+            objectToReturn = GfPooling.PoolInstantiate(reference).GetComponent<WeaponBasic>();
 
         return objectToReturn;
     }
 
     private void DestroyOdama(WeaponBasic weaponToDestroy)
     {
-        if (weaponToDestroy.IsAlive(true))
-        {
-            weaponToDestroy.destroyWhenDone = true;
-            m_inactiveOdamas.TryGetValue(weaponToDestroy.name, out List<GameObject> list);
-            if (null == list)
-                m_inactiveOdamas.Add(weaponToDestroy.name, new(4));
+        weaponToDestroy.StopFiring();
+        OdamaBehaviour ob = weaponToDestroy.GetComponent<OdamaBehaviour>();
 
-            weaponToDestroy.transform.parent = null;
-            weaponToDestroy.transform.position = DESTROY_POSITION;
-        }
-        else
-        {
-            GfPooling.DestroyInsert(weaponToDestroy.gameObject);
-        }
+        if (ob) ob.enabled = false;
+
+        GameObject obj = weaponToDestroy.gameObject;
+        obj.transform.position = DESTROY_POSITION;
+        weaponToDestroy.disableWhenDone = true;
+        GfPooling.DestroyInsert(obj, false, weaponToDestroy.IsAlive(true));
     }
 
-    public void InternalSetCurrentLoadout(int index)
+    public void InternalSetCurrentLoadout(int indexLoadout)
     {
-        m_currentLoadOutIndex = index % Math.Max(1, m_indexOfLastLoadout + 1);
-
-        int i = 0;
-        for (; i < m_numWeapons; ++i)
+        if (m_loadouts.Count > 0)
         {
-            m_weapons[i].StopFiring();
-            OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
+            m_currentLoadOutIndex = indexLoadout % m_loadouts.Count;
 
-            if (ob)
-                ob.enabled = false;
+            int i = m_weapons.Count;
+            while (--i >= 0)
+            {
+                DestroyOdama(m_weapons[i]);
+                m_weapons.RemoveAt(i);
+            }
 
-            DestroyOdama(m_weapons[i]);
+            int weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
+            float angleBetweenOdamas = 360.0f / weaponsCount;
+
+            for (i = 0; i < weaponsCount; ++i)
+            {
+                GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].weapon);
+                m_weapons.Add(GetOdama(desiredWeapon));
+                m_weapons[i].destroyWhenDone = false;
+
+                OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
+                ob.SetAngle(i * angleBetweenOdamas);
+                ob.enabled = true;
+                ob.SetParent(m_parentMovement);
+
+                m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
+                ob.transform.position = transform.position;
+            }
+
+            //refresh the levelweapons
+            RefreshExpForWeapons();
+            m_weaponFiring.SetWeaponArray(m_weapons);
         }
 
-        m_numWeapons = m_loadOuts[m_currentLoadOutIndex].NumWeapons();
-        float angleBetweenOdamas = 360.0f / m_numWeapons;
-
-        for (i = 0; i < m_numWeapons; ++i)
-        {
-            GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadOuts[m_currentLoadOutIndex].weapons[i]);
-            m_weapons[i] = GetOdama(desiredWeapon).GetComponent<WeaponBasic>();
-            m_weapons[i].destroyWhenDone = false;
-
-            OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
-            ob.SetAngle(i * angleBetweenOdamas);
-            ob.enabled = true;
-            ob.SetParent(m_parentMovement);
-
-            m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
-            m_weapons[i].transform.position = m_weaponFiring.transform.position;
-        }
-
-        //refresh the levelweapons
-        RefreshExpForWeapons();
-        m_weaponFiring.SetWeaponArray(m_weapons);
     }
 
     public void SetCurrentLoadout(int index)
@@ -242,14 +323,50 @@ public class LoadoutManager : MonoBehaviour
         InternalSetCurrentLoadout(index);
     }
 
-    public void IncreaseOdamaCapacity(int count = 1)
+    public void SetWeaponCapacity(int newCapacity, bool fillEmptyWeapons = true, bool keepSameExp = true)
     {
-        m_odamaCapacity++;
+        newCapacity = System.Math.Max(0, newCapacity);
+
+        int numLoadouts = m_loadouts.Count;
+        while (--numLoadouts >= 0)
+        {
+            var loadout = m_loadouts[numLoadouts];
+            int numWeapon = loadout.Count;
+            //Debug.Log("Added exp to weapons, weapon count is " + numWeapon);
+            int weaponDiff = numWeapon - newCapacity;
+            if (weaponDiff > 0) //remove extra weapons
+            {
+                loadout.RemoveRange(newCapacity - 1, weaponDiff);
+            }
+            else if (fillEmptyWeapons && weaponDiff < 0) //add extra weapons 
+            {
+                bool hasWeapon = numWeapon > 0;
+                while (++weaponDiff <= 0)
+                {
+                    int indexOfCopy = hasWeapon ? loadout.Count % numWeapon : 0; //repeat the initial weapons for the refill
+                    float exp = hasWeapon && keepSameExp ? loadout[indexOfCopy].weaponExp : 0;
+                    int weapon = hasWeapon ? loadout[indexOfCopy].weapon : 0;
+                    loadout.Add(new(weapon, exp));
+                }
+            }
+        }
+
+        if (m_weaponCapacity != newCapacity)
+        {
+            InternalSetCurrentLoadout(m_currentLoadOutIndex);
+        }
+
+        m_weaponCapacity = newCapacity;
+    }
+
+    public int GetWeaponCapacity()
+    {
+        return m_weaponCapacity;
     }
 
     public void AddOdamaToInventory(int weapon, int count = 1)
     {
-        if (m_weaponsInInventory != null && null != WeaponMaster.GetWeapon(weapon))
+        if (weapon >= 0 && m_weaponsInInventory != null && null != WeaponMaster.GetWeapon(weapon))
         {
             m_weaponsInInventory[weapon] = count + m_weaponsInInventory[weapon];
         }
@@ -257,128 +374,87 @@ public class LoadoutManager : MonoBehaviour
 
     private void RefreshExpForWeapons()
     {
-        WeaponLoadOut loadOut = m_loadOuts[m_currentLoadOutIndex];
+        List<WeaponData> loadOut = m_loadouts[m_currentLoadOutIndex];
 
-        int numWeapon = loadOut.NumWeapons();
+        int numWeapon = loadOut.Count;
         //Debug.Log("Switched weapon, the weapon count is " + numWeapon);
 
         while (--numWeapon >= 0)
         {
             m_weapons[numWeapon].AddExpPoint(float.MinValue); //set exp to be 0
-            loadOut.expWeapons[numWeapon] = m_weapons[numWeapon].AddExpPoint(loadOut.expWeapons[numWeapon]);
+            loadOut[numWeapon] = new(loadOut[numWeapon].weapon, m_weapons[numWeapon].AddExpPoint(loadOut[numWeapon].weaponExp));
         }
 
-        m_hudManager.UpdateWeaponSliders(m_weapons, m_loadOuts[m_currentLoadOutIndex].NumWeapons());
+        m_hudManager.UpdateWeaponSliders(m_weapons);
+    }
+
+    public void AddExpPointsAll(float points)
+    {
+        int numLoadouts = m_loadouts.Count;
+        while (--numLoadouts >= 0)
+        {
+            AddExpPoints(points, numLoadouts);
+        }
+    }
+
+    public void AddExpPercentAll(float points)
+    {
+        int numLoadouts = m_loadouts.Count;
+        while (--numLoadouts >= 0)
+        {
+            AddExpPercent(points, numLoadouts);
+        }
     }
     /**
     *   Adds exp points to the weapons equipped in this moment
     *   @param points The ammount of points to be added
     */
-    public void AddExpPoints(float points)
+    public void AddExpPoints(float points, int loadoutIndex = -1)
     {
-        WeaponLoadOut loadOut = m_loadOuts[m_currentLoadOutIndex];
-        points /= Mathf.Max(loadOut.numOfExpWeapons, 1.0f);
+        if (loadoutIndex < 0) loadoutIndex = m_currentLoadOutIndex;
 
-        int numWeapon = loadOut.NumWeapons();
+        List<WeaponData> loadOut = m_loadouts[m_currentLoadOutIndex];
+        int numWeapon = loadOut.Count;
         //Debug.Log("Added exp to weapons, weapon count is " + numWeapon);
 
         while (--numWeapon >= 0)
         {
-            loadOut.expWeapons[numWeapon] = m_weapons[numWeapon].AddExpPoint(points);
+            loadOut[numWeapon] = new(loadOut[numWeapon].weapon, m_weapons[numWeapon].AddExpPoint(points));
         }
 
-        m_hudManager.UpdateLevelWeaponSliders(m_weapons, m_loadOuts[m_currentLoadOutIndex].NumWeapons());
+        m_hudManager.UpdateLevelWeaponSliders(m_weapons);
     }
 
     /** Adds a fixed percentage of progress relative to the 
    * exp required for the current and next level to all of the equipped weapons
    * @param percent The percentage of progress to add
    */
-    public void AddExpPercent(float percent)
+    public void AddExpPercent(float percent, int loadoutIndex = -1)
     {
-        WeaponLoadOut loadOut = m_loadOuts[m_currentLoadOutIndex];
-        int numWeapon = loadOut.NumWeapons();
+        if (loadoutIndex < 0) loadoutIndex = m_currentLoadOutIndex;
+
+        List<WeaponData> loadOut = m_loadouts[m_currentLoadOutIndex];
+        int numWeapon = loadOut.Count;
 
         while (--numWeapon >= 0)
         {
-            loadOut.expWeapons[numWeapon] = m_weapons[numWeapon].AddExpPercent(percent);
+            loadOut[numWeapon] = new(loadOut[numWeapon].weapon, m_weapons[numWeapon].AddExpPercent(percent));
         }
 
-        m_hudManager.UpdateLevelWeaponSliders(m_weapons, m_loadOuts[m_currentLoadOutIndex].NumWeapons());
-    }
-
-    public void UpdateWeaponHud()
-    {
+        m_hudManager.UpdateLevelWeaponSliders(m_weapons);
     }
 }
 
-public class WeaponLoadOut
+public struct WeaponData
 {
-    public List<int> weapons { get; private set; }
+    public int weapon;
+    public float weaponExp;
 
-    //the numbers of weapons that use exp in the loadout
-    public int numOfExpWeapons { get; private set; } = 0;
-
-    public List<float> expWeapons;
-
-    public WeaponLoadOut(int maxWeapons)
+    public WeaponData(int weapon = 0, float weaponExp = 0)
     {
-        expWeapons = new(4);
-        weapons = new(4);
-
-        for (int i = 0; i < maxWeapons; ++i)
-        {
-            weapons[i] = -1;
-            expWeapons[i] = 0;
-        }
-    }
-
-    public void SetWeapon(int weapon, int index)
-    {
-        if (weapon != -1)
-        {
-            WeanponType weanponType = WeaponMaster.GetWeapon(weapon).GetComponent<WeaponBasic>().GetWeaponType();
-
-            if (weapons[index] != -1)
-            {
-                WeanponType currentType = WeaponMaster.GetWeapon(weapons[index]).GetComponent<WeaponBasic>().GetWeaponType();
-                weapons[index] = weapon;
-
-                if (weanponType == WeanponType.EXPERIENCE && currentType != WeanponType.EXPERIENCE)
-                    ++numOfExpWeapons;
-                else if (weanponType != WeanponType.EXPERIENCE && currentType == WeanponType.EXPERIENCE)
-                    --numOfExpWeapons;
-            }
-            else
-            {
-                weapons[++indexOfLastWeapon] = weapon;
-
-                if (weanponType == WeanponType.EXPERIENCE)
-                    ++numOfExpWeapons;
-            }
-        }
-        else //if weapon is null
-        {
-            if (weapons[index] != -1)
-            {
-                WeanponType currentType = WeaponMaster.GetWeapon(weapons[index]).GetComponent<WeaponBasic>().GetWeaponType();
-
-                if (currentType == WeanponType.EXPERIENCE)
-                    --numOfExpWeapons;
-
-                expWeapons[index] = expWeapons[indexOfLastWeapon];
-                expWeapons[indexOfLastWeapon] = 0;
-
-                weapons[index] = weapons[indexOfLastWeapon];
-                weapons[indexOfLastWeapon] = -1;
-
-                --indexOfLastWeapon;
-            }
-        }
-    }
-
-    public int NumWeapons()
-    {
-        return weapons.Count;
+        this.weapon = weapon;
+        this.weaponExp = weaponExp;
     }
 }
+
+

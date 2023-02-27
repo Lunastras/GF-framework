@@ -38,9 +38,16 @@ public class PlayerController : MonoBehaviour
         if (m_movement == null)
         {
             m_movement = GetComponent<GfMovementGeneric>();
-          //  if (null == m_movement)
-               // Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
+            //  if (null == m_movement)
+            // Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
 
+        }
+
+        if (m_loadoutManager == null)
+        {
+            m_loadoutManager = GetComponent<LoadoutManager>();
+            if (null == m_loadoutManager)
+                Debug.LogWarning("PlayerControler: The loadout manager is null, please give it a value in the inspector. Object: " + gameObject.name);
         }
 
         if (m_cameraController == null)
@@ -182,7 +189,7 @@ public class PlayerController : MonoBehaviour
 
         PreMoveCalculations(deltaTime);
 
-        if (!m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0) 
+        if (!m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
         {
             float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks - m_timeUntilPhysChecks);
             m_timeUntilPhysChecks += m_timeBetweenPhysChecks;

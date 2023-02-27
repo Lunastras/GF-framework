@@ -24,6 +24,8 @@ public class WeaponBasic : MonoBehaviour
 
     public bool destroyWhenDone { get; set; } = false;
 
+    public bool disableWhenDone { get; set; } = false;
+
     public void StopFiring()
     {
         turret.Stop();
@@ -54,10 +56,13 @@ public class WeaponBasic : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (destroyWhenDone && !turret.IsAlive())
+        if ((disableWhenDone || destroyWhenDone) && !turret.IsAlive())
         {
             destroyWhenDone = false;
-            GfPooling.DestroyInsert(gameObject);
+            if (destroyWhenDone)
+                GfPooling.DestroyInsert(gameObject);
+            else
+                gameObject.SetActive(false);
         }
     }
 

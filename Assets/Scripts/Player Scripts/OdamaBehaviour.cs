@@ -109,5 +109,6 @@ public class OdamaBehaviour : MonoBehaviour
     {
         this.m_parent = parent.transform;
         m_parentMovement = parent;
+        m_distanceSmoothVelocity = Vector3.zero;
     }
 }
