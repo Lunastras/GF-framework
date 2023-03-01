@@ -53,12 +53,13 @@ public class HudManager : MonoBehaviour
 
     public void UpdateWeaponSliders(List<WeaponBasic> weapons)
     {
-        int numWeapons = weapons.Count;
+        int count =  Mathf.Min(1, weapons.Count);
+
         //Debug.Log("called to update the level bars");
         if (weapons != null)
         {
-            for (int i = 0; i < 1; ++i)
-                weaponSliders[i].gameObject.SetActive(i < numWeapons);
+            for (int i = 0; i < count; ++i)
+                weaponSliders[i].gameObject.SetActive(i < count);
         }
         else
         {
@@ -70,10 +71,9 @@ public class HudManager : MonoBehaviour
 
     public void UpdateLevelWeaponSliders(List<WeaponBasic> weapons)
     {
-        int numWeapons = weapons.Count;
-
+        int count =  Mathf.Min(1, weapons.Count);
         //Debug.Log("called to update the levels");
-        for (int i = 0; i < 1; ++i)
+        for (int i = 0; i < count; ++i)
         {
             // Debug.Log("UPDATING FOR INDEX " + i + " the currentxpis " + weapons[i].currentExp);
             weaponSliders[i].SetLevelText(weapons[i].currentLevel);

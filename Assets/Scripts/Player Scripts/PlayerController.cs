@@ -20,6 +20,10 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     //misc
+    private bool m_usesRigidBody = false;
+
+    [SerializeField]
+    //misc
     private bool m_fixedUpdatePhysics = true;
 
     [SerializeField]
@@ -162,7 +166,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (m_fixedUpdatePhysics)
+        if (m_fixedUpdatePhysics && !m_usesRigidBody)
         {
             float physDelta = Time.fixedDeltaTime;
             m_movement.UpdatePhysics(physDelta, true, physDelta); //actually the current deltatime   
@@ -189,14 +193,16 @@ public class PlayerController : MonoBehaviour
 
         PreMoveCalculations(deltaTime);
 
-        if (!m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
-        {
-            float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks - m_timeUntilPhysChecks);
-            m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
-            float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
-            m_movement.UpdatePhysics(deltaTime, false, timeUntilNextUpdate); //actually the current deltatime   
-        }
+        if(!m_usesRigidBody) {
+            if (!m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
+            {
+                float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks - m_timeUntilPhysChecks);
+                m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
+                float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
+                m_movement.UpdatePhysics(deltaTime, false, timeUntilNextUpdate); //actually the current deltatime   
+            }
 
-        m_cameraController.Move(deltaTime);
+            m_cameraController.Move(deltaTime);
+        }
     }
 }

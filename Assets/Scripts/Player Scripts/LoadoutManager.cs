@@ -74,7 +74,7 @@ public class LoadoutManager : MonoBehaviour
     {
         AddLoadout(3);
         Debug.Log("The loadout count is: " + m_loadouts.Count);
-        SetWeaponCapacity(4);
+        SetWeaponCapacity(0);
 
         ChangeLoadOutWeapon(0, 0, 1);
         ChangeLoadOutWeapon(0, 1, 2);

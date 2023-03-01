@@ -10,6 +10,8 @@ public class ArchetypeCollision
 
     public virtual Vector3 InnerRayCast(Vector3 ray) { return Vector3.zero; }
 
+    public virtual Vector3 GetLocalBottomPoint() { return Vector3.zero; }
+
     public virtual void Trace(Vector3 _pos, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float bias, float skin, out int _tracecount) { _tracecount = 0; }
 
     public virtual void Overlap(Vector3 _pos, int _filter, QueryTriggerInteraction _interacttype, Collider[] _colliders, float skin, out int _overlapcount) { _overlapcount = 0; }
@@ -35,6 +37,8 @@ public class ArchetypeCapsule : ArchetypeCollision
     {
         m_collider = collider;
     }
+
+    public override Vector3 GetLocalBottomPoint() { return -m_topDir; }
 
     public override Vector3 InnerRayCast(Vector3 dir)
     {
@@ -127,6 +131,12 @@ public class ArchetypeSphere : ArchetypeCollision
     public ArchetypeSphere(SphereCollider collider)
     {
         m_collider = collider;
+    }
+
+    public override Vector3 GetLocalBottomPoint() { 
+        Vector3 botDir = m_collider.transform.up;
+        GfTools.Mult3(ref botDir, - m_radius);
+        return botDir;
     }
 
     public override void UpdateValues()

@@ -15,12 +15,12 @@ public class GfMovementSimple : GfMovementGeneric
     [SerializeField]
     protected float m_midAirDeacceleration = 15;
     [SerializeField]
-    protected float m_maxFallSpeed = 40;
+    protected float m_maxFallSpeed = 50;
     [SerializeField]
-    protected float m_jumpForce = 40;
+    protected float m_jumpForce = 20;
 
     [SerializeField]
-    protected float m_turnSpeed = 10;
+    protected float m_turnSpeed = 400;
 
     public float AccelerationCoef = 1;
     public float DeaccelerationCoef = 1;
@@ -38,7 +38,7 @@ public class GfMovementSimple : GfMovementGeneric
     
 
     [SerializeField]
-    protected bool breakWhenUnparent = true;
+    protected bool m_breakWhenUnparent = false;
 
     // Start is called before the first frame update
     protected override void InternalStart()
@@ -61,9 +61,8 @@ public class GfMovementSimple : GfMovementGeneric
         if (!m_touchedParent && null != m_parentTransform)
         {
             DetachFromParentTransform();
-            if (breakWhenUnparent) Debug.Break();
+            if (m_breakWhenUnparent) Debug.Break();
         }
-
     }
 
     protected void CalculateEffectiveValues()
@@ -174,7 +173,7 @@ public class GfMovementSimple : GfMovementGeneric
     }
 
     protected override void MgOnCollision(MgCollisionStruct collision)
-    {
+    {  
         Transform collisionTrans = collision.collider.transform;
 
         if (collision.isGrounded && collisionTrans != m_parentTransform)

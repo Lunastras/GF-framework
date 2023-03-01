@@ -10,15 +10,15 @@ public abstract class GfMovementGeneric : MonoBehaviour
     [SerializeField]
     protected bool m_useInterpolation;
     [SerializeField]
-    protected float m_speed = 7;
+    protected float m_speed = 9;
     [SerializeField]
-    protected float m_mass = 35;
+    protected float m_mass = 45;
     [SerializeField]
     protected float m_stepOffset = 0.3f;
     [SerializeField]
     protected float m_slopeLimit = 45;
     [SerializeField]
-    protected float m_upperSlopeLimit = 100;
+    protected float m_upperSlopeLimit = 130;
     [SerializeField]
     protected QueryTriggerInteraction m_queryTrigger;
     [SerializeField]
@@ -78,6 +78,10 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     private Vector3 m_interpolationMovement;
     private Quaternion m_interpolationRotation = Quaternion.identity;
+    private Quaternion m_desiredRotation = Quaternion.identity;
+    private Quaternion m_externalRotation = Quaternion.identity;
+
+    private Quaternion m_lastRotation;
 
     private float m_timeBetweenPhysChecks = 0.02f;
 
@@ -104,7 +108,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     private bool m_interpolateThisFrame = false;
     private bool m_validatedParentVertical; //whether the vertical movement of the parent was accounted to the actor's position
 
-    private ArchetypeCollision m_collisionArchetype;
+    private ArchetypeCollision m_archetypeCollision;
     static readonly protected Vector3 Zero3 = new Vector3(0, 0, 0);
     private readonly float TRACE_SKIN = 0.05F;
     private readonly float TRACEBIAS = 0.1F;
@@ -125,25 +129,26 @@ public abstract class GfMovementGeneric : MonoBehaviour
     {
         m_transform = transform;
         m_slopeNormal = m_upVec;
+        m_lastRotation = m_transform.rotation;
         ValidateCollisionArchetype();
-        m_collisionArchetype.UpdateValues();
-
+        m_archetypeCollision.UpdateValues();
         InternalStart();
     }
+
     protected abstract void InternalStart();
     protected virtual void BeforePhysChecks(float deltaTime) { }
     protected virtual void AfterPhysChecks(float delteTime) { }
 
     private void ValidateCollisionArchetype()
     {
-        if (null == m_collider || null == m_collisionArchetype)
+        if (null == m_collider || null == m_archetypeCollision)
         {
             //type checking is not available in c# without an IDictionary, so we check until one is found. It works because there are only a few anywyay
             CapsuleCollider capsuleCollider = GetComponent<CapsuleCollider>();
             if (capsuleCollider)
             {
                 m_collider = capsuleCollider;
-                m_collisionArchetype = new ArchetypeCapsule(capsuleCollider);
+                m_archetypeCollision = new ArchetypeCapsule(capsuleCollider);
             }
             else
             {
@@ -151,13 +156,13 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 if (sphereCollider)
                 {
                     m_collider = sphereCollider;
-                    m_collisionArchetype = new ArchetypeSphere(sphereCollider);
+                    m_archetypeCollision = new ArchetypeSphere(sphereCollider);
                 }
             }
 
-            if (null == m_collisionArchetype)
+            if (null == m_archetypeCollision)
             {
-                m_collisionArchetype = new ArchetypeCollision();
+                m_archetypeCollision = new ArchetypeCollision();
                 if (GetComponent<SphereCollider>() != null)
                     Debug.LogError("The collider attached to: " + gameObject.name + " is not supported by MovementGeneric");
             }
@@ -240,9 +245,16 @@ public abstract class GfMovementGeneric : MonoBehaviour
             movementThisFrame.y += m_interpolationMovement.y * timefactor;
             movementThisFrame.z += m_interpolationMovement.z * timefactor;
 
-            if (!m_interpolationRotation.Equals(IDENTITY_QUAT))
-                m_transform.rotation *= Quaternion.LerpUnclamped(IDENTITY_QUAT, m_interpolationRotation, timefactor);
+            Quaternion currentRot = m_transform.rotation;
+            if (!m_lastRotation.Equals(currentRot)) 
+                m_externalRotation *= Quaternion.Inverse(m_lastRotation) * currentRot;
 
+            if (!m_interpolationRotation.Equals(IDENTITY_QUAT)) {
+                currentRot *= Quaternion.LerpUnclamped(IDENTITY_QUAT, m_interpolationRotation, timefactor);
+                m_transform.rotation = currentRot;
+            }
+
+            m_lastRotation = currentRot;
             UpdateSphericalOrientation(deltaTime, true);
         }
 
@@ -259,8 +271,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
             m_transform.position += m_interpolationMovement * correctionFactor;
             Quaternion correctedRotation = GfTools.QuaternionFraction(m_interpolationRotation, correctionFactor);
-            m_transform.rotation = m_transform.rotation * correctedRotation;
-            m_interpolationRotation = IDENTITY_QUAT;
+            m_transform.rotation = m_desiredRotation * m_externalRotation;
+            m_interpolationRotation = m_externalRotation = IDENTITY_QUAT;
         }
 
         double currentTime = Time.timeAsDouble;
@@ -293,7 +305,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         if (updatePhysicsValues)
         {
             ValidateCollisionArchetype();
-            m_collisionArchetype.UpdateValues();
+            m_archetypeCollision.UpdateValues();
         }
 
 
@@ -311,10 +323,10 @@ public abstract class GfMovementGeneric : MonoBehaviour
             GfTools.Minus3(ref m_interpolationMovement, initialPos);
             m_transform.position = initialPos;
 
-            Quaternion desiredRotation = m_transform.rotation;
-            if (!initialRot.Equals(desiredRotation)) //== operator is more appropriate but it doesn't have enough accuray
+            m_desiredRotation = m_transform.rotation;
+            if (!initialRot.Equals(m_desiredRotation)) //== operator is more appropriate but it doesn't have enough accuray
             {
-                m_interpolationRotation = Quaternion.Inverse(initialRot) * desiredRotation;
+                m_interpolationRotation = Quaternion.Inverse(initialRot) * m_desiredRotation;
                 m_transform.rotation = initialRot;
             }
         }
@@ -324,9 +336,9 @@ public abstract class GfMovementGeneric : MonoBehaviour
             UpdateSphericalOrientation(deltaTime, false);
         }
 
+        m_lastRotation = m_transform.rotation;
 
         if (!m_isGrounded) m_slopeNormal = m_upVec;
-
     }
 
     private void UpdatePhysicsDiscrete(ref Vector3 position, float deltaTime, Collider[] colliderbuffer, int layermask)
@@ -349,7 +361,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
             if (MIN_DISPLACEMENT <= _tracelen)
                 GfTools.Add3(ref position, _trace);
 
-            m_collisionArchetype.Overlap(position, layermask, m_queryTrigger, colliderbuffer, OVERLAP_SKIN, out numCollisions);
+            m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, OVERLAP_SKIN, out numCollisions);
 
             ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer); /* filter ourselves out of the collider buffer */
             for (int ci = numCollisions - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
@@ -360,11 +372,12 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherc,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                 {
-                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_collisionArchetype, true, true);
+                    position += normal * (mindistance + TRACE_SKIN);
+
+                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_archetypeCollision, true, true, position);
                     collision.isGrounded = CheckGround(collision);
                     m_isGrounded |= collision.isGrounded;
 
-                    position += normal * (mindistance + TRACE_SKIN);
 
                     if (MIN_DISPLACEMENT <= _tracelen)
                     {
@@ -380,7 +393,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                     }
 
                     // if (Vector3.Dot(m_velocity, normal) <= 0F) /* only consider normals that we are technically penetrating into */
-                    DetermineGeometryType(ref m_velocity, ref lastNormal, collision, ref geometryclips, ref position);
+                    DetermineGeometryType(ref m_velocity, ref lastNormal, ref collision, ref geometryclips, ref position);
                     MgOnCollision(collision);
 
                     break;
@@ -416,7 +429,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         while (numbumps++ < m_maxOverlaps && numCollisions != 0)
         {
             bool groundCheckPhase = appliedDownpull;
-            m_collisionArchetype.Overlap(position, layermask, m_queryTrigger, colliderbuffer, OVERLAP_SKIN, out numCollisions);
+            m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, OVERLAP_SKIN, out numCollisions);
             ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer); /* filter ourselves out of the collider buffer */
             for (int ci = numCollisions - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
             {
@@ -426,16 +439,17 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherc,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                 {
-                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_collisionArchetype, true, true);
+                    Vector3 auxPosition = position + normal * (mindistance + MIN_PUSHBACK_DEPTH);
+                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_archetypeCollision, true, true, auxPosition);
                     collision.isGrounded = CheckGround(collision);
                     m_isGrounded |= collision.isGrounded;
 
                     if (!groundCheckPhase)/* resolve pushback using closest exit distance if no downpull was added*/
                     {
-                        position += normal * (mindistance + MIN_PUSHBACK_DEPTH);
+                        position = auxPosition;
 
                         if (Vector3.Dot(m_velocity, normal) <= 0F) /* only consider normals that we are technically penetrating into */
-                            DetermineGeometryType(ref m_velocity, ref lastNormal, collision, ref geometryclips, ref position);
+                            DetermineGeometryType(ref m_velocity, ref lastNormal, ref collision, ref geometryclips, ref position);
                         break;
                     }
 
@@ -475,7 +489,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 float _traceLenInv = 1.0f / _tracelen;
                 GfTools.Mult3(ref traceDir, _traceLenInv);
 
-                m_collisionArchetype.Trace(position, traceDir, _tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, OVERLAP_SKIN, out numCollisions);/* prevent tunneling by using this skin length */
+                m_archetypeCollision.Trace(position, traceDir, _tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, OVERLAP_SKIN, out numCollisions);/* prevent tunneling by using this skin length */
                 MgCollisionStruct collision = ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, position);
                 
                 if (_i0 > -1 && collision.touched) /* we found something in our trace */
@@ -489,7 +503,9 @@ public abstract class GfMovementGeneric : MonoBehaviour
                     GfTools.Mult3(ref traceDir, _dist);
                     GfTools.Add3(ref position, traceDir);
 
-                    DetermineGeometryType(ref m_velocity, ref lastNormal, collision, ref geometryclips, ref position);
+                    DetermineGeometryType(ref m_velocity, ref lastNormal, ref collision, ref geometryclips, ref position);
+
+                    collision.positionSelf = position;
                     MgOnCollision(collision);
                 }
                 else /* Discovered noting along our linear path */
@@ -546,41 +562,44 @@ public abstract class GfMovementGeneric : MonoBehaviour
         }
     }
 
-    private float GetStepHeight(ref RaycastHit hit, ref Vector3 position)
+    private float GetStepHeight(Vector3 point, ref Vector3 position)
     {
-        Vector3 bottomPos = -(1 * 0.5f) * m_upVec;
-        Vector3 localStepHitPos = (hit.point - position);
+        Vector3 bottomPos = m_archetypeCollision.GetLocalBottomPoint();
+        Vector3 localStepHitPos = (point - position);
 
         return Vector3.Dot(m_upVec, localStepHitPos) - Vector3.Dot(m_upVec, bottomPos);
     }
 
-    private void DetermineGeometryType(ref Vector3 velocity, ref Vector3 lastNormal, MgCollisionStruct collision, ref int geometryclips, ref Vector3 position)
+    private void DetermineGeometryType(ref Vector3 velocity, ref Vector3 lastNormal, ref MgCollisionStruct collision, ref int geometryclips, ref Vector3 position)
     {
         bool underSlopeLimit = m_slopeLimit > collision.upVecAngle;
         m_isGrounded |= collision.isGrounded;
         bool recalculateVelocity = true;
-        /*
 
+        //not perfect TODO
         //Check for stair, if no stair is found, then perform normal velocity calculations
-        if (!collision.pushback && !underSlopeLimit)
+        if (!underSlopeLimit)
         {
-            float stepHeight = GetStepHeight(ref hit, ref collider, UpVec, ref position);
-
+            float stepHeight = GetStepHeight(collision.GetPoint(), ref position);
+            Vector3 startPoint = collision.GetPoint();
+            GfTools.Add3(ref startPoint, m_upVec);
+            Ray stairRay = new Ray(startPoint, -m_upVec);
             // Debug.Log("huuh second AND i potentially found a stair ");
 
-            if (stepHeight <= stepOffset && stepHeight > 0.01f)
+            if (stepHeight <= m_stepOffset && stepHeight > 0.0001f && collision.collider.Raycast(stairRay, out RaycastHit stairHit, 2))
             {
-                IsGrounded = true;
-                //  Debug.Log("yeeee found stair ");
-                position += UpVec * (stepHeight);
-                recalculateVelocity = false;
-            }
-            else
-            {
-                // Debug.Log("neah step is wayyy too small");
+                MgCollisionStruct stairCollision = new(stairHit.normal, m_upVec, stairHit.collider, stairHit.point, true, m_archetypeCollision, true, false, position);
+                stairCollision.isGrounded = CheckGround(stairCollision);
+                if(stairCollision.isGrounded) {
+                    collision = stairCollision;
+                    m_isGrounded = true;
+                    //  Debug.Log("yeeee found stair ");
+                    position += m_upVec * (stepHeight);
+                    recalculateVelocity = false;
+                    stairCollision.positionSelf = position;
+                }
             }
         }
-        */
 
         switch (geometryclips)
         {
@@ -653,7 +672,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
             // may lead to unintended consequences for the end-user.
             if (!filterout && col.isTrigger)
             {
-                MgCollisionStruct ownCollision = new MgCollisionStruct(Zero3, m_upVec, col, Zero3, false, m_collisionArchetype, true, false);
+                MgCollisionStruct ownCollision = new MgCollisionStruct(Zero3, m_upVec, col, Zero3, false, m_archetypeCollision, true, false, col.transform.position);
                 GfMovementTriggerable trigger = col.GetComponent<GfMovementTriggerable>();
                 if (trigger) trigger.MgOnTrigger(ownCollision, this);
                 filterout = true;
@@ -685,11 +704,11 @@ public abstract class GfMovementGeneric : MonoBehaviour
             float _tracelen = _hit.distance;
             bool filterout = _tracelen < -OVERLAP_SKIN || _col == _self;
 
-            MgCollisionStruct collision = new MgCollisionStruct(_hit.normal, m_upVec, _hit.collider, _hit.point, true, m_collisionArchetype, _tracelen >= 0, false);
+            MgCollisionStruct collision = new MgCollisionStruct(_hit.normal, m_upVec, _hit.collider, _hit.point, true, m_archetypeCollision, _tracelen >= 0, false, position);
             // if we aren't already filtering ourselves out, check to see if we're a collider
             if (!filterout && _hit.collider.isTrigger && MgOnTriggerHit(collision))
             {
-                MgCollisionStruct ownCollision = new MgCollisionStruct(-_hit.normal, m_upVec, m_collider, _hit.point, true, m_collisionArchetype, true, false);
+                MgCollisionStruct ownCollision = new MgCollisionStruct(-_hit.normal, m_upVec, m_collider, _hit.point, true, m_archetypeCollision, true, false, _hit.transform.position);
 
                 GfMovementTriggerable trigger = _col.GetComponent<GfMovementTriggerable>();
                 if (trigger) trigger.MgOnTrigger(ownCollision, this);
@@ -937,7 +956,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public virtual bool GetIsGrounded() { return m_isGrounded; }
-    protected abstract void MgOnCollision(MgCollisionStruct collision);
+    protected virtual void MgOnCollision(MgCollisionStruct collision) { }
 
     protected virtual bool MgOnTraceHit(MgCollisionStruct collision) { return true; }
     protected virtual bool MgOnTriggerHit(MgCollisionStruct collision) { return collision.touched; }
@@ -948,7 +967,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 public struct MgCollisionStruct
 {
 
-    public MgCollisionStruct(Vector3 normal, Vector3 upVec, Collider collider, Vector3 point, bool calculatedPoint, ArchetypeCollision archetypeCollision, bool touched, bool overlap)
+    public MgCollisionStruct(Vector3 normal, Vector3 upVec, Collider collider, Vector3 point, bool calculatedPoint, ArchetypeCollision archetypeCollision, bool touched, bool overlap, Vector3 positionSelf)
     {
         this.collider = collider;
         this.normal = normal;
@@ -959,7 +978,9 @@ public struct MgCollisionStruct
         this.calculatedPoint = calculatedPoint;
         this.touched = touched;
         this.overlap = overlap;
+        this.positionSelf = positionSelf;
     }
+    public Vector3 positionSelf; //the position of the main object at the time of contact
     public Collider collider;
     public Vector3 normal;
     public float upVecAngle;
@@ -981,6 +1002,7 @@ public struct MgCollisionStruct
         {
             calculatedPoint = true;
             point = archetypeCollision.InnerRayCast(-normal);
+            GfTools.Add3(ref point, positionSelf);
         }
 
         return point;
