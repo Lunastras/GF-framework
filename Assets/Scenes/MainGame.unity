@@ -10118,6 +10118,7 @@ GameObject:
   m_Component:
   - component: {fileID: 444923902}
   - component: {fileID: 444923903}
+  - component: {fileID: 444923904}
   m_Layer: 8
   m_Name: ShadowDecal
   m_TagString: Untagged
@@ -10132,14 +10133,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 444923901}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 7.14}
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 413798917}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!114 &444923903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10160,9 +10161,32 @@ MonoBehaviour:
   m_UVScale: {x: 1, y: 1}
   m_UVBias: {x: 0, y: 0}
   m_ScaleMode: 0
-  m_Offset: {x: 0, y: 0, z: -5}
+  m_Offset: {x: 0, y: 0, z: 0}
   m_Size: {x: 1, y: 1, z: 10}
   m_FadeFactor: 1
+--- !u!114 &444923904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 444923901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a430eb5a2fc9d3d4da8f160823cc74d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_projector: {fileID: 444923903}
+  m_selfCollider: {fileID: 0}
+  m_pivot: {x: 0, y: 0, z: 0}
+  m_intervalObjCheck: 0.5
+  m_intervalDistanceCheck: 0.1
+  m_updateVariance: 0.1
+  m_maxProjectionDistance: 20
+  m_opacityMultiplier: 1
+  m_layerMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &467963259 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 916576516595235586, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca,
@@ -15355,7 +15379,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: -90, y: -14.85, z: 0}
 --- !u!119 &1075666712
 Projector:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
