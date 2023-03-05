@@ -5,14 +5,8 @@ using UnityEngine;
 using static System.MathF;
 
 [RequireComponent(typeof(Rigidbody))]
-public class GfMovementRbSimple : GfMovementGeneric
+public class GfMovementRbSimple : GfMovementSimple
 {
-    [SerializeField]
-    protected float m_acceleration = 40;
-    [SerializeField]
-    protected bool m_touchedParent;
-    [SerializeField]
-    protected bool m_breakWhenUnparent;
     [SerializeField]
     protected Rigidbody m_rigidbody;
     // Start is called before the first frame update
@@ -21,10 +15,10 @@ public class GfMovementRbSimple : GfMovementGeneric
         m_rigidbody = GetComponent<Rigidbody>();
     }
 
-    private void FixedUpdate() {
+    private void FixedUpdate()
+    {
+        float deltaTime = Time.deltaTime;
 
-       
-        
         m_velocity = m_rigidbody.velocity;
         //after phys checks
         if (!m_touchedParent && null != m_parentTransform)
@@ -33,23 +27,28 @@ public class GfMovementRbSimple : GfMovementGeneric
             if (m_breakWhenUnparent) Debug.Break();
         }
 
-        float deltaTime = Time.deltaTime;
-        //before phys updates
-        m_touchedParent = false;
+        m_touchedParent = m_jumpedThisFrame = false;
         Vector3 movDir = MovementDirComputed();
 
-        Vector3 velChange = movDir * (deltaTime * m_acceleration);
-        GfTools.Add3(ref velChange, m_upVec * (-m_mass * deltaTime));
+        CalculateEffectiveValues();
+        CalculateVelocity(deltaTime, movDir);
+        CalculateJump();
+        CalculateRotation(deltaTime, movDir);
 
-        m_rigidbody.AddForce(velChange, ForceMode.VelocityChange);
-       // CalculateEffectiveValues();
-       // CalculateVelocity(deltaTime, movDir);
-       // CalculateJump();
-       // CalculateRotation(deltaTime, movDir);
+        m_rigidbody.velocity = m_velocity;
     }
 
 
-    private void OnCollisionEnter(Collision other) {
-        //other.
+    /*
+
+    private void OnCollisionStay(Collision other)
+    {
+        ContactPoint contactPoint = other.GetContact(0);
+        Vector3 normal = contactPoint.normal;
+
+        m_velocity = m_rigidbody.velocity;
+        GfTools.Minus3(ref m_velocity, (Vector3.Dot(m_velocity, normal)) * normal);
+        m_rigidbody.velocity = m_velocity;
     }
+    */
 }

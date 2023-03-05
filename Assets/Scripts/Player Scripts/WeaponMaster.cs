@@ -21,6 +21,7 @@ public class WeaponMaster : MonoBehaviour
 
     public static GameObject GetWeapon(int index)
     {
+        Debug.Log("I was queried weapon " + index);
         if (0 > index || m_instance.m_weapons.Length <= index)
             return null;
 

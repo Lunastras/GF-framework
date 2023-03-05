@@ -5001,7 +5001,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4759944753111975126}
   - component: {fileID: 6910084372030936651}
-  - component: {fileID: 7829947440163271455}
+  - component: {fileID: 432613321654859549}
   - component: {fileID: 1372938329087745302}
   - component: {fileID: 7866579364068057338}
   - component: {fileID: 1060890680}
@@ -5043,7 +5043,7 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.3
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7829947440163271455
+--- !u!114 &432613321654859549
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5057,29 +5057,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CanFly: 1
   m_useInterpolation: 1
-  m_speed: 5
-  m_mass: 40
+  m_speed: 7
+  m_mass: 45
   m_stepOffset: 0.3
   m_slopeLimit: 45
-  m_upperSlopeLimit: 100
-  m_queryTrigger: 2
+  m_upperSlopeLimit: 130
+  m_queryTrigger: 0
   m_fullRotationSeconds: 1
   m_useSimpleCollision: 1
   m_maxAngleNoSmoothDeg: 5
   JumpTrigger: 0
   m_velocity: {x: 0, y: 0, z: 0}
-  m_maxOverlaps: 2
-  m_maxCasts: 2
-  m_acceleration: 30
-  m_deacceleration: 30
-  m_midAirAcceleration: 10
-  m_midAirDeacceleration: 10
-  m_maxFallSpeed: 60
-  m_jumpForce: 40
-  m_turnSpeed: 10
+  m_maxOverlaps: 4
+  m_maxCasts: 4
+  m_acceleration: 45
+  m_deacceleration: 40
+  m_midAirAcceleration: 20
+  m_midAirDeacceleration: 15
+  m_maxFallSpeed: 50
+  m_jumpForce: 20
+  m_turnSpeed: 400
   AccelerationCoef: 1
   DeaccelerationCoef: 1
-  breakWhenUnparent: 0
+  m_breakWhenUnparent: 0
 --- !u!114 &1372938329087745302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5095,7 +5095,8 @@ MonoBehaviour:
   m_movement: {fileID: 0}
   m_targetCheckCooldown: 1
   m_updateInterval: 0.05
-  m_usesFixedUpdate: 0
+  m_usesRigidBody: 0
+  m_usesFixedUpdate: 1
   m_fieldOfViewDegrees: 180
   m_lineOfSightLength: 40
   m_targetTrackingTimeWindow: 5

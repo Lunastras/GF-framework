@@ -72,19 +72,19 @@ public class LoadoutManager : MonoBehaviour
 
     private void Test()
     {
+        SetWeaponCapacity(3);
         AddLoadout(3);
-        Debug.Log("The loadout count is: " + m_loadouts.Count);
-        SetWeaponCapacity(0);
 
         ChangeLoadOutWeapon(0, 0, 1);
-        ChangeLoadOutWeapon(0, 1, 2);
+        ChangeLoadOutWeapon(0, 1, 1);
         ChangeLoadOutWeapon(0, 2, 1);
-        ChangeLoadOutWeapon(0, 3, 2);
 
+        ChangeLoadOutWeapon(1, 0, 2);
+        ChangeLoadOutWeapon(1, 1, 0);
+        ChangeLoadOutWeapon(1, 2, 2);
+        //ChangeLoadOutWeapon(0, 2, 2);
 
-
-
-        SetCurrentLoadout(m_currentLoadOutIndex);
+        SetCurrentLoadout(0);
     }
 
     public bool ChangeLoadoutWeapon(int indexLoadout, int newWeapon, bool fillToCapacity)
@@ -112,12 +112,12 @@ public class LoadoutManager : MonoBehaviour
 
     public bool ChangeLoadOutWeapon(int indexLoadout, int indexWeapon, int newWeapon)
     {
-        return InternalChangeLoadOutWeapon(newWeapon, indexLoadout, indexWeapon, false);
+        return InternalChangeLoadOutWeapon(indexLoadout, indexWeapon, newWeapon, false);
     }
 
     private bool InternalChangeLoadOutWeapon(int indexLoadout, int indexWeapon, int newWeapon, bool refreshLoadout = true)
     {
-        bool ret = false;
+        bool changedWeapon = false;
         if (indexLoadout < m_loadouts.Count)
         {
             int currentWeapon = -1;
@@ -125,7 +125,7 @@ public class LoadoutManager : MonoBehaviour
                 currentWeapon = m_loadouts[indexLoadout][indexWeapon].weapon;
 
             bool nullWeapon = newWeapon < 0;
-            bool hasWeapon = nullWeapon || (m_infiniteInventory || 0 < m_weaponsInInventory[newWeapon]);
+            bool hasWeapon = nullWeapon || (newWeapon < WeaponMaster.NumWeapons() && (m_infiniteInventory || 0 < m_weaponsInInventory[newWeapon]));
 
             if (hasWeapon && newWeapon != currentWeapon) //if negative, remove
             {
@@ -138,7 +138,7 @@ public class LoadoutManager : MonoBehaviour
                         if (m_loadouts.Count == 0)
                             m_loadouts.RemoveAt(indexLoadout);
 
-                        ret = true;
+                        changedWeapon = true;
                     }
                 }
                 else //add weapon to loadout
@@ -150,23 +150,23 @@ public class LoadoutManager : MonoBehaviour
                         if (m_loadouts[indexLoadout].Count < m_weaponCapacity)
                         {
                             m_loadouts[indexLoadout].Add(new(newWeapon));
-                            ret = true;
+                            changedWeapon = true;
                         }
                     }
                     else
                     {
                         if (!m_infiniteInventory) m_weaponsInInventory[m_loadouts[indexLoadout][indexWeapon].weapon]++; //put back in inventory
                         m_loadouts[indexLoadout][indexWeapon] = new(newWeapon, m_loadouts[indexLoadout][indexWeapon].weaponExp);
-                        ret = true;
+                        changedWeapon = true;
                     }
                 }
 
-                if (ret && refreshLoadout && indexLoadout == m_currentLoadOutIndex)
+                if (changedWeapon && refreshLoadout && indexLoadout == m_currentLoadOutIndex)
                     SetCurrentLoadout(m_currentLoadOutIndex);
             }
         }
 
-        return ret;
+        return changedWeapon;
     }
 
     public void AddLoadout(int count = 1)
@@ -243,26 +243,33 @@ public class LoadoutManager : MonoBehaviour
     private WeaponBasic GetOdama(GameObject reference)
     {
         WeaponBasic objectToReturn = null;
+
         List<GameObject> objList = GfPooling.GetPoolList(reference);
-        if (null != objList && 0 < objList.Count)
+        int listCount = 0, index = 0;
+        if (null != objList) listCount = objList.Count;
+        index = listCount;
+        while (0 <= --index)
         {
-            int listCount = objList.Count;
-            while (--listCount >= 0)
+            GameObject obj = objList[index];
+            WeaponBasic wb = obj.GetComponent<WeaponBasic>();
+            if (!obj.activeSelf || wb.GetStatsCharacter() == m_statsCharacter) //check if it is inactive or if they have the same character stats
             {
-                GameObject obj = objList[listCount];
-                WeaponBasic wb = obj.GetComponent<WeaponBasic>();
-                if (!obj.activeSelf || wb.GetStatsCharacter() == m_statsCharacter) //check if it is inactive or if they have the same character stats
-                {
-                    obj.SetActive(true);
-                    objectToReturn = wb;
-                    objList.RemoveAt(listCount);
-                    listCount = 0;
-                }
+                obj.SetActive(true);
+                objectToReturn = wb;
+
+                objList[index] = objList[--listCount];
+                objList.RemoveAt(listCount);
+
+                if (wb.GetStatsCharacter() != m_statsCharacter) wb.SetStatsCharacter(m_statsCharacter);
+                index = 0;
             }
         }
 
         if (null == objectToReturn)
+        {
+            Debug.Log("The object was null");
             objectToReturn = GfPooling.PoolInstantiate(reference).GetComponent<WeaponBasic>();
+        }
 
         return objectToReturn;
     }
@@ -275,9 +282,8 @@ public class LoadoutManager : MonoBehaviour
         if (ob) ob.enabled = false;
 
         GameObject obj = weaponToDestroy.gameObject;
-        obj.transform.position = DESTROY_POSITION;
         weaponToDestroy.disableWhenDone = true;
-        GfPooling.DestroyInsert(obj, false, weaponToDestroy.IsAlive(true));
+        GfPooling.DestroyInsert(obj, weaponToDestroy.IsAlive(true));
     }
 
     public void InternalSetCurrentLoadout(int indexLoadout)

@@ -58,15 +58,15 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.1
   far clip plane: 1000
-  field of view: 60
+  field of view: 90
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 2147483647
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -99,17 +99,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_mainTarget: {fileID: 0}
-  m_sensitivity: 1800
-  m_offset: {x: 0, y: 1, z: 0}
+  m_sensitivity: 400
+  m_offset: {x: 0, y: 2, z: 0}
   m_physCheckInterval: 0.2
-  m_dstFromtarget: 16
+  m_dstFromtarget: 8
   m_collisionRadius: 1
-  m_minDstFromtarget: 3
-  m_pitchMin: -89.99
-  m_pitchMax: 89.99
-  m_rotationSmoothTime: 0.02
-  m_movementSmoothTime: 0.02
-  m_distanceSmoothTime: 0.02
+  m_minDstFromtarget: 4
+  m_pitchMin: -89
+  m_pitchMax: 89
+  m_rotationSmoothTime: 0
+  m_movementSmoothTime: 0.085
+  m_distanceSmoothTime: 0
   m_invertedY: 1
   m_upvec: {x: 0, y: 1, z: 0}
 --- !u!114 &3676997061914269402
@@ -139,7 +139,7 @@ MonoBehaviour:
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
-  m_Dithering: 0
+  m_Dithering: 1
   m_ClearDepth: 1
   m_AllowXRRendering: 1
   m_RequiresDepthTexture: 0

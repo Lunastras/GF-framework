@@ -83,6 +83,7 @@ public class CameraController : MonoBehaviour
     void Start()
     {
         m_camera = GetComponent<Camera>();
+        m_camera.depthTextureMode |= DepthTextureMode.Depth;
 
         m_aimTarget = null;
         m_currentTargetDst = m_dstFromtarget;

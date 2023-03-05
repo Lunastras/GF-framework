@@ -31,6 +31,10 @@ public class WeaponBasic : MonoBehaviour
         turret.Stop();
     }
 
+    private void OnEnable()
+    {
+        destroyWhenDone = disableWhenDone = false;
+    }
 
     private void Start()
     {
@@ -58,9 +62,8 @@ public class WeaponBasic : MonoBehaviour
     {
         if ((disableWhenDone || destroyWhenDone) && !turret.IsAlive())
         {
-            destroyWhenDone = false;
             if (destroyWhenDone)
-                GfPooling.DestroyInsert(gameObject);
+                GfPooling.Destroy(gameObject);
             else
                 gameObject.SetActive(false);
         }

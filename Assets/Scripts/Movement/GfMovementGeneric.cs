@@ -246,23 +246,24 @@ public abstract class GfMovementGeneric : MonoBehaviour
             movementThisFrame.z += m_interpolationMovement.z * timefactor;
 
             Quaternion currentRot = m_transform.rotation;
-            if (!m_lastRotation.Equals(currentRot)) 
+            if (!m_lastRotation.Equals(currentRot))
                 m_externalRotation *= Quaternion.Inverse(m_lastRotation) * currentRot;
 
-            if (!m_interpolationRotation.Equals(IDENTITY_QUAT)) {
+            if (!m_interpolationRotation.Equals(IDENTITY_QUAT))
+            {
                 currentRot *= Quaternion.LerpUnclamped(IDENTITY_QUAT, m_interpolationRotation, timefactor);
                 m_transform.rotation = currentRot;
             }
-
-            m_lastRotation = currentRot;
-            UpdateSphericalOrientation(deltaTime, true);
         }
 
+        UpdateSphericalOrientation(deltaTime, true);
+
         m_transform.position += movementThisFrame;
+        m_lastRotation = m_transform.rotation;
     }
 
 
-    public void UpdatePhysics(float deltaTime, bool updateParentMovement = true, float timeUntilNextUpdate = -1, bool updatePhysicsValues = true)
+    public bool UpdatePhysics(float deltaTime, bool updateParentMovement = true, float timeUntilNextUpdate = -1, bool updatePhysicsValues = true, bool ignorePhysics = false)
     {
         if (m_interpolateThisFrame)
         {
@@ -297,22 +298,30 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         m_interpolateThisFrame = m_useInterpolation; //&& Time.deltaTime < m_timeBetweenPhysChecks;
 
-        Vector3 lastNormal = Zero3;
-
-        Collider[] colliderbuffer = GfPhysics.GetCollidersArray();
-        int layermask = GfPhysics.GetLayerMask(gameObject.layer);
-
-        if (updatePhysicsValues)
+        bool foundCollisions = false;
+        if (!ignorePhysics)
         {
-            ValidateCollisionArchetype();
-            m_archetypeCollision.UpdateValues();
+            Vector3 lastNormal = Zero3;
+
+            Collider[] colliderbuffer = GfPhysics.GetCollidersArray();
+            int layermask = GfPhysics.GetLayerMask(gameObject.layer);
+
+            if (updatePhysicsValues)
+            {
+                ValidateCollisionArchetype();
+                m_archetypeCollision.UpdateValues();
+            }
+
+
+            if (m_useSimpleCollision)
+                foundCollisions = UpdatePhysicsDiscrete(ref position, deltaTime, colliderbuffer, layermask);
+            else
+                foundCollisions = UpdatePhysicsContinuous(ref position, deltaTime, colliderbuffer, GfPhysics.GetRaycastHits(), layermask);
         }
-
-
-        if (m_useSimpleCollision)
-            UpdatePhysicsDiscrete(ref position, deltaTime, colliderbuffer, layermask);
         else
-            UpdatePhysicsContinuous(ref position, deltaTime, colliderbuffer, GfPhysics.GetRaycastHits(), layermask);
+        {
+            GfTools.Add3(ref position, deltaTime * m_velocity);
+        }
 
         AfterPhysChecks(deltaTime);
 
@@ -339,10 +348,14 @@ public abstract class GfMovementGeneric : MonoBehaviour
         m_lastRotation = m_transform.rotation;
 
         if (!m_isGrounded) m_slopeNormal = m_upVec;
+
+        return foundCollisions;
     }
 
-    private void UpdatePhysicsDiscrete(ref Vector3 position, float deltaTime, Collider[] colliderbuffer, int layermask)
+    private bool UpdatePhysicsDiscrete(ref Vector3 position, float deltaTime, Collider[] colliderbuffer, int layermask)
     {
+        bool foundCollisions = false;
+
         Vector3 lastNormal = Zero3;
         Vector3 addedDownpull = Zero3;
 
@@ -372,6 +385,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherc,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                 {
+                    foundCollisions = true;
+
                     position += normal * (mindistance + TRACE_SKIN);
 
                     MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_archetypeCollision, true, true, position);
@@ -405,11 +420,13 @@ public abstract class GfMovementGeneric : MonoBehaviour
             } // for (int ci = 0; ci < numoverlaps; ci++)
 
         }// while (numpushbacks++ < MAX_PUSHBACKS && numoverlaps != 0)
+
+        return foundCollisions;
     }
 
-    private void UpdatePhysicsContinuous(ref Vector3 position, float deltaTime, Collider[] colliderbuffer, RaycastHit[] tracesbuffer, int layermask)
+    private bool UpdatePhysicsContinuous(ref Vector3 position, float deltaTime, Collider[] colliderbuffer, RaycastHit[] tracesbuffer, int layermask)
     {
-
+        bool foundCollisions = false;
         Vector3 lastNormal = Zero3;
         Vector3 addedDownpull = Zero3;
         bool appliedDownpull = m_isGrounded;
@@ -439,6 +456,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherc,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                 {
+                    foundCollisions = true;
                     Vector3 auxPosition = position + normal * (mindistance + MIN_PUSHBACK_DEPTH);
                     MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_archetypeCollision, true, true, auxPosition);
                     collision.isGrounded = CheckGround(collision);
@@ -491,9 +509,10 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
                 m_archetypeCollision.Trace(position, traceDir, _tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, OVERLAP_SKIN, out numCollisions);/* prevent tunneling by using this skin length */
                 MgCollisionStruct collision = ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, position);
-                
+
                 if (_i0 > -1 && collision.touched) /* we found something in our trace */
                 {
+                    foundCollisions = true;
                     RaycastHit _closest = tracesbuffer[_i0];
                     collision.isGrounded = CheckGround(collision);
 
@@ -518,6 +537,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
             //break; //if (_tracelen > MIN_DISPLACEMENT)        
         } // while (numbumps++ <= MAX_BUMPS && timefactor > 0)
+
+        return foundCollisions;
     }
 
     private const float INV_180 = 0.005555555555f;
@@ -559,6 +580,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
             m_transform.rotation = upVecRotCorrection * m_transform.rotation;
             m_rotationUpVec = upVecRotCorrection * m_rotationUpVec;
+            m_desiredRotation = upVecRotCorrection * m_desiredRotation;
         }
     }
 
@@ -590,7 +612,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
             {
                 MgCollisionStruct stairCollision = new(stairHit.normal, m_upVec, stairHit.collider, stairHit.point, true, m_archetypeCollision, true, false, position);
                 stairCollision.isGrounded = CheckGround(stairCollision);
-                if(stairCollision.isGrounded) {
+                if (stairCollision.isGrounded)
+                {
                     collision = stairCollision;
                     m_isGrounded = true;
                     //  Debug.Log("yeeee found stair ");

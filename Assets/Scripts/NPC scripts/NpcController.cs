@@ -17,6 +17,9 @@ public class NpcController : MonoBehaviour
     protected float m_updateInterval = 0.05f;
 
     [SerializeField]
+    protected bool m_usesRigidBody = false;
+
+    [SerializeField]
     protected bool m_usesFixedUpdate = true;
 
     [SerializeField]
@@ -84,7 +87,7 @@ public class NpcController : MonoBehaviour
 
     void Update()
     {
-        if(!m_usesFixedUpdate)
+        if (!m_usesFixedUpdate)
         {
             float deltaTime = Time.deltaTime;
             m_timeUntilNextStateUpdate -= deltaTime;
@@ -99,12 +102,12 @@ public class NpcController : MonoBehaviour
                 m_timeUntilNextStateUpdate = System.MathF.Max(deltaTime, m_timeUntilNextStateUpdate);
                 StateUpdate(stateDelta, m_timeUntilNextStateUpdate);
             }
-        }  
+        }
     }
 
     void FixedUpdate()
     {
-        if(m_usesFixedUpdate)
+        if (m_usesFixedUpdate)
         {
             float deltaTime = Time.deltaTime;
             StateUpdate(deltaTime, deltaTime);
@@ -135,13 +138,15 @@ public class NpcController : MonoBehaviour
                 NoDestinationsBehaviour();
             }
 
-            m_movement.UpdatePhysics(deltaTime, true, timeUntilNextUpdate, m_updatePhysicsValuesAutomatically);
+            if (!m_usesRigidBody)
+                m_movement.UpdatePhysics(deltaTime, true, timeUntilNextUpdate, m_updatePhysicsValuesAutomatically);
         }
     }
 
     void LateUpdate()
     {
-        m_movement.Move(Time.deltaTime);
+        if (!m_usesRigidBody)
+            m_movement.Move(Time.deltaTime);
     }
 
     protected bool CheckCanSeeTarget(Transform target, float lineOfSightLength, bool currentlySeesTarget, bool unlimitedFov = false, bool forceRayCast = false)
