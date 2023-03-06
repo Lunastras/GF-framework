@@ -30,8 +30,6 @@ public class GfMovementWallrun : GfMovementSimple
     [SerializeField]
     private float m_maxWallRunDistance = 11;
 
-    [SerializeField]
-    private bool m_noCalculations = false;
     protected bool m_isWallRunning = false;
 
     protected bool m_touchedWallThisFrame = false;
@@ -58,12 +56,7 @@ public class GfMovementWallrun : GfMovementSimple
 
     protected override void BeforePhysChecks(float deltaTime)
     {
-        Debug.Log("The velocity is: " + m_velocity);
-        if (m_noCalculations)
-        {
-            m_velocity = Zero3;
-            return;
-        }
+
 
         m_deltaTime = deltaTime;
         m_secondsUntilWallDetach = System.MathF.Max(-1, m_secondsUntilWallDetach - deltaTime); //prevent overflow
@@ -260,7 +253,7 @@ public class GfMovementWallrun : GfMovementSimple
         Transform collisionTrans = collision.collider.transform;
         bool canWallRun = WallCollisionCheck(collision);
 
-        if (false && (canWallRun || collision.isGrounded) && collisionTrans != m_parentTransform)
+        if ((canWallRun || collision.isGrounded) && collisionTrans != m_parentTransform)
             SetParentTransform(collisionTrans);
 
         m_touchedParent |= (canWallRun || collision.isGrounded) && m_parentTransform == collisionTrans;

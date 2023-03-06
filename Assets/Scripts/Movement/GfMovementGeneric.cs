@@ -230,7 +230,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public void Move(float deltaTime)
     {
         double currentTime = Time.timeAsDouble;
-        Vector3 movementThisFrame = Zero3;//GetParentMovement(m_transform.position, deltaTime, currentTime);
+        Vector3 movementThisFrame = GetParentMovement(m_transform.position, deltaTime, currentTime);
 
         if (m_interpolateThisFrame)
         {
@@ -265,7 +265,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     public bool UpdatePhysics(float deltaTime, bool updateParentMovement = true, float timeUntilNextUpdate = -1, bool updatePhysicsValues = true, bool ignorePhysics = false)
     {
-        Vector3 trueInitialPos = m_transform.position;
         if (m_interpolateThisFrame)
         {
             float correctionFactor = 1.0f - m_accumulatedTimefactor;
@@ -299,8 +298,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         m_interpolateThisFrame = m_useInterpolation; //&& Time.deltaTime < m_timeBetweenPhysChecks;
 
-        Debug.Log("The movement was0: " + (position - trueInitialPos));
-
         bool foundCollisions = false;
         if (!ignorePhysics)
         {
@@ -328,8 +325,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         AfterPhysChecks(deltaTime);
 
-        Debug.Log("The movement was1: " + (position - trueInitialPos));
-
         /* TRACING SECTION END*/
         if (m_interpolateThisFrame)
         {
@@ -349,8 +344,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
             m_transform.position = position;
             UpdateSphericalOrientation(deltaTime, false);
         }
-        Debug.Log("The movement was2: " + (position - trueInitialPos));
-
 
         m_lastRotation = m_transform.rotation;
 
