@@ -10076,7 +10076,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CanFly: 0
-  m_useInterpolation: 1
+  m_useInterpolation: 0
   m_speed: 9
   m_mass: 45
   m_stepOffset: 0.3
@@ -10084,7 +10084,7 @@ MonoBehaviour:
   m_upperSlopeLimit: 130
   m_queryTrigger: 0
   m_fullRotationSeconds: 1
-  m_useSimpleCollision: 0
+  m_useSimpleCollision: 1
   m_maxAngleNoSmoothDeg: 5
   JumpTrigger: 0
   m_velocity: {x: 0, y: 0, z: 0}
@@ -10108,6 +10108,7 @@ MonoBehaviour:
   m_wallrunNormalMaxDot: 0.7
   m_wallrunSpeedRequired: 6
   m_maxWallRunDistance: 11
+  m_noCalculations: 0
 --- !u!1 &444923901
 GameObject:
   m_ObjectHideFlags: 0
@@ -10154,14 +10155,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: 6d3ce2aeb44781244a30fd4e644f71ea, type: 2}
-  m_DrawDistance: 10
-  m_FadeScale: 0
+  m_DrawDistance: 10000
+  m_FadeScale: 1
   m_StartAngleFade: 180
   m_EndAngleFade: 180
   m_UVScale: {x: 1, y: 1}
   m_UVBias: {x: 0, y: 0}
   m_ScaleMode: 0
-  m_Offset: {x: 0, y: 0, z: 0}
+  m_Offset: {x: 0, y: 0, z: -5.7}
   m_Size: {x: 1, y: 1, z: 10}
   m_FadeFactor: 1
 --- !u!114 &444923904
@@ -10177,16 +10178,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_projector: {fileID: 444923903}
-  m_selfCollider: {fileID: 0}
-  m_pivot: {x: 0, y: 0, z: 0}
-  m_intervalObjCheck: 0.5
-  m_intervalDistanceCheck: 0.1
-  m_updateVariance: 0.1
+  m_selfCollider: {fileID: 413798921}
+  m_intervalObjCheck: 0.1
+  m_intervalDistanceCheck: 0.02
+  m_updateVariance: 0
   m_maxProjectionDistance: 20
   m_opacityMultiplier: 1
+  m_extraDepth: 2
   m_layerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 133633
+  m_useInterpolation: 1
 --- !u!114 &467963259 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 916576516595235586, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca,
@@ -15216,7 +15218,7 @@ PrefabInstance:
     - target: {fileID: 3676997061914269406, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
       propertyPath: field of view
-      value: 87
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269406, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -15340,7 +15342,7 @@ PrefabInstance:
     - target: {fileID: 4759944753111975130, guid: 6df6120ef64359346a9967a4589f3b71,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6df6120ef64359346a9967a4589f3b71, type: 3}
@@ -15379,7 +15381,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: -90, y: -14.85, z: 0}
 --- !u!119 &1075666712
 Projector:
-  m_ObjectHideFlags: 2
+  m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}

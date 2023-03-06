@@ -267,7 +267,6 @@ public class LoadoutManager : MonoBehaviour
 
         if (null == objectToReturn)
         {
-            Debug.Log("The object was null");
             objectToReturn = GfPooling.PoolInstantiate(reference).GetComponent<WeaponBasic>();
         }
 

@@ -12,9 +12,9 @@ public class ArchetypeCollision
 
     public virtual Vector3 GetLocalBottomPoint() { return Vector3.zero; }
 
-    public virtual void Trace(Vector3 _pos, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float bias, float skin, out int _tracecount) { _tracecount = 0; }
+    public virtual void Trace(Vector3 _pos, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float bias, out int _tracecount) { _tracecount = 0; }
 
-    public virtual void Overlap(Vector3 _pos, int _filter, QueryTriggerInteraction _interacttype, Collider[] _colliders, float skin, out int _overlapcount) { _overlapcount = 0; }
+    public virtual void Overlap(Vector3 _pos, int _filter, QueryTriggerInteraction _interacttype, Collider[] _colliders, out int _overlapcount) { _overlapcount = 0; }
 }
 
 public class ArchetypeCapsule : ArchetypeCollision
@@ -106,18 +106,16 @@ public class ArchetypeCapsule : ArchetypeCollision
         m_radiusOverlap = m_radius + OVERLAP_SKIN;
     }
 
-    public override void Trace(Vector3 _pos, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float bias, float skin, out int _tracecount)
+    public override void Trace(Vector3 _pos, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float bias, out int _tracecount)
     {
         GfTools.Minus3(ref _pos, _direction * bias);
-        Vector3 topOffset = m_topDir * (skin + m_halfHeight);
-        _tracecount = Physics.CapsuleCastNonAlloc(_pos - m_topOffset, _pos + m_topOffset, m_radius + skin, _direction,
+        _tracecount = Physics.CapsuleCastNonAlloc(_pos - m_topOffset, _pos + m_topOffset, m_radius, _direction,
              _hits, _len + bias, _filter, _interacttype);
     }
 
-    public override void Overlap(Vector3 _pos, int _filter, QueryTriggerInteraction _interacttype, Collider[] _colliders, float skin, out int _overlapcount)
+    public override void Overlap(Vector3 _pos, int _filter, QueryTriggerInteraction _interacttype, Collider[] _colliders, out int _overlapcount)
     {
-        Vector3 topOffset = m_topDir * (skin + m_halfHeight);
-        _overlapcount = Physics.OverlapCapsuleNonAlloc(_pos - topOffset, _pos + topOffset, m_radiusOverlap + skin, _colliders, _filter, _interacttype);
+        _overlapcount = Physics.OverlapCapsuleNonAlloc(_pos - m_topOffset, _pos + m_topOffset, m_radiusOverlap, _colliders, _filter, _interacttype);
     }
 }
 
@@ -133,9 +131,10 @@ public class ArchetypeSphere : ArchetypeCollision
         m_collider = collider;
     }
 
-    public override Vector3 GetLocalBottomPoint() { 
+    public override Vector3 GetLocalBottomPoint()
+    {
         Vector3 botDir = m_collider.transform.up;
-        GfTools.Mult3(ref botDir, - m_radius);
+        GfTools.Mult3(ref botDir, -m_radius);
         return botDir;
     }
 
@@ -161,15 +160,15 @@ public class ArchetypeSphere : ArchetypeCollision
     public override Vector3 InnerRayCast(Vector3 dir) { return dir * m_radius; }
 
 
-    public override void Trace(Vector3 _pos, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float bias, float skin, out int _tracecount)
+    public override void Trace(Vector3 _pos, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float bias, out int _tracecount)
     {
         GfTools.Minus3(ref _pos, _direction * bias);
 
-        _tracecount = Physics.SphereCastNonAlloc(_pos, m_radius + skin, _direction, _hits, _len + bias, _filter, _interacttype);
+        _tracecount = Physics.SphereCastNonAlloc(_pos, m_radius, _direction, _hits, _len + bias, _filter, _interacttype);
     }
 
-    public override void Overlap(Vector3 _pos, int _filter, QueryTriggerInteraction _interacttype, Collider[] _colliders, float skin, out int _overlapcount)
+    public override void Overlap(Vector3 _pos, int _filter, QueryTriggerInteraction _interacttype, Collider[] _colliders, out int _overlapcount)
     {
-        _overlapcount = Physics.OverlapSphereNonAlloc(_pos, m_radiusOverlap + skin, _colliders, _filter, _interacttype);
+        _overlapcount = Physics.OverlapSphereNonAlloc(_pos, m_radiusOverlap, _colliders, _filter, _interacttype);
     }
 }

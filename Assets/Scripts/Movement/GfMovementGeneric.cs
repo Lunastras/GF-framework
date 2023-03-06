@@ -230,7 +230,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public void Move(float deltaTime)
     {
         double currentTime = Time.timeAsDouble;
-        Vector3 movementThisFrame = GetParentMovement(m_transform.position, deltaTime, currentTime);
+        Vector3 movementThisFrame = Zero3;//GetParentMovement(m_transform.position, deltaTime, currentTime);
 
         if (m_interpolateThisFrame)
         {
@@ -265,6 +265,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     public bool UpdatePhysics(float deltaTime, bool updateParentMovement = true, float timeUntilNextUpdate = -1, bool updatePhysicsValues = true, bool ignorePhysics = false)
     {
+        Vector3 trueInitialPos = m_transform.position;
         if (m_interpolateThisFrame)
         {
             float correctionFactor = 1.0f - m_accumulatedTimefactor;
@@ -298,6 +299,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         m_interpolateThisFrame = m_useInterpolation; //&& Time.deltaTime < m_timeBetweenPhysChecks;
 
+        Debug.Log("The movement was0: " + (position - trueInitialPos));
+
         bool foundCollisions = false;
         if (!ignorePhysics)
         {
@@ -325,6 +328,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         AfterPhysChecks(deltaTime);
 
+        Debug.Log("The movement was1: " + (position - trueInitialPos));
+
         /* TRACING SECTION END*/
         if (m_interpolateThisFrame)
         {
@@ -344,6 +349,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
             m_transform.position = position;
             UpdateSphericalOrientation(deltaTime, false);
         }
+        Debug.Log("The movement was2: " + (position - trueInitialPos));
+
 
         m_lastRotation = m_transform.rotation;
 
@@ -374,7 +381,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
             if (MIN_DISPLACEMENT <= _tracelen)
                 GfTools.Add3(ref position, _trace);
 
-            m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, OVERLAP_SKIN, out numCollisions);
+            m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, out numCollisions);
 
             ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer); /* filter ourselves out of the collider buffer */
             for (int ci = numCollisions - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
@@ -446,7 +453,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         while (numbumps++ < m_maxOverlaps && numCollisions != 0)
         {
             bool groundCheckPhase = appliedDownpull;
-            m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, OVERLAP_SKIN, out numCollisions);
+            m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, out numCollisions);
             ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer); /* filter ourselves out of the collider buffer */
             for (int ci = numCollisions - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
             {
@@ -507,7 +514,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 float _traceLenInv = 1.0f / _tracelen;
                 GfTools.Mult3(ref traceDir, _traceLenInv);
 
-                m_archetypeCollision.Trace(position, traceDir, _tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, OVERLAP_SKIN, out numCollisions);/* prevent tunneling by using this skin length */
+                m_archetypeCollision.Trace(position, traceDir, _tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, out numCollisions);/* prevent tunneling by using this skin length */
                 MgCollisionStruct collision = ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, position);
 
                 if (_i0 > -1 && collision.touched) /* we found something in our trace */
@@ -600,7 +607,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         //not perfect TODO
         //Check for stair, if no stair is found, then perform normal velocity calculations
-        if (!underSlopeLimit)
+        if (!underSlopeLimit && false)
         {
             float stepHeight = GetStepHeight(collision.GetPoint(), ref position);
             Vector3 startPoint = collision.GetPoint();
