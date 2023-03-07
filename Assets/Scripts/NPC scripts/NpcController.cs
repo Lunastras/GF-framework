@@ -267,12 +267,12 @@ public class NpcController : MonoBehaviour
     protected virtual void EngageEnemyBehaviour(Vector3 dirToTarget)
     {
 
-        m_movement.SetMovementDir(dirToTarget.normalized, m_movement.UpVecEffective());
+        m_movement.SetMovementDir(dirToTarget.normalized);
     }
 
     protected virtual void LowLifeBehaviour(Vector3 dirToTarget)
     {
-        m_movement.SetMovementDir(-dirToTarget.normalized, m_movement.UpVecEffective());
+        m_movement.SetMovementDir(-dirToTarget.normalized);
     }
 
     /** TODO
@@ -282,7 +282,7 @@ public class NpcController : MonoBehaviour
     protected virtual void CalculatePathDirection(Vector3 dirToTarget)
     {
 
-        m_movement.SetMovementDir(dirToTarget.normalized, m_movement.UpVecEffective());
+        m_movement.SetMovementDir(dirToTarget.normalized);
     }
 
     protected virtual void ArrivedAtDestinationBehaviour()

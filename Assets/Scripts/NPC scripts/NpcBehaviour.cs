@@ -27,7 +27,7 @@ public class NpcBehaviour : NpcController
     protected HostileValues m_hostileValues;
 
     [SerializeField]
-    protected ParticleTurret m_turret;
+    protected WeaponTurret m_turret;
 
     [SerializeField]
     protected float m_intervalBetweenWalkPhases = 4.0f;
@@ -77,13 +77,13 @@ public class NpcBehaviour : NpcController
         m_spawnPos = transform.position;
 
         float randomRadian = GfRandom.Range(0, Mathf.PI * 2.0f);
-        m_movement.SetMovementDir(-new Vector3(Mathf.Cos(randomRadian), m_desiredYDir, Mathf.Sin(randomRadian)).normalized, m_movement.UpVecEffective());
+        m_movement.SetMovementDir(-new Vector3(Mathf.Cos(randomRadian), m_desiredYDir, Mathf.Sin(randomRadian)).normalized);
 
         if (null == m_statsNpc)
             m_statsNpc = GetComponent<StatsNpc>();
 
         if (null == m_turret)
-            m_turret = GetComponent<ParticleTurret>();
+            m_turret = GetComponent<WeaponTurret>();
 
         if (m_turret)
             m_turret.SetStatsCharacter(m_statsNpc);
@@ -176,7 +176,7 @@ public class NpcBehaviour : NpcController
 
         horizontalDir *= 1 + Mathf.Abs(m_desiredYDir);
 
-        m_movement.SetMovementDir(new Vector3(horizontalDir.x, m_desiredYDir, horizontalDir.y).normalized, m_movement.UpVecEffective());
+        m_movement.SetMovementDir(new Vector3(horizontalDir.x, m_desiredYDir, horizontalDir.y).normalized);
     }
 
 
@@ -201,12 +201,12 @@ public class NpcBehaviour : NpcController
 
                 if (dirToSpawn.magnitude >= m_maxDstFromSpawnWalk)
                 {
-                    m_movement.SetMovementDir(dirToSpawn.normalized, m_movement.UpVecEffective());
+                    m_movement.SetMovementDir(dirToSpawn.normalized);
                 }
                 else
                 {
                     float randomRadian = GfRandom.Range(0, Mathf.PI * 2.0f);
-                    m_movement.SetMovementDir(new Vector3(Mathf.Cos(randomRadian), m_desiredYDir, Mathf.Sin(randomRadian)).normalized, m_movement.UpVecEffective());
+                    m_movement.SetMovementDir(new Vector3(Mathf.Cos(randomRadian), m_desiredYDir, Mathf.Sin(randomRadian)).normalized);
                 }
             }
         }
@@ -223,7 +223,7 @@ public class NpcBehaviour : NpcController
     protected override void LowLifeBehaviour(Vector3 dirToTarget)
     {
         Debug.Log("i have low life");
-        m_movement.SetMovementDir(-dirToTarget.normalized, m_movement.UpVecEffective());
+        m_movement.SetMovementDir(-dirToTarget.normalized);
         m_turret.Stop();
     }
 
@@ -232,7 +232,7 @@ public class NpcBehaviour : NpcController
     {
         Debug.Log("i lost the target");
         PauseMovement(1);
-        m_movement.SetMovementDir(Vector3.zero, m_movement.UpVecEffective());
+        m_movement.SetMovementDir(Vector3.zero);
         m_turret.Stop();
         npcState = NpcState.NO_DESTINATION;
         SetDestination(null);
@@ -241,7 +241,7 @@ public class NpcBehaviour : NpcController
     protected override void DestinationDestroyedBehaviour()
     {
         Debug.Log("enemy was destroyed");
-        m_movement.SetMovementDir(Vector3.zero, m_movement.UpVecEffective());
+        m_movement.SetMovementDir(Vector3.zero);
         m_turret.Stop();
         npcState = NpcState.NO_DESTINATION;
         SetDestination(null);

@@ -49,7 +49,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
     private Collider m_collider;
 
     public Vector3 MovementDirRaw { get; protected set; }
-    public Vector3 MovementDirUpVec { get; protected set; } //the up direction of the given movement direction (NOT NECESSARY TO BE PERPENDICULAR)
 
     [HideInInspector]
     public bool JumpTrigger = false;
@@ -902,10 +901,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public Vector3 MovementDirComputed()
     {
         Vector3 movDir = MovementDirRaw;
-        if (!CanFly || m_isGrounded) GfTools.RemoveAxisKeepMagnitude(ref movDir, MovementDirUpVec); //remove vertical component
-
-        if ((!m_upVec.Equals(MovementDirUpVec)) && !movDir.Equals(Zero3)) //project on plane
-            movDir = GfTools.RotationTo(MovementDirUpVec, m_upVec) * movDir;
+        if (!CanFly || m_isGrounded) GfTools.RemoveAxisKeepMagnitude(ref movDir, m_upVec); //remove vertical component
 
         if (!m_slopeNormal.Equals(m_upVec) && !CanFly)
         {
@@ -916,11 +912,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
         }
 
         return movDir;
-    }
-
-    public virtual void SetMovementDir(Vector3 dir)
-    {
-        SetMovementDir(dir, UPDIR);
     }
 
     public Vector3 UpVecEstimated()
@@ -968,9 +959,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
         return m_gravityPriority;
     }
 
-    public virtual void SetMovementDir(Vector3 dir, Vector3 upVec)
+    public virtual void SetMovementDir(Vector3 dir)
     {
-        MovementDirUpVec = upVec;
         MovementDirRaw = dir;
     }
 

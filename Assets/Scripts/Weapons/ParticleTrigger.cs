@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 using System.Runtime.CompilerServices;
 
-public abstract class ParticleTrigger : DamageSource
+public abstract class ParticleTrigger : MonoBehaviour
 {
     [SerializeField]
     protected ParticleSystem m_particleSystem;

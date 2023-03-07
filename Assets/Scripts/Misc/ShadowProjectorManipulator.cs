@@ -13,32 +13,31 @@ public class ShadowProjectorManipulator : MonoBehaviour
     [SerializeField]
     private DecalProjector m_projector;
 
-    [SerializeField]
-    private Collider m_selfCollider;
+    public Collider m_selfCollider;
 
-    [SerializeField]
-    private float m_intervalObjCheck = 0.5f;
+    public float m_intervalObjCheck = 0.5f;
 
-    [SerializeField]
-    private float m_intervalDistanceCheck = 0.1f;
+    public float m_intervalDistanceCheck = 0.1f;
 
-    [SerializeField]
-    private float m_updateVariance = 0.1f;
+    public float m_updateVariance = 0.1f;
 
-    [SerializeField]
-    private float m_maxProjectionDistance = 20.0f;
+    public float m_maxProjectionDistance = 20.0f;
 
-    [SerializeField]
-    private float m_opacityMultiplier = 1.0f;
+    public float m_extraDepth = 1.0f;
 
-    [SerializeField]
-    private float m_extraDepth = 1.0f;
+    public Vector2 m_opacityStartEnd = new Vector2(1, 0);
 
-    [SerializeField]
-    private LayerMask m_layerMask;
+    public Vector2 m_sizeStart = new Vector2(2,2);
 
-    [SerializeField]
-    private bool m_useInterpolation = true;
+    public Vector2 m_sizeEnd = new Vector2(0,0);
+
+    public float m_smoothTimeOpacity = 0.1f;
+
+    public float m_smoothTimeSize = 0.1f;
+
+    public LayerMask m_layerMask;
+
+    private Vector2 m_sizeDesired;
 
     private float m_timeUntiObjCheck = 0;
     private float m_timeUntilDistanceCheck = 0;
@@ -51,11 +50,15 @@ public class ShadowProjectorManipulator : MonoBehaviour
     private Vector3 m_topPosition;
 
     private float m_desiredOpacity;
-    private float m_lastOpacity;
 
-    private float m_minTimeUntilNextUpdate;
+    private float m_smoothRefOpacity;
 
-    private float m_timeSinceInterpolationStart;
+    private Vector2 m_smoothRefSize;
+
+    private float m_projectionDepthCurrent;
+
+    [SerializeField]
+    private  Vector3 m_upDir = new Vector3(0,1,0);
 
     // Start is called before the first frame update
     void Start()
@@ -69,7 +72,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
         m_projector.size = projSize;
 
         Vector3 pivot = m_projector.pivot;
-        pivot.z = -0.5f * m_maxProjectionDistance;
+        pivot.z = 0.5f * m_maxProjectionDistance;
     }
 
     // Update is called once per frame
@@ -78,7 +81,6 @@ public class ShadowProjectorManipulator : MonoBehaviour
         float deltaTime = Time.deltaTime;
         m_timeUntiObjCheck -= deltaTime;
         m_timeUntilDistanceCheck -= deltaTime;
-        m_timeSinceInterpolationStart += deltaTime;
 
         if (0 >= m_timeUntiObjCheck)
         {
@@ -86,78 +88,69 @@ public class ShadowProjectorManipulator : MonoBehaviour
             m_timeUntilDistanceCheck = m_intervalDistanceCheck * Random.Range(1.0f - m_updateVariance, 1.0f + m_updateVariance);
 
             Vector3 topPos = m_transform.position, forward = m_transform.forward;
-            Ray ray = new Ray(topPos, -forward);
+            Ray ray = new Ray(topPos, forward);
 
             RaycastHit[] hits = GfPhysics.GetRaycastHits();
-            int traceCount = Physics.RaycastNonAlloc(ray, hits, m_maxProjectionDistance, m_layerMask);
+            int traceCount = Physics.RaycastNonAlloc(ray, hits, m_maxProjectionDistance, m_layerMask, QueryTriggerInteraction.Ignore);
             ActorTraceFilter(ref traceCount, out int closestIndex, hits);
 
-            if (closestIndex > -1)
-            {
-                m_lastCollider = hits[closestIndex].collider;
-                m_lastCollisionDistance = hits[closestIndex].distance;
-                m_desiredOpacity = m_opacityMultiplier * (1.0f - m_lastCollisionDistance / m_maxProjectionDistance);
-                m_minTimeUntilNextUpdate = System.MathF.Min(m_timeUntilDistanceCheck, m_timeUntiObjCheck);
-            }
-            else
-            {
-                m_lastCollider = null;
-                m_lastCollisionDistance = m_maxProjectionDistance;
-                m_desiredOpacity = 0;
-                m_minTimeUntilNextUpdate = m_timeUntilDistanceCheck;
-            }
+            RaycastHit hitInfo = default;
+            bool hitSomething = closestIndex > -1;
+            if (hitSomething) hitInfo = hits[closestIndex];
 
-            UpdateValues(m_lastCollisionDistance);
+            UpdateValues(hitSomething, hitInfo, m_lastCollisionDistance);
         }
 
         if (m_lastCollider && 0 >= m_timeUntilDistanceCheck)
         {
             m_timeUntilDistanceCheck = m_intervalDistanceCheck * Random.Range(1.0f - m_updateVariance, 1.0f + m_updateVariance);
 
-            Vector3 projSize = m_projector.size;
-            float projectionDepth = projSize.z;
             Vector3 topPos = m_transform.position, forward = m_transform.forward;
-            Ray ray = new Ray(topPos, -forward);
+            Ray ray = new Ray(topPos, forward);
 
-            if (m_lastCollider.Raycast(ray, out RaycastHit hitInfo, m_maxProjectionDistance))
-            {
-                m_lastCollisionDistance = hitInfo.distance;
-                m_desiredOpacity = m_opacityMultiplier * (1.0f - m_lastCollisionDistance / m_maxProjectionDistance);
-                m_minTimeUntilNextUpdate = System.MathF.Min(m_timeUntilDistanceCheck, m_timeUntiObjCheck);
-            }
-            else //didn't hit anything
-            {
-                m_lastCollider = null;
-                m_lastCollisionDistance = m_maxProjectionDistance;
-                m_desiredOpacity = 0;
-                m_minTimeUntilNextUpdate = m_timeUntilDistanceCheck;
-            }
-
-            UpdateValues(m_lastCollisionDistance);
+            bool hitSomething = m_lastCollider.Raycast(ray, out RaycastHit hitInfo, m_maxProjectionDistance);
+            UpdateValues(hitSomething, hitInfo, m_lastCollisionDistance);
         }
 
-        if (m_useInterpolation && m_minTimeUntilNextUpdate > 0)
-        {
-            float interpolationValue = m_timeSinceInterpolationStart / m_minTimeUntilNextUpdate;
-            m_projector.fadeFactor = (1.0f - interpolationValue) * m_lastOpacity + interpolationValue * m_desiredOpacity;
-        }
-        else
-        {
-            m_projector.fadeFactor = m_desiredOpacity;
-        }
+         
+        m_projector.fadeFactor = Mathf.SmoothDamp(m_projector.fadeFactor, m_desiredOpacity, ref m_smoothRefOpacity, m_smoothTimeOpacity);
+
+        Vector3 projSize = m_projector.size;
+        Vector2 widthHeight = new Vector2(projSize.x, projSize.y);
+        widthHeight = Vector2.SmoothDamp(widthHeight, m_sizeDesired, ref m_smoothRefSize, m_smoothTimeSize);
+
+        projSize.x = widthHeight.x;
+        projSize.y = widthHeight.y;
+        projSize.z = m_projectionDepthCurrent;
+        m_projector.size = projSize;
+
     }
 
-    private void UpdateValues(float projectionDepth)
+    private void UpdateValues(bool hitSomething, RaycastHit hitInfo, float projectionDepth)
     {
-        m_lastOpacity = m_projector.fadeFactor;
-        projectionDepth = m_lastCollisionDistance;
-        Vector3 projSize = m_projector.size;
-        projSize.z = projectionDepth + m_extraDepth;
-        m_projector.size = projSize;
+        if (hitSomething)
+        {
+            m_lastCollider = hitInfo.collider;
+            m_lastCollisionDistance = hitInfo.distance;
+            float distanceCoef = m_lastCollisionDistance / m_maxProjectionDistance;
+            float oneMinusDistanceCoef = (1.0f - distanceCoef);
+
+            m_desiredOpacity = m_opacityStartEnd.x * oneMinusDistanceCoef + m_opacityStartEnd.y * distanceCoef;
+            m_sizeDesired.x = m_sizeStart.x * oneMinusDistanceCoef + m_sizeEnd.x * distanceCoef;
+            m_sizeDesired.y =  m_sizeStart.y * oneMinusDistanceCoef + m_sizeEnd.y * distanceCoef;
+        }
+        else //didn't hit anything
+        {
+            m_lastCollider = null;
+            m_lastCollisionDistance = m_maxProjectionDistance;
+            m_desiredOpacity = m_opacityStartEnd.y;
+            m_sizeDesired = m_sizeEnd;
+        }
+
+        m_projectionDepthCurrent = m_lastCollisionDistance + m_extraDepth;
         Vector3 pivot = m_projector.pivot;
-        pivot.z = -0.5f * (projectionDepth + m_extraDepth);
+        pivot.z = 0.5f * m_projectionDepthCurrent;
         m_projector.pivot = pivot;
-        m_timeSinceInterpolationStart = 0;
     }
 
     private void ActorTraceFilter(ref int _tracesfound, out int _closestindex, RaycastHit[] _hits)

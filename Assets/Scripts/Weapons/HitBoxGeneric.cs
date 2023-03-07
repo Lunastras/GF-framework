@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class HitBoxGeneric : DamageSource
+public abstract class HitBoxGeneric : MonoBehaviour, DamageSource
 {
     public StatsCharacter characterStats { get; set; }
 

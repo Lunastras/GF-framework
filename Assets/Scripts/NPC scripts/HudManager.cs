@@ -51,7 +51,7 @@ public class HudManager : MonoBehaviour
         }
     }
 
-    public void UpdateWeaponSliders(List<WeaponBasic> weapons)
+    public void UpdateWeaponSliders(List<WeaponLevels> weapons)
     {
         int count =  Mathf.Min(1, weapons.Count);
 
@@ -69,7 +69,7 @@ public class HudManager : MonoBehaviour
         UpdateLevelWeaponSliders(weapons);
     }
 
-    public void UpdateLevelWeaponSliders(List<WeaponBasic> weapons)
+    public void UpdateLevelWeaponSliders(List<WeaponLevels> weapons)
     {
         int count =  Mathf.Min(1, weapons.Count);
         //Debug.Log("called to update the levels");

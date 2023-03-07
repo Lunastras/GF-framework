@@ -80,7 +80,7 @@ public class StatsPlayer : StatsCharacter
         m_damageSound.Play(m_audioObjectDamageReceived);
 
         if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
-        if (weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+        if (null != weaponUsed) weaponUsed.OnDamageDealt(damage, this);
 
         damage *= damageMultiplier;
         float damagePercent = damage / m_maxHealth;
@@ -104,7 +104,7 @@ public class StatsPlayer : StatsCharacter
     public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
     {
         if (killer) killer.OnCharacterKilled(this);
-        if (weaponUsed) weaponUsed.OnCharacterKilled(this);
+        if (null != weaponUsed) weaponUsed.OnCharacterKilled(this);
 
         IsDead = true;
         // Debug.Log("I DIED");

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class ParticleSingleHit : ParticleDamageSource
+public class ParticleSingleHit : ParticleCollision
 {
+    [SerializeField]
+    private StatsCharacter m_statsCharacter;
     [SerializeField]
     private float m_damage = 10;
     [SerializeField]
@@ -15,12 +17,12 @@ public class ParticleSingleHit : ParticleDamageSource
     [SerializeField]
     private Sound m_collisionSound;
 
-    public Transform Target { get; set; } = null;
+    private Transform m_target = null;
 
     private void OnEnable()
     {
         m_statsCharacter = null;
-        Target = null;
+        m_target = null;
     }
 
     private void OnDisable()
@@ -35,10 +37,10 @@ public class ParticleSingleHit : ParticleDamageSource
 
     private void FixedUpdate()
     {
-        if (Target)
+        if (m_target)
         {
-            transform.LookAt(Target);
-            var mainModule = m_particleSystem.main;
+            transform.LookAt(m_target);
+            //var mainModule = m_particleSystem.main;
         }
     }
 
@@ -84,7 +86,34 @@ public class ParticleSingleHit : ParticleDamageSource
         }
     }
 
-    public override void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
+    public bool IsAlive(bool withChildren = true) {
+        return m_particleSystem.IsAlive(withChildren);
+    }
 
-    public override void OnCharacterKilled(StatsCharacter damagedCharacter) { }
+    public void SetStatsCharacter(StatsCharacter stats) {
+        m_statsCharacter = stats;
+    }
+
+    public ParticleSystem GetParticleSystem() { return m_particleSystem; }
+
+    public StatsCharacter GetStatsCharacter() { return m_statsCharacter; }
+
+    public GameObject GetGameObject() { return gameObject; }
+
+    public void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
+
+    public void OnCharacterKilled(StatsCharacter damagedCharacter) { }
+
+    public void StopFiring() {
+        m_particleSystem.Stop(true);
+    }
+
+    public void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false) {
+        m_particleSystem.Play();
+    }
+
+    public void SetTarget(Transform target) { m_target = target; }
+    public Transform GetTarget() { return m_target; }
+
+    public void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false) {}
 }

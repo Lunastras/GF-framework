@@ -42,12 +42,24 @@ public class WeaponFiring : MonoBehaviour
             m_statsCharacter = GetComponent<StatsCharacter>();
 
         m_lastRayHit = new RaycastHit();
+        m_weapons = new(1);
     }
 
 
-    public void SetWeaponArray(List<WeaponBasic> weaponArray)
+    public void SetWeapon(WeaponBasic weapon, int weaponIndex)
     {
-        m_weapons = weaponArray;
+        if(m_weapons.Count > weaponIndex)
+            m_weapons[weaponIndex] = weapon;
+        else 
+            m_weapons.Add(weapon);
+    }
+
+    public void ClearWeapons() {
+        m_weapons.Clear();
+    }
+
+    public List<WeaponBasic> GetWeapons() {
+        return m_weapons;
     }
 
     // Update is called once per frame
@@ -87,7 +99,7 @@ public class WeaponFiring : MonoBehaviour
     {
         for (int i = 0; null != m_weapons && i < m_weapons.Count; ++i)
         {
-            if (m_weapons[i] != null && m_weapons[i].gameObject.activeSelf)
+            if (m_weapons[i] != null && m_weapons[i].GetGameObject().activeSelf)
                 m_weapons[i].ReleasedFire(m_lastRayHit, m_hitAnObject);
         }
     }

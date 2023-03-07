@@ -35,7 +35,7 @@ public class StatsNpc : StatsCharacter
     protected Collider m_objectCollider;
 
     [SerializeField]
-    protected ParticleTurret m_turret;
+    protected WeaponTurret m_turret;
     protected AudioSource m_audioSource;
 
     [SerializeField]
@@ -67,7 +67,7 @@ public class StatsNpc : StatsCharacter
             m_npcController = GetComponent<NpcController>();
 
         if (null == m_turret)
-            m_turret = GetComponent<ParticleTurret>();
+            m_turret = GetComponent<WeaponTurret>();
 
         if (null == m_mainGameObject)
             m_mainGameObject = gameObject;
@@ -110,7 +110,7 @@ public class StatsNpc : StatsCharacter
     public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
     {
         if (killer) killer.OnCharacterKilled(this);
-        if (weaponUsed) weaponUsed.OnCharacterKilled(this);
+        if (null != weaponUsed) weaponUsed.OnCharacterKilled(this);
         Vector3 pos = m_transform.position;
         GameParticles.PlayDeathDust(pos);
         GameParticles.PlayPowerItems(pos, m_powerItemsToDrop, m_movement);
@@ -157,7 +157,7 @@ public class StatsNpc : StatsCharacter
             return;
 
         if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
-        if (weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+        if (null != weaponUsed) weaponUsed.OnDamageDealt(damage, this);
 
         damage *= damageMultiplier;
         GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.UpVecEffective());

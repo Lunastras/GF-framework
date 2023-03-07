@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public abstract class ParticleCollision : DamageSource
+public abstract class ParticleCollision : MonoBehaviour
 {
     private int m_frameOfLastCheck = -1;
 

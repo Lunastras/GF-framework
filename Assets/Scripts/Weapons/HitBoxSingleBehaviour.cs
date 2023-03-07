@@ -83,9 +83,9 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
         CollisionBehaviour(other);
     }
 
-    public override void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
+    public void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
     
-    public override void OnCharacterKilled(StatsCharacter damagedCharacter) { }
+    public void OnCharacterKilled(StatsCharacter damagedCharacter) { }
 
 }
 

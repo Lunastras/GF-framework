@@ -31,7 +31,7 @@ public class LoadoutManager : MonoBehaviour
     // public static readonly int MAX_ODAMA = 4;
     //public static readonly int MAX_LOADOUTS = 6;
 
-    private List<WeaponBasic> m_weapons = null;
+    private List<WeaponLevels> m_weapons = null;
 
     private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
 
@@ -235,14 +235,14 @@ public class LoadoutManager : MonoBehaviour
         SetCurrentLoadout(m_currentLoadOutIndex + 1);
     }
 
-    public List<WeaponBasic> GetWeapons()
+    public List<WeaponLevels> GetWeapons()
     {
         return m_weapons;
     }
 
-    private WeaponBasic GetOdama(GameObject reference)
+    private WeaponLevels GetOdama(GameObject reference)
     {
-        WeaponBasic objectToReturn = null;
+        WeaponLevels objectToReturn = null;
 
         List<GameObject> objList = GfPooling.GetPoolList(reference);
         int listCount = 0, index = 0;
@@ -251,7 +251,7 @@ public class LoadoutManager : MonoBehaviour
         while (0 <= --index)
         {
             GameObject obj = objList[index];
-            WeaponBasic wb = obj.GetComponent<WeaponBasic>();
+            WeaponLevels wb = obj.GetComponent<WeaponLevels>();
             if (!obj.activeSelf || wb.GetStatsCharacter() == m_statsCharacter) //check if it is inactive or if they have the same character stats
             {
                 obj.SetActive(true);
@@ -267,13 +267,13 @@ public class LoadoutManager : MonoBehaviour
 
         if (null == objectToReturn)
         {
-            objectToReturn = GfPooling.PoolInstantiate(reference).GetComponent<WeaponBasic>();
+            objectToReturn = GfPooling.PoolInstantiate(reference).GetComponent<WeaponLevels>();
         }
 
         return objectToReturn;
     }
 
-    private void DestroyOdama(WeaponBasic weaponToDestroy)
+    private void DestroyOdama(WeaponLevels weaponToDestroy)
     {
         weaponToDestroy.StopFiring();
         OdamaBehaviour ob = weaponToDestroy.GetComponent<OdamaBehaviour>();
@@ -301,6 +301,8 @@ public class LoadoutManager : MonoBehaviour
             int weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
             float angleBetweenOdamas = 360.0f / weaponsCount;
 
+            m_weaponFiring.ClearWeapons();
+
             for (i = 0; i < weaponsCount; ++i)
             {
                 GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].weapon);
@@ -314,11 +316,11 @@ public class LoadoutManager : MonoBehaviour
 
                 m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
                 ob.transform.position = transform.position;
+                m_weaponFiring.SetWeapon(m_weapons[i], i);
             }
 
             //refresh the levelweapons
             RefreshExpForWeapons();
-            m_weaponFiring.SetWeaponArray(m_weapons);
         }
 
     }

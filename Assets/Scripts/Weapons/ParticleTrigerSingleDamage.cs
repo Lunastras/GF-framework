@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 using System.Runtime.CompilerServices;
 
-public class ParticleTrigerSingleDamage : ParticleTrigger
+public class ParticleTrigerSingleDamage : ParticleTrigger, DamageSource
 {
     [SerializeField]
     protected StatsCharacter m_statsCharacter;
@@ -47,12 +47,11 @@ public class ParticleTrigerSingleDamage : ParticleTrigger
 
     protected virtual void HitCollision(ref ParticleSystem.Particle particle, GameObject hitObject)
     {
-
     }
 
-    public override void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
+    public void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
     
-    public override void OnCharacterKilled(StatsCharacter damagedCharacter) { }
+    public void OnCharacterKilled(StatsCharacter damagedCharacter) { }
 
     public void SetStatsCharacter(StatsCharacter value, bool setChildren = true)
     {

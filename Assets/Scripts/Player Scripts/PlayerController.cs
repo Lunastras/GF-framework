@@ -101,7 +101,7 @@ public class PlayerController : MonoBehaviour
             }
 
             Vector3 movementDir = cameraForward + cameraRight;
-            m_movement.SetMovementDir(movementDir, upVec);
+            m_movement.SetMovementDir(movementDir);
         }
         else
         {
