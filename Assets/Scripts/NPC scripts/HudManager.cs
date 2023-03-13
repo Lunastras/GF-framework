@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class HudManager : MonoBehaviour
 {
     [SerializeField]
-    private GameObject levelSliderPrefab;
+    private GameObject levelSliderPrefab = null;
 
     [SerializeField]
     private float levelSlidersYOffset = 0;
@@ -15,7 +15,7 @@ public class HudManager : MonoBehaviour
     //  private Dictionary<GameObject, int> weaponFrequency;
 
     [SerializeField]
-    private RectTransform levelSlidersParent;
+    private RectTransform levelSlidersParent = null;
 
     private WeaponLevelSlider[] weaponSliders = null;
 
@@ -53,7 +53,7 @@ public class HudManager : MonoBehaviour
 
     public void UpdateWeaponSliders(List<WeaponLevels> weapons)
     {
-        int count =  Mathf.Min(1, weapons.Count);
+        int count = Mathf.Min(1, weapons.Count);
 
         //Debug.Log("called to update the level bars");
         if (weapons != null)
@@ -71,7 +71,7 @@ public class HudManager : MonoBehaviour
 
     public void UpdateLevelWeaponSliders(List<WeaponLevels> weapons)
     {
-        int count =  Mathf.Min(1, weapons.Count);
+        int count = Mathf.Min(1, weapons.Count);
         //Debug.Log("called to update the levels");
         for (int i = 0; i < count; ++i)
         {

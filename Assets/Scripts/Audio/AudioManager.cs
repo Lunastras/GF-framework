@@ -5,15 +5,14 @@ using UnityEngine.UI;
 
 public class AudioManager : MonoBehaviour
 {
+    private static AudioManager m_instance = null;
     [SerializeField]
-    private static AudioManager m_instance;
-    [SerializeField]
-    private AudioMixerGroup[] m_mixerGroups;
+    private AudioMixerGroup[] m_mixerGroups = null;
 
     [SerializeField]
-    private GameObject m_audioObjectPrefab;
+    private GameObject m_audioObjectPrefab = null;
 
-    private static readonly Vector3 ZERO3;
+    private static readonly Vector3 ZERO3 = Vector3.zero;
 
     void Awake()
     {
@@ -25,7 +24,7 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        
+
     }
 
     public void Play(string sound)

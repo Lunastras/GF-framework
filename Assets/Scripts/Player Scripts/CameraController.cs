@@ -3,7 +3,7 @@
 public class CameraController : MonoBehaviour
 {
     [SerializeField]
-    private Transform m_mainTarget;
+    private Transform m_mainTarget = null;
 
     [SerializeField]
     private float m_sensitivity = 1;
@@ -43,30 +43,23 @@ public class CameraController : MonoBehaviour
 
     //Internal script variables
 
-    private Vector3 m_refRotationVelocity;
-    private Vector3 m_refTargetPosVelocity;
-    private float m_refDistanceVel;
+    private Vector3 m_refTargetPosVelocity = default;
+    private float m_refDistanceVel = 0;
 
-    private Vector3 m_currentRotation;
-    private float m_distanceSmoothSpeed;
+    private float m_yaw = 0;
+    private float m_pitch = 0;
 
-    private float m_yaw;
-    private float m_pitch;
+    private Vector3 m_currentTargetPos = default;
+    private float m_currentTargetDst = 0;
+    private float m_currentDesiredDst = 0;
 
-    private Vector3 m_currentTargetPos;
-    private float m_currentTargetDst;
-    private float m_currentDesiredDst;
-
-
-    private float m_timeUntilPhysCheck;
-
-    private Transform m_aimTarget;
+    private float m_timeUntilPhysCheck = 0;
 
     private bool m_collidingWithSmth = false;
 
-    private RaycastHit m_raycastHit;
+    private RaycastHit m_raycastHit = default;
 
-    private Camera m_camera;
+    private Camera m_camera = null;
 
 
 
@@ -85,7 +78,6 @@ public class CameraController : MonoBehaviour
         m_camera = GetComponent<Camera>();
         m_camera.depthTextureMode |= DepthTextureMode.Depth;
 
-        m_aimTarget = null;
         m_currentTargetDst = m_dstFromtarget;
         m_currentDesiredDst = m_dstFromtarget;
     }

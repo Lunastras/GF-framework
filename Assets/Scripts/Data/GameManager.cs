@@ -10,9 +10,9 @@ public class GameManager : MonoBehaviour
     public static GameManager gameManager;
 
     [SerializeField]
-    private Transform player;
+    private Transform player = null;
 
-    private bool isPaused;
+    private bool isPaused = false;
 
 
     // Start is called before the first frame update
@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
 
         if (player == null)
         {
-           // player = FindObjectOfType<MovementAdvanced>().transform;
+            // player = FindObjectOfType<MovementAdvanced>().transform;
         }
     }
 

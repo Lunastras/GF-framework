@@ -105,7 +105,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
     private double m_timeOfLastPhysCheck;
 
     private bool m_interpolateThisFrame = false;
-    private bool m_validatedParentVertical; //whether the vertical movement of the parent was accounted to the actor's position
 
     private ArchetypeCollision m_archetypeCollision;
     static readonly protected Vector3 Zero3 = new Vector3(0, 0, 0);
@@ -776,7 +775,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         if (parent && parent != m_parentTransform && (m_parentTransformPriority <= priority))
         {
             if (m_parentTransform) DetachFromParentTransform(true, priority);
-            m_adjustedVelocityToParent = m_validatedParentVertical = false;
+            m_adjustedVelocityToParent = false;
             m_timeOfLastParentPosUpdate = m_timeOfLastParentRotUpdate = Time.time;
 
             m_parentRotMov = m_parentPosMov = Zero3;

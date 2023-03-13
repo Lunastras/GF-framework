@@ -2,19 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponTurret : MonoBehaviour
+public class WeaponTurret : DamageSource
 {
     [SerializeField]
-    private WeaponTurretPhase[] m_turretPhases;
+    private WeaponTurretPhase[] m_turretPhases = null;
 
     [SerializeField]
-    private StatsCharacter m_statsCharacter;
+    private bool m_autoPlay = false;
 
     [SerializeField]
-    private bool m_autoPlay;
-
-    [SerializeField]
-    private bool m_autoRestarts;
+    private bool m_autoRestarts = false;
 
     private static readonly float[] DEFAULT_WAIT_TIME = { 0 };
 
@@ -23,21 +20,30 @@ public class WeaponTurret : MonoBehaviour
     private bool m_firing = false;
 
     private float m_timeUntilPlay = 0;
-    private int m_requestedPhase;
+    private int m_requestedPhase = 0;
 
     private bool m_delayForcePlay = true;
 
     public bool m_destoryWhenDone = false;
 
-    public GameObject m_objectToDestroy;
+    public GameObject m_objectToDestroy = null;
 
     private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
 
     // Start is called before the first frame update
     void Start()
     {
-        if (null == m_statsCharacter)
-            m_statsCharacter = GetComponent<StatsCharacter>();
+        if (GetStatsCharacter() == null)
+            SetStatsCharacter(GetComponent<StatsCharacter>());
+
+        for (int i = 0; i < m_turretPhases.Length; ++i)
+        {
+            var weapons = m_turretPhases[i].weapons;
+            for (int j = 0; j < weapons.Length; ++j)
+            {
+                weapons[j].m_parentDamageSource = this;
+            }
+        }
     }
 
     private void Update()
@@ -46,7 +52,7 @@ public class WeaponTurret : MonoBehaviour
         {
             GfPooling.Destroy(m_objectToDestroy);
         }
-        else 
+        else
         {
             if (m_autoPlay && m_firing)
             {
@@ -186,20 +192,6 @@ public class WeaponTurret : MonoBehaviour
         }
     }
 
-    public void SetStatsCharacter(StatsCharacter stats)
-    {
-        m_statsCharacter = stats;
-        int phasesLength = m_turretPhases.Length;
-        for (int i = 0; i < phasesLength; ++i)
-        {
-            WeaponTurretPhase phase = m_turretPhases[i];
-            WeaponBasic[] systems = m_turretPhases[i].weapons;
-            int systemsLength = systems.Length;
-            for (int j = 0; j < systemsLength; ++j)
-                systems[j].SetStatsCharacter(stats);
-        }
-    }
-
     public void SetRotation(Quaternion rotation)
     {
         if (m_turretPhases.Length > 0)
@@ -253,5 +245,5 @@ public class WeaponTurretPhase
     [SerializeReference]
     public WeaponBasic[] weapons;
 
-   // public float timeUntilNextPhase;
+    // public float timeUntilNextPhase;
 }

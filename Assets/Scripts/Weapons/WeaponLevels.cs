@@ -4,20 +4,20 @@ using UnityEngine;
 
 public class WeaponLevels : WeaponBasic
 {
-   [SerializeField]
-    private AudioSource audioSource;
+    [SerializeField]
+    private AudioSource audioSource = null;
 
     [SerializeField]
-    protected WeaponTurret turret;
+    protected WeaponTurret turret = null;
 
     [SerializeField]
-    public Sound[] levelFireSounds;
+    public Sound[] levelFireSounds = null;
 
     [SerializeField]
-    public Sound[] levelReleaseFireSounds;
+    public Sound[] levelReleaseFireSounds = null;
 
     [SerializeField]
-    public float[] expRequiredForLevels;
+    public float[] expRequiredForLevels = null;
 
 
 
@@ -73,12 +73,6 @@ public class WeaponLevels : WeaponBasic
             else
                 gameObject.SetActive(false);
         }
-    }
-
-    public override void SetStatsCharacter(StatsCharacter value)
-    {
-        m_statsCharacter = value;
-        turret.SetStatsCharacter(value);
     }
 
     protected Sound GetFireSound()

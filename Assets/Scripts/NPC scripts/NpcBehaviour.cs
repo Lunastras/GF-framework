@@ -24,10 +24,10 @@ public class NpcBehaviour : NpcController
 
 
     [SerializeField]
-    protected HostileValues m_hostileValues;
+    protected HostileValues m_hostileValues = null;
 
     [SerializeField]
-    protected WeaponTurret m_turret;
+    protected WeaponTurret m_turret = null;
 
     [SerializeField]
     protected float m_intervalBetweenWalkPhases = 4.0f;
@@ -47,14 +47,14 @@ public class NpcBehaviour : NpcController
 
     private float m_timeOfNextWalkChange = 0;
 
-    private Vector3 m_spawnPos;
+    private Vector3 m_spawnPos = default;
 
     protected float m_timeOfChangePhase = 0;
 
     protected float m_timeOfFireChange = 0;
     protected EngageModes m_currentPhase;
 
-    private StatsNpc m_statsNpc;
+    private StatsNpc m_statsNpc = null;
 
     private float m_timeOfNextEnemyCheck = 0;
     float m_desiredYDir = 0;
@@ -112,7 +112,7 @@ public class NpcBehaviour : NpcController
         return null;
     }
 
-    float horizontalDirOffset;
+    float horizontalDirOffset = 0;
     protected override void EngageEnemyBehaviour(Vector3 dirToTarget)
     {
         float currentTime = Time.time;

@@ -3,117 +3,104 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class ParticleSingleHit : ParticleCollision
+public class ParticleSingleHit : WeaponParticle
 {
-    [SerializeField]
-    private StatsCharacter m_statsCharacter;
     [SerializeField]
     private float m_damage = 10;
     [SerializeField]
     private bool m_canDamageSelf = false;
     [SerializeField]
-    private Sound m_damageSound;
+    private Sound m_damageSound = null;
 
     [SerializeField]
-    private Sound m_collisionSound;
+    private Sound m_collisionSound = null;
 
-    private Transform m_target = null;
+    public static List<ParticleCollisionEvent> m_collisionEvents;
+
+    protected void Awake()
+    {
+        if (GetStatsCharacter() == null)
+            SetStatsCharacter(GetComponent<StatsCharacter>());
+
+        m_collisionEvents = new(8);
+        m_particleSystem = GetComponent<ParticleSystem>();
+    }
 
     private void OnEnable()
     {
-        m_statsCharacter = null;
+        //SetStatsCharacter(null);
         m_target = null;
+    }
+
+    private void OnParticleCollision(GameObject collision)
+    {
+        StatsCharacter selfStats = GetStatsCharacter();
+        int collisionNum = m_particleSystem.GetCollisionEvents(collision, m_collisionEvents);
+        StatsCharacter collisionStats = collision.GetComponent<StatsCharacter>();
+
+        for (int i = 0; i < collisionNum; ++i)
+        {
+            ParticleCollisionEvent collisionEvent = m_collisionEvents[i];
+            if (collisionStats != null)
+            {
+                bool hitSelf = selfStats == collisionStats;
+                float damageMultiplier = HostilityManager.DamageMultiplier(selfStats, collisionStats);
+
+                //check if it can damage target
+                if (!hitSelf || (hitSelf && m_canDamageSelf))
+                    HitTarget(collisionEvent, selfStats, collisionStats, damageMultiplier, this);
+                else
+                    HitNonDamageTarget(collisionEvent, selfStats, collisionStats, damageMultiplier, this);
+            }
+            else
+            {
+                HitCollision(collisionEvent, selfStats, collision);
+            }
+        }
+
     }
 
     private void OnDisable()
     {
-        m_statsCharacter = null;
+        // SetStatsCharacter(null);
     }
 
-    protected override void InternalAwake()
-    {
-        m_statsCharacter = null == m_statsCharacter ? GetComponent<StatsCharacter>() : m_statsCharacter;
-    }
+
 
     private void FixedUpdate()
     {
         if (m_target)
         {
             transform.LookAt(m_target);
-            //var mainModule = m_particleSystem.main;
         }
     }
 
-    protected virtual bool HitTarget(StatsCharacter target, float damageMultiplier, ParticleCollisionEvent collisionEvent)
+    protected virtual bool HitTarget(ParticleCollisionEvent collisionEvent, StatsCharacter self, StatsCharacter target, float damageMultiplier, DamageSource damageSource)
     {
         //  Debug.Log("GONNA DAMAJE IT " + target.name);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
         AudioManager.PlayAudio(m_damageSound, collisionEvent.intersection);
-        target.Damage(m_damage, damageMultiplier, m_statsCharacter, this);
+        target.Damage(m_damage, damageMultiplier, self, this);
 
         return true;
     }
 
-    protected virtual bool HitNonDamageTarget(StatsCharacter target, ParticleCollisionEvent collisionEvent)
+    protected virtual bool HitNonDamageTarget(ParticleCollisionEvent collisionEvent, StatsCharacter self, StatsCharacter target, float damageMultiplier, DamageSource damageSource)
     {
         // target.Damage(damage, characterStats);
         return true;
     }
 
-    protected virtual void HitCollision(GameObject other, ParticleCollisionEvent collisionEvent)
+    protected virtual void HitCollision(ParticleCollisionEvent collisionEvent, StatsCharacter self, GameObject other)
     {
         AudioManager.PlayAudio(m_collisionSound, collisionEvent.intersection);
         GameParticles.PlayParticleDust(collisionEvent.intersection, collisionEvent.normal);
     }
 
-    protected override void CollisionBehaviour(GameObject other, ParticleCollisionEvent collisionEvent)
+    public override bool IsAlive(bool withChildren = true)
     {
-        StatsCharacter collisionStats = other.GetComponent<StatsCharacter>();
-        if (collisionStats != null)
-        {
-            bool hitSelf = m_statsCharacter == collisionStats;
-            float damageMultiplier = HostilityManager.DamageMultiplier(m_statsCharacter, collisionStats);
-
-            //check if it can damage target
-            if (!hitSelf || (hitSelf && m_canDamageSelf))
-                HitTarget(collisionStats, damageMultiplier, collisionEvent);
-            else
-                HitNonDamageTarget(collisionStats, collisionEvent);
-        }
-        else
-        {
-            HitCollision(other, collisionEvent);
-        }
-    }
-
-    public bool IsAlive(bool withChildren = true) {
         return m_particleSystem.IsAlive(withChildren);
     }
 
-    public void SetStatsCharacter(StatsCharacter stats) {
-        m_statsCharacter = stats;
-    }
-
-    public ParticleSystem GetParticleSystem() { return m_particleSystem; }
-
-    public StatsCharacter GetStatsCharacter() { return m_statsCharacter; }
-
     public GameObject GetGameObject() { return gameObject; }
-
-    public void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
-
-    public void OnCharacterKilled(StatsCharacter damagedCharacter) { }
-
-    public void StopFiring() {
-        m_particleSystem.Stop(true);
-    }
-
-    public void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false) {
-        m_particleSystem.Play();
-    }
-
-    public void SetTarget(Transform target) { m_target = target; }
-    public Transform GetTarget() { return m_target; }
-
-    public void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false) {}
 }

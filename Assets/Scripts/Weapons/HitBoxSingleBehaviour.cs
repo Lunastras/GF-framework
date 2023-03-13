@@ -5,7 +5,7 @@ using UnityEngine;
 public class HitBoxSingleBehaviour : HitBoxGeneric
 {
     [SerializeField]
-    protected SingleHitBoxValues hitBoxValues;
+    protected SingleHitBoxValues hitBoxValues = null;
 
     private float timeUntilDisable = 0;
 
@@ -82,11 +82,6 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
     {
         CollisionBehaviour(other);
     }
-
-    public void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
-    
-    public void OnCharacterKilled(StatsCharacter damagedCharacter) { }
-
 }
 
 

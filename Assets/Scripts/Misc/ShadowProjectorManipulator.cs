@@ -11,9 +11,9 @@ The world position of the object will always be the top of the projector, as in 
 public class ShadowProjectorManipulator : MonoBehaviour
 {
     [SerializeField]
-    private DecalProjector m_projector;
+    private DecalProjector m_projector = null;
 
-    public Collider m_selfCollider;
+    public Collider m_selfCollider = null;
 
     public float m_intervalObjCheck = 0.5f;
 
@@ -27,9 +27,9 @@ public class ShadowProjectorManipulator : MonoBehaviour
 
     public Vector2 m_opacityStartEnd = new Vector2(1, 0);
 
-    public Vector2 m_sizeStart = new Vector2(2,2);
+    public Vector2 m_sizeStart = new Vector2(2, 2);
 
-    public Vector2 m_sizeEnd = new Vector2(0,0);
+    public Vector2 m_sizeEnd = new Vector2(0, 0);
 
     public float m_smoothTimeOpacity = 0.1f;
 
@@ -47,8 +47,6 @@ public class ShadowProjectorManipulator : MonoBehaviour
 
     private Transform m_transform;
 
-    private Vector3 m_topPosition;
-
     private float m_desiredOpacity;
 
     private float m_smoothRefOpacity;
@@ -58,7 +56,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
     private float m_projectionDepthCurrent;
 
     [SerializeField]
-    private  Vector3 m_upDir = new Vector3(0,1,0);
+    private Vector3 m_upDir = new Vector3(0, 1, 0);
 
     // Start is called before the first frame update
     void Start()
@@ -112,7 +110,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
             UpdateValues(hitSomething, hitInfo, m_lastCollisionDistance);
         }
 
-         
+
         m_projector.fadeFactor = Mathf.SmoothDamp(m_projector.fadeFactor, m_desiredOpacity, ref m_smoothRefOpacity, m_smoothTimeOpacity);
 
         Vector3 projSize = m_projector.size;
@@ -137,7 +135,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
 
             m_desiredOpacity = m_opacityStartEnd.x * oneMinusDistanceCoef + m_opacityStartEnd.y * distanceCoef;
             m_sizeDesired.x = m_sizeStart.x * oneMinusDistanceCoef + m_sizeEnd.x * distanceCoef;
-            m_sizeDesired.y =  m_sizeStart.y * oneMinusDistanceCoef + m_sizeEnd.y * distanceCoef;
+            m_sizeDesired.y = m_sizeStart.y * oneMinusDistanceCoef + m_sizeEnd.y * distanceCoef;
         }
         else //didn't hit anything
         {

@@ -6,9 +6,9 @@ public class PickItemBehaviour : MonoBehaviour
 {
 
     [SerializeField]
-    private CollectibleType itemType;
+    private CollectibleType itemType = CollectibleType.HEALTH;
     [SerializeField]
-    private float itemValue;
+    private float itemValue = 0;
 
     [SerializeField]
     private float bopSpeed = 3f;
@@ -20,10 +20,7 @@ public class PickItemBehaviour : MonoBehaviour
     private float rotationSpeed = 20;
 
     [SerializeField]
-    private Transform itemTransform;
-
-    [SerializeField]
-    private Sound collisionSound;
+    private Transform itemTransform = null;
 
     [SerializeField]
     private float playerMagnetismRange = 10f;
@@ -38,15 +35,12 @@ public class PickItemBehaviour : MonoBehaviour
     private float timeUntilDestroy = 10;
 
     [SerializeField]
-    private Sound destroySound;
-
-    [SerializeField]
-    private GameObject destroyParticle;
+    private GameObject destroyParticle = null;
 
     // private const timeBetween 
 
-    private float initializationTime;
-    private float timeOfLastBlink;
+    private float initializationTime = 0;
+    private float timeOfLastBlink = 0;
     //time relative to timeUntilDestroy to start first blink phase
     private float firstBlinkStartPercent = 0.5f;
     private float firstBlinkInterval = 0.05f;
@@ -55,14 +49,12 @@ public class PickItemBehaviour : MonoBehaviour
     private float secondBlinkStartPercent = 0.75f;
     private float secondBlinkInterval = 0.01f;
 
-    private Transform playerTransform;
+    private Transform playerTransform = null;
 
     private float currentBopValue = 0;
-    private Rigidbody rigidBody;
+    private Rigidbody rigidBody = null;
 
-    private float refBopSmoothSpeed;
-
-    private Renderer itemRenderer;
+    private Renderer itemRenderer = null;
 
     private bool followingPlayer = false;
 
@@ -93,27 +85,32 @@ public class PickItemBehaviour : MonoBehaviour
         Initialize();
     }
 
-    public void Initialize() {
+    public void Initialize()
+    {
         initializationTime = Time.time;
         followingPlayer = false;
-        if(itemRenderer != null)
+        if (itemRenderer != null)
             itemRenderer.enabled = true;
 
-        if (rigidBody != null) {
+        if (rigidBody != null)
+        {
             rigidBody.isKinematic = false;
             rigidBody.velocity = Random.insideUnitSphere * 6;
         }
     }
 
-    private void OnEnable() {
+    private void OnEnable()
+    {
         Initialize();
     }
 
-    private void OnDisable() {
-        if (rigidBody != null) {
+    private void OnDisable()
+    {
+        if (rigidBody != null)
+        {
             rigidBody.isKinematic = true;
             rigidBody.velocity = Vector3.zero;
-            
+
         }
     }
 

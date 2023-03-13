@@ -9,6 +9,7 @@ using Unity.Burst.Intrinsics;
 using Unity.Jobs;
 using Unity.Mathematics;
 
+
 public class JobParent : MonoBehaviour
 {
     private static JobParent Instance;
@@ -90,12 +91,13 @@ public class JobParent : MonoBehaviour
             for (i = 0; i < count; ++i)
             {
                 JobChild child = list[i];
-                while (child == null && i < count) //clean up the list
+                while (i < count && child == null) //clean up the list
                 {
                     --count;
                     list[i] = list[count];
                     list.RemoveAt(count);
-                    if (child) child.SetJobParentIndex(i);
+                    child = list[i];
+                    if (i < count && child) child.SetJobParentIndex(i);
                 }
 
                 if (child && child.ScheduleJob(out handle, deltaTime))

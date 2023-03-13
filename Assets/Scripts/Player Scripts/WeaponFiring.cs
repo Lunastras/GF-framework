@@ -7,16 +7,16 @@ using UnityEngine.UI;
 public class WeaponFiring : MonoBehaviour
 {
     [SerializeField]
-    private Transform m_aimTransform;
+    private Transform m_aimTransform = null;
 
     [SerializeField]
-    private StatsCharacter m_statsCharacter;
+    private StatsCharacter m_statsCharacter = null;
 
     [SerializeField]
     private float m_distanceUpdateInterval = 0.05f;
 
     [SerializeField]
-    private float m_distanceOffset;
+    private float m_distanceOffset = 0;
 
     // [SerializeField]
     // private bool canFire = true;
@@ -48,17 +48,19 @@ public class WeaponFiring : MonoBehaviour
 
     public void SetWeapon(WeaponBasic weapon, int weaponIndex)
     {
-        if(m_weapons.Count > weaponIndex)
+        if (m_weapons.Count > weaponIndex)
             m_weapons[weaponIndex] = weapon;
-        else 
+        else
             m_weapons.Add(weapon);
     }
 
-    public void ClearWeapons() {
+    public void ClearWeapons()
+    {
         m_weapons.Clear();
     }
 
-    public List<WeaponBasic> GetWeapons() {
+    public List<WeaponBasic> GetWeapons()
+    {
         return m_weapons;
     }
 
@@ -99,7 +101,7 @@ public class WeaponFiring : MonoBehaviour
     {
         for (int i = 0; null != m_weapons && i < m_weapons.Count; ++i)
         {
-            if (m_weapons[i] != null && m_weapons[i].GetGameObject().activeSelf)
+            if (m_weapons[i] != null && m_weapons[i].gameObject.activeSelf)
                 m_weapons[i].ReleasedFire(m_lastRayHit, m_hitAnObject);
         }
     }

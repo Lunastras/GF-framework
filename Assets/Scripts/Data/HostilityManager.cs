@@ -6,7 +6,7 @@ using System;
 public class HostilityManager : MonoBehaviour
 {
     protected List<StatsCharacter>[] m_instantiatedCharacters;
-    private static HostilityManager hostilityManager = null;
+    private static HostilityManager m_hostilityManager = null;
     protected int m_numTypes = 0;
 
     [SerializeField]
@@ -16,7 +16,7 @@ public class HostilityManager : MonoBehaviour
 
     private void Awake()
     {
-        hostilityManager = this;
+        m_hostilityManager = this;
 
         foreach (int i in Enum.GetValues(typeof(CharacterTypes)))
             ++m_numTypes;
@@ -36,7 +36,7 @@ public class HostilityManager : MonoBehaviour
 
     public static float DamageMultiplier(CharacterTypes a, CharacterTypes b)
     {
-        return hostilityManager.m_typesDamageMultiplier[(int)a].array[(int)b];
+        return m_hostilityManager.m_typesDamageMultiplier[(int)a].array[(int)b];
     }
 
     public static float DamageMultiplier(StatsCharacter a, StatsCharacter b)
@@ -46,7 +46,7 @@ public class HostilityManager : MonoBehaviour
 
     public static bool EnemyWith(CharacterTypes a, CharacterTypes b)
     {
-        return hostilityManager.m_typesEnemiesWith[(int)a].array[(int)b];
+        return m_hostilityManager.m_typesEnemiesWith[(int)a].array[(int)b];
     }
 
     public static bool EnemyWith(StatsCharacter a, StatsCharacter b)
@@ -56,7 +56,7 @@ public class HostilityManager : MonoBehaviour
 
     public static List<StatsCharacter> GetCharactersOfType(CharacterTypes type)
     {
-        return hostilityManager.m_instantiatedCharacters[(int)type];
+        return m_hostilityManager.m_instantiatedCharacters[(int)type];
     }
 
     public static List<StatsCharacter> GetEnemiesList(StatsCharacter self, StatsCharacter enemy)
@@ -71,8 +71,8 @@ public class HostilityManager : MonoBehaviour
 
     public static List<StatsCharacter> GetEnemiesList(int self, int enemy)
     {
-        if (hostilityManager.m_typesEnemiesWith[self].array[enemy])
-            return hostilityManager.m_instantiatedCharacters[enemy];
+        if (m_hostilityManager.m_typesEnemiesWith[self].array[enemy])
+            return m_hostilityManager.m_instantiatedCharacters[enemy];
         else
             return null;
     }
@@ -83,7 +83,9 @@ public class HostilityManager : MonoBehaviour
 
         if (character != null && characterIndex < 0)
         {
-            List<StatsCharacter> list = hostilityManager.m_instantiatedCharacters[(int)character.GetCharacterType()];
+            ParticleTriggerDamageManager.AddCharacter(character);
+
+            List<StatsCharacter> list = m_hostilityManager.m_instantiatedCharacters[(int)character.GetCharacterType()];
             int index = list.Count;
             list.Add(character);
             character.SetCharacterIndex(index);
@@ -93,32 +95,34 @@ public class HostilityManager : MonoBehaviour
     public static void RemoveCharacter(StatsCharacter character)
     {
         int characterIndex = character.GetCharacterIndex();
-        List<StatsCharacter> list = hostilityManager.m_instantiatedCharacters[(int)character.GetCharacterType()];
+        List<StatsCharacter> list = m_hostilityManager.m_instantiatedCharacters[(int)character.GetCharacterType()];
         int lastCharacterIndex = list.Count - 1;
 
         if (-1 < characterIndex && characterIndex <= lastCharacterIndex)
         {
-            StatsCharacter lastCharacter = list[lastCharacterIndex];
-            lastCharacter.SetCharacterIndex(characterIndex);
-            list[characterIndex] = lastCharacter;
+            list[characterIndex] = list[lastCharacterIndex];
+            list[characterIndex].SetCharacterIndex(characterIndex);
             list.RemoveAt(lastCharacterIndex);
+            character.SetCharacterIndex(-1);
+
+            ParticleTriggerDamageManager.RemoveCharacter(character);
         }
     }
 
     public static void SetDamageMultiplier(CharacterTypes a, CharacterTypes b, float value, bool mutual = false)
     {
-        hostilityManager.m_typesDamageMultiplier[(int)a].array[(int)b] = value;
-        if (mutual) hostilityManager.m_typesDamageMultiplier[(int)b].array[(int)a] = value;
+        m_hostilityManager.m_typesDamageMultiplier[(int)a].array[(int)b] = value;
+        if (mutual) m_hostilityManager.m_typesDamageMultiplier[(int)b].array[(int)a] = value;
 
     }
 
     public static void SetEnemyWith(CharacterTypes a, CharacterTypes b, bool value, bool mutual = false)
     {
-        hostilityManager.m_typesEnemiesWith[(int)a].array[(int)b] = value;
-        if (mutual) hostilityManager.m_typesEnemiesWith[(int)b].array[(int)a] = value;
+        m_hostilityManager.m_typesEnemiesWith[(int)a].array[(int)b] = value;
+        if (mutual) m_hostilityManager.m_typesEnemiesWith[(int)b].array[(int)a] = value;
     }
 
-    public static int GetNumTypes() { return hostilityManager.m_numTypes; }
+    public static int GetNumTypes() { return m_hostilityManager.m_numTypes; }
 }
 
 //Used to visualise matrices in the editor

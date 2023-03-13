@@ -48,6 +48,5 @@ public abstract class ParticleTrigger : MonoBehaviour
         m_particleSystem.SetTriggerParticles(ParticleSystemTriggerEventType.Enter, m_particlesList);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     abstract protected void CollisionBehaviour(ref ParticleSystem.Particle particle, GameObject hitObject);
 }

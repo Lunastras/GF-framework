@@ -28,6 +28,11 @@ public class LoadoutManager : MonoBehaviour
 
     private int m_currentLoadOutIndex = 0;
 
+    private float m_weaponCapacityMultiplier = 1;
+    private float m_speedMultiplier = 1;
+    private float m_damageMultiplier = 1;
+    private float m_fireRateMultiplier = 1;
+
     // public static readonly int MAX_ODAMA = 4;
     //public static readonly int MAX_LOADOUTS = 6;
 
@@ -169,77 +174,6 @@ public class LoadoutManager : MonoBehaviour
         return changedWeapon;
     }
 
-    public void AddLoadout(int count = 1)
-    {
-        while (--count >= 0)
-            m_loadouts.Add(new(m_weaponCapacity));
-    }
-
-    public void RemoveLoadout(int index)
-    {
-        m_loadouts.RemoveAt(index);
-    }
-
-    public List<WeaponData> GetCurrentLoadout()
-    {
-        return m_loadouts[m_currentLoadOutIndex];
-    }
-
-    public List<WeaponData> GetLoadout(int indexLoadout)
-    {
-        return m_loadouts[indexLoadout];
-    }
-
-    public List<List<WeaponData>> GetLoadoutsList()
-    {
-        return m_loadouts;
-    }
-
-    public int GetCurrentLoadoutIndex()
-    {
-        return m_currentLoadOutIndex;
-    }
-
-    public int GetCountLoadouts()
-    {
-        return m_loadouts.Count;
-    }
-
-    public int GetCountWeapons(int indexLoadout)
-    {
-        return m_loadouts[indexLoadout].Count;
-    }
-
-    public int GetWeaponId(int indexLoadout, int indexWeapon)
-    {
-        return m_loadouts[indexLoadout][indexWeapon].weapon;
-    }
-
-    public float GetWeaponExp(int indexLoadout, int indexWeapon)
-    {
-        return m_loadouts[indexLoadout][indexWeapon].weaponExp;
-    }
-
-    public void RemoveWeapon(int indexLoadout, int indexWeapon)
-    {
-        ChangeLoadOutWeapon(-1, indexLoadout, indexWeapon);
-    }
-
-    public void NextLoadout()
-    {
-        SetCurrentLoadout(m_currentLoadOutIndex + 1);
-    }
-
-    public void PreviousLoadout()
-    {
-        SetCurrentLoadout(m_currentLoadOutIndex + 1);
-    }
-
-    public List<WeaponLevels> GetWeapons()
-    {
-        return m_weapons;
-    }
-
     private WeaponLevels GetOdama(GameObject reference)
     {
         WeaponLevels objectToReturn = null;
@@ -287,42 +221,51 @@ public class LoadoutManager : MonoBehaviour
 
     public void InternalSetCurrentLoadout(int indexLoadout)
     {
-        if (m_loadouts.Count > 0)
+        m_currentLoadOutIndex = indexLoadout % m_loadouts.Count;
+
+        int i = m_weapons.Count;
+        while (--i >= 0)
         {
-            m_currentLoadOutIndex = indexLoadout % m_loadouts.Count;
+            m_weapons[i].SetSpeedMultiplier(1);
+            m_weapons[i].SetFireRateMultiplier(1);
+            m_weapons[i].SetDamageMultiplier(1);
+            m_weapons[i].SetLoadoutCount(1);
+            m_weapons[i].SetLoadoutWeaponIndex(0);
 
-            int i = m_weapons.Count;
-            while (--i >= 0)
-            {
-                DestroyOdama(m_weapons[i]);
-                m_weapons.RemoveAt(i);
-            }
-
-            int weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
-            float angleBetweenOdamas = 360.0f / weaponsCount;
-
-            m_weaponFiring.ClearWeapons();
-
-            for (i = 0; i < weaponsCount; ++i)
-            {
-                GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].weapon);
-                m_weapons.Add(GetOdama(desiredWeapon));
-                m_weapons[i].destroyWhenDone = false;
-
-                OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
-                ob.SetAngle(i * angleBetweenOdamas);
-                ob.enabled = true;
-                ob.SetParent(m_parentMovement);
-
-                m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
-                ob.transform.position = transform.position;
-                m_weaponFiring.SetWeapon(m_weapons[i], i);
-            }
-
-            //refresh the levelweapons
-            RefreshExpForWeapons();
+            DestroyOdama(m_weapons[i]);
+            m_weapons.RemoveAt(i);
         }
 
+        int weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
+        float angleBetweenOdamas = 360.0f / weaponsCount;
+
+        m_weaponFiring.ClearWeapons();
+
+        for (i = 0; i < weaponsCount; ++i)
+        {
+            GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].weapon);
+            m_weapons.Add(GetOdama(desiredWeapon));
+            m_weapons[i].destroyWhenDone = false;
+
+            OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
+            ob.SetAngle(i * angleBetweenOdamas);
+            ob.enabled = true;
+            ob.SetParent(m_parentMovement);
+
+            m_weapons[i].SetSpeedMultiplier(m_speedMultiplier);
+            m_weapons[i].SetFireRateMultiplier(m_fireRateMultiplier);
+            m_weapons[i].SetDamageMultiplier(m_damageMultiplier);
+            m_weapons[i].SetLoadoutCount(weaponsCount);
+            m_weapons[i].SetLoadoutWeaponIndex(i);
+
+
+            m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
+            ob.transform.position = transform.position;
+            m_weaponFiring.SetWeapon(m_weapons[i], i);
+        }
+
+        //refresh the levelweapons
+        RefreshExpForWeapons();
     }
 
     public void SetCurrentLoadout(int index)
@@ -330,7 +273,17 @@ public class LoadoutManager : MonoBehaviour
         InternalSetCurrentLoadout(index);
     }
 
-    public void SetWeaponCapacity(int newCapacity, bool fillEmptyWeapons = true, bool keepSameExp = true)
+    public void SetWeaponCapacity(int newCapacity, bool repeatWeapons = true, bool keepSameExp = true)
+    {
+        if (newCapacity != m_weaponCapacity)
+        {
+            m_weaponCapacity = newCapacity;
+            int effectiveCapacity = (int)System.Math.Round(newCapacity * m_weaponCapacityMultiplier);
+            InternalSetWeaponCapacity(effectiveCapacity, repeatWeapons, keepSameExp);
+        }
+    }
+
+    private void InternalSetWeaponCapacity(int newCapacity, bool repeatWeapons, bool keepSameExp)
     {
         newCapacity = System.Math.Max(0, newCapacity);
 
@@ -339,13 +292,19 @@ public class LoadoutManager : MonoBehaviour
         {
             var loadout = m_loadouts[numLoadouts];
             int numWeapon = loadout.Count;
-            //Debug.Log("Added exp to weapons, weapon count is " + numWeapon);
+
             int weaponDiff = numWeapon - newCapacity;
             if (weaponDiff > 0) //remove extra weapons
             {
-                loadout.RemoveRange(newCapacity - 1, weaponDiff);
+                //loadout.RemoveRange(newCapacity - 1, weaponDiff);
+                while (--weaponDiff >= 0)
+                {
+                    int lastIndex = numWeapon - weaponDiff - 1;
+                    if (!m_infiniteInventory) m_weaponsInInventory[lastIndex]++;
+                    loadout.RemoveAt(lastIndex);
+                }
             }
-            else if (fillEmptyWeapons && weaponDiff < 0) //add extra weapons 
+            else if (repeatWeapons && weaponDiff < 0) //add extra weapons 
             {
                 bool hasWeapon = numWeapon > 0;
                 while (++weaponDiff <= 0)
@@ -353,7 +312,12 @@ public class LoadoutManager : MonoBehaviour
                     int indexOfCopy = hasWeapon ? loadout.Count % numWeapon : 0; //repeat the initial weapons for the refill
                     float exp = hasWeapon && keepSameExp ? loadout[indexOfCopy].weaponExp : 0;
                     int weapon = hasWeapon ? loadout[indexOfCopy].weapon : 0;
-                    loadout.Add(new(weapon, exp));
+                    bool isInInventory = 0 < m_weaponsInInventory[weapon];
+
+                    if (m_infiniteInventory || isInInventory)
+                        loadout.Add(new(weapon, exp));
+
+                    if (!m_infiniteInventory && isInInventory) m_weaponsInInventory[weapon]--;
                 }
             }
         }
@@ -362,8 +326,6 @@ public class LoadoutManager : MonoBehaviour
         {
             InternalSetCurrentLoadout(m_currentLoadOutIndex);
         }
-
-        m_weaponCapacity = newCapacity;
     }
 
     public int GetWeaponCapacity()
@@ -449,6 +411,121 @@ public class LoadoutManager : MonoBehaviour
         }
 
         m_hudManager.UpdateLevelWeaponSliders(m_weapons);
+    }
+
+    public void AddLoadout(int count = 1)
+    {
+        while (--count >= 0)
+            m_loadouts.Add(new(m_weaponCapacity));
+    }
+
+    public void RemoveLoadout(int index)
+    {
+        m_loadouts.RemoveAt(index);
+    }
+
+    public List<WeaponData> GetCurrentLoadout()
+    {
+        return m_loadouts[m_currentLoadOutIndex];
+    }
+
+    public List<WeaponData> GetLoadout(int indexLoadout)
+    {
+        return m_loadouts[indexLoadout];
+    }
+
+    public List<List<WeaponData>> GetLoadoutsList()
+    {
+        return m_loadouts;
+    }
+
+    public int GetCurrentLoadoutIndex()
+    {
+        return m_currentLoadOutIndex;
+    }
+
+    public int GetCountLoadouts()
+    {
+        return m_loadouts.Count;
+    }
+
+    public int GetCountWeapons(int indexLoadout)
+    {
+        return m_loadouts[indexLoadout].Count;
+    }
+
+    public int GetWeaponId(int indexLoadout, int indexWeapon)
+    {
+        return m_loadouts[indexLoadout][indexWeapon].weapon;
+    }
+
+    public float GetWeaponExp(int indexLoadout, int indexWeapon)
+    {
+        return m_loadouts[indexLoadout][indexWeapon].weaponExp;
+    }
+
+    public void RemoveWeapon(int indexLoadout, int indexWeapon)
+    {
+        ChangeLoadOutWeapon(-1, indexLoadout, indexWeapon);
+    }
+
+    public void NextLoadout()
+    {
+        SetCurrentLoadout(m_currentLoadOutIndex + 1);
+    }
+
+    public void PreviousLoadout()
+    {
+        SetCurrentLoadout(m_currentLoadOutIndex + 1);
+    }
+
+    public List<WeaponLevels> GetWeapons()
+    {
+        return m_weapons;
+    }
+
+
+    public virtual float GetSpeedMultiplier() { return m_speedMultiplier; }
+    public virtual void SetSpeedMultiplier(float multiplier)
+    {
+        m_speedMultiplier = multiplier; //todo
+        int weaponCount = m_weapons.Count;
+        for (int i = 0; i < weaponCount; ++i)
+        {
+            m_weapons[i].SetSpeedMultiplier(multiplier);
+        }
+    }
+
+    public virtual float GetFireRateMultiplier() { return m_fireRateMultiplier; }
+    public virtual void SetFireRateMultiplier(float multiplier)
+    {
+        m_fireRateMultiplier = multiplier; //todo
+        int weaponCount = m_weapons.Count;
+        for (int i = 0; i < weaponCount; ++i)
+        {
+            m_weapons[i].SetFireRateMultiplier(multiplier);
+        }
+    }
+
+    public virtual float GetDamageMultiplier() { return m_damageMultiplier; }
+    public virtual void SetDamageMultiplier(float multiplier)
+    {
+        m_damageMultiplier = multiplier; //todo
+        int weaponCount = m_weapons.Count;
+        for (int i = 0; i < weaponCount; ++i)
+        {
+            m_weapons[i].SetDamageMultiplier(multiplier);
+        }
+    }
+
+    public virtual float GetLoadoutSizeMultiplier() { return m_weaponCapacityMultiplier; }
+    public virtual void SetLoadoutSizeMultiplier(float multiplier, bool repeatWeapons = true, bool keepSameExp = true)
+    {
+        if (multiplier != m_weaponCapacityMultiplier)
+        {
+            int effectiveCapacity = (int)System.Math.Round(m_weaponCapacity * m_weaponCapacityMultiplier);
+            InternalSetWeaponCapacity(effectiveCapacity, repeatWeapons, keepSameExp);
+        }
     }
 }
 

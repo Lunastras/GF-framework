@@ -6,13 +6,13 @@ using static System.MathF;
 public class Sprite3DAnimator : MonoBehaviour
 {
     [SerializeField]
-    private Transform m_objectTransform;
+    private Transform m_objectTransform = null;
 
     [SerializeField]
-    private SpriteRenderer m_spriteRenderer;
+    private SpriteRenderer m_spriteRenderer = null;
 
     [SerializeField]
-    private AnimationSpriteState[] m_animationStates;
+    private AnimationSpriteState[] m_animationStates = null;
 
     //public int numTi
     [SerializeField]

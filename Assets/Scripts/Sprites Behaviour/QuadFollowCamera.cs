@@ -26,9 +26,6 @@ public class QuadFollowCamera : MonoBehaviour
 
     private static readonly Vector3 RIGHT3 = Vector3.right;
 
-    bool m_hasAJob;
-    bool m_initialised;
-
     // Start is called before the first frame update
     void Start()
     {

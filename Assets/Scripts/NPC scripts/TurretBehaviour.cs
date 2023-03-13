@@ -19,28 +19,28 @@ public class TurretBehaviour : MonoBehaviour
         public BulletEmitter[] emitters;
     }
     [SerializeField]
-    private float[] timeBetweenPhases;
+    private float[] timeBetweenPhases = null;
 
     [SerializeField]
-    private bool pausesBetweenPhases;
+    private bool pausesBetweenPhases = true;
 
     [SerializeField]
-    private bool playsOnStart;
+    private bool playsOnStart = false;
 
     [SerializeField]
-    private StatsCharacter characterStats;
+    private StatsCharacter characterStats = null;
 
     [SerializeField]
     private PhasesEndModes phasesEndBehaviour = PhasesEndModes.LOOP;
 
     [SerializeField]
-    private FiringPhase[] firingPhases;
+    private FiringPhase[] firingPhases = null;
 
     private Transform currentTarget = null;
     private Transform currentSpawnPoint = null;
     public int currentPhaseIndex { get; private set; } = 0;
     private float timeOfUnpause = 0;
-    private float[] phasesLength;
+    private float[] phasesLength = null;
 
     // Start is called before the first frame update
     void Start()

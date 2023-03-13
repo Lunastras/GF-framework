@@ -160,7 +160,6 @@ public class GfTools
             vector.y *= inv;
             vector.z *= inv;
         }
-        else vector.x = vector.y = vector.z = 0;
     }
 
     /*Props to allista from the kerbal space program forum for this incredible function*/

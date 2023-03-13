@@ -5,15 +5,16 @@ using UnityEngine;
 public class ParticlePlayerCollectible : ParticleTrigger
 {
     [SerializeField]
-    private float m_numPoints;
+    private float m_numPoints = 0;
 
     [SerializeField]
-    private CollectibleType m_type;
+    private CollectibleType m_type = CollectibleType.HEALTH;
 
     [SerializeField]
-    private float m_destroyTime;
+    private float m_destroyTime = 0;
+
     [SerializeField]
-    private ParticleHoming m_particleHoming;
+    private ParticleHoming m_particleHoming = null;
 
     // Start is called before the first frame update
     protected override void InternalAwake()

@@ -7,15 +7,17 @@ public abstract class StatsCharacter : MonoBehaviour
     [SerializeField]
     protected float m_maxHealth = 200;
 
+    [SerializeField]
+    private CharacterTypes m_characterType;
+
     protected float m_maxHealthMultiplier = 1;
 
     public bool IsDead { get; protected set; }
     protected float m_currentHealth;
 
-    [SerializeField]
-    private CharacterTypes m_characterType;
-
     private int m_characterIndex = -1;
+
+    private int m_particleTriggerDamageListIndex = -1;
 
     protected bool m_initialised = false;
 
@@ -73,6 +75,10 @@ public abstract class StatsCharacter : MonoBehaviour
     {
         m_characterIndex = index;
     }
+
+    public void SetParticleTriggerDamageIndex(int index) { m_particleTriggerDamageListIndex = index; }
+
+    public int GetParticleTriggerDamageIndex() { return m_particleTriggerDamageListIndex; }
 
     public float GetMaxHealthRaw() { return m_maxHealth; }
     public float GetMaxHealthMultiplier() { return m_maxHealthMultiplier; }

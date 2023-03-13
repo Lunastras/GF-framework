@@ -5,33 +5,33 @@ using UnityEngine;
 public class StatsPlayer : StatsCharacter
 {
     [SerializeField]
-    private WeaponFiring m_playerGun;
+    private WeaponFiring m_playerGun = null;
 
     [SerializeField]
-    private LoadoutManager m_loadoutManager;
+    private LoadoutManager m_loadoutManager = null;
 
     [SerializeField]
-    private AudioSource m_audioSource;
+    private AudioSource m_audioSource = null;
 
-    public static StatsPlayer instance;
+    public static StatsPlayer instance = null;
 
-    private AudioSource m_audioObjectPickUp;
-    private AudioSource m_audioObjectDamageDealt;
-    private AudioSource m_audioObjectDamageReceived;
+    private AudioSource m_audioObjectPickUp = null;
+    private AudioSource m_audioObjectDamageDealt = null;
+    private AudioSource m_audioObjectDamageReceived = null;
 
 
-    private Transform m_transform;
-
-    [SerializeField]
-    protected Sound m_damageSound;
+    private Transform m_transform = null;
 
     [SerializeField]
-    protected Sound m_damageDealtSound;
+    protected Sound m_damageSound = null;
 
     [SerializeField]
-    protected Sound m_deathSound;
+    protected Sound m_damageDealtSound = null;
+
     [SerializeField]
-    private Sound m_itemPickUpSound;
+    protected Sound m_deathSound = null;
+    [SerializeField]
+    private Sound m_itemPickUpSound = null;
 
     private void Awake()
     {
