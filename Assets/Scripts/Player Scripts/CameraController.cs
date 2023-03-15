@@ -9,6 +9,9 @@ public class CameraController : MonoBehaviour
     private float m_sensitivity = 1;
 
     [SerializeField]
+    private float m_targetFov = 90;
+
+    [SerializeField]
     private Vector3 m_offset = Vector3.zero;
 
     [SerializeField]
@@ -39,7 +42,14 @@ public class CameraController : MonoBehaviour
     private float m_distanceSmoothTime = 0.04f;
 
     [SerializeField]
+    private float m_fovSmoothTime = 1f;
+
+    [SerializeField]
     private bool m_invertedY = false;
+
+    private PriorityValue<float> m_distanceMultiplier = new(1);
+
+    private PriorityValue<float> m_fovMultiplier = new(1);
 
     //Internal script variables
 
@@ -61,7 +71,7 @@ public class CameraController : MonoBehaviour
 
     private Camera m_camera = null;
 
-
+    public static CameraController m_currentCamera;
 
     public Vector3 m_upvec = Vector3.up;
 
@@ -72,11 +82,18 @@ public class CameraController : MonoBehaviour
 
     private Quaternion m_rotVel = Quaternion.identity;
 
+    private float m_fovRefSpeed = 0;
+
+    private Transform m_transform;
+
     // Start is called before the first frame update
     void Start()
     {
+        m_transform = transform;
         m_camera = GetComponent<Camera>();
-        m_camera.depthTextureMode |= DepthTextureMode.Depth;
+
+        if (m_currentCamera) Destroy(m_currentCamera);
+        m_currentCamera = this;
 
         m_currentTargetDst = m_dstFromtarget;
         m_currentDesiredDst = m_dstFromtarget;
@@ -101,12 +118,9 @@ public class CameraController : MonoBehaviour
         m_lastAppliedRot = m_lastAppliedRot * Quaternion.AngleAxis(m_pitch, desiredRot * Vector3.right);
 
         desiredRot = m_lastAppliedRot * desiredRot;
-        transform.rotation = GfTools.QuatSmoothDamp(transform.rotation, desiredRot, ref m_rotVel, m_rotationSmoothTime);
+        m_transform.rotation = GfTools.QuatSmoothDamp(m_transform.rotation, desiredRot, ref m_rotVel, m_rotationSmoothTime);
 
         m_previousDesiredRot = desiredRot;
-
-
-        // transform.rotation = upvecCorrection * mouseRot;
     }
 
     // Update is called once per frame
@@ -119,7 +133,7 @@ public class CameraController : MonoBehaviour
 
         m_timeUntilPhysCheck -= deltaTime;
 
-        Vector3 forward = transform.forward;
+        Vector3 forward = m_transform.forward;
 
         if (m_timeUntilPhysCheck <= 0 && false)
         {
@@ -138,11 +152,24 @@ public class CameraController : MonoBehaviour
             }
         }
 
-        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_currentDesiredDst, ref m_refDistanceVel, m_distanceSmoothTime);
+        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_currentDesiredDst * m_distanceMultiplier, ref m_refDistanceVel, m_distanceSmoothTime);
 
-        // transform.position = currentTargetPos - forward * currentTargetDst;
-        transform.position = m_currentTargetPos - forward * m_currentTargetDst;
+        m_transform.position = m_currentTargetPos - forward * m_currentTargetDst;
+        m_camera.fieldOfView = Mathf.SmoothDamp(m_camera.fieldOfView, m_fovMultiplier * m_targetFov, ref m_fovRefSpeed, m_fovSmoothTime);
+    }
 
+    public PriorityValue<float> GetDistanceMultiplier() { return m_distanceMultiplier; }
+
+    public void SetDistanceMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        m_distanceMultiplier.SetValue(multiplier, priority, overridePriority);
+    }
+
+    public PriorityValue<float> GetFovMultiplier() { return m_fovMultiplier; }
+
+    public void SetFovMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        m_fovMultiplier.SetValue(multiplier, priority, overridePriority);
     }
 
     public void SetMainTarget(Transform target)

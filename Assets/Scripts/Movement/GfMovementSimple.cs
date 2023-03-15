@@ -18,9 +18,20 @@ public class GfMovementSimple : GfMovementGeneric
     protected float m_maxFallSpeed = 50;
     [SerializeField]
     protected float m_jumpForce = 20;
+    [SerializeField]
+    protected float m_jumpExtensionMassCoef = 0.6f;
 
     [SerializeField]
     protected float m_turnSpeed = 400;
+
+    [SerializeField]
+    protected bool m_requireJumpRelease = true;
+
+    [SerializeField]
+    protected int m_maxJumps = 1;
+
+
+    protected int m_currentJumpsCount = 0;
 
     public float AccelerationCoef = 1;
     public float DeaccelerationCoef = 1;
@@ -35,7 +46,15 @@ public class GfMovementSimple : GfMovementGeneric
 
     protected float m_currentRotationSpeed = 0;
     protected float m_rotationSmoothRef = 0;
-    
+
+    protected bool m_jumpFlagReleased = true;
+
+    protected bool m_isExtendingJump = false;
+
+    protected float m_effectiveMass = 0;
+
+    protected float m_effectiveSpeed;
+
 
     [SerializeField]
     protected bool m_breakWhenUnparent = false;
@@ -67,6 +86,8 @@ public class GfMovementSimple : GfMovementGeneric
 
     protected void CalculateEffectiveValues()
     {
+        m_isExtendingJump &= 0 < Vector3.Dot(m_velocity, m_upVec); //if falling, stop jump extending
+
         if (m_isGrounded || CanFly)
         {
             m_effectiveAcceleration = m_acceleration;
@@ -79,6 +100,10 @@ public class GfMovementSimple : GfMovementGeneric
         }
         m_effectiveAcceleration *= AccelerationCoef;
         m_effectiveDeacceleration *= DeaccelerationCoef;
+
+        m_effectiveSpeed = m_speed * m_speedMultiplier;
+        m_effectiveMass = m_mass * m_massMultiplier;
+        if (m_isExtendingJump) m_effectiveMass *= m_jumpExtensionMassCoef;
     }
 
     protected virtual void CalculateRotation(float deltaTime, Vector3 movDir)
@@ -120,7 +145,7 @@ public class GfMovementSimple : GfMovementGeneric
             effectiveVelocity.z -= slope.z * verticalFallSpeed;
 
             if (fallMaxDiff < 0)
-                fallMagn = Min(-fallMaxDiff, m_mass * deltaTime); //speed under maxFallSpeed         
+                fallMagn = Min(-fallMaxDiff, m_effectiveMass * deltaTime); //speed under maxFallSpeed         
             else
                 fallMagn = -Min(fallMaxDiff, m_effectiveDeacceleration * deltaTime);//speed equal to maxFallSpeed or higher
         }
@@ -134,7 +159,7 @@ public class GfMovementSimple : GfMovementGeneric
             dotMovementVelDir = Vector3.Dot(movDir, velDir);
         }
 
-        float desiredSpeed = m_speed * movDirMagnitude;
+        float desiredSpeed = m_effectiveSpeed * movDirMagnitude;
         float speedInDesiredDir = currentSpeed * Max(0, dotMovementVelDir);
 
         float minAux = Min(speedInDesiredDir, desiredSpeed);
@@ -163,22 +188,49 @@ public class GfMovementSimple : GfMovementGeneric
         if (JumpTrigger)
         {
             JumpTrigger = false;
-            m_velocity = m_velocity - m_upVec * Vector3.Dot(m_upVec, m_velocity);
-            m_velocity = m_velocity + m_upVec * m_jumpForce;
-            m_isGrounded = false;
-            // Debug.Log("I HAVE JUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUMPED");
-            DetachFromParentTransform();
+            if (m_jumpFlagReleased || !m_requireJumpRelease)
+            {
+                m_jumpFlagReleased = false;
+                PerformJump();
+            }
         }
-
+        else
+        {
+            m_jumpFlagReleased = true;
+            m_isExtendingJump = false;
+        }
     }
 
-    protected override void MgOnCollision(MgCollisionStruct collision)
-    {  
+    protected virtual void PerformJump()
+    {
+        DefaultJump();
+    }
+
+    protected virtual void DefaultJump()
+    {
+        if (m_maxJumps > m_currentJumpsCount)
+        {
+            m_currentJumpsCount++;
+            m_isExtendingJump = m_currentJumpsCount == 1;
+
+            GfTools.RemoveAxis(ref m_velocity, m_upVec);
+            GfTools.Add3(ref m_velocity, m_upVec * m_jumpForce);
+            m_isGrounded = false;
+
+            DetachFromParentTransform();
+        }
+    }
+
+    protected override void MgOnCollision(ref MgCollisionStruct collision)
+    {
         Transform collisionTrans = collision.collider.transform;
+
+        if (collision.isGrounded) m_currentJumpsCount = 0;
 
         if (collision.isGrounded && collisionTrans != m_parentTransform)
             SetParentTransform(collisionTrans);
 
+        m_isExtendingJump &= !collision.isGrounded && collision.upVecAngle <= m_upperSlopeLimit;
         m_touchedParent |= collision.isGrounded && m_parentTransform == collisionTrans;
     }
 }

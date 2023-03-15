@@ -34,7 +34,12 @@ public class ReusableParticleWeapon : WeaponParticle
 
     private ParticleSystem GetTemplateParticleSystem()
     {
-        return ReusableTemplateObjects.GetInstanceFromTemplate(m_particleSystemObj).GetComponent<ParticleSystem>();
+        if (!GfPooling.HasPool(m_particleSystemObj))
+            GfPooling.Pool(m_particleSystemObj, 1);
+
+        var objList = GfPooling.GetPoolList(m_particleSystemObj);
+        objList[0].SetActive(true);
+        return objList[0].GetComponent<ParticleSystem>();
     }
 
     private void Start()
@@ -107,7 +112,6 @@ public class ReusableParticleWeapon : WeaponParticle
     public override void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false)
     {
         m_firing = true;
-
     }
 
     public override void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false) { }

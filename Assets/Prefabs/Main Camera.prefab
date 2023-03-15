@@ -51,7 +51,7 @@ Camera:
   m_FOVAxisMode: 0
   m_SensorSize: {x: 36, y: 24}
   m_LensShift: {x: 0, y: 0}
-  m_FocalLength: 50
+  m_FocalLength: 0.10472272
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -108,8 +108,8 @@ MonoBehaviour:
   m_pitchMin: -89
   m_pitchMax: 89
   m_rotationSmoothTime: 0
-  m_movementSmoothTime: 0.085
-  m_distanceSmoothTime: 0
+  m_movementSmoothTime: 0.095
+  m_distanceSmoothTime: 0.5
   m_invertedY: 1
   m_upvec: {x: 0, y: 1, z: 0}
 --- !u!114 &3676997061914269402
@@ -129,16 +129,16 @@ MonoBehaviour:
   m_RequiresOpaqueTextureOption: 2
   m_CameraType: 0
   m_Cameras: []
-  m_RendererIndex: -1
+  m_RendererIndex: 0
   m_VolumeLayerMask:
     serializedVersion: 2
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
-  m_Antialiasing: 0
+  m_RenderPostProcessing: 1
+  m_Antialiasing: 2
   m_AntialiasingQuality: 2
-  m_StopNaN: 0
+  m_StopNaN: 1
   m_Dithering: 1
   m_ClearDepth: 1
   m_AllowXRRendering: 1

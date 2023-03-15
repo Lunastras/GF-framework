@@ -22,13 +22,16 @@ public class GfMovementWallrun : GfMovementSimple
     private float m_maxWallSlideSpeed = 10;
 
     [SerializeField]
-    private float m_wallrunNormalMaxDot = 0.7f;
+    private float m_wallrunNormalMinDot = 0.7f;
 
     [SerializeField]
     private float m_wallrunSpeedRequired = 6;
 
     [SerializeField]
     private float m_maxWallRunDistance = 11;
+
+    [SerializeField]
+    private float m_wallrunJumpCooldownSeconds = 0.2f;
 
     protected bool m_isWallRunning = false;
 
@@ -49,6 +52,8 @@ public class GfMovementWallrun : GfMovementSimple
 
     private float m_secondsUntilWallDetach = -1;
 
+    private float m_secondsUntilCanJump = 0;
+
     protected override void InternalStart()
     {
         if (m_useSimpleCollision) Debug.LogWarning("GfMovementWallrun does not support simple collision checks.");
@@ -56,10 +61,10 @@ public class GfMovementWallrun : GfMovementSimple
 
     protected override void BeforePhysChecks(float deltaTime)
     {
-
-
         m_deltaTime = deltaTime;
-        m_secondsUntilWallDetach = System.MathF.Max(-1, m_secondsUntilWallDetach - deltaTime); //prevent overflow
+        m_secondsUntilWallDetach -= deltaTime;
+        m_secondsUntilCanJump -= deltaTime;
+
         m_touchedParent = m_jumpedThisFrame = m_touchedWallThisFrame = false;
 
         if (!m_isWallRunning)
@@ -74,40 +79,35 @@ public class GfMovementWallrun : GfMovementSimple
 
             CalculateEffectiveValues();
             CalculateVelocity(deltaTime, movDir);
-            CalculateJump();
             CalculateRotation(deltaTime, movDir);
         }
         else
         {
             WallRunCalculations(deltaTime);
-            CalculateJump(deltaTime);
         }
+
+        CalculateJump();
     }
 
-    protected void CalculateJump(float deltaTime)
+    protected override void PerformJump()
     {
-        if (JumpTrigger)
+        if (m_isWallRunning && 0 > m_secondsUntilCanJump)
         {
-            JumpTrigger = false;
-            if (m_isWallRunning)
-            {
-                Vector3 jumpPower = m_wallRunJumpForce * m_lastWallRunCollision.normal;
-                DetachFromWall(true);
-                Quaternion turnAround = Quaternion.AngleAxis(180, UPDIR);
-                m_transform.rotation = turnAround * m_transform.rotation;
-                GfTools.Add3(ref m_velocity, jumpPower);
+            Debug.Log("I am wall jumping!");
+            Vector3 jumpPower = m_wallRunJumpForce * m_lastWallRunCollision.normal;
+            DetachFromWall(true);
+            Quaternion turnAround = Quaternion.AngleAxis(180, m_rotationUpVec);
+            m_transform.rotation = turnAround * m_transform.rotation;
+            m_velocity = jumpPower;
+            // GfTools.Add3(ref m_velocity, jumpPower);
 
-            }
-            else if (m_isGrounded)
-            {
-                m_velocity = m_velocity - m_upVec * Vector3.Dot(m_upVec, m_velocity);
-                m_velocity = m_velocity + m_upVec * m_jumpForce;
-                m_isGrounded = false;
-                // Debug.Log("I HAVE JUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUMPED");
-                DetachFromParentTransform();
-            }
+        }
+        else if (0 > m_secondsUntilCanJump)
+        {
+            DefaultJump();
         }
     }
+
 
     protected void WallRunCalculations(float deltaTime)
     {
@@ -128,7 +128,7 @@ public class GfMovementWallrun : GfMovementSimple
         {
             coef = -1;
             desiredSpeed = m_maxWallSlideSpeed;
-            acceleration = m_mass;
+            acceleration = m_effectiveMass;
         }
         else
         {
@@ -188,33 +188,32 @@ public class GfMovementWallrun : GfMovementSimple
         }
     }
 
-    protected bool NormalWallRunValid(Vector3 normal)
+    protected bool NormalWallRunValid(ref MgCollisionStruct collision)
     {
         Vector3 testVector = Zero3;
         Vector3 movDir = MovementDirComputed();
-        float movDirMag = movDir.magnitude;
+        float movDirMag = movDir.sqrMagnitude;
 
-        if (movDirMag > 0.5f)
+        if (movDirMag > 0.05f)
         {
             testVector = movDir;
-            GfTools.Div3(ref testVector, movDirMag);
+            GfTools.Div3(ref testVector, Sqrt(movDirMag));
         }
         else
         {
-            float velMag = m_velocity.magnitude;
+            float velMag = collision.selfVelocity.magnitude;
 
             if (velMag >= m_wallrunSpeedRequired)
             {
-                //Debug.Break();
-                testVector = m_velocity;
+                testVector = collision.selfVelocity;
                 GfTools.Div3(ref testVector, velMag);
             }
         }
 
-        return -m_wallrunNormalMaxDot >= Vector3.Dot(testVector, normal); ;
+        return m_wallrunNormalMinDot <= -Vector3.Dot(testVector, collision.normal);
     }
 
-    protected bool WallCollisionCheck(MgCollisionStruct collision)
+    protected bool WallCollisionCheck(ref MgCollisionStruct collision)
     {
         Transform collisionTrans = collision.collider.transform;
         bool canWallRun = !m_isGrounded
@@ -223,7 +222,7 @@ public class GfMovementWallrun : GfMovementSimple
                 && !collision.isGrounded
                 && GfPhysics.LayerIsInMask(collisionTrans.gameObject.layer, GfPhysics.WallrunLayers())
                 && collision.upVecAngle <= MAX_WALL_ANGLE
-                && (m_isWallRunning || NormalWallRunValid(collision.normal));
+                && (m_isWallRunning || NormalWallRunValid(ref collision));
 
         m_touchedWallThisFrame |= canWallRun;
 
@@ -247,15 +246,18 @@ public class GfMovementWallrun : GfMovementSimple
         return canWallRun;
     }
 
-    protected override void MgOnCollision(MgCollisionStruct collision)
+    protected override void MgOnCollision(ref MgCollisionStruct collision)
     {
         // Debug.Log("I am touching something: " + collision.collider.name + " the parent is: " + (m_parentTransform ? m_parentTransform.name : "null"));
         Transform collisionTrans = collision.collider.transform;
-        bool canWallRun = WallCollisionCheck(collision);
+        bool canWallRun = WallCollisionCheck(ref collision);
+
+        if (collision.isGrounded) m_currentJumpsCount = 0;
 
         if ((canWallRun || collision.isGrounded) && collisionTrans != m_parentTransform)
             SetParentTransform(collisionTrans);
 
+        m_isExtendingJump &= !collision.isGrounded && collision.upVecAngle <= m_upperSlopeLimit;
         m_touchedParent |= (canWallRun || collision.isGrounded) && m_parentTransform == collisionTrans;
     }
 
@@ -265,16 +267,19 @@ public class GfMovementWallrun : GfMovementSimple
 
         if (!m_slidingOffWall && !wallJumped)
         {
-            GfTools.Add3(ref m_velocity, m_wallRunDetachForce * m_wallRunDir);
+            //GfTools.Add3(ref m_velocity, m_wallRunDetachForce * m_wallRunDir);
+            m_velocity = m_wallRunDetachForce * m_upVec;
             m_secondsUntilWallDetach = m_attachSecondsAfterWallDetach;
         }
 
+        m_secondsUntilCanJump = -1;
+        m_currentJumpsCount = 1;
         DetachFromParentTransform();
-        Debug.Log("DETACHING");
+        // Debug.Log("DETACHING");
         //return;
         m_isWallRunning = false;
         m_slidingOffWall = false;
-        Quaternion rotCorrection = Quaternion.FromToRotation(m_transform.up, m_upVec);
+        Quaternion rotCorrection = Quaternion.FromToRotation(m_transform.up, m_rotationUpVec);
         m_transform.rotation = rotCorrection * m_transform.rotation;
         m_previousWallRunNormal = Zero3;
         m_lastWallRunCollision = default;
@@ -283,8 +288,9 @@ public class GfMovementWallrun : GfMovementSimple
 
     private void InitiateWallRun(MgCollisionStruct collision)
     {
+        m_secondsUntilCanJump = m_wallrunJumpCooldownSeconds;
         m_secondsUntilWallDetach = -1;
-        Debug.Log("ATTACHING");
+        // Debug.Log("ATTACHING");
         Vector3 normal = collision.normal;
         m_previousWallRunNormal = normal;
         m_wallRunDir = (UpvecRotation() - normal * Vector3.Dot(normal, UpvecRotation())).normalized;

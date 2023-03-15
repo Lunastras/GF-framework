@@ -78,7 +78,7 @@ public class LoadoutManager : MonoBehaviour
     private void Test()
     {
         SetWeaponCapacity(3);
-        AddLoadout(3);
+        AddLoadout(2);
 
         ChangeLoadOutWeapon(0, 0, 1);
         ChangeLoadOutWeapon(0, 1, 1);
@@ -194,7 +194,6 @@ public class LoadoutManager : MonoBehaviour
                 objList[index] = objList[--listCount];
                 objList.RemoveAt(listCount);
 
-                if (wb.GetStatsCharacter() != m_statsCharacter) wb.SetStatsCharacter(m_statsCharacter);
                 index = 0;
             }
         }
@@ -216,56 +215,58 @@ public class LoadoutManager : MonoBehaviour
 
         GameObject obj = weaponToDestroy.gameObject;
         weaponToDestroy.disableWhenDone = true;
-        GfPooling.DestroyInsert(obj, weaponToDestroy.IsAlive(true));
+        bool isAlive = weaponToDestroy.IsAlive(true);
+        GfPooling.DestroyInsert(obj, isAlive);
     }
 
     public void InternalSetCurrentLoadout(int indexLoadout)
     {
-        m_currentLoadOutIndex = indexLoadout % m_loadouts.Count;
-
-        int i = m_weapons.Count;
-        while (--i >= 0)
+        if (null != m_loadouts && 0 < m_loadouts.Count)
         {
-            m_weapons[i].SetSpeedMultiplier(1);
-            m_weapons[i].SetFireRateMultiplier(1);
-            m_weapons[i].SetDamageMultiplier(1);
-            m_weapons[i].SetLoadoutCount(1);
-            m_weapons[i].SetLoadoutWeaponIndex(0);
+            m_currentLoadOutIndex = indexLoadout % m_loadouts.Count;
 
-            DestroyOdama(m_weapons[i]);
-            m_weapons.RemoveAt(i);
+            int i = m_weapons.Count;
+            while (--i >= 0)
+            {
+                m_weapons[i].SetSpeedMultiplier(1);
+                m_weapons[i].SetFireRateMultiplier(1);
+                m_weapons[i].SetDamageMultiplier(1);
+                m_weapons[i].SetLoadoutCount(1);
+                m_weapons[i].SetLoadoutWeaponIndex(0);
+
+                DestroyOdama(m_weapons[i]);
+                m_weapons.RemoveAt(i);
+            }
+
+            int weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
+            float angleBetweenOdamas = 360.0f / weaponsCount;
+
+            m_weaponFiring.ClearWeapons();
+
+            for (i = 0; i < weaponsCount; ++i)
+            {
+                GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].weapon);
+                m_weapons.Add(GetOdama(desiredWeapon));
+
+                OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
+                ob.SetAngle(i * angleBetweenOdamas);
+                ob.enabled = true;
+                ob.SetParent(m_parentMovement);
+
+                m_weapons[i].SetSpeedMultiplier(m_speedMultiplier);
+                m_weapons[i].SetFireRateMultiplier(m_fireRateMultiplier);
+                m_weapons[i].SetDamageMultiplier(m_damageMultiplier);
+                m_weapons[i].SetLoadoutCount(weaponsCount);
+                m_weapons[i].SetLoadoutWeaponIndex(i);
+                m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
+
+                ob.transform.position = transform.position;
+                m_weaponFiring.SetWeapon(m_weapons[i], i);
+            }
+
+            //refresh the levelweapons
+            RefreshExpForWeapons();
         }
-
-        int weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
-        float angleBetweenOdamas = 360.0f / weaponsCount;
-
-        m_weaponFiring.ClearWeapons();
-
-        for (i = 0; i < weaponsCount; ++i)
-        {
-            GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].weapon);
-            m_weapons.Add(GetOdama(desiredWeapon));
-            m_weapons[i].destroyWhenDone = false;
-
-            OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
-            ob.SetAngle(i * angleBetweenOdamas);
-            ob.enabled = true;
-            ob.SetParent(m_parentMovement);
-
-            m_weapons[i].SetSpeedMultiplier(m_speedMultiplier);
-            m_weapons[i].SetFireRateMultiplier(m_fireRateMultiplier);
-            m_weapons[i].SetDamageMultiplier(m_damageMultiplier);
-            m_weapons[i].SetLoadoutCount(weaponsCount);
-            m_weapons[i].SetLoadoutWeaponIndex(i);
-
-
-            m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
-            ob.transform.position = transform.position;
-            m_weaponFiring.SetWeapon(m_weapons[i], i);
-        }
-
-        //refresh the levelweapons
-        RefreshExpForWeapons();
     }
 
     public void SetCurrentLoadout(int index)

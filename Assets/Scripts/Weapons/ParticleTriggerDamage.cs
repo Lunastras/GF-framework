@@ -51,36 +51,42 @@ public class ParticleTriggerDamage : WeaponParticle
     protected void CollisionBehaviour(ref ParticleSystem.Particle particle, GameObject hitObject)
     {
         DamageSource damageSource = this;
+
         if (m_getDamageSourceFromColor)
         {
+            //the index of the damage source is encoded in the 4 bytes values in the startColor of the particle
             Color32 index4Bytes = particle.startColor;
 
+            //we bitshift the byte values to fetch back the index of the damage source
             int index =
               ((int)index4Bytes.r << 24)
             | ((int)index4Bytes.g << 16)
             | ((int)index4Bytes.b << 8)
             | ((int)index4Bytes.a);
 
-            // Debug.Log("The fetched index is: " + index);
-
             damageSource = ReusableParticleSystemManager.GetWeapon(index);
         }
 
-        StatsCharacter selfStats = damageSource.GetStatsCharacter();
-
-        StatsCharacter collisionStats = hitObject.GetComponent<StatsCharacter>();
-        if (collisionStats != null)
+        if (damageSource)
         {
-            bool hitSelf = selfStats == collisionStats;
-            float damageMultiplier = HostilityManager.DamageMultiplier(selfStats, collisionStats);
+            StatsCharacter selfStats = damageSource.GetStatsCharacter();
+            StatsCharacter collisionStats = hitObject.GetComponent<StatsCharacter>();
+            if (collisionStats != null)
+            {
+                bool hitSelf = selfStats == collisionStats;
+                if ((null == selfStats))
+                    Debug.Log("Self stats are null and my name is " + damageSource.name + " and my collision was: " + collisionStats.name);
 
-            //check if it can damage target
-            if (!hitSelf || (hitSelf && m_canDamageSelf))
-                HitTarget(ref particle, selfStats, collisionStats, damageMultiplier, damageSource);
-        }
-        else
-        {
-            HitCollision(ref particle, selfStats, hitObject, damageSource);
+                float damageMultiplier = HostilityManager.DamageMultiplier(selfStats, collisionStats);
+
+                //check if it can damage target
+                if (!hitSelf || (hitSelf && m_canDamageSelf))
+                    HitTarget(ref particle, selfStats, collisionStats, damageMultiplier, damageSource);
+            }
+            else
+            {
+                HitCollision(ref particle, selfStats, hitObject, damageSource);
+            }
         }
     }
 

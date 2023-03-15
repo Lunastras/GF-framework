@@ -27,4 +27,20 @@ public abstract class WeaponParticle : WeaponBasic
     public int GetParticleTriggerDamageIndex() { return m_particleTriggerDamageListIndex; }
 
     public override void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false) { }
+
+    public override bool IsAlive(bool withChildren = true) { return m_particleSystem.IsAlive(withChildren); }
+
+    public override void SetSpeedMultiplier(float multiplier)
+    {
+        m_speedMultiplier = multiplier;
+        var main = m_particleSystem.main;
+        main.simulationSpeed = multiplier;
+    }
+
+    public override void SetFireRateMultiplier(float multiplier)
+    {
+        m_fireRateMultiplier = multiplier;
+        var emission = m_particleSystem.emission;
+        emission.rateOverTimeMultiplier = multiplier;
+    }
 }

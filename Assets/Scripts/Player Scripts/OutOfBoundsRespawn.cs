@@ -28,7 +28,7 @@ public class OutOfBoundsRespawn : MonoBehaviour
 
         if (transform.position.y < respawnYCoord)
         {
-            transform.position = respawnPosition;
+            transform.position = respawnPoint.position;
             if (movement != null)
             {
                 movement.m_velocity = Vector3.zero;

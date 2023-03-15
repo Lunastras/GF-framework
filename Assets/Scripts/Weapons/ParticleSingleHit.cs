@@ -6,8 +6,6 @@ using System;
 public class ParticleSingleHit : WeaponParticle
 {
     [SerializeField]
-    private float m_damage = 10;
-    [SerializeField]
     private bool m_canDamageSelf = false;
     [SerializeField]
     private Sound m_damageSound = null;

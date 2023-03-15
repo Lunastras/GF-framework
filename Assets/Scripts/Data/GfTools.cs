@@ -151,10 +151,10 @@ public class GfTools
 
     public static void Normalize(ref Vector3 vector)
     {
-        float mag = vector.magnitude;
-        if (mag > 0.0000001f)
+        float sqrMag = vector.sqrMagnitude;
+        if (sqrMag > 0.0000001f)
         {
-            float inv = 1.0f / mag;
+            float inv = 1.0f / System.MathF.Sqrt(sqrMag);
 
             vector.x *= inv;
             vector.y *= inv;

@@ -13,7 +13,6 @@ public class ReusableParticleSystemManager : MonoBehaviour
     void Awake()
     {
         m_fakeWeapons = new(8);
-        Debug.Log("SUCK ME OFF");
     }
 
     public static void AddWeapon(ReusableParticleWeapon obj)

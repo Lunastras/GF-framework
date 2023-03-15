@@ -36,7 +36,7 @@ public class WeaponLevels : WeaponBasic
         turret.Stop();
     }
 
-    private void OnEnable()
+    private void OnDisable()
     {
         destroyWhenDone = disableWhenDone = false;
     }
@@ -59,9 +59,9 @@ public class WeaponLevels : WeaponBasic
     }
 
 
-    public override bool IsAlive(bool currentPhase = false)
+    public override bool IsAlive(bool onlyCurrentPhase = false)
     {
-        return turret.IsAlive(currentPhase);
+        return turret.IsAlive(onlyCurrentPhase);
     }
 
     private void FixedUpdate()

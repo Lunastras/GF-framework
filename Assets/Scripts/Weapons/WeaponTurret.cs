@@ -228,14 +228,6 @@ public class WeaponTurret : DamageSource
         Stop();
         obj.transform.position = DESTROY_POSITION;
         obj.transform.parent = null;
-
-        //if(stopParticles)
-
-    }
-
-    private void OnDisable()
-    {
-        SetStatsCharacter(null);
     }
 }
 
