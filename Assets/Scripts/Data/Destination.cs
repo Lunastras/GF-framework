@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Destination
+public struct Destination
 {
     public Transform TransformDest { get; private set; }
     public bool IsEnemy { get; private set; }
@@ -11,7 +11,7 @@ public class Destination
 
     private Vector3 vector3Dest;
 
-    private readonly bool destinationIsTransform;
+    private bool destinationIsTransform;
 
     public Destination(Transform destination = null, bool isEnemy = false, bool canLoseTrackOfTarget = false)
     {
@@ -26,12 +26,29 @@ public class Destination
 
     public Destination(Vector3 position)
     {
-        Debug.Log("new destination set!");
         TransformDest = null;
         IsEnemy = false;
         CanLoseTrackOfTarget = false;
         vector3Dest = position;
         destinationIsTransform = false;
+    }
+
+    public void SetDestination(Vector3 position)
+    {
+        TransformDest = null;
+        IsEnemy = false;
+        CanLoseTrackOfTarget = false;
+        vector3Dest = position;
+        destinationIsTransform = false;
+    }
+
+    public void SetDestination(Transform destination = null, bool isEnemy = false, bool canLoseTrackOfTarget = false)
+    {
+        TransformDest = destination;
+        IsEnemy = isEnemy;
+        CanLoseTrackOfTarget = canLoseTrackOfTarget;
+        vector3Dest = destination != null ? destination.position : Vector3.zero;
+        destinationIsTransform = true;
     }
 
     public Vector3 LastKnownPosition()
@@ -53,8 +70,8 @@ public class Destination
     //useless if the input of the object was a 
     //vector or if canLoseTrackOfTarget = false 
     public void UpdatePosition()
-    {   
-        if (TransformDest != null && TransformDest.gameObject.activeSelf)     
+    {
+        if (TransformDest != null && TransformDest.gameObject.activeSelf)
             vector3Dest = TransformDest.position;
 
         //Debug.Log("Vector3 dest set to " + vector3Dest);

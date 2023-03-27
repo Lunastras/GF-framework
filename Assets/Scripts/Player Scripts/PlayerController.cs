@@ -92,7 +92,7 @@ public class PlayerController : MonoBehaviour
             Vector3 cameraForward = m_playerCamera.forward * input.y;
             Vector3 cameraRight = m_playerCamera.right * input.x;
 
-            Vector3 upVec = m_movement.UpvecRotation();
+            Vector3 upVec = m_movement.GetUpvecRotation();
 
             if (!m_movement.CanFly)
             {
@@ -175,7 +175,7 @@ public class PlayerController : MonoBehaviour
 
     private void PreMoveCalculations(float deltaTime)
     {
-        m_cameraController.m_upvec = m_movement.UpvecRotation();
+        m_cameraController.m_upvec = m_movement.GetUpvecRotation();
         m_cameraController.UpdateRotation(deltaTime);
 
         CalculateJump();

@@ -3,7 +3,15 @@ using UnityEngine;
 
 public class ParticleTriggerDamage : WeaponParticle
 {
-    public bool m_canDamageSelf;
+    [SerializeField]
+    protected Sound m_damageSound = null;
+
+    [SerializeField]
+    protected Sound m_collisionSound = null;
+    [SerializeField]
+    protected bool m_canDamageSelf;
+
+    protected Transform m_transform;
 
     //whether or not it reads the damage source and stats character from the red index of a particle's start colour. 
     //The value will be the index of the character found in ReuableParticleSystemManager's list
@@ -13,16 +21,33 @@ public class ParticleTriggerDamage : WeaponParticle
 
     protected static readonly Vector3 DESTROY_POS = new(100000000, -100000000, 100000000);
 
-    protected void Start()
+    protected void Awake()
     {
+        m_transform = transform;
         m_particlesList = new(2);
 
         if (GetStatsCharacter() == null)
             SetStatsCharacter(GetComponent<StatsCharacter>());
 
-        m_particleSystem = GetComponent<ParticleSystem>();
+        InitWeaponParticle();
 
+        var triggerModule = m_particleSystem.trigger;
+        triggerModule.enabled = true;
+    }
+    protected void Start()
+    {
         ParticleTriggerDamageManager.AddParticleSystem(this);
+    }
+
+    private void Update()
+    {
+        if (m_target)
+        {
+            if (m_movementParent)
+                m_transform.LookAt(m_target, m_movementParent.GetUpvecRotation());
+            else
+                m_transform.LookAt(m_target);
+        }
     }
 
     void OnParticleTrigger()
@@ -92,6 +117,7 @@ public class ParticleTriggerDamage : WeaponParticle
 
     protected virtual void HitTarget(ref ParticleSystem.Particle particle, StatsCharacter self, StatsCharacter target, float damageMultiplier, DamageSource damageSource)
     {
+        m_damageSound.Play(particle.position);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
         target.Damage(GetDamage(), damageMultiplier, self, damageSource);
         particle.remainingLifetime = 0;
@@ -99,6 +125,7 @@ public class ParticleTriggerDamage : WeaponParticle
 
     protected virtual void HitCollision(ref ParticleSystem.Particle particle, StatsCharacter self, GameObject hitObject, DamageSource damageSource)
     {
+        m_collisionSound.Play(particle.position);
     }
 
     private void OnDestroy()

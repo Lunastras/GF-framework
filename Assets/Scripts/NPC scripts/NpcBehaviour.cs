@@ -5,14 +5,16 @@ using UnityEngine;
 public class NpcBehaviour : NpcController
 {
     [System.Serializable]
-    public class HostileValues
+    public struct HostileValues
     {
-        public float m_likelyHoodToCircleTarget = 0.0f;
-        public float m_timeBetweenPhases = 4;
+        public float m_likelyHoodToCircleTarget;
+        public float m_timeBetweenPhases;
+        //the angle between the direction to the enemy and the direction of the circling movement
+        public float m_circleAngleDegFromTarget;
 
-        public float m_timeBetweenFire = 5;
-        public float m_varianceInValues = 0.2f;
-        public bool m_runsIfLowHealth = true;
+        public float m_timeBetweenAttacks;
+        public float m_varianceInValues;
+        public bool m_runsIfLowHealth;
     }
 
     protected enum EngageModes
@@ -24,7 +26,7 @@ public class NpcBehaviour : NpcController
 
 
     [SerializeField]
-    protected HostileValues m_hostileValues = null;
+    protected HostileValues m_hostileValues;
 
     [SerializeField]
     protected WeaponTurret m_turret = null;
@@ -45,27 +47,23 @@ public class NpcBehaviour : NpcController
     [SerializeField]
     protected float m_maxDstFromSpawnWalk = 10;
 
-    private float m_timeOfNextWalkChange = 0;
+    private float m_timeUntilNextWalkChange = 0;
 
     private Vector3 m_spawnPos = default;
 
-    protected float m_timeOfChangePhase = 0;
+    protected float m_timeUntilChangePhase = 0;
 
-    protected float m_timeOfFireChange = 0;
+    protected float m_timeUntilFireChange = 0;
     protected EngageModes m_currentPhase;
 
     private StatsNpc m_statsNpc = null;
 
-    private float m_timeOfNextEnemyCheck = 0;
-    float m_desiredYDir = 0;
-
-
+    private float m_timeUntilNextEnemyCheck = 0;
 
     // Start is called before the first frame update
     void Awake()
     {
         Initialize();
-        //hostileValues = new HostileValues();
     }
 
 
@@ -74,10 +72,10 @@ public class NpcBehaviour : NpcController
         // GetDestinationManager().isEma();
 
         // destinations.SetDestination(GameManager.gameManager.GetPlayer(), true, true);
-        m_spawnPos = transform.position;
+        m_spawnPos = m_transform.position;
 
         float randomRadian = GfRandom.Range(0, Mathf.PI * 2.0f);
-        m_movement.SetMovementDir(-new Vector3(Mathf.Cos(randomRadian), m_desiredYDir, Mathf.Sin(randomRadian)).normalized);
+        m_movement.SetMovementDir(-new Vector3(Mathf.Cos(randomRadian), 0, Mathf.Sin(randomRadian)).normalized);
 
         if (null == m_statsNpc)
             m_statsNpc = GetComponent<StatsNpc>();
@@ -87,6 +85,14 @@ public class NpcBehaviour : NpcController
 
         if (m_turret)
             m_turret.SetStatsCharacter(m_statsNpc);
+    }
+
+    protected override void BeforeStateUpdate(float deltaTime)
+    {
+        m_timeUntilChangePhase -= deltaTime;
+        m_timeUntilFireChange -= deltaTime;
+        m_timeUntilNextWalkChange -= deltaTime;
+        m_timeUntilNextEnemyCheck -= deltaTime;
     }
 
     private GameObject CheckForEnemiesAround()
@@ -101,7 +107,7 @@ public class NpcBehaviour : NpcController
                 for (int j = 0; j < listLength; ++j)
                 {
                     StatsCharacter character = enemyList[i];
-                    if (CheckCanSeeTarget(character.transform, m_lineOfSightLength / 2.0f, false, false, true))
+                    if (CheckCanSeeTarget(character.transform, m_lineOfSightLength, false, false, true))
                     {
                         return character.gameObject;
                     }
@@ -112,34 +118,9 @@ public class NpcBehaviour : NpcController
         return null;
     }
 
-    float horizontalDirOffset = 0;
-    protected override void EngageEnemyBehaviour(Vector3 dirToTarget)
+    protected override void EngageEnemyBehaviour(float deltaTime, Vector3 dirToTarget)
     {
-        float currentTime = Time.time;
-        if (currentTime > m_timeOfChangePhase)
-        {
-            m_timeOfChangePhase = currentTime + m_hostileValues.m_timeBetweenPhases
-                                * (1.0f + GfRandom.Range(-m_hostileValues.m_varianceInValues, m_hostileValues.m_varianceInValues));
-
-            float randomNumber = GfRandom.GetRandomNum();
-            m_desiredYDir = GfRandom.Range(-0.9f, 0.2f);
-
-            // Debug.Log("random num: " + randomNumber + " and circle likelyhood: " + hostileValues.likelyHoodToCircleTarget);
-
-            if (randomNumber > m_hostileValues.m_likelyHoodToCircleTarget) //approach target
-            {
-                //Debug.Log("APPROACH");
-                m_currentPhase = EngageModes.APPROACH;
-            }
-            else
-            {
-                //Debug.Log("CIRCLE");
-                m_currentPhase = (randomNumber >= m_hostileValues.m_likelyHoodToCircleTarget / 2.0f)
-                            ? EngageModes.CIRLCE_CLOCKWISE : EngageModes.CIRCLE_COUNTER;
-            }
-        }
-
-        if (currentTime > m_timeOfFireChange)
+        if (0 > m_timeUntilFireChange)
         {
 
             if (!m_destination.WasDestroyed() && null != m_turret)
@@ -149,43 +130,54 @@ public class NpcBehaviour : NpcController
                 m_turret.Play(true);
             }
 
-            m_timeOfFireChange = currentTime + m_hostileValues.m_timeBetweenFire
+            m_timeUntilFireChange = m_hostileValues.m_timeBetweenAttacks
                                 * (1 + GfRandom.Range(-m_hostileValues.m_varianceInValues, m_hostileValues.m_varianceInValues));
         }
 
+        if (0 > m_timeUntilChangePhase)
+        {
+            m_timeUntilChangePhase = m_hostileValues.m_timeBetweenPhases
+                                * (1.0f + GfRandom.Range(-m_hostileValues.m_varianceInValues, m_hostileValues.m_varianceInValues));
 
-        Vector2 horizontalDir = new Vector2(dirToTarget.x, dirToTarget.z);
-        Vector2 newDir;
+            float randomNumber = GfRandom.GetRandomNum();
+
+            if (randomNumber > m_hostileValues.m_likelyHoodToCircleTarget) //approach target
+            {
+                m_currentPhase = EngageModes.APPROACH;
+            }
+            else
+            {
+                m_currentPhase = EngageModes.CIRLCE_CLOCKWISE;
+                if (GfRandom.GetRandomNum() >= 0.5f)
+                    m_currentPhase = EngageModes.CIRCLE_COUNTER;
+            }
+        }
+
+
+        Vector3 movementDir = dirToTarget;
+        GfTools.Normalize(ref dirToTarget);
 
         switch (m_currentPhase)
         {
             case EngageModes.CIRLCE_CLOCKWISE:
-                newDir = new Vector2(-horizontalDir.y, horizontalDir.x);
-                horizontalDir = (newDir + horizontalDirOffset * horizontalDir).normalized;
+                dirToTarget = Quaternion.AngleAxis(-m_hostileValues.m_circleAngleDegFromTarget, m_movement.GetUpVecRaw()) * dirToTarget;
                 break;
 
             case EngageModes.CIRCLE_COUNTER:
-                newDir = new Vector2(horizontalDir.y, -horizontalDir.x);
-                horizontalDir = (newDir + horizontalDirOffset * horizontalDir).normalized;
-                break;
-            case EngageModes.APPROACH:
-                // desiredYDir = dirToTarget.y;
-                horizontalDir = horizontalDir.normalized;
+                dirToTarget = Quaternion.AngleAxis(m_hostileValues.m_circleAngleDegFromTarget, m_movement.GetUpVecRaw()) * dirToTarget;
                 break;
         }
 
-        horizontalDir *= 1 + Mathf.Abs(m_desiredYDir);
-
-        m_movement.SetMovementDir(new Vector3(horizontalDir.x, m_desiredYDir, horizontalDir.y).normalized);
+        m_movement.SetMovementDir(dirToTarget);
     }
 
 
-    protected override void NoDestinationsBehaviour()
+    protected override void NoDestinationsBehaviour(float deltaTime)
     {
         m_currentSpeedMultiplier = m_walkSpeedMultiplyer;
-        if (Time.time >= m_timeOfNextWalkChange)
+        if (0 >= m_timeUntilNextWalkChange)
         {
-            m_timeOfNextWalkChange = Time.time + m_intervalBetweenWalkPhases * (1 - GfRandom.Range(-m_varianceRate, m_varianceRate));
+            m_timeUntilNextWalkChange = m_intervalBetweenWalkPhases * (1 - GfRandom.Range(-m_varianceRate, m_varianceRate));
 
             float movementDirMagnitude = m_movement.MovementDirRaw.magnitude;
 
@@ -195,9 +187,8 @@ public class NpcBehaviour : NpcController
             }
             else
             {
-                Vector3 dirToSpawn = m_spawnPos - transform.position;
+                Vector3 dirToSpawn = m_spawnPos - m_transform.position;
                 dirToSpawn.y = 0;
-                m_desiredYDir = (GfRandom.GetRandomNum() * 2.0f) - 1.0f;
 
                 if (dirToSpawn.magnitude >= m_maxDstFromSpawnWalk)
                 {
@@ -205,45 +196,51 @@ public class NpcBehaviour : NpcController
                 }
                 else
                 {
-                    float randomRadian = GfRandom.Range(0, Mathf.PI * 2.0f);
-                    m_movement.SetMovementDir(new Vector3(Mathf.Cos(randomRadian), m_desiredYDir, Mathf.Sin(randomRadian)).normalized);
+                    float randomRadian = GfRandom.Range(0, 360);
+                    m_movement.SetMovementDir(Random.insideUnitSphere);
                 }
             }
         }
 
-        if (Time.time >= m_timeOfNextEnemyCheck)
+        if (0 >= m_timeUntilNextEnemyCheck)
         {
-            m_timeOfNextEnemyCheck = Time.time + m_intervalBetweenEnemyChecks * (1 - GfRandom.Range(-m_varianceRate, m_varianceRate));
+            m_timeUntilNextEnemyCheck = m_intervalBetweenEnemyChecks * (1 - GfRandom.Range(-m_varianceRate, m_varianceRate));
             //  Debug.Log("I am check for enemies around me");
             GameObject target = CheckForEnemiesAround();
             if (target != null) SetDestination(target.transform, true, true);
         }
     }
 
-    protected override void LowLifeBehaviour(Vector3 dirToTarget)
+    protected override void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
-        Debug.Log("i have low life");
+        if (m_turret) m_turret.Stop();
+        m_movement.SetMovementDir(dirToTarget.normalized);
+    }
+
+    protected override void LowLifeBehaviour(float deltaTime, Vector3 dirToTarget)
+    {
+        //   Debug.Log("i have low life");
         m_movement.SetMovementDir(-dirToTarget.normalized);
         m_turret.Stop();
     }
 
 
-    protected override void LostTargetBehaviour()
+    protected override void LostTargetBehaviour(float deltaTime)
     {
-        Debug.Log("i lost the target");
+        //Debug.Log("i lost the target");
         PauseMovement(1);
         m_movement.SetMovementDir(Vector3.zero);
         m_turret.Stop();
-        npcState = NpcState.NO_DESTINATION;
+        m_currentState = NpcState.NO_DESTINATION;
         SetDestination(null);
     }
 
-    protected override void DestinationDestroyedBehaviour()
+    protected override void DestinationDestroyedBehaviour(float deltaTime)
     {
-        Debug.Log("enemy was destroyed");
+        //  Debug.Log("enemy was destroyed");
         m_movement.SetMovementDir(Vector3.zero);
         m_turret.Stop();
-        npcState = NpcState.NO_DESTINATION;
+        m_currentState = NpcState.NO_DESTINATION;
         SetDestination(null);
     }
 }

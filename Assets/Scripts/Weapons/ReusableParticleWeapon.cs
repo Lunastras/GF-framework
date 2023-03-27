@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ReusableParticleWeapon : WeaponParticle
+public class ReusableParticleWeapon : WeaponBasic
 {
     [SerializeField]
     private GameObject m_particleSystemObj = null;
@@ -27,6 +27,8 @@ public class ReusableParticleWeapon : WeaponParticle
     private Transform m_transform = null;
 
     private int m_reusableParticleSystemIndex = -1;
+
+    private Quaternion m_desiredRotation = Quaternion.identity;
 
     private ParticleTriggerDamage m_particleTriggerWeaponComponent = null;
 
@@ -87,7 +89,9 @@ public class ReusableParticleWeapon : WeaponParticle
                 Vector3 dirToTarget = m_target.position;
                 GfTools.Minus3(ref dirToTarget, emitParams.position);
                 GfTools.Normalize(ref dirToTarget);
-                m_effectivePsTransform.rotation = Quaternion.LookRotation(dirToTarget);
+                Vector3 upVec = Vector3.up;
+                if (m_movementParent) upVec = m_movementParent.GetUpvecRotation();
+                m_effectivePsTransform.rotation = Quaternion.LookRotation(dirToTarget, upVec);
             }
             else if (m_applyRotation)
             {
@@ -95,13 +99,15 @@ public class ReusableParticleWeapon : WeaponParticle
             }
             else
             {
-                m_effectivePsTransform.rotation = Quaternion.identity;
+                m_effectivePsTransform.rotation = m_desiredRotation;
             }
 
             m_effectiveParticleSystem.Emit(emitParams, m_particlesToEmit);
             ++m_particlesFired;
         }
     }
+
+    public override bool IsFiring() { return false; }
 
     public override void StopFiring()
     {
@@ -111,17 +117,23 @@ public class ReusableParticleWeapon : WeaponParticle
 
     public override void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false)
     {
+        Vector3 dirBullet = hit.point - m_transform.position;
+        GfTools.Normalize(ref dirBullet);
+
+        Vector3 upVec = Vector3.up;
+        if (m_movementParent) upVec = m_movementParent.GetUpvecRotation();
+        m_desiredRotation = Quaternion.LookRotation(dirBullet, upVec);
         m_firing = true;
     }
 
     public override void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false) { }
 
-    public override bool IsAlive(bool withChildren = true)
+    public override bool IsAlive()
     {
         return false;
     }
 
-    public override ParticleSystem GetParticleSystem() { return m_effectiveParticleSystem; }
+    public ParticleSystem GetParticleSystem() { return m_effectiveParticleSystem; }
 
     private void OnDestroy()
     {

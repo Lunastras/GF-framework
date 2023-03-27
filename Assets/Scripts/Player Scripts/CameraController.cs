@@ -42,9 +42,6 @@ public class CameraController : MonoBehaviour
     private float m_distanceSmoothTime = 0.04f;
 
     [SerializeField]
-    private float m_fovSmoothTime = 1f;
-
-    [SerializeField]
     private bool m_invertedY = false;
 
     private PriorityValue<float> m_distanceMultiplier = new(1);
@@ -61,7 +58,7 @@ public class CameraController : MonoBehaviour
 
     private Vector3 m_currentTargetPos = default;
     private float m_currentTargetDst = 0;
-    private float m_currentDesiredDst = 0;
+    private float m_desiredDst = 0;
 
     private float m_timeUntilPhysCheck = 0;
 
@@ -86,6 +83,8 @@ public class CameraController : MonoBehaviour
 
     private Transform m_transform;
 
+    private float m_fovSmoothTime = 1f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -96,7 +95,7 @@ public class CameraController : MonoBehaviour
         m_currentCamera = this;
 
         m_currentTargetDst = m_dstFromtarget;
-        m_currentDesiredDst = m_dstFromtarget;
+        m_desiredDst = m_dstFromtarget;
     }
 
     public void UpdateRotation(float deltaTime)
@@ -135,24 +134,24 @@ public class CameraController : MonoBehaviour
 
         Vector3 forward = m_transform.forward;
 
-        if (m_timeUntilPhysCheck <= 0 && false)
+        if (m_timeUntilPhysCheck <= 0)
         {
             m_timeUntilPhysCheck = m_physCheckInterval;
 
             int layermask = GfPhysics.NonCharacterCollisions();
-            m_currentDesiredDst = m_dstFromtarget;
+            m_desiredDst = m_dstFromtarget;
 
             RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
-            m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, m_collisionRadius, -forward, raycastHits, m_dstFromtarget, layermask);
+            m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, m_collisionRadius, -forward, raycastHits, m_dstFromtarget, layermask, QueryTriggerInteraction.Ignore);
 
             if (m_collidingWithSmth)
             {
                 m_raycastHit = raycastHits[0];
-                m_currentDesiredDst = Mathf.Max(m_raycastHit.distance, m_minDstFromtarget);
+                m_desiredDst = Mathf.Max(m_raycastHit.distance, m_minDstFromtarget);
             }
         }
 
-        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_currentDesiredDst * m_distanceMultiplier, ref m_refDistanceVel, m_distanceSmoothTime);
+        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_desiredDst * m_distanceMultiplier, ref m_refDistanceVel, m_distanceSmoothTime);
 
         m_transform.position = m_currentTargetPos - forward * m_currentTargetDst;
         m_camera.fieldOfView = Mathf.SmoothDamp(m_camera.fieldOfView, m_fovMultiplier * m_targetFov, ref m_fovRefSpeed, m_fovSmoothTime);
@@ -167,9 +166,12 @@ public class CameraController : MonoBehaviour
 
     public PriorityValue<float> GetFovMultiplier() { return m_fovMultiplier; }
 
-    public void SetFovMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    public void SetFovMultiplier(float multiplier, float fovSmoothTime = 1, uint priority = 0, bool overridePriority = false)
     {
-        m_fovMultiplier.SetValue(multiplier, priority, overridePriority);
+        if (m_fovMultiplier.SetValue(multiplier, priority, overridePriority))
+        {
+            m_fovSmoothTime = fovSmoothTime;
+        }
     }
 
     public void SetMainTarget(Transform target)

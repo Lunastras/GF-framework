@@ -8,6 +8,7 @@ Shader "Unlit/ParticleDamageNumbers"
     {
         Tags { "Queue" = "Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" }
         LOD 100
+         //Fog Global
 
         Blend SrcAlpha OneMinusSrcAlpha
 
@@ -31,7 +32,7 @@ Shader "Unlit/ParticleDamageNumbers"
             struct v2f
             { 
                 float4 uv : TEXCOORD0; //uv.z = startUvXCoord, uv.w = number of digits
-                float4 digits : TEXCOORD1; //the digits of the value
+                float4 digits : TEXCOORD2; //the digits of the value
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
                 fixed4 colour : COLOR;
@@ -58,10 +59,10 @@ Shader "Unlit/ParticleDamageNumbers"
                 while(i < MAX_DECIMALS) {
                     o.digits[MAX_DECIMALS - i++ - 1] = value % 10;
                     numDigits += (value > 0);
-                    value = floor(value / 10);
+                    value = floor(value / 10.0);
                 }
 
-                float startUvXCoord = 0.5 - (DIGIT_OFFSET_HALF * (numDigits % 2) + floor(numDigits / 2) * DIGIT_OFFSET);
+                float startUvXCoord = 0.5 - (DIGIT_OFFSET_HALF * (numDigits % 2) + floor(numDigits * 0.5) * DIGIT_OFFSET);
                 o.colour = v.colour;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = float4(TRANSFORM_TEX(v.uv, _MainTex), startUvXCoord, MAX_DECIMALS - numDigits);

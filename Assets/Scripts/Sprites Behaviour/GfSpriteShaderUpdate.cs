@@ -37,7 +37,7 @@ public class GfSpriteShaderUpdate : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        m_material.SetVector(UP_DIR, m_movement.UpvecRotation());
+        m_material.SetVector(UP_DIR, m_movement.GetUpvecRotation());
         m_material.SetVector(OBJECT_POSITION, m_targetTransform.position);
     }
 }

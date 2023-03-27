@@ -85,7 +85,7 @@ public class Sprite3DAnimator : MonoBehaviour
         GfTools.RemoveAxis(ref mainCameraForward, upVec);
         GfTools.RemoveAxis(ref transForward, upVec);
 
-        float angleToCamera = GfTools.SignedAngle(mainCameraForward, transForward, upVec);
+        float angleToCamera = GfTools.SignedAngleDeg(mainCameraForward, transForward, upVec);
         if (angleToCamera < 0) angleToCamera += 360;
 
         angleToCamera += degreesBetweenSteps / 2 + m_currentState.rotationOffsetDegrees;

@@ -13,6 +13,8 @@ public class ShadowProjectorManipulator : MonoBehaviour
     [SerializeField]
     private DecalProjector m_projector = null;
 
+    public GfMovementGeneric m_parentMovement = null;
+
     public Collider m_selfCollider = null;
 
     public float m_intervalObjCheck = 0.5f;
@@ -34,6 +36,8 @@ public class ShadowProjectorManipulator : MonoBehaviour
     public float m_smoothTimeOpacity = 0.1f;
 
     public float m_smoothTimeSize = 0.1f;
+
+    public bool m_overrideZaxisRotation = true;
 
     public LayerMask m_layerMask;
 
@@ -74,8 +78,13 @@ public class ShadowProjectorManipulator : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
+        if (m_overrideZaxisRotation && m_parentMovement)
+        {
+            m_transform.rotation = (m_parentMovement.GetCurrentRotation() * Quaternion.AngleAxis(90, Vector3.right));
+        }
+
         float deltaTime = Time.deltaTime;
         m_timeUntiObjCheck -= deltaTime;
         m_timeUntilDistanceCheck -= deltaTime;

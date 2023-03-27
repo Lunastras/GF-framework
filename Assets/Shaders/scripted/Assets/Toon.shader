@@ -60,7 +60,7 @@
 				
 				float lightIntensity = NdotL > 0 ? 1 : 0;
 					 
-				return _Color * sample * (_AmbientColor + lightIntensity);
+				return _Color * sample * lightIntensity;
 			}
 			ENDCG
 		}

@@ -7,20 +7,38 @@ public abstract class WeaponParticle : WeaponBasic
     private int m_particleTriggerDamageListIndex = -1;
     protected ParticleSystem m_particleSystem;
 
+    protected float m_initialRateOverTimeMultiplier;
+
+    protected void InitWeaponParticle()
+    {
+        m_particleSystem = GetComponent<ParticleSystem>();
+        var emission = m_particleSystem.emission;
+        m_initialRateOverTimeMultiplier = emission.rateOverTimeMultiplier;
+    }
+
     public virtual ParticleSystem GetParticleSystem()
     {
         return m_particleSystem;
     }
 
+    protected virtual ParticleSystem SetParticleSystem(ParticleSystem ps)
+    {
+        return ps;
+    }
+
     public override void StopFiring()
     {
+        m_isFiring = false;
         m_particleSystem.Stop(true);
     }
 
     public override void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false)
     {
+        m_isFiring = true;
         m_particleSystem.Play();
     }
+
+    public override bool IsFiring() { return m_particleSystem.isEmitting; }
 
     public void SetParticleTriggerDamageIndex(int index) { m_particleTriggerDamageListIndex = index; }
 
@@ -28,19 +46,33 @@ public abstract class WeaponParticle : WeaponBasic
 
     public override void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false) { }
 
-    public override bool IsAlive(bool withChildren = true) { return m_particleSystem.IsAlive(withChildren); }
+    public override bool IsAlive() { return m_particleSystem.IsAlive(true); }
 
-    public override void SetSpeedMultiplier(float multiplier)
+    public override bool SetSpeedMultiplier(float multiplier, uint priority, bool overridePriority)
     {
-        m_speedMultiplier = multiplier;
-        var main = m_particleSystem.main;
-        main.simulationSpeed = multiplier;
+        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
+        if (changedValue)
+        {
+            var main = m_particleSystem.main;
+            main.simulationSpeed = multiplier;
+        }
+
+        return changedValue;
     }
 
-    public override void SetFireRateMultiplier(float multiplier)
+    public override bool SetFireRateMultiplier(float multiplier, uint priority, bool overridePriority)
     {
-        m_fireRateMultiplier = multiplier;
-        var emission = m_particleSystem.emission;
-        emission.rateOverTimeMultiplier = multiplier;
+        bool changedValue = m_fireRateMultiplier.SetValue(multiplier, priority, overridePriority);
+        if (changedValue)
+        {
+            var emission = m_particleSystem.emission;
+            emission.rateOverTimeMultiplier = m_initialRateOverTimeMultiplier * multiplier;
+        }
+
+        return changedValue;
     }
+
+    public virtual float GetInitialRateOverTimeMultiplier() { return m_initialRateOverTimeMultiplier; }
+    public virtual void SetInitialRateOverTimeMultiplier(float initialRateOverTime) { initialRateOverTime = m_initialRateOverTimeMultiplier; }
+
 }

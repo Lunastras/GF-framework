@@ -15,7 +15,9 @@ public class GfPooling : MonoBehaviour
     [SerializeField]
     private InitializationPool[] poolsToInstantiate;
 
-    private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
+    //magic value for the destruction of objects, we really just assume an object cannot be in this position unless we set it here
+    //looks like bad design, but it's nicer than using a component specific for keeping track of objects in the pool
+    private static readonly Vector3 DESTROY_POSITION = new Vector3(99999789, 99999879, 99999897);
 
     //a dictionary mapping a pooled object to its pool
 
@@ -145,24 +147,26 @@ public class GfPooling : MonoBehaviour
 
     private static void InternalDestroy(GameObject objectToDestroy, bool keepActive, bool goOverCapacity)
     {
-        bool alreadyDestroyed = objectToDestroy.transform.position.Equals(DESTROY_POSITION);
-        if (!alreadyDestroyed)
+        bool destroyObject = true;
+
+        if (instance.pools.TryGetValue(objectToDestroy.name, out List<GameObject> currentPool))
         {
-            string objectKey = objectToDestroy.name;
+            bool alreadyInPool = objectToDestroy.transform.position.Equals(DESTROY_POSITION);
+            destroyObject = !alreadyInPool;
             goOverCapacity |= keepActive;
 
-            if (instance.pools.TryGetValue(objectKey, out List<GameObject> currentPool)
-                && (goOverCapacity || currentPool.Count < currentPool.Capacity))
+            if (!alreadyInPool && (goOverCapacity || currentPool.Count < currentPool.Capacity))
             {
                 objectToDestroy.transform.position = DESTROY_POSITION;
-                objectToDestroy.SetActive(keepActive);
                 currentPool.Add(objectToDestroy);
+                destroyObject = false;
+                alreadyInPool = true;
             }
-            else
-            {
-                GameObject.Destroy(objectToDestroy);
-            }
+
+            objectToDestroy.SetActive(!alreadyInPool || keepActive);
         }
+
+        if (destroyObject) GameObject.Destroy(objectToDestroy);
     }
 
     private static void DestroyObjectsFromPool(List<GameObject> objects, int numInstances = -1)

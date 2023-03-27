@@ -23,7 +23,7 @@ public class NpcController : MonoBehaviour
     protected bool m_usesFixedUpdate = true;
 
     [SerializeField]
-    protected float m_fieldOfViewDegrees = 180;
+    protected float m_cosFieldOfView = 0.0f;
 
     [SerializeField]
     protected float m_lineOfSightLength = 40;
@@ -44,11 +44,14 @@ public class NpcController : MonoBehaviour
 
     //public bool canSeeTarget { get; private set; } = false;
 
-    protected bool m_hasLowLife = false;
+    protected bool m_runsAwayFromTarget = false;
 
     protected float m_currentSpeedMultiplier;
 
     private float m_stateCheckBias = 0;
+
+    protected Transform m_transform;
+    protected NpcState m_currentState;
 
     //the interval in seconds the npc will keep track
     //of the exact position of its target upon losing sight of it
@@ -56,18 +59,19 @@ public class NpcController : MonoBehaviour
 
     protected enum NpcState
     {
-        CHASING_TARGET, //can see target
+        ENGAGING_TARGET, //can see target
         SEARCHING_TARGET, //cannot see target
         NO_DESTINATION,
         RUNNING_AWAY,
     }
 
-    protected NpcState npcState;
 
     // Start is called before the first frame update
 
-    protected void Initialize()
+    protected virtual void Initialize()
     {
+        m_transform = transform;
+
         if (m_movement == null)
         {
             m_movement = GetComponent<GfMovementGeneric>();
@@ -82,14 +86,16 @@ public class NpcController : MonoBehaviour
     private void OnEnable()
     {
         SetDestination(null);
-        npcState = NpcState.NO_DESTINATION;
+        m_currentState = NpcState.NO_DESTINATION;
     }
 
     void Update()
     {
+        float deltaTime = Time.deltaTime;
+        InternalUpdate(deltaTime);
+
         if (!m_usesFixedUpdate)
         {
-            float deltaTime = Time.deltaTime;
             m_timeUntilNextStateUpdate -= deltaTime;
 
             if (0 >= m_timeUntilNextStateUpdate)
@@ -105,6 +111,8 @@ public class NpcController : MonoBehaviour
         }
     }
 
+    protected virtual void InternalUpdate(float deltaTime) { }
+
     void FixedUpdate()
     {
         if (m_usesFixedUpdate)
@@ -114,34 +122,41 @@ public class NpcController : MonoBehaviour
         }
     }
 
-    void StateUpdate(float deltaTime, float timeUntilNextUpdate)
+    protected virtual void BeforeStateUpdate(float deltaTime) { }
+
+    protected void StateUpdate(float deltaTime, float timeUntilNextUpdate)
     {
         m_timeUntilUnpause -= deltaTime;
-        m_timeUntilLosetarget = Mathf.Max(-1, m_timeUntilLosetarget - deltaTime);
-        m_timeUntilNextTargetCheck = Mathf.Max(-1, m_timeUntilNextTargetCheck - deltaTime);
+        m_timeUntilLosetarget -= deltaTime;
+        m_timeUntilNextTargetCheck -= deltaTime;
 
         if (0 >= m_timeUntilUnpause)
         {
+            BeforeStateUpdate(deltaTime);
             m_timeUntilUnpause = 0;
-            if (m_destination.WasDestroyed() && NpcState.CHASING_TARGET == npcState)
+            if (m_destination.WasDestroyed() && NpcState.ENGAGING_TARGET == m_currentState)
             {
-                DestinationDestroyedBehaviour();
-                npcState = NpcState.NO_DESTINATION;
+                DestinationDestroyedBehaviour(deltaTime);
+                m_currentState = NpcState.NO_DESTINATION;
             }
 
-            if (NpcState.NO_DESTINATION != npcState || !m_destination.WasDestroyed())
+            if (NpcState.NO_DESTINATION != m_currentState || !m_destination.WasDestroyed())
             {
-                MoveTowardsDestination(m_destination);
+                MoveTowardsDestination(deltaTime, m_destination);
             }
             else
             {
-                NoDestinationsBehaviour();
+                NoDestinationsBehaviour(deltaTime);
             }
 
             if (!m_usesRigidBody)
                 m_movement.UpdatePhysics(deltaTime, true, timeUntilNextUpdate, m_updatePhysicsValuesAutomatically);
+
+            AfterStateUpdate(deltaTime);
         }
     }
+
+    protected virtual void AfterStateUpdate(float deltaTime) { }
 
     void LateUpdate()
     {
@@ -152,89 +167,68 @@ public class NpcController : MonoBehaviour
     protected bool CheckCanSeeTarget(Transform target, float lineOfSightLength, bool currentlySeesTarget, bool unlimitedFov = false, bool forceRayCast = false)
     {
         bool auxCanSeeTarget = currentlySeesTarget;
-
-        // Debug.Log("CHECKIES target " + destination.WasDestroyed());
         bool validTarget = target != null && target.gameObject.activeSelf;
 
         if ((forceRayCast || 0 >= m_timeUntilNextTargetCheck) && validTarget)
         {
-            Vector3 dirToTarget = target.position - transform.position;
+            Vector3 currentPosition = m_transform.position;
+            Vector3 dirToTarget = target.position;
+            GfTools.Minus3(ref dirToTarget, currentPosition);
             float distanceFromTarget = dirToTarget.magnitude;
-            dirToTarget = dirToTarget.normalized;
-
-            float dotTargetView = Vector3.Dot(transform.forward, dirToTarget);
+            if (distanceFromTarget >= 0.00001f) GfTools.Div3(ref dirToTarget, distanceFromTarget);
 
             auxCanSeeTarget = unlimitedFov || (distanceFromTarget <= lineOfSightLength
-                                && Mathf.Cos(m_fieldOfViewDegrees / 2.0f * Mathf.Deg2Rad) <= dotTargetView);
+                                && m_cosFieldOfView <= Vector3.Dot(m_transform.forward, dirToTarget));
 
             //check if uses raycast
             if (m_targetCheckCooldown >= 0 && auxCanSeeTarget)
             {
-                // Debug.Log("CHECKIES target RAY 2");
                 m_timeUntilNextTargetCheck = m_targetCheckCooldown * GfRandom.Range(0.5f, 1.5f);
 
-                Vector3 offsetSource = Vector3.up;
-                Vector3 offsetDest = Vector3.up * 1.0f;
-
-                dirToTarget = (target.position + offsetDest) - (transform.position + offsetSource);
-                distanceFromTarget = dirToTarget.magnitude;
-                dirToTarget = dirToTarget.normalized;
-
-                Ray ray = new(transform.position + offsetSource, dirToTarget);
-
+                Ray ray = new(currentPosition, dirToTarget);
                 RaycastHit[] hits = GfPhysics.GetRaycastHits();
-
                 auxCanSeeTarget = 0 == Physics.RaycastNonAlloc(ray, hits, distanceFromTarget, GfPhysics.CollisionsNoGroundLayers());
-
-                //check if the hit's distance is within 5 units of the target
-                if (!auxCanSeeTarget)
-                {
-                    auxCanSeeTarget = hits[0].distance >= (distanceFromTarget - 1.0f);
-                }
+                //check if the hit's distance is within x amount of units away from the destination
+                //I was thinking of using auxCanSeeTarget|=, but as far as I know that is the OR bitwise operator ' | ', not the boolean check operator ' || ' and I am not sure if it will actually skip the second bool, || skips the second bool if the first one is true. 
+                auxCanSeeTarget = auxCanSeeTarget || hits[0].distance >= (distanceFromTarget - 1.0f);
             }
         }
 
         return auxCanSeeTarget;
     }
 
-    protected virtual void MoveTowardsDestination(Destination destination)
+    protected virtual void MoveTowardsDestination(float deltaTime, Destination destination)
     {
-        Vector3 dirToTarget = destination.LastKnownPosition() - transform.position;
-        bool canSeeTarget = CheckCanSeeTarget(destination.TransformDest, m_lineOfSightLength, NpcState.CHASING_TARGET == npcState);
+        bool canSeeTarget = CheckCanSeeTarget(destination.TransformDest, m_lineOfSightLength, NpcState.ENGAGING_TARGET == m_currentState);
+        if (canSeeTarget) destination.UpdatePosition();
 
         Vector3 targetPosition = destination.LastKnownPosition();
-        // Debug.Log("TARGET POSITION IS " + targetPosition);
-        // Debug.Log("REALPOSITION IS " + destination.RealPosition());
+        Vector3 dirToTarget = targetPosition - m_transform.position;
 
         if (canSeeTarget)
         {
             m_timeUntilLosetarget = m_targetTrackingTimeWindow;
-            npcState = NpcState.CHASING_TARGET;
+            m_currentState = NpcState.ENGAGING_TARGET;
         }
         else
         {
-            npcState = NpcState.SEARCHING_TARGET;
+            m_currentState = NpcState.SEARCHING_TARGET;
         }
 
         bool auxCanSeeTarget = 0 < m_timeUntilLosetarget;
 
-        if (destination.IsEnemy)
+        if (destination.IsEnemy && m_runsAwayFromTarget)
         {
-            //Debug.Log("ye enemy "+ canSeeTarget);
-
-            if (m_hasLowLife)
-            {
-                npcState = NpcState.RUNNING_AWAY;
-                LowLifeBehaviour(dirToTarget);
-            }
-            else if (auxCanSeeTarget)
-            {
-                destination.UpdatePosition();
-                EngageEnemyBehaviour(dirToTarget);
-            }
+            m_currentState = NpcState.RUNNING_AWAY;
+            LowLifeBehaviour(deltaTime, dirToTarget);
+        }
+        else if (destination.IsEnemy && auxCanSeeTarget)
+        {
+            m_currentState = NpcState.ENGAGING_TARGET;
+            EngageEnemyBehaviour(deltaTime, dirToTarget);
         }
 
-        if (NpcState.SEARCHING_TARGET == npcState)
+        if (NpcState.SEARCHING_TARGET == m_currentState)
         {
             if (CheckArrivedAtDestination())
             {
@@ -245,32 +239,35 @@ public class NpcController : MonoBehaviour
 
                     if (canSeeTarget)
                     {
-                        npcState = NpcState.CHASING_TARGET;
+                        m_currentState = NpcState.ENGAGING_TARGET;
+                        EngageEnemyBehaviour(deltaTime, dirToTarget);
                     }
                     else
                     {
-                        LostTargetBehaviour();
+                        m_currentState = NpcState.NO_DESTINATION;
+                        LostTargetBehaviour(deltaTime);
                     }
                 }
                 else
                 {
-                    ArrivedAtDestinationBehaviour();
+                    m_currentState = NpcState.NO_DESTINATION;
+                    ArrivedAtDestinationBehaviour(deltaTime);
                 }
             }
             else
             {
-                CalculatePathDirection(dirToTarget);
+                CalculatePathDirection(deltaTime, dirToTarget);
             }
         }
     }
 
-    protected virtual void EngageEnemyBehaviour(Vector3 dirToTarget)
+    protected virtual void EngageEnemyBehaviour(float deltaTime, Vector3 dirToTarget)
     {
 
         m_movement.SetMovementDir(dirToTarget.normalized);
     }
 
-    protected virtual void LowLifeBehaviour(Vector3 dirToTarget)
+    protected virtual void LowLifeBehaviour(float deltaTime, Vector3 dirToTarget)
     {
         m_movement.SetMovementDir(-dirToTarget.normalized);
     }
@@ -279,46 +276,47 @@ public class NpcController : MonoBehaviour
  * Calculates path towards destination and changes the 
  * movementDirNorm accordingly
  */
-    protected virtual void CalculatePathDirection(Vector3 dirToTarget)
+    protected virtual void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
+        Debug.Log("finding the target");
 
         m_movement.SetMovementDir(dirToTarget.normalized);
     }
 
-    protected virtual void ArrivedAtDestinationBehaviour()
+    protected virtual void ArrivedAtDestinationBehaviour(float deltaTime)
     {
         m_movement.SetMovementDir(Vector3.zero);
     }
 
-    protected virtual void LostTargetBehaviour()
+    protected virtual void LostTargetBehaviour(float deltaTime)
     {
         m_movement.SetMovementDir(Vector3.zero);
     }
 
-    protected virtual void DestinationDestroyedBehaviour()
+    protected virtual void DestinationDestroyedBehaviour(float deltaTime)
     {
         PauseMovement(3);
         m_movement.SetMovementDir(Vector3.zero);
     }
 
-    protected virtual void NoDestinationsBehaviour()
+    protected virtual void NoDestinationsBehaviour(float deltaTime)
     {
 
     }
 
     public void SetDestination(Transform destinationTrans, bool isEnemy = false, bool canLoseTrackOfTarget = true)
     {
-        m_destination = new Destination(destinationTrans, isEnemy, canLoseTrackOfTarget);
+        m_destination.SetDestination(destinationTrans, isEnemy, canLoseTrackOfTarget);
     }
 
     public void SetDestination(Vector3 destinationPos)
     {
-        m_destination = new Destination(destinationPos);
+        m_destination.SetDestination(destinationPos);
     }
 
     public virtual void SetRunAwayFromTarget(bool value)
     {
-        m_hasLowLife = value;
+        m_runsAwayFromTarget = value;
     }
 
     public void PauseMovement(float durationInSeconds = float.MaxValue)
@@ -341,24 +339,15 @@ public class NpcController : MonoBehaviour
     //Checks if the npc arrived at the given target
     private bool CheckArrivedAtDestination()
     {
-        Vector3 targetPosition = m_destination.LastKnownPosition();
-        // Debug.Log("CHECKING IF I ARRIVED AT " + targetPosition);
-        //Debug.Log("the name of the target is: " + destination.TransformDest.name);
-        Vector3 dirToTarget = targetPosition - transform.position;
+        Vector3 dirToTarget = m_destination.LastKnownPosition(); ;
+        GfTools.Minus3(ref dirToTarget, transform.position);
 
-        if (Mathf.Abs(transform.position.y - targetPosition.y) < 1)
-        {
-            float horizontalDistance = new Vector2(dirToTarget.x, dirToTarget.z).magnitude;
-
-            return horizontalDistance <= 1f;
-        }
-
-        return false;
+        return dirToTarget.sqrMagnitude < 1f;
     }
 
     public bool CanSeeTarget()
     {
-        return NpcState.CHASING_TARGET == npcState;
+        return NpcState.ENGAGING_TARGET == m_currentState;
     }
 }
 

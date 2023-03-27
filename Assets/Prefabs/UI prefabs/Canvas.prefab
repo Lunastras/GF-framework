@@ -228,10 +228,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 418f8e40e729eee46937d84844249620, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  levelSliderPrefab: {fileID: 6418322552322726586, guid: 6e879e165d1171e4d87a5920195a7519,
+  m_onlyShowFirstWeapon: 0
+  m_levelSliderPrefab: {fileID: 6418322552322726586, guid: 6e879e165d1171e4d87a5920195a7519,
     type: 3}
-  levelSlidersYOffset: 0
-  levelSlidersParent: {fileID: 916576515646022570}
+  m_levelSlidersYOffset: 10
+  m_levelSlidersParent: {fileID: 916576515646022570}
 --- !u!1 &916576516255717247
 GameObject:
   m_ObjectHideFlags: 0

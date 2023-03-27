@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_xFollowFactor: 1
-  m_transformCharacter: {fileID: 5605963468813519050}
+  m_transformCharacter: {fileID: 0}
   m_defaultUpvec: {x: 0, y: 1, z: 0}
 --- !u!212 &3862569684729163602
 SpriteRenderer:
@@ -169,6 +169,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_projector: {fileID: 1970840277280821155}
+  m_parentMovement: {fileID: 0}
   m_selfCollider: {fileID: 0}
   m_intervalObjCheck: 0.1
   m_intervalDistanceCheck: 0.02
@@ -180,6 +181,7 @@ MonoBehaviour:
   m_sizeEnd: {x: 0, y: 0}
   m_smoothTimeOpacity: 0.1
   m_smoothTimeSize: 0.1
+  m_overrideZaxisRotation: 1
   m_layerMask:
     serializedVersion: 2
     m_Bits: 133633
@@ -236,11 +238,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   m_parentDamageSource: {fileID: 0}
-  audioSource: {fileID: 0}
-  turret: {fileID: 0}
-  levelFireSounds: []
-  levelReleaseFireSounds: []
-  expRequiredForLevels: []
+  m_damage: 0
+  m_movementParent: {fileID: 0}
+  m_target: {fileID: 0}
+  m_audioSource: {fileID: 0}
+  m_turret: {fileID: 0}
+  m_levelFireSounds: []
+  m_levelReleaseFireSounds: []
+  m_expRequiredForLevels: []
+  m_odama: {fileID: 0}
 --- !u!114 &8540795760386272405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -259,7 +265,6 @@ MonoBehaviour:
   - weapons:
     - {fileID: 1998565385933652919}
   m_autoPlay: 0
-  m_autoRestarts: 0
   m_destoryWhenDone: 0
   m_objectToDestroy: {fileID: 0}
 --- !u!114 &5605963468813519046
@@ -274,15 +279,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53fefe2c2f768304f8fe7d18a14d771c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_parent: {fileID: 0}
+  m_weaponBasic: {fileID: 0}
+  m_shadowProjector: {fileID: 0}
+  m_followCameraScript: {fileID: 0}
   m_dstFromParent: 1
+  m_rotationSpeedCoefOnFire: 20
+  m_bopCoefOnFire: 0
+  m_dstFromParentCoefOnFire: 0.5
   m_rotationSpeed: 1
-  m_parentMoveSmoothness: 0.02
   m_bopSpeed: 1
   m_bopRange: 0.5
+  m_parentMoveSmoothness: 0.02
+  m_rotationSpeedSmoothTime: 0.2
+  m_bopValueSmoothTime: 0.2
+  m_distanceSmoothTime: 0.2
   m_positionOffset: {x: 0, y: 0, z: 0}
   m_physCheckInterval: 1000
-  m_parentMovement: {fileID: 0}
+  m_collisionRadius: 0.25
 --- !u!82 &8402473212356980238
 AudioSource:
   m_ObjectHideFlags: 0
@@ -393,8 +406,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   m_parentDamageSource: {fileID: 0}
+  m_damage: 0
+  m_movementParent: {fileID: 0}
+  m_target: {fileID: 0}
   m_particleSystemObj: {fileID: 8446509831104077356, guid: f7840487ecf12d94394db31c60ec28dd,
     type: 3}
   m_fireCoolDownSeconds: 0
   m_particlesToEmit: 1
-  m_applyRotation: 1
+  m_applyRotation: 0

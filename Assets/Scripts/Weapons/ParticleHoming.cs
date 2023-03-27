@@ -18,6 +18,9 @@ public class ParticleHoming : JobChild
     protected Transform m_mainTarget;
 
     [SerializeField]
+    protected float m_physInterval = 0.1f;
+
+    [SerializeField]
     protected float m_acceleration = 5;
 
     [SerializeField]
@@ -51,9 +54,12 @@ public class ParticleHoming : JobChild
 
     protected bool m_hasAJob = false;
 
+    protected float m_timeUntilPhysUpdate = 0;
+
     // Start is called before the first frame update
 
-    void Awake() {
+    void Awake()
+    {
         if (null == m_particleSystem) m_particleSystem = GetComponent<ParticleSystem>();
     }
     void Start()
@@ -91,41 +97,50 @@ public class ParticleHoming : JobChild
     public override bool ScheduleJob(out JobHandle handle, float deltaTime, int batchSize = 512)
     {
         m_hasAJob = false;
-        m_numActiveParticles = m_particleSystem.particleCount;
         handle = default;
-        //Debug.Log("The num of particles i have is: " + m_numActiveParticles + " name is: " + gameObject.name);
-        if (m_numActiveParticles > 0)
+
+        m_timeUntilPhysUpdate -= deltaTime;
+
+        if (0 >= m_timeUntilPhysUpdate)
         {
-            m_particleList = new(m_numActiveParticles, Allocator.TempJob);
-            m_particleSystem.GetParticles(m_particleList, m_numActiveParticles);
-
-            Vector3 targetPos = DOWNDIR;
-            if (m_mainTarget) targetPos = m_mainTarget.position;
-
-            Vector3 gravity3 = m_defaultGravityDir;
-            if (m_sphericalParent)
+            float timeSinceLastCheck = m_physInterval - m_timeUntilPhysUpdate;
+            m_timeUntilPhysUpdate += m_physInterval;
+            m_numActiveParticles = m_particleSystem.particleCount;
+            //Debug.Log("The num of particles i have is: " + m_numActiveParticles + " name is: " + gameObject.name);
+            if (m_numActiveParticles > 0)
             {
-                gravity3 = m_sphericalParent.position;
+                m_particleList = new(m_numActiveParticles, Allocator.TempJob);
+                m_particleSystem.GetParticles(m_particleList, m_numActiveParticles);
 
-                var customData = m_particleSystem.customData;
-                customData.SetVector(ParticleSystemCustomData.Custom1, 0, gravity3.x);
-                customData.SetVector(ParticleSystemCustomData.Custom1, 1, gravity3.y);
-                customData.SetVector(ParticleSystemCustomData.Custom1, 2, gravity3.z);
-                customData.SetVector(ParticleSystemCustomData.Custom1, 3, 1); //1, position
+                Vector3 targetPos = DOWNDIR;
+                if (m_mainTarget) targetPos = m_mainTarget.position;
+
+                Vector3 gravity3 = m_defaultGravityDir;
+                if (m_sphericalParent)
+                {
+                    gravity3 = m_sphericalParent.position;
+
+                    var customData = m_particleSystem.customData;
+                    customData.SetVector(ParticleSystemCustomData.Custom1, 0, gravity3.x);
+                    customData.SetVector(ParticleSystemCustomData.Custom1, 1, gravity3.y);
+                    customData.SetVector(ParticleSystemCustomData.Custom1, 2, gravity3.z);
+                    customData.SetVector(ParticleSystemCustomData.Custom1, 3, 1); //1, position
+                }
+
+                ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPos, timeSinceLastCheck, m_maxSpeed
+                , m_acceleration, m_gravity, m_deacceleration, m_drag, m_targetRadius * m_targetRadius
+                , gravity3, null != m_sphericalParent, null != m_mainTarget);
+
+                handle = jobStruct.Schedule(m_numActiveParticles, min(16, m_numActiveParticles));
+                m_hasAJob = true;
             }
-
-            ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPos, deltaTime, m_maxSpeed
-            , m_acceleration, m_gravity, m_deacceleration, m_drag, m_targetRadius
-            , gravity3, null != m_sphericalParent, null != m_mainTarget);
-
-            handle = jobStruct.Schedule(m_numActiveParticles, min(32, m_numActiveParticles));
-            m_hasAJob = true;
         }
 
         return m_hasAJob;
     }
 
-    public ParticleSystem GetParticleSystem() {
+    public ParticleSystem GetParticleSystem()
+    {
         return m_particleSystem;
     }
 
@@ -160,13 +175,14 @@ public class ParticleHoming : JobChild
 
     public void CopyGravity(GfMovementGeneric movement)
     {
-        if(movement) {
+        if (movement)
+        {
             Transform sphericalParent = movement.GetParentSpherical();
 
             if (sphericalParent)
                 SetSphericalParent(sphericalParent);
             else
-                SetDefaultGravityDir(-movement.UpVecEffective());
+                SetDefaultGravityDir(-movement.GetUpVecRaw());
         }
     }
 
@@ -183,15 +199,16 @@ public class ParticleHoming : JobChild
 
     public bool HasSameGravity(GfMovementGeneric movement)
     {
-        if(movement) {
+        if (movement)
+        {
             Transform parentSphericalToCopy = movement.GetParentSpherical();
             bool sameParent = parentSphericalToCopy == m_sphericalParent;
             bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
 
-            return ((sameParent && !nullParents) || (nullParents && (-movement.UpVecRaw()) == m_defaultGravityDir));
-        } 
+            return ((sameParent && !nullParents) || (nullParents && (-movement.GetUpVecRaw()) == m_defaultGravityDir));
+        }
 
-        return false;   
+        return false;
     }
 
     public bool HasSameGravity(ParticleHoming pg)
@@ -235,7 +252,7 @@ public struct ParticleHomingJob : IJobParallelFor
     public float m_acceleration;
     public float m_deacceleration;
     public float m_drag;
-    public float m_targetRadius;
+    public float m_targetRadiusSquared;
     float3 m_gravity3;
 
     float m_gravity;
@@ -243,7 +260,7 @@ public struct ParticleHomingJob : IJobParallelFor
     bool m_hasParent;
     bool m_hasTarget;
 
-    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, float3 targetPos, float deltaTime, float maxSpeed, float acceleration, float gravity, float deacceleration, float drag, float targetRadius, float3 gravity3, bool hasParent, bool hasTarget)
+    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, float3 targetPos, float deltaTime, float maxSpeed, float acceleration, float gravity, float deacceleration, float drag, float targetRadiusSquared, float3 gravity3, bool hasParent, bool hasTarget)
     {
         m_targetPos = targetPos;
         m_particleList = particleList;
@@ -251,7 +268,7 @@ public struct ParticleHomingJob : IJobParallelFor
         m_maxSpeed = maxSpeed;
         m_acceleration = acceleration;
         m_deacceleration = deacceleration;
-        m_targetRadius = targetRadius;
+        m_targetRadiusSquared = targetRadiusSquared;
         m_gravity3 = gravity3;
         m_hasParent = hasParent;
         m_hasTarget = hasTarget;
@@ -268,41 +285,42 @@ public struct ParticleHomingJob : IJobParallelFor
         float3 dirToTarget = m_targetPos - currentPos;
         float3 dirToPlanet = m_gravity3 - currentPos;
 
-        bool followsTarget = m_hasTarget && length(dirToTarget) < m_targetRadius;
+        bool followsTarget = m_hasTarget && lengthsq(dirToTarget) <= m_targetRadiusSquared;
         bool usesParentGravity = !followsTarget && m_hasParent;
 
-        float targetPosCoefF = Convert.ToSingle(followsTarget);
-        float notTargetPosCoefF = 1f - targetPosCoefF;
+        float followsTargetF = Convert.ToSingle(followsTarget);
+        float notFollowingTargetF = 1f - followsTargetF;
 
         float3 movDir = m_gravity3 * Convert.ToSingle(!usesParentGravity && !followsTarget)
-                    + dirToTarget * targetPosCoefF
+                    + dirToTarget * followsTargetF
                     + dirToPlanet * Convert.ToSingle(usesParentGravity);
 
-        float acceleration = m_acceleration * targetPosCoefF + m_gravity * notTargetPosCoefF;
-        float deacceleration = m_deacceleration * targetPosCoefF + m_drag * notTargetPosCoefF;
+        float acceleration = m_acceleration * followsTargetF + m_gravity * notFollowingTargetF;
+        float deacceleration = m_deacceleration * followsTargetF + m_drag * notFollowingTargetF;
 
-        float targetDist = length(movDir);
-
-        if (targetDist > 0.000001F)
-            movDir /= targetDist;
+        float movDirLengthSq = lengthsq(movDir);
+        if (movDirLengthSq > 0.00001F)
+            movDir /= sqrt(movDirLengthSq);
 
         float currentSpeed = length(velocity);
 
         float dotMovementVelDir = 0;
-        if (currentSpeed > 0.000001F)
+        if (currentSpeed > 0.00001F)
             dotMovementVelDir = dot(movDir, velocity / currentSpeed);
 
         float speedInDesiredDir = currentSpeed * max(0, dotMovementVelDir);
         float3 unwantedVelocity = velocity - movDir * min(speedInDesiredDir, m_maxSpeed);
 
         float unwantedSpeed = length(unwantedVelocity);
-        if (unwantedSpeed > 0.000001F) unwantedVelocity /= unwantedSpeed;
+        if (unwantedSpeed > 0.00001F) unwantedVelocity /= unwantedSpeed;
 
         float accMagn = min(max(0, m_maxSpeed - speedInDesiredDir), m_deltaTime * acceleration);
         float deaccMagn = min(unwantedSpeed, deacceleration * m_deltaTime);
 
         velocity += movDir * accMagn;
         velocity -= unwantedVelocity * deaccMagn;
+
+        if (length(velocity) < 0.00001f) velocity = float3(0, -1, 0);
 
         particle.velocity = velocity;
         m_particleList[i] = particle;

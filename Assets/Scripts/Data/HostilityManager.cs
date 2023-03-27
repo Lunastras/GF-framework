@@ -17,9 +17,7 @@ public class HostilityManager : MonoBehaviour
     private void Awake()
     {
         m_hostilityManager = this;
-
-        foreach (int i in Enum.GetValues(typeof(CharacterTypes)))
-            ++m_numTypes;
+        m_numTypes = Enum.GetValues(typeof(CharacterTypes)).Length;
 
         m_instantiatedCharacters = new List<StatsCharacter>[m_numTypes];
 

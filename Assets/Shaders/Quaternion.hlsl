@@ -1,3 +1,6 @@
+#ifndef QUATERNIONS_LIBRARY_INCLUDED
+#define QUATERNIONS_LIBRARY_INCLUDED
+
             //Get angle axis quaternion on given axisNormalised. sinRadiansHalf and cosRadiansHalf
             // are sin(radians * 0.5) and cos(radians * 0.5) respectively. This is done for optimisations reasons
             
@@ -51,20 +54,20 @@
             }
 
             float4 quatFromTo(in float3 initial, in float3 final) 
-            { 
+            {  
                 float4 outQuat = float4(0,0,0,1);
                 float dotf = dot(initial, final); 
-                if (dotf < -0.9999999f) //opposite vectors
+                if (dotf < -0.999999f) //opposite vectors
                 {
                     float3 crossf = cross(float3(1,0,0), initial);
-                    if (length(crossf) < 0.0000001f)
+                    if (length(crossf) < 0.000001f)
                         crossf = cross(float3(0,1,0), initial);
                     return angleRadAxis(0, 1, normalize(crossf)); //(in float cosRadiansHalf, in float sinRadiansHalf, float3 axisNormalised, out float4 quat) 
                 } 
-                else if (dotf < 0.9999999f) // normal case
+                else if (dotf < 0.999999f) // normal case
                 {
                     float3 crossf = cross(initial, final);
-                    outQuat = normalize(float4(crossf.x, crossf.y, crossf.z, 1 + dotf));
+                    outQuat = normalize(float4(crossf.x, crossf.y, crossf.z, 1.0f + dotf));
                 }
 
                 return outQuat;
@@ -83,4 +86,4 @@
                 return angleRad(a,b) * 57.29578;
             }
 
-    
+    #endif //QUATERNIONS_LIBRARY_INCLUDED

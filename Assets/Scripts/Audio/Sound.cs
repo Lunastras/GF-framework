@@ -49,6 +49,11 @@ public class Sound
         Played(Time.timeAsDouble, delay);
     }
 
+    public GfAudioSource Play(Vector3 position, float delay = 0, float volume = 1, float pitch = 1)
+    {
+        return AudioManager.PlayAudio(this, position, delay, volume, pitch);
+    }
+
     public void Play(AudioSource source, float delay = 0, float volume = 1, float pitch = 1)
     {
         double currentTime = Time.timeAsDouble;

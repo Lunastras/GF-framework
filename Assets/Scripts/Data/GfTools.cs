@@ -152,13 +152,19 @@ public class GfTools
     public static void Normalize(ref Vector3 vector)
     {
         float sqrMag = vector.sqrMagnitude;
-        if (sqrMag > 0.0000001f)
+        if (sqrMag > 0.000001f)
         {
             float inv = 1.0f / System.MathF.Sqrt(sqrMag);
 
             vector.x *= inv;
             vector.y *= inv;
             vector.z *= inv;
+        }
+        else
+        {
+            vector.x = 0;
+            vector.y = 0;
+            vector.z = 0;
         }
     }
 
@@ -178,7 +184,7 @@ public class GfTools
         return 2.0f * atan2(length(abm - bam), length(abm + bam)) * Mathf.Rad2Deg;
     }
 
-    public static float SignedAngle(Vector3 from, Vector3 to, Vector3 axis)
+    public static float SignedAngleDeg(Vector3 from, Vector3 to, Vector3 axis)
     {
         float unsignedAngle = AngleDeg(from, to);
 

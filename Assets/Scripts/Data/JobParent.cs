@@ -21,7 +21,7 @@ public class JobParent : MonoBehaviour
     public static void AddInstance(JobChild child, Type type, bool checkExistence = false)
     {
         List<JobChild> list;
-        if (child && child.GetJobParentIndex() < 0 && Instance.m_inheritedMembers.TryGetValue(type, out list))
+        if (child.GetJobParentIndex() < 0 && Instance.m_inheritedMembers.TryGetValue(type, out list))
         {
             bool addToList = true;
             if (checkExistence) addToList = !(list.Contains(child));
@@ -29,7 +29,7 @@ public class JobParent : MonoBehaviour
             if (addToList)
             {
                 list.Add(child);
-                child.SetJobParentIndex(list.Count);
+                child.SetJobParentIndex(list.Count - 1);
             }
         }
     }
@@ -37,11 +37,12 @@ public class JobParent : MonoBehaviour
     public static void RemoveInstance(int index, Type type)
     {
         List<JobChild> list;
-        if (index > 0 && Instance.m_inheritedMembers.TryGetValue(type, out list) && index < list.Count)
+        if (index >= 0 && Instance.m_inheritedMembers.TryGetValue(type, out list) && index < list.Count)
         {
             list[index].SetJobParentIndex(-1);
             int count = list.Count - 1;
             list[index] = list[count];
+            list[index].SetJobParentIndex(index);
             list.RemoveAt(count);
         }
     }
@@ -90,17 +91,7 @@ public class JobParent : MonoBehaviour
 
             for (i = 0; i < count; ++i)
             {
-                JobChild child = list[i];
-                while (i < count && child == null) //clean up the list
-                {
-                    --count;
-                    list[i] = list[count];
-                    list.RemoveAt(count);
-                    child = list[i];
-                    if (i < count && child) child.SetJobParentIndex(i);
-                }
-
-                if (child && child.ScheduleJob(out handle, deltaTime))
+                if (list[i].ScheduleJob(out handle, deltaTime))
                 {
                     m_jobHandles.Add(handle);
                     jobCount++;

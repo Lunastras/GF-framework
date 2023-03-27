@@ -33,8 +33,6 @@ public class GfMovementSimple : GfMovementGeneric
 
     protected int m_currentJumpsCount = 0;
 
-    public float AccelerationCoef = 1;
-    public float DeaccelerationCoef = 1;
     protected float m_effectiveDeacceleration;
     protected float m_effectiveAcceleration;
     public bool CanDoubleJump { get; protected set; }
@@ -54,6 +52,9 @@ public class GfMovementSimple : GfMovementGeneric
     protected float m_effectiveMass = 0;
 
     protected float m_effectiveSpeed;
+
+    protected PriorityValue<float> m_accelerationMultiplier = new(1);
+    protected PriorityValue<float> m_deaccelerationMultiplier = new(1);
 
 
     [SerializeField]
@@ -98,8 +99,9 @@ public class GfMovementSimple : GfMovementGeneric
             m_effectiveAcceleration = m_midAirAcceleration;
             m_effectiveDeacceleration = m_midAirDeacceleration;
         }
-        m_effectiveAcceleration *= AccelerationCoef;
-        m_effectiveDeacceleration *= DeaccelerationCoef;
+
+        m_effectiveAcceleration *= m_accelerationMultiplier;
+        m_effectiveDeacceleration *= m_deaccelerationMultiplier;
 
         m_effectiveSpeed = m_speed * m_speedMultiplier;
         m_effectiveMass = m_mass * m_massMultiplier;
@@ -115,7 +117,7 @@ public class GfMovementSimple : GfMovementGeneric
             Vector3 forwardVec = GfTools.RemoveAxis(transform.forward, m_rotationUpVec);
 
             float turnAmount = m_turnSpeed * deltaTime;
-            float angleDistance = -GfTools.SignedAngle(desiredForwardVec, forwardVec, m_rotationUpVec); //angle between the current and desired rotation
+            float angleDistance = -GfTools.SignedAngleDeg(desiredForwardVec, forwardVec, m_rotationUpVec); //angle between the current and desired rotation
             float degreesMovement = Min(System.MathF.Abs(angleDistance), turnAmount);
 
             if (degreesMovement > 0.05f)
@@ -230,7 +232,27 @@ public class GfMovementSimple : GfMovementGeneric
         if (collision.isGrounded && collisionTrans != m_parentTransform)
             SetParentTransform(collisionTrans);
 
-        m_isExtendingJump &= !collision.isGrounded && collision.upVecAngle <= m_upperSlopeLimit;
+        m_isExtendingJump &= !collision.isGrounded && collision.selfUpVecAngle <= m_upperSlopeLimit;
         m_touchedParent |= collision.isGrounded && m_parentTransform == collisionTrans;
+    }
+
+    public PriorityValue<float> GetAccelerationMultiplier()
+    {
+        return m_accelerationMultiplier;
+    }
+
+    public void SetAccelerationMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        m_accelerationMultiplier.SetValue(multiplier, priority, overridePriority);
+    }
+
+    public PriorityValue<float> GetDeaccelerationMultiplier()
+    {
+        return m_deaccelerationMultiplier;
+    }
+
+    public void SetDeaccelerationMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        m_deaccelerationMultiplier.SetValue(multiplier, priority, overridePriority);
     }
 }

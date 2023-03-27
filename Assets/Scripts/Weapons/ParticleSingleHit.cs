@@ -21,7 +21,7 @@ public class ParticleSingleHit : WeaponParticle
             SetStatsCharacter(GetComponent<StatsCharacter>());
 
         m_collisionEvents = new(8);
-        m_particleSystem = GetComponent<ParticleSystem>();
+        InitWeaponParticle();
     }
 
     private void OnEnable()
@@ -65,7 +65,7 @@ public class ParticleSingleHit : WeaponParticle
 
 
 
-    private void FixedUpdate()
+    private void Update()
     {
         if (m_target)
         {
@@ -93,11 +93,6 @@ public class ParticleSingleHit : WeaponParticle
     {
         AudioManager.PlayAudio(m_collisionSound, collisionEvent.intersection);
         GameParticles.PlayParticleDust(collisionEvent.intersection, collisionEvent.normal);
-    }
-
-    public override bool IsAlive(bool withChildren = true)
-    {
-        return m_particleSystem.IsAlive(withChildren);
     }
 
     public GameObject GetGameObject() { return gameObject; }

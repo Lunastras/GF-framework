@@ -69,17 +69,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_projector: {fileID: 3271172313896487433}
-  m_selfCollider: {fileID: 0}
-  m_intervalObjCheck: 0.2
-  m_intervalDistanceCheck: 0.07
+  m_parentMovement: {fileID: 432613321654859549}
+  m_selfCollider: {fileID: 6910084372030936651}
+  m_intervalObjCheck: 0.1
+  m_intervalDistanceCheck: 0.02
   m_updateVariance: 0
-  m_maxProjectionDistance: 30
+  m_maxProjectionDistance: 40
   m_extraDepth: 1
-  m_opacityStartEnd: {x: 0.8, y: 0.2}
-  m_sizeStart: {x: 3, y: 3}
+  m_opacityStartEnd: {x: 0.6, y: 0}
+  m_sizeStart: {x: 2, y: 2}
   m_sizeEnd: {x: 0, y: 0}
   m_smoothTimeOpacity: 0.1
   m_smoothTimeSize: 0.1
+  m_overrideZaxisRotation: 1
   m_layerMask:
     serializedVersion: 2
     m_Bits: 133633
@@ -244,7 +246,35 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   m_parentDamageSource: {fileID: 1184494187360147066}
-  m_damage: 0
+  m_damage: 10
+  m_movementParent: {fileID: 0}
+  m_target: {fileID: 0}
+  m_damageSound:
+    m_clip: {fileID: 0}
+    m_mixerType: 0
+    m_mixerGroupOverride: {fileID: 0}
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_collisionSound:
+    m_clip: {fileID: 0}
+    m_mixerType: 0
+    m_mixerGroupOverride: {fileID: 0}
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
   m_canDamageSelf: 0
   m_getDamageSourceFromColor: 0
 --- !u!198 &1608161839850249133
@@ -255,7 +285,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4547767586303620511}
   serializedVersion: 8
-  lengthInSec: 5
+  lengthInSec: 2
   simulationSpeed: 5
   stopAction: 0
   cullingMode: 0
@@ -330,7 +360,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 20
+      scalar: 10
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -383,7 +413,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 40
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -437,7 +467,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 1, b: 1, a: 1}
+      maxColor: {r: 0.93250316, g: 0.5801887, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -874,15 +904,15 @@ ParticleSystem:
         m_RotationOrder: 4
   ShapeModule:
     serializedVersion: 6
-    enabled: 0
-    type: 4
+    enabled: 1
+    type: 10
     angle: 25
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
-    radiusThickness: 1
+    radiusThickness: 0
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
-    m_Rotation: {x: 0, y: 0, z: 0}
+    m_Rotation: {x: 90, y: -60, z: 0}
     m_Scale: {x: 1, y: 1, z: 1}
     placementMode: 0
     m_MeshMaterialIndex: 0
@@ -962,7 +992,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 1
+      value: 0.0001
       mode: 0
       spread: 0
       speed:
@@ -1019,13 +1049,13 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
     arc:
-      value: 360
-      mode: 0
+      value: 60
+      mode: 2
       spread: 0
       speed:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 1
+        scalar: 0.04
         minScalar: 1
         maxCurve:
           serializedVersion: 2
@@ -1081,7 +1111,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 40
+      scalar: 5
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -2284,7 +2314,7 @@ ParticleSystem:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-    inWorldSpace: 0
+    inWorldSpace: 1
   InheritVelocityModule:
     enabled: 0
     m_Mode: 0
@@ -2785,7 +2815,7 @@ ParticleSystem:
     magnitude:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 3
+      scalar: 2
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -2837,9 +2867,9 @@ ParticleSystem:
         m_RotationOrder: 4
     separateAxis: 0
     inWorldSpace: 0
-    multiplyDragByParticleSize: 1
+    multiplyDragByParticleSize: 0
     multiplyDragByParticleVelocity: 1
-    dampen: 0.2
+    dampen: 0.4
     drag:
       serializedVersion: 2
       minMaxState: 0
@@ -4009,11 +4039,11 @@ ParticleSystem:
   TriggerModule:
     enabled: 0
     serializedVersion: 2
-    inside: 2
-    outside: 2
+    inside: 0
+    outside: 0
     enter: 2
-    exit: 2
-    colliderQueryMode: 2
+    exit: 0
+    colliderQueryMode: 1
     radiusScale: 0.5
     primitives:
     - {fileID: 0}
@@ -5066,7 +5096,6 @@ GameObject:
   - component: {fileID: 7866579364068057338}
   - component: {fileID: 432613321654859549}
   - component: {fileID: 1810723438}
-  - component: {fileID: 1907888611}
   m_Layer: 12
   m_Name: EnemyGeneric
   m_TagString: Untagged
@@ -5118,24 +5147,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_movement: {fileID: 0}
-  m_targetCheckCooldown: 1
+  m_targetCheckCooldown: 0.1
   m_updateInterval: 0.05
   m_usesRigidBody: 0
   m_usesFixedUpdate: 0
-  m_fieldOfViewDegrees: 180
+  m_cosFieldOfView: -0.2
   m_lineOfSightLength: 40
   m_targetTrackingTimeWindow: 5
   m_updatePhysicsValuesAutomatically: 0
   m_hostileValues:
     m_likelyHoodToCircleTarget: 0.5
-    m_timeBetweenPhases: 4
-    m_timeBetweenFire: 3
+    m_timeBetweenPhases: 2
+    m_circleAngleDegFromTarget: 90
+    m_timeBetweenAttacks: 2
     m_varianceInValues: 0.2
     m_runsIfLowHealth: 1
   m_turret: {fileID: 0}
   m_intervalBetweenWalkPhases: 2
-  m_intervalBetweenEnemyChecks: 0.5
-  m_varianceRate: 0
+  m_intervalBetweenEnemyChecks: 0.25
+  m_varianceRate: 0.2
   m_walkSpeedMultiplyer: 0.5
   m_maxDstFromSpawnWalk: 10
 --- !u!114 &1184494187360147066
@@ -5156,7 +5186,6 @@ MonoBehaviour:
   - weapons:
     - {fileID: 8334912748930156530}
   m_autoPlay: 0
-  m_autoRestarts: 0
   m_destoryWhenDone: 0
   m_objectToDestroy: {fileID: 0}
 --- !u!114 &7866579364068057338
@@ -5244,9 +5273,10 @@ MonoBehaviour:
   m_midAirDeacceleration: 15
   m_maxFallSpeed: 50
   m_jumpForce: 20
+  m_jumpExtensionMassCoef: 0.6
   m_turnSpeed: 400
-  AccelerationCoef: 1
-  DeaccelerationCoef: 1
+  m_requireJumpRelease: 1
+  m_maxJumps: 1
   m_breakWhenUnparent: 0
 --- !u!82 &1810723438
 AudioSource:
@@ -5344,25 +5374,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &1907888611
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4759944753111975130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 608644a682216bf4eaec6b2595f21fc3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 0}
-  m_turretPhases: []
-  m_autoPlay: 0
-  m_autoRestarts: 0
-  m_destoryWhenDone: 0
-  m_objectToDestroy: {fileID: 0}
 --- !u!1 &6974562993526757061
 GameObject:
   m_ObjectHideFlags: 0

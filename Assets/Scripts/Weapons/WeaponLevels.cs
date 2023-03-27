@@ -5,70 +5,77 @@ using UnityEngine;
 public class WeaponLevels : WeaponBasic
 {
     [SerializeField]
-    private AudioSource audioSource = null;
+    private AudioSource m_audioSource = null;
 
     [SerializeField]
-    protected WeaponTurret turret = null;
+    protected WeaponTurret m_turret = null;
 
     [SerializeField]
-    public Sound[] levelFireSounds = null;
+    public Sound[] m_levelFireSounds = null;
 
     [SerializeField]
-    public Sound[] levelReleaseFireSounds = null;
+    public Sound[] m_levelReleaseFireSounds = null;
 
     [SerializeField]
-    public float[] expRequiredForLevels = null;
+    public float[] m_expRequiredForLevels = null;
 
+    [SerializeField]
+    private OdamaBehaviour m_odama = null;
 
+    public float CurrentExp { get; private set; } = 0;
 
-    public float currentExp { get; private set; } = 0;
+    public int CurrentLevel { get; private set; } = 0;
 
-    public int currentLevel { get; private set; } = 0;
-
-    public float nextLevelProgress { get; private set; } = 0;
-
-    public bool destroyWhenDone { get; set; } = false;
-
-    public bool disableWhenDone { get; set; } = false;
+    public float NextLevelProgress { get; private set; } = 0;
 
     public override void StopFiring()
     {
-        turret.Stop();
+        m_isFiring = false;
+        m_turret.Stop();
     }
 
     private void OnDisable()
     {
-        destroyWhenDone = disableWhenDone = false;
+        DestroyWhenDone = DisableWhenDone = false;
+    }
+
+    public override void WasSwitchedOn()
+    {
+        if (m_odama)
+            m_odama.OnEnable();
     }
 
     private void Awake()
     {
-        if (null == turret)
+        if (null == m_turret)
         {
-            turret = GetComponent<WeaponTurret>();
+            m_turret = GetComponent<WeaponTurret>();
         }
 
-        if (null == audioSource)
+        if (null == m_audioSource)
         {
-            audioSource = GetComponent<AudioSource>();
-            if (null == audioSource)
+            m_audioSource = GetComponent<AudioSource>();
+            if (null == m_audioSource)
             {
-                audioSource = gameObject.AddComponent<AudioSource>();
+                m_audioSource = gameObject.AddComponent<AudioSource>();
             }
         }
+
+        if (null == m_odama) m_odama = GetComponent<OdamaBehaviour>();
     }
 
+    public override bool IsFiring() { return m_turret.IsFiring(); }
 
-    public override bool IsAlive(bool onlyCurrentPhase = false)
+    public override bool IsAlive()
     {
-        return turret.IsAlive(onlyCurrentPhase);
+        return m_turret.IsAlive();
     }
 
     private void FixedUpdate()
     {
-        if ((disableWhenDone || destroyWhenDone) && !turret.IsAlive())
+        if ((DisableWhenDone || DestroyWhenDone) && !m_turret.IsAlive())
         {
-            if (destroyWhenDone)
+            if (DestroyWhenDone)
                 GfPooling.Destroy(gameObject);
             else
                 gameObject.SetActive(false);
@@ -77,34 +84,37 @@ public class WeaponLevels : WeaponBasic
 
     protected Sound GetFireSound()
     {
-        return levelFireSounds.Length > 0 ? levelFireSounds[Mathf.Clamp(currentLevel, 0, levelFireSounds.Length - 1)] : null;
+        return m_levelFireSounds.Length > 0 ? m_levelFireSounds[Mathf.Clamp(CurrentLevel, 0, m_levelFireSounds.Length - 1)] : null;
     }
 
     protected Sound GetReleaseFireSound()
     {
-        return levelReleaseFireSounds.Length > 0 ? levelReleaseFireSounds[Mathf.Clamp(currentLevel, 0, levelReleaseFireSounds.Length - 1)] : null;
+        return m_levelReleaseFireSounds.Length > 0 ? m_levelReleaseFireSounds[Mathf.Clamp(CurrentLevel, 0, m_levelReleaseFireSounds.Length - 1)] : null;
     }
 
     public override void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false)
     {
-        if (levelFireSounds.Length > 0)
+        m_isFiring = true;
+
+        if (m_levelFireSounds.Length > 0)
         {
-            GetFireSound().Play(audioSource);
+            GetFireSound().Play(m_audioSource);
         }
 
         Vector3 dirBullet = (hit.point - transform.position).normalized;
 
         // Debug.Log("I GOT HERE ehehe");
-        turret.SetRotation(Quaternion.LookRotation(dirBullet));
+        m_turret.SetRotation(Quaternion.LookRotation(dirBullet));
 
-        turret.Play(false, currentLevel);
+        m_turret.Play(false, CurrentLevel);
     }
 
     public override void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false)
     {
-        if (levelReleaseFireSounds.Length > 0)
-            GetReleaseFireSound().Play(audioSource);
-        turret.Stop();
+        if (m_levelReleaseFireSounds.Length > 0)
+            GetReleaseFireSound().Play(m_audioSource);
+        m_isFiring = false;
+        m_turret.Stop();
     }
 
     /**
@@ -112,82 +122,92 @@ public class WeaponLevels : WeaponBasic
     *   @param points The ammount of points to be added
     *   @return The current number of points the weapon has
     */
-    public float AddExpPoint(float points)
+    public override float AddPoints(WeaponPointsTypes type, float points)
     {
-        if (expRequiredForLevels.Length > 0)
+        float retPoints = 0;
+        switch (type)
         {
-            currentExp += points;
-            currentExp = Mathf.Clamp(currentExp, 0, expRequiredForLevels[expRequiredForLevels.Length - 1]);
+            case (WeaponPointsTypes.EXPERIENCE):
+                if (m_expRequiredForLevels.Length > 0)
+                {
+                    CurrentExp += points;
+                    CurrentExp = Mathf.Clamp(CurrentExp, 0, m_expRequiredForLevels[m_expRequiredForLevels.Length - 1]);
 
-            UpdateFireLevel();
+                    UpdateFireLevel();
+
+                    retPoints = CurrentExp;
+                }
+                break;
         }
 
-        return currentExp;
-    }
 
-    /** Adds a fixed percentage of progress relative to the 
-    * exp required for the current and next level
-    * @param percent The percentage of progress to add
-    * @return The current number of points the weapon has
-    */
-    public float AddExpPercent(float percent)
-    {
-        if (currentLevel <= expRequiredForLevels.Length && expRequiredForLevels.Length > 0)
-        {
-            int effectiveLevel = currentLevel;
-            if (currentLevel == expRequiredForLevels.Length)
-                effectiveLevel--;
-
-            float upperExp = expRequiredForLevels[effectiveLevel];
-            float lowerExp = 0;
-
-            if (currentLevel > 1)
-            {
-                lowerExp = expRequiredForLevels[effectiveLevel - 1];
-            }
-
-            AddExpPoint(percent * (upperExp - lowerExp));
-        }
-
-        return currentExp;
+        return retPoints;
     }
 
     protected void UpdateFireLevel(bool forceUpdate = false)
     {
         int auxCurrentLevel = 0;
 
-        if (expRequiredForLevels.Length > 0)
+        if (m_expRequiredForLevels.Length > 0)
         {
             // float effectiveExp = currentExp / (float)weapons.Count;
-            float effectiveExp = currentExp;
+            float effectiveExp = CurrentExp;
 
             auxCurrentLevel = -1;
-            while (expRequiredForLevels.Length > ++auxCurrentLevel && expRequiredForLevels[auxCurrentLevel] < effectiveExp) ;
+            while (m_expRequiredForLevels.Length > ++auxCurrentLevel && m_expRequiredForLevels[auxCurrentLevel] < effectiveExp) ;
 
             //Debug.Log("The current level is " + loadOut.currentLevel);
-            float upperExp = expRequiredForLevels[auxCurrentLevel];
+            float upperExp = m_expRequiredForLevels[auxCurrentLevel];
             float lowerExp = effectiveExp;
 
             if (auxCurrentLevel != 0)
             {
-                upperExp -= expRequiredForLevels[auxCurrentLevel - 1];
-                lowerExp -= expRequiredForLevels[auxCurrentLevel - 1];
+                upperExp -= m_expRequiredForLevels[auxCurrentLevel - 1];
+                lowerExp -= m_expRequiredForLevels[auxCurrentLevel - 1];
             }
 
-            if (effectiveExp == expRequiredForLevels[expRequiredForLevels.Length - 1])
+            if (effectiveExp == m_expRequiredForLevels[m_expRequiredForLevels.Length - 1])
             {
-                auxCurrentLevel = expRequiredForLevels.Length;
+                auxCurrentLevel = m_expRequiredForLevels.Length;
             }
 
-            nextLevelProgress = lowerExp / upperExp;
+            NextLevelProgress = lowerExp / upperExp;
         }
 
-        currentLevel = auxCurrentLevel;
+        CurrentLevel = auxCurrentLevel;
     }
+
+    public override bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
+        if (changedValue)
+            m_turret.SetSpeedMultiplier(multiplier, priority, overridePriority);
+
+        return changedValue;
+    }
+
+    public override bool SetDamageMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
+        if (changedValue)
+            m_turret.SetDamageMultiplier(multiplier, priority, overridePriority);
+
+        return changedValue;
+    }
+
+    public override bool SetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
+        if (changedValue)
+            m_turret.SetFireRateMultiplier(multiplier, priority, overridePriority);
+
+        return changedValue;
+    }
+
 
     public bool IsMaxLevel()
     {
-        return currentLevel > expRequiredForLevels.Length;
+        return CurrentLevel > m_expRequiredForLevels.Length;
     }
 
 }

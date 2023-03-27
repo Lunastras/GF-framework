@@ -5,12 +5,14 @@ using UnityEngine;
 public abstract class StatsCharacter : MonoBehaviour
 {
     [SerializeField]
-    protected float m_maxHealth = 200;
+    protected float m_maxHealth = 100;
 
     [SerializeField]
     private CharacterTypes m_characterType;
 
-    protected float m_maxHealthMultiplier = 1;
+    protected PriorityValue<float> m_maxHealthMultiplier = new(1);
+
+    protected PriorityValue<float> m_receivedDamageMultiplier = new(1);
 
     public bool IsDead { get; protected set; }
     protected float m_currentHealth;
@@ -81,11 +83,15 @@ public abstract class StatsCharacter : MonoBehaviour
     public int GetParticleTriggerDamageIndex() { return m_particleTriggerDamageListIndex; }
 
     public float GetMaxHealthRaw() { return m_maxHealth; }
-    public float GetMaxHealthMultiplier() { return m_maxHealthMultiplier; }
     public float GetMaxHealthEffective() { return m_maxHealth * m_maxHealthMultiplier; }
     public float GetCurrentHealth() { return m_currentHealth; }
     public void SetMaxHealthRaw(float maxHealth) { m_maxHealth = maxHealth; }
-    public void SetMaxHealthMultiplier(float maxHealthMultiplier) { m_maxHealthMultiplier = maxHealthMultiplier; }
 
+    public PriorityValue<float> GetMaxHealthMultiplier() { return m_maxHealthMultiplier; }
 
+    public void SetMaxHealthMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false) { m_maxHealthMultiplier.SetValue(maxHealthMultiplier, priority, overridePriority); }
+
+    public PriorityValue<float> GetReceivedDamageMultiplier() { return m_receivedDamageMultiplier; }
+
+    public void SetReceivedDamageMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false) { m_receivedDamageMultiplier.SetValue(maxHealthMultiplier, priority, overridePriority); }
 }

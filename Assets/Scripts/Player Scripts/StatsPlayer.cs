@@ -82,10 +82,10 @@ public class StatsPlayer : StatsCharacter
         if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
         if (null != weaponUsed) weaponUsed.OnDamageDealt(damage, this);
 
-        damage *= damageMultiplier;
+        damage *= damageMultiplier * m_receivedDamageMultiplier;
         float damagePercent = damage / m_maxHealth;
 
-        m_loadoutManager.AddExpPercent(-damagePercent);
+        m_loadoutManager.AddPoints(WeaponPointsTypes.EXPERIENCE, -damage);
 
         m_currentHealth -= damage;
         m_currentHealth = Mathf.Max(0, m_currentHealth);
@@ -121,7 +121,7 @@ public class StatsPlayer : StatsCharacter
                 break;
 
             case (CollectibleType.POWER):
-                m_loadoutManager.AddExpPoints(value);
+                m_loadoutManager.AddPointsAll(WeaponPointsTypes.EXPERIENCE, value);
                 break;
         }
 

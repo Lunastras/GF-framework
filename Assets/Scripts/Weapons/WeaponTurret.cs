@@ -10,9 +10,6 @@ public class WeaponTurret : DamageSource
     [SerializeField]
     private bool m_autoPlay = false;
 
-    [SerializeField]
-    private bool m_autoRestarts = false;
-
     private static readonly float[] DEFAULT_WAIT_TIME = { 0 };
 
     private int m_currentPhaseIndex = 0;
@@ -28,6 +25,10 @@ public class WeaponTurret : DamageSource
 
     public GameObject m_objectToDestroy = null;
 
+    private PriorityValue<float> m_speedMultiplier = new(1);
+    private PriorityValue<float> m_damageMultiplier = new(1);
+    private PriorityValue<float> m_fireRateMultiplier = new(1);
+
     private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
 
     // Start is called before the first frame update
@@ -41,6 +42,7 @@ public class WeaponTurret : DamageSource
             var weapons = m_turretPhases[i].weapons;
             for (int j = 0; j < weapons.Length; ++j)
             {
+                Debug.Log("my bitch name is: " + gameObject.name);
                 weapons[j].m_parentDamageSource = this;
             }
         }
@@ -48,7 +50,7 @@ public class WeaponTurret : DamageSource
 
     private void Update()
     {
-        if (m_destoryWhenDone && !IsAlive(true))
+        if (m_destoryWhenDone && !IsAlive())
         {
             GfPooling.Destroy(m_objectToDestroy);
         }
@@ -56,17 +58,16 @@ public class WeaponTurret : DamageSource
         {
             if (m_autoPlay && m_firing)
             {
-                if (!IsAlive(true))
+                if (!IsFiring(true))
                 { //phase ended
                     ++m_currentPhaseIndex;
 
                     bool playNext = m_currentPhaseIndex < m_turretPhases.Length;
 
-                    if (m_currentPhaseIndex >= m_turretPhases.Length && m_autoRestarts)
+                    if (m_currentPhaseIndex >= m_turretPhases.Length)
                         m_currentPhaseIndex = 0;
                     else
                         playNext = false;
-
 
                     if (playNext) Play();
                 }
@@ -80,7 +81,7 @@ public class WeaponTurret : DamageSource
         }
     }
 
-    public void Stop(bool withChildren = true, ParticleSystemStopBehavior stopBehavior = ParticleSystemStopBehavior.StopEmitting)
+    public void Stop()
     {
         if (m_firing && m_turretPhases.Length > 0)
         {
@@ -93,6 +94,32 @@ public class WeaponTurret : DamageSource
         }
     }
 
+    public bool IsFiring(bool onlyCurentPhase = false)
+    {
+        bool isPlaying = false;
+
+        if (onlyCurentPhase && m_turretPhases.Length > 0)
+        {
+            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            int length = systems.Length;
+            for (int i = 0; i < length && !isPlaying; ++i)
+                isPlaying |= systems[i].IsFiring();
+        }
+        else
+        {
+            for (int i = 0; i < m_turretPhases.Length && !isPlaying; ++i)
+            {
+                WeaponBasic[] systems = m_turretPhases[i].weapons;
+                int length = systems.Length;
+
+                for (int j = 0; j < length && !isPlaying; ++j)
+                    isPlaying |= systems[j].IsFiring();
+            }
+        }
+
+        return isPlaying;
+    }
+
     public bool IsAlive(bool onlyCurentPhase = false)
     {
         bool isPlaying = false;
@@ -102,18 +129,17 @@ public class WeaponTurret : DamageSource
             WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int length = systems.Length;
             for (int i = 0; i < length && !isPlaying; ++i)
-                isPlaying |= systems[i].IsAlive(true);
+                isPlaying |= systems[i].IsAlive();
         }
         else
         {
-
             for (int i = 0; i < m_turretPhases.Length && !isPlaying; ++i)
             {
                 WeaponBasic[] systems = m_turretPhases[i].weapons;
                 int length = systems.Length;
 
                 for (int j = 0; j < length && !isPlaying; ++j)
-                    isPlaying |= systems[j].IsAlive(true);
+                    isPlaying |= systems[j].IsAlive();
             }
         }
 
@@ -188,7 +214,13 @@ public class WeaponTurret : DamageSource
             WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int length = systems.Length;
             for (int i = 0; i < length; ++i)
+            {
+                systems[i].SetDamageMultiplier(m_damageMultiplier);
+                systems[i].SetFireRateMultiplier(m_fireRateMultiplier);
+                systems[i].SetSpeedMultiplier(m_speedMultiplier);
                 systems[i].Fire();
+            }
+
         }
     }
 
@@ -228,6 +260,57 @@ public class WeaponTurret : DamageSource
         Stop();
         obj.transform.position = DESTROY_POSITION;
         obj.transform.parent = null;
+    }
+
+    public virtual PriorityValue<float> GetSpeedMultiplier() { return m_speedMultiplier; }
+    public virtual bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
+        if (changedValue)
+        {
+            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            int weaponCount = systems.Length;
+            for (int i = 0; i < weaponCount; ++i)
+            {
+                systems[i].SetSpeedMultiplier(multiplier);
+            }
+        }
+
+        return changedValue;
+    }
+
+    public virtual PriorityValue<float> GetFireRateMultiplier() { return m_fireRateMultiplier; }
+    public virtual bool SetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        bool changedValue = m_fireRateMultiplier.SetValue(multiplier, priority, overridePriority);
+        if (changedValue)
+        {
+            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            int weaponCount = systems.Length;
+            for (int i = 0; i < weaponCount; ++i)
+            {
+                systems[i].SetFireRateMultiplier(multiplier);
+            }
+        }
+
+        return changedValue;
+    }
+
+    public virtual PriorityValue<float> GetDamageMultiplier() { return m_damageMultiplier; }
+    public virtual bool SetDamageMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    {
+        bool changedValue = m_damageMultiplier.SetValue(multiplier, priority, overridePriority);
+        if (changedValue)
+        {
+            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            int weaponCount = systems.Length;
+            for (int i = 0; i < weaponCount; ++i)
+            {
+                systems[i].SetDamageMultiplier(multiplier);
+            }
+        }
+
+        return changedValue;
     }
 }
 

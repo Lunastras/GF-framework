@@ -93,10 +93,7 @@ public class StatsNpc : StatsCharacter
     {
         if (m_initialised)
         {
-            m_maxHealthMultiplier = 1;
             m_currentHealth = m_maxHealth;
-
-
             HostilityManager.AddCharacter(this);
 
             if (null != m_graphics)
@@ -110,13 +107,12 @@ public class StatsNpc : StatsCharacter
     public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
     {
         if (killer) killer.OnCharacterKilled(this);
-        if (null != weaponUsed) weaponUsed.OnCharacterKilled(this);
-        Vector3 pos = m_transform.position;
-        GameParticles.PlayDeathDust(pos);
-        GameParticles.PlayPowerItems(pos, m_powerItemsToDrop, m_movement);
-        GameParticles.SpawnGrave(pos, m_movement);
+        if (weaponUsed) weaponUsed.OnCharacterKilled(this);
 
-        //  return;
+        Vector3 currentPos = m_transform.position;
+        GameParticles.PlayDeathDust(currentPos);
+        GameParticles.PlayPowerItems(currentPos, m_powerItemsToDrop, m_movement);
+        GameParticles.SpawnGrave(currentPos, m_movement);
 
         for (int i = 0; i < m_itemDropsAfterDeath.Length; i++)
         {
@@ -127,7 +123,7 @@ public class StatsNpc : StatsCharacter
                 GfMovementGeneric objMovement = obj.GetComponent<GfMovementGeneric>();
                 if (objMovement)
                 {
-                    objMovement.CopyGravity(m_movement);
+                    objMovement.CopyGravityFrom(m_movement);
                 }
             }
         }
@@ -157,28 +153,23 @@ public class StatsNpc : StatsCharacter
             return;
 
         if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
-        if (null != weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+        if (weaponUsed) weaponUsed.OnDamageDealt(damage, this);
 
-        damage *= damageMultiplier;
-        GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.UpVecEffective());
+        damage *= damageMultiplier * m_receivedDamageMultiplier;
+        GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.GetUpVecRaw());
 
-        // return;
         m_currentHealth -= damage;
 
         if (m_currentHealth <= GetMaxHealthEffective() * m_lowHealthThreshold)
-        {
             m_damageSound.Play(m_audioSource, 1.5f, 2);
-        }
         else
-        {
             m_damageSound.Play(m_audioSource);
-        }
 
         if (m_currentHealth <= 0)
         {
             Kill(enemy, weaponUsed);
         }
-        else if (m_npcController != null && enemy != null && damage > 0)
+        else if (m_npcController && enemy && damage > 0)
         {
             if (m_lastEnemy != enemy)
             {
