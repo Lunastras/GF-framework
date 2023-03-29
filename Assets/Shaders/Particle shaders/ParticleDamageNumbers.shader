@@ -59,7 +59,7 @@ Shader "Unlit/ParticleDamageNumbers"
                 while(i < MAX_DECIMALS) {
                     o.digits[MAX_DECIMALS - i++ - 1] = value % 10;
                     numDigits += (value > 0);
-                    value = floor(value / 10.0);
+                    value = round(value / 10.0);
                 }
 
                 float startUvXCoord = 0.5 - (DIGIT_OFFSET_HALF * (numDigits % 2) + floor(numDigits * 0.5) * DIGIT_OFFSET);
