@@ -261,7 +261,7 @@ public class GfMovementWallrun : GfMovementSimple
         //GfTools.Minus3(ref m_velocity, m_previousWallRunNormal * Min(0, Vector3.Dot(m_velocity, m_previousWallRunNormal)));
         if (!wallJumped && (!m_slidingOffWall || 0.1f < Vector3.Dot(m_upVec, m_velocity)))
         {
-            Debug.Log("lmao am sarit, sliding is: " + m_slidingOffWall);
+            //Debug.Log("lmao am sarit, sliding is: " + m_slidingOffWall);
             //GfTools.Add3(ref m_velocity, m_wallRunDetachForce * m_wallRunDir);
             m_velocity = m_wallRunDetachForce * m_upVec;
             m_secondsUntilWallDetach = m_attachSecondsAfterWallDetach;

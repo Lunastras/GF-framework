@@ -2,7 +2,7 @@
 // Only directional light is supported for lit particles
 // No shadow
 // No distortion
-Shader "DistanceDither/Particles/Simple Lit"
+Shader "DistanceDither/Particles/Speed numbers"
 {
     Properties
     {

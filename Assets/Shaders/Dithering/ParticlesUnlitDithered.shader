@@ -1,37 +1,16 @@
-// ------------------------------------------
-// Only directional light is supported for lit particles
-// No shadow
-// No distortion
-Shader "DistanceDither/Particles/Spinning Particle"
+Shader "DistanceDither/Particles/Unlit"
 {
     Properties
     {
         [MainTexture] _BaseMap("Base Map", 2D) = "white" {}
-        [MainColor]   _BaseColor("Base Color", Color) = (1,1,1,1)
-
+        [MainColor] _BaseColor("Base Color", Color) = (1,1,1,1)
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-
-        _StartFadeDistance("Start Fade Distance", Float) = 4.0
-        _FadeDistanceOffset("Fade Distance Offset", Float) = 0.5
-
-        _BopRangeHalf("The range of the vertical bop", Float) = 0.5
-        _SpinSpeed("Spin speed", Float) = 3.0
-
-
-        _SpecGlossMap("Specular", 2D) = "white" {}
-        _SpecColor("Specular", Color) = (1.0, 1.0, 1.0)
-        _Smoothness("Smoothness", Range(0.0, 1.0)) = 0.5
-        
-
-        _BumpScale("Scale", Float) = 1.0
         _BumpMap("Normal Map", 2D) = "bump" {}
-
         [HDR] _EmissionColor("Color", Color) = (0,0,0)
         _EmissionMap("Emission", 2D) = "white" {}
 
-        _SmoothnessSource("Smoothness Source", Float) = 0.0
-        _SpecularHighlights("Specular Highlights", Float) = 1.0
-        [ToggleUI] _ReceiveShadows("Receive Shadows", Float) = 1.0
+        _StartFadeDistance("Start Fade Distance", Float) = 4.0
+        _FadeDistanceOffset("Fade Distance Offset", Float) = 0.5
 
         // -------------------------------------
         // Particle specific
@@ -69,7 +48,6 @@ Shader "DistanceDither/Particles/Spinning Particle"
 
         // ObsoleteProperties
         [HideInInspector] _FlipbookMode("flipbook", Float) = 0
-        [HideInInspector] _Glossiness("gloss", Float) = 0
         [HideInInspector] _Mode("mode", Float) = 0
         [HideInInspector] _Color("color", Color) = (1,1,1,1)
     }
@@ -83,16 +61,13 @@ Shader "DistanceDither/Particles/Spinning Particle"
 
     SubShader
     {
-        Tags{"RenderType" = "Opaque" "IgnoreProjector" = "True" "PreviewType" = "Plane" "PerformanceChecks" = "False" "RenderPipeline" = "UniversalPipeline" "UniversalMaterialType" = "SimpleLit"}
+        Tags{"RenderType" = "Opaque" "IgnoreProjector" = "True" "PreviewType" = "Plane" "PerformanceChecks" = "False" "RenderPipeline" = "UniversalPipeline"}
 
         // ------------------------------------------------------------------
         //  Forward pass.
         Pass
         {
-            // Lightmode matches the ShaderPassName set in UniversalRenderPipeline.cs. SRPDefaultUnlit and passes with
-            // no LightMode tag are also rendered by Universal Render Pipeline
             Name "ForwardLit"
-            Tags {"LightMode" = "UniversalForward"}
 
             BlendOp[_BlendOp]
             Blend[_SrcBlend][_DstBlend]
@@ -105,11 +80,7 @@ Shader "DistanceDither/Particles/Spinning Particle"
             // -------------------------------------
             // Material Keywords
             #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local _RECEIVE_SHADOWS_OFF
-            #pragma shader_feature_local_fragment _SURFACE_TYPE_TRANSPARENT
             #pragma shader_feature_local_fragment _EMISSION
-            #pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
-            #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
 
             // -------------------------------------
             // Particle Keywords
@@ -118,90 +89,25 @@ Shader "DistanceDither/Particles/Spinning Particle"
             #pragma shader_feature_local _FADING_ON
             #pragma shader_feature_local _DISTORTION_ON
             #pragma shader_feature_local_fragment _ALPHATEST_ON
+            #pragma shader_feature_local_fragment _SURFACE_TYPE_TRANSPARENT
             #pragma shader_feature_local_fragment _ _ALPHAPREMULTIPLY_ON _ALPHAMODULATE_ON
             #pragma shader_feature_local_fragment _ _COLOROVERLAY_ON _COLORCOLOR_ON _COLORADDSUBDIFF_ON
-
-            // -------------------------------------
-            // Universal Pipeline keywords
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
-            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
-            #pragma multi_compile_fragment _ _SHADOWS_SOFT
-            #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
-            #pragma multi_compile_fragment _ _LIGHT_COOKIES
-            #pragma multi_compile _ _CLUSTERED_RENDERING
 
             // -------------------------------------
             // Unity defined keywords
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
+            #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile_fragment _ DEBUG_DISPLAY
             #pragma instancing_options procedural:ParticleInstancingSetup
 
-            #pragma vertex ParticlesLitVertex
-            #pragma fragment ParticlesLitFragment
-            #define BUMP_SCALE_NOT_SUPPORTED 1
-            
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitInput.hlsl"
+            #pragma vertex vertParticleUnlit
+            #pragma fragment fragParticleUnlit
+
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesUnlitInput.hlsl"
             #include "../Dithering/DitheringFunctions.hlsl"
-            #include "../Dithering/inc/SimpleDitheredSpinningParticlesForwardPass.hlsl"
-            ENDHLSL
-        }
+            #include "../Dithering/inc/ParticlesUnlitDitheredForwardPass.hlsl"
 
-        // ------------------------------------------------------------------
-        //  GBuffer pass.
-        Pass
-        {
-            // Lightmode matches the ShaderPassName set in UniversalRenderPipeline.cs. SRPDefaultUnlit and passes with
-            // no LightMode tag are also rendered by Universal Render Pipeline
-            Name "GBuffer"
-            Tags{"LightMode" = "UniversalGBuffer"}
-
-            ZWrite[_ZWrite]
-            Cull[_Cull]
-
-            HLSLPROGRAM
-            #pragma exclude_renderers gles
-            #pragma target 2.0
-
-            // -------------------------------------
-            // Material Keywords
-            #pragma shader_feature_local _NORMALMAP
-            #pragma shader_feature_local_fragment _EMISSION
-            #pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
-            #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
-            #pragma shader_feature_local _RECEIVE_SHADOWS_OFF
-
-            // -------------------------------------
-            // Particle Keywords
-            //#pragma shader_feature _ _ALPHAPREMULTIPLY_ON _ALPHAMODULATE_ON
-            #pragma shader_feature_local_fragment _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _ _COLOROVERLAY_ON _COLORCOLOR_ON _COLORADDSUBDIFF_ON
-            #pragma shader_feature_local _FLIPBOOKBLENDING_ON
-            //#pragma shader_feature _SOFTPARTICLES_ON
-            //#pragma shader_feature _FADING_ON
-            //#pragma shader_feature _DISTORTION_ON
-
-            // -------------------------------------
-            // Universal Pipeline keywords
-            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-            //#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
-            //#pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
-            #pragma multi_compile_fragment _ _SHADOWS_SOFT
-            #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
-            #pragma multi_compile_fragment _ _RENDER_PASS_ENABLED
-
-            // -------------------------------------
-            // Unity defined keywords
-            #pragma multi_compile_instancing
-            #pragma instancing_options procedural:ParticleInstancingSetup
-
-            #pragma vertex ParticlesLitGBufferVertex
-            #pragma fragment ParticlesLitGBufferFragment
-            #define BUMP_SCALE_NOT_SUPPORTED 1
-
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitGBufferPass.hlsl"
             ENDHLSL
         }
 
@@ -233,38 +139,42 @@ Shader "DistanceDither/Particles/Spinning Particle"
             #pragma vertex DepthOnlyVertex
             #pragma fragment DepthOnlyFragment
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesUnlitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesDepthOnlyPass.hlsl"
             ENDHLSL
         }
-        // This pass is used when drawing to a _CameraNormalsTexture texture
+        // This pass is used when drawing to a _CameraNormalsTexture texture with the forward renderer or the depthNormal prepass with the deferred renderer.
         Pass
         {
-            Name "DepthNormals"
-            Tags{"LightMode" = "DepthNormals"}
+            Name "DepthNormalsOnly"
+            Tags{"LightMode" = "DepthNormalsOnly"}
 
             ZWrite On
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma target 2.0
+            #pragma exclude_renderers gles gles3 glcore
+            #pragma target 4.5
+
+            #pragma vertex DepthNormalsVertex
+            #pragma fragment DepthNormalsFragment
 
             // -------------------------------------
             // Material Keywords
             #pragma shader_feature_local _ _NORMALMAP
-            #pragma shader_feature_local _ _FLIPBOOKBLENDING_ON
             #pragma shader_feature_local _ _ALPHATEST_ON
             #pragma shader_feature_local_fragment _ _COLOROVERLAY_ON _COLORCOLOR_ON _COLORADDSUBDIFF_ON
 
             // -------------------------------------
             // Unity defined keywords
+            #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT // forward-only variant
+
+            //--------------------------------------
+            // GPU Instancing
             #pragma multi_compile_instancing
-            #pragma instancing_options procedural:ParticleInstancingSetup
+            #pragma multi_compile _ DOTS_INSTANCING_ON
 
-            #pragma vertex DepthNormalsVertex
-            #pragma fragment DepthNormalsFragment
-
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesUnlitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesDepthNormalsPass.hlsl"
             ENDHLSL
         }
@@ -297,7 +207,7 @@ Shader "DistanceDither/Particles/Spinning Particle"
             #pragma vertex vertParticleEditor
             #pragma fragment fragParticleSceneHighlight
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesUnlitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesEditorPass.hlsl"
 
             ENDHLSL
@@ -332,35 +242,13 @@ Shader "DistanceDither/Particles/Spinning Particle"
             #pragma vertex vertParticleEditor
             #pragma fragment fragParticleScenePicking
 
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesUnlitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesEditorPass.hlsl"
 
             ENDHLSL
         }
-
-        Pass
-        {
-            Name "Universal2D"
-            Tags{ "LightMode" = "Universal2D" }
-
-            Blend[_SrcBlend][_DstBlend]
-            ZWrite[_ZWrite]
-            Cull[_Cull]
-
-            HLSLPROGRAM
-            #pragma target 2.0
-
-            #pragma vertex vert
-            #pragma fragment frag
-            #pragma shader_feature_local_fragment _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _ALPHAPREMULTIPLY_ON
-
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/UnlitInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/Utils/Universal2D.hlsl"
-            ENDHLSL
-        }
     }
 
-    Fallback "Universal Render Pipeline/Particles/Unlit"
-   // CustomEditor "UnityEditor.Rendering.Universal.ShaderGUI.ParticlesSimpleLitShader"
+    FallBack "Hidden/Universal Render Pipeline/FallbackError"
+    CustomEditor "UnityEditor.Rendering.Universal.ShaderGUI.ParticlesUnlitShader"
 }

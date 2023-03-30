@@ -2,9 +2,9 @@
 #define DITHERINGFUNCTIONS_INCLUDED
 
 #ifndef UNITY_PASS_SHADOWCASTER
-void Dither_float(float In, float4 ScreenPosition, out float Out)
+void Dither_float(float In, float2 ScreenPosition, out float Out)
 {
-    float2 uv = ScreenPosition.xy * _ScreenParams.xy;
+    float2 uv = ScreenPosition * _ScreenParams.xy;
 
     float DITHER_THRESHOLDS[16] =
     {
@@ -19,7 +19,7 @@ void Dither_float(float In, float4 ScreenPosition, out float Out)
 
 #endif //UNITY_PASS_SHADOWCASTER
 
-void GetDither(float Intensity, float4 ScreenPosition, out float Out) {
+void GetDither(float Intensity, float2 ScreenPosition, out float Out) {
     Out = 1.0f;
     
     #ifndef UNITY_PASS_SHADOWCASTER
@@ -36,7 +36,7 @@ void GetDitherAlphaThreshold(float Distance, float FadeStartDistance, out float 
     #endif //UNITY_PASS_SHADOWCASTER
 }
 
-void ApplyDistanceDither_float(float Intensity, float4 ScreenPosition, float Distance, float FadeStartDistance, inout float AlphaClippingThreshold, inout float4 Color) {
+void ApplyDistanceDither_float(float Intensity, float2 ScreenPosition, float Distance, float FadeStartDistance, inout float AlphaClippingThreshold, inout float4 Color) {
     #ifndef UNITY_PASS_SHADOWCASTER
         float discardPixel = step(Color.a, AlphaClippingThreshold);
         float dither;
@@ -50,11 +50,11 @@ void ApplyDistanceDither_float(float Intensity, float4 ScreenPosition, float Dis
     #endif //UNITY_PASS_SHADOWCASTER
 }
 
-void GetDither_half(float Intensity, float4 ScreenPosition, out float Out) {
+void GetDither_half(float Intensity, float2 ScreenPosition, out float Out) {
     GetDither(Intensity, ScreenPosition, Out);
 }
 
-void GetDither_float(float Intensity, float4 ScreenPosition, out float Out) {
+void GetDither_float(float Intensity, float2 ScreenPosition, out float Out) {
     GetDither(Intensity, ScreenPosition, Out);
 }
 

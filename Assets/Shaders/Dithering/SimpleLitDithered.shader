@@ -532,5 +532,5 @@ Shader "DistanceDither/Simple Lit"
     }
 
     Fallback  "Hidden/Universal Render Pipeline/FallbackError"
-    //CustomEditor "UnityEditor.Rendering.Universal.ShaderGUI.SimpleLitDitheredShader"
+  //  CustomEditor "UnityEditor.Rendering.Universal.ShaderGUI.SimpleLitDitheredShader"
 }

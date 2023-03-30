@@ -1,50 +1,15 @@
 #ifndef UNIVERSAL_PARTICLES_FORWARD_SIMPLE_LIT_PASS_INCLUDED
 #define UNIVERSAL_PARTICLES_FORWARD_SIMPLE_LIT_PASS_INCLUDED
 
+float _StartFadeDistance;
+float _FadeDistanceOffset;
+
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Particles.hlsl"
 #include "../Quaternion.hlsl"
 #include "../Dithering/DitheringFunctions.hlsl"
 #include "../MatrixMath.hlsl"
-
-struct CustomV2f
-{
-    float4 clipPos                  : SV_POSITION;
-    float2 texcoord                 : TEXCOORD0;
-    half4 color                     : COLOR;
-    float4 positionSS                  : TEXCOORD9;   //screen space
-    float3 positionVS                  : TEXCOORD10;
-
-    #if defined(_FLIPBOOKBLENDING_ON)
-        float3 texcoord2AndBlend    : TEXCOORD5;
-    #endif
-
-    #if !defined(PARTICLES_EDITOR_META_PASS)
-        float4 positionWS           : TEXCOORD1;
-
-        #ifdef _NORMALMAP
-            half4 normalWS         : TEXCOORD2;    // xyz: normal, w: viewDir.x
-            half4 tangentWS        : TEXCOORD3;    // xyz: tangent, w: viewDir.y
-            half4 bitangentWS      : TEXCOORD4;    // xyz: bitangent, w: viewDir.z
-        #else
-            half3 normalWS         : TEXCOORD2;
-            half3 viewDirWS        : TEXCOORD3;
-        #endif
-
-        #if defined(_SOFTPARTICLES_ON) || defined(_FADING_ON) || defined(_DISTORTION_ON)
-            float4 projectedPosition: TEXCOORD6;
-        #endif
-
-        #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
-            float4 shadowCoord      : TEXCOORD7;
-        #endif
-
-        half3 vertexSH             : TEXCOORD8; // SH
-    #endif
-
-    UNITY_VERTEX_INPUT_INSTANCE_ID
-    UNITY_VERTEX_OUTPUT_STEREO
-};
+#include "../Dithering/inc/ParticlesDitheredInput.hlsl"
 
 struct CustomVertInput 
 {
@@ -64,31 +29,7 @@ struct CustomVertInput
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-void InitParticleParamsCustom(CustomV2f input, out ParticleParams output)
-{
-    output = (ParticleParams) 0;
-    output.uv = input.texcoord;
-    output.vertexColor = input.color;
-
-    #if defined(_FLIPBOOKBLENDING_ON)
-        output.blendUv = input.texcoord2AndBlend;
-    #else
-        output.blendUv = float3(0,0,0);
-    #endif
-
-    #if !defined(PARTICLES_EDITOR_META_PASS)
-        output.positionWS = input.positionWS;
-        output.baseColor = _BaseColor;
-
-        #if defined(_SOFTPARTICLES_ON) || defined(_FADING_ON) || defined(_DISTORTION_ON)
-            output.projectedPosition = input.projectedPosition;
-        #else
-            output.projectedPosition = float4(0,0,0,0);
-        #endif
-    #endif
-}
-
-void InitializeInputData(CustomV2f input, half3 normalTS, out InputData inputData)
+void InitializeInputData(DitheredV2f input, half3 normalTS, out InputData inputData)
 {
     inputData = (InputData)0;
 
@@ -152,27 +93,28 @@ void FaceCamera(float3 objCenter, float3 vertPos, float4 gravity4, float xFollow
     finalPos = quatVec3Mult(rotQuat, vertPos) + objCenter;
 }
 
-CustomV2f ParticlesLitVertex(CustomVertInput input)
+DitheredV2f ParticlesLitVertex(CustomVertInput input)
 {
     float3 objCenter = float3(input.texcoords.zw, input.texcoords1.x); //particle center
     float4 gravity4 = float4(input.texcoords1.yzw, input.texcoords2.x);
-    float3 vertPos, normal, tangent;
+    float3 vertPos, normal;
+    float4 tangent;
     float4 rotationQuat;
     float3x3 rotMat;
     FaceCamera(objCenter, input.positionOS.xyz, gravity4, 0.0f, vertPos, rotMat, rotationQuat);
 
-    CustomV2f output;
+    DitheredV2f output;
 
     normal = quatVec3Mult(rotationQuat, mul(rotMat, input.normalOS));
-   // tangent = quatVec3Mult(rotationQuat, input.tangentOS);
-
+    tangent.xyz = quatVec3Mult(rotationQuat, mul(rotMat, input.tangentOS.xyz));
+    tangent.w = input.tangentOS.w;
 
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
     VertexPositionInputs vertexInput = GetVertexPositionInputs(vertPos);
-    VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
+    VertexNormalInputs normalInput = GetVertexNormalInputs(normal, tangent);
    // VertexNormalInputs normalInput = GetVertexNormalInputs(normal, input.tangentOS);
 
     half3 viewDirWS = GetWorldSpaceNormalizeViewDir(vertexInput.positionWS);
@@ -213,41 +155,14 @@ CustomV2f ParticlesLitVertex(CustomVertInput input)
 
     return output;
 }
-
-float _StartFadeDistance;
-float _FadeDistanceOffset;
-
-half4 SampleAlbedoDither(TEXTURE2D_PARAM(albedoMap, sampler_albedoMap), ParticleParams params, float4 screencoords, float distance)
-{
-    half4 albedo = BlendTexture(TEXTURE2D_ARGS(albedoMap, sampler_albedoMap), params.uv, params.blendUv) * params.baseColor;
-
-    half4 colorAddSubDiff = half4(0, 0, 0, 0);
-    #if defined (_COLORADDSUBDIFF_ON)
-        colorAddSubDiff = _BaseColorAddSubDiff;
-    #endif
-    albedo = MixParticleColor(albedo, half4(params.vertexColor), colorAddSubDiff);
-
-    ApplyDistanceDither_float(1, screencoords, distance, _StartFadeDistance, _Cutoff, albedo);
-    AlphaDiscard(albedo.a, _Cutoff);
-
-     #if defined(_SOFTPARTICLES_ON)
-         ALBEDO_MUL *= SoftParticles(SOFT_PARTICLE_NEAR_FADE, SOFT_PARTICLE_INV_FADE_DISTANCE, params);
-     #endif
-
-     #if defined(_FADING_ON)
-         ALBEDO_MUL *= CameraFade(CAMERA_NEAR_FADE, CAMERA_INV_FADE_DISTANCE, params.projectedPosition);
-     #endif
-
-    return albedo;
-}
  
-half4 ParticlesLitFragment(CustomV2f input) : SV_Target
+half4 ParticlesLitFragment(DitheredV2f input) : SV_Target
 {
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
     ParticleParams particleParams;
-    InitParticleParamsCustom(input, particleParams);
+    InitParticleParamsDither(input, particleParams);
 
     float4 screenpos = float4(input.positionSS.xy / input.positionSS.w, 0, 0);
     float dst = max(0.0, length(input.positionVS) - _FadeDistanceOffset);

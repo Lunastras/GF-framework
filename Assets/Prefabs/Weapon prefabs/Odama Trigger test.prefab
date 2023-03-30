@@ -160,7 +160,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 40
+  m_damage: 6
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
   m_damageSound:
@@ -5368,7 +5368,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 40
+  m_damage: 6
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
   m_damageSound:
@@ -10548,7 +10548,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 40
+  m_damage: 6
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
   m_damageSound:

@@ -30,6 +30,9 @@ public class ParticleHoming : JobChild
     protected float m_maxSpeed = 50;
 
     [SerializeField]
+    protected float m_maxSpeedHoming = 100;
+
+    [SerializeField]
     protected float m_targetRadius = 0.4f;
 
     [SerializeField]
@@ -127,7 +130,7 @@ public class ParticleHoming : JobChild
                     customData.SetVector(ParticleSystemCustomData.Custom1, 3, 1); //1, position
                 }
 
-                ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPos, timeSinceLastCheck, m_maxSpeed
+                ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPos, timeSinceLastCheck, m_maxSpeed, m_maxSpeedHoming
                 , m_acceleration, m_gravity, m_deacceleration, m_drag, m_targetRadius * m_targetRadius
                 , gravity3, null != m_sphericalParent, null != m_mainTarget);
 
@@ -249,6 +252,8 @@ public struct ParticleHomingJob : IJobParallelFor
     public float3 m_targetPos;
     public float m_deltaTime;
     public float m_maxSpeed;
+
+    public float m_maxSpeedHoming;
     public float m_acceleration;
     public float m_deacceleration;
     public float m_drag;
@@ -260,7 +265,10 @@ public struct ParticleHomingJob : IJobParallelFor
     bool m_hasParent;
     bool m_hasTarget;
 
-    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, float3 targetPos, float deltaTime, float maxSpeed, float acceleration, float gravity, float deacceleration, float drag, float targetRadiusSquared, float3 gravity3, bool hasParent, bool hasTarget)
+    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, float3 targetPos
+    , float deltaTime, float maxSpeed, float maxSpeedHoming, float acceleration, float gravity, float deacceleration
+    , float drag, float targetRadiusSquared, float3 gravity3, bool hasParent
+    , bool hasTarget)
     {
         m_targetPos = targetPos;
         m_particleList = particleList;
@@ -274,6 +282,7 @@ public struct ParticleHomingJob : IJobParallelFor
         m_hasTarget = hasTarget;
         m_drag = drag;
         m_gravity = gravity;
+        m_maxSpeedHoming = maxSpeedHoming;
     }
 
     public void Execute(int i)
@@ -308,13 +317,15 @@ public struct ParticleHomingJob : IJobParallelFor
         if (currentSpeed > 0.00001F)
             dotMovementVelDir = dot(movDir, velocity / currentSpeed);
 
+        float maxSpeed = m_maxSpeed * notFollowingTargetF + m_maxSpeedHoming * followsTargetF;
+
         float speedInDesiredDir = currentSpeed * max(0, dotMovementVelDir);
-        float3 unwantedVelocity = velocity - movDir * min(speedInDesiredDir, m_maxSpeed);
+        float3 unwantedVelocity = velocity - movDir * min(speedInDesiredDir, maxSpeed);
 
         float unwantedSpeed = length(unwantedVelocity);
         if (unwantedSpeed > 0.00001F) unwantedVelocity /= unwantedSpeed;
 
-        float accMagn = min(max(0, m_maxSpeed - speedInDesiredDir), m_deltaTime * acceleration);
+        float accMagn = min(max(0, maxSpeed - speedInDesiredDir), m_deltaTime * acceleration);
         float deaccMagn = min(unwantedSpeed, deacceleration * m_deltaTime);
 
         velocity += movDir * accMagn;

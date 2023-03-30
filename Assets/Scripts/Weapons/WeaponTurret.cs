@@ -42,7 +42,6 @@ public class WeaponTurret : DamageSource
             var weapons = m_turretPhases[i].weapons;
             for (int j = 0; j < weapons.Length; ++j)
             {
-                Debug.Log("my bitch name is: " + gameObject.name);
                 weapons[j].m_parentDamageSource = this;
             }
         }

@@ -5,51 +5,81 @@
 
 struct Attributes
 {
-    float4 positionOS    : POSITION;
-    float3 normalOS      : NORMAL;
-    float4 tangentOS     : TANGENT;
-    float2 texcoord      : TEXCOORD0;
-    float2 staticLightmapUV    : TEXCOORD1;
-    float2 dynamicLightmapUV    : TEXCOORD2;
+    float4 positionOS : POSITION;
+    float3 normalOS : NORMAL;
+    float4 tangentOS : TANGENT;
+    float2 texcoord : TEXCOORD0;
+    float2 staticLightmapUV : TEXCOORD1;
+    float2 dynamicLightmapUV : TEXCOORD2;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
 struct Varyings
 {
-    float2 uv                       : TEXCOORD0;
+    float2 uv : TEXCOORD0;
 
-    float3 positionWS                  : TEXCOORD1;    // xyz: posWS
-    float4 positionSS                  : TEXCOORD9;   //screen space
-    float3 positionVS                  : TEXCOORD10;
+    float3 positionWS : TEXCOORD1; // xyz: posWS
+    float4 positionSS : TEXCOORD9; // screen space
+    float3 positionVS : TEXCOORD10;
 
-    #ifdef _NORMALMAP
-        half4 normalWS                 : TEXCOORD2;    // xyz: normal, w: viewDir.x
-        half4 tangentWS                : TEXCOORD3;    // xyz: tangent, w: viewDir.y
-        half4 bitangentWS              : TEXCOORD4;    // xyz: bitangent, w: viewDir.z
-    #else
-        half3  normalWS                : TEXCOORD2;
-    #endif
+#ifdef _NORMALMAP
+    half4 normalWS : TEXCOORD2;    // xyz: normal, w: viewDir.x
+    half4 tangentWS : TEXCOORD3;   // xyz: tangent, w: viewDir.y
+    half4 bitangentWS : TEXCOORD4; // xyz: bitangent, w: viewDir.z
+#else
+    half3 normalWS : TEXCOORD2;
+#endif
 
-    #ifdef _ADDITIONAL_LIGHTS_VERTEX
-        half4 fogFactorAndVertexLight  : TEXCOORD5; // x: fogFactor, yzw: vertex light
-    #else
-        half  fogFactor                 : TEXCOORD5;
-    #endif
+#ifdef _ADDITIONAL_LIGHTS_VERTEX
+    half4 fogFactorAndVertexLight : TEXCOORD5; // x: fogFactor, yzw: vertex light
+#else
+    half fogFactor : TEXCOORD5;
+#endif 
 
-    #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
-        float4 shadowCoord             : TEXCOORD6;
-    #endif
+#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
+    float4 shadowCoord : TEXCOORD6;
+#endif
 
     DECLARE_LIGHTMAP_OR_SH(staticLightmapUV, vertexSH, 7);
 
 #ifdef DYNAMICLIGHTMAP_ON
-    float2  dynamicLightmapUV : TEXCOORD8; // Dynamic lightmap UVs
+    float2 dynamicLightmapUV : TEXCOORD8; // Dynamic lightmap UVs
 #endif
 
-    float4 positionCS                  : SV_POSITION;
+    float4 positionCS : SV_POSITION;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
 };
+
+float _StartFadeDistance;
+float _FadeDistanceOffset;
+
+inline void InitializeSimpleLitSurfaceDataDither(float2 uv, out SurfaceData outSurfaceData, float2 screencoords, float distance)
+{
+    outSurfaceData = (SurfaceData)0;
+
+    half4 albedoAlpha = SampleAlbedoAlpha(uv, TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap));
+    outSurfaceData.alpha = albedoAlpha.a * _BaseColor.a;
+    albedoAlpha *= _BaseColor.a;
+
+    ApplyDistanceDither_float(1, screencoords, distance, _StartFadeDistance, _Cutoff, albedoAlpha);
+
+    outSurfaceData.alpha = albedoAlpha.a;
+    AlphaDiscard(outSurfaceData.alpha, _Cutoff);
+
+    outSurfaceData.albedo = albedoAlpha.rgb * _BaseColor.rgb;
+#ifdef _ALPHAPREMULTIPLY_ON
+    outSurfaceData.albedo *= outSurfaceData.alpha;
+#endif
+
+    half4 specularSmoothness = SampleSpecularSmoothness(uv, outSurfaceData.alpha, _SpecColor, TEXTURE2D_ARGS(_SpecGlossMap, sampler_SpecGlossMap));
+    outSurfaceData.metallic = 0.0; // unused
+    outSurfaceData.specular = specularSmoothness.rgb;
+    outSurfaceData.smoothness = specularSmoothness.a;
+    outSurfaceData.normalTS = SampleNormal(uv, TEXTURE2D_ARGS(_BumpMap, sampler_BumpMap));
+    outSurfaceData.occlusion = 1.0;
+    outSurfaceData.emission = SampleEmission(uv, _EmissionColor.rgb, TEXTURE2D_ARGS(_EmissionMap, sampler_EmissionMap));
+}
 
 void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData)
 {
@@ -57,35 +87,35 @@ void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData
 
     inputData.positionWS = input.positionWS;
 
-    #ifdef _NORMALMAP
-        half3 viewDirWS = half3(input.normalWS.w, input.tangentWS.w, input.bitangentWS.w);
-        inputData.tangentToWorld = half3x3(input.tangentWS.xyz, input.bitangentWS.xyz, input.normalWS.xyz);
-        inputData.normalWS = TransformTangentToWorld(normalTS, inputData.tangentToWorld);
-    #else
-        half3 viewDirWS = GetWorldSpaceNormalizeViewDir(inputData.positionWS);
-        inputData.normalWS = input.normalWS;
-    #endif
+#ifdef _NORMALMAP
+    half3 viewDirWS = half3(input.normalWS.w, input.tangentWS.w, input.bitangentWS.w);
+    inputData.tangentToWorld = half3x3(input.tangentWS.xyz, input.bitangentWS.xyz, input.normalWS.xyz);
+    inputData.normalWS = TransformTangentToWorld(normalTS, inputData.tangentToWorld);
+#else
+    half3 viewDirWS = GetWorldSpaceNormalizeViewDir(inputData.positionWS);
+    inputData.normalWS = input.normalWS;
+#endif
 
     inputData.normalWS = NormalizeNormalPerPixel(inputData.normalWS);
     viewDirWS = SafeNormalize(viewDirWS);
 
     inputData.viewDirectionWS = viewDirWS;
 
-    #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
-        inputData.shadowCoord = input.shadowCoord;
-    #elif defined(MAIN_LIGHT_CALCULATE_SHADOWS)
-        inputData.shadowCoord = TransformWorldToShadowCoord(inputData.positionWS);
-    #else
-        inputData.shadowCoord = float4(0, 0, 0, 0);
-    #endif
+#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
+    inputData.shadowCoord = input.shadowCoord;
+#elif defined(MAIN_LIGHT_CALCULATE_SHADOWS)
+    inputData.shadowCoord = TransformWorldToShadowCoord(inputData.positionWS);
+#else
+    inputData.shadowCoord = float4(0, 0, 0, 0);
+#endif
 
-    #ifdef _ADDITIONAL_LIGHTS_VERTEX
-        inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.fogFactorAndVertexLight.x);
-        inputData.vertexLighting = input.fogFactorAndVertexLight.yzw;
-    #else
-        inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.fogFactor);
-        inputData.vertexLighting = half3(0, 0, 0);
-    #endif
+#ifdef _ADDITIONAL_LIGHTS_VERTEX
+    inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.fogFactorAndVertexLight.x);
+    inputData.vertexLighting = input.fogFactorAndVertexLight.yzw;
+#else
+    inputData.fogCoord = InitializeInputDataFog(float4(inputData.positionWS, 1.0), input.fogFactor);
+    inputData.vertexLighting = half3(0, 0, 0);
+#endif
 
 #if defined(DYNAMICLIGHTMAP_ON)
     inputData.bakedGI = SAMPLE_GI(input.staticLightmapUV, input.dynamicLightmapUV, input.vertexSH, inputData.normalWS);
@@ -96,16 +126,16 @@ void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
     inputData.shadowMask = SAMPLE_SHADOWMASK(input.staticLightmapUV);
 
-    #if defined(DEBUG_DISPLAY)
-    #if defined(DYNAMICLIGHTMAP_ON)
+#if defined(DEBUG_DISPLAY)
+#if defined(DYNAMICLIGHTMAP_ON)
     inputData.dynamicLightmapUV = input.dynamicLightmapUV.xy;
-    #endif
-    #if defined(LIGHTMAP_ON)
+#endif
+#if defined(LIGHTMAP_ON)
     inputData.staticLightmapUV = input.staticLightmapUV;
-    #else
+#else
     inputData.vertexSH = input.vertexSH;
-    #endif
-    #endif
+#endif
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -125,9 +155,9 @@ Varyings LitPassVertexSimple(Attributes input)
     VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
 
 #if defined(_FOG_FRAGMENT)
-        half fogFactor = 0;
+    half fogFactor = 0;
 #else
-        half fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
+    half fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
 #endif
 
     output.uv = TRANSFORM_TEX(input.texcoord, _BaseMap);
@@ -152,22 +182,19 @@ Varyings LitPassVertexSimple(Attributes input)
 #endif
     OUTPUT_SH(output.normalWS.xyz, output.vertexSH);
 
-    #ifdef _ADDITIONAL_LIGHTS_VERTEX
-        half3 vertexLight = VertexLighting(vertexInput.positionWS, normalInput.normalWS);
-        output.fogFactorAndVertexLight = half4(fogFactor, vertexLight);
-    #else
-        output.fogFactor = fogFactor;
-    #endif
+#ifdef _ADDITIONAL_LIGHTS_VERTEX
+    half3 vertexLight = VertexLighting(vertexInput.positionWS, normalInput.normalWS);
+    output.fogFactorAndVertexLight = half4(fogFactor, vertexLight);
+#else
+    output.fogFactor = fogFactor;
+#endif
 
-    #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
-        output.shadowCoord = GetShadowCoord(vertexInput);
-    #endif
+#if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
+    output.shadowCoord = GetShadowCoord(vertexInput);
+#endif
 
     return output;
 }
-
-float _StartFadeDistance;
-float _FadeDistanceOffset;
 
 // Used for StandardSimpleLighting shader
 half4 LitPassFragmentSimple(Varyings input) : SV_Target
@@ -177,12 +204,9 @@ half4 LitPassFragmentSimple(Varyings input) : SV_Target
 
     SurfaceData surfaceData;
 
-    float4 screenpos = float4(input.positionSS.xy / input.positionSS.w, 0, 0);
+    float2 screenpos = input.positionSS.xy / input.positionSS.w;
     float dst = max(0.0, length(input.positionVS) - _FadeDistanceOffset);
-    
-    ApplyDistanceDither_float(1, screenpos, dst, _StartFadeDistance, _Cutoff, _BaseColor);
-
-    InitializeSimpleLitSurfaceData(input.uv, surfaceData);
+    InitializeSimpleLitSurfaceDataDither(input.uv, surfaceData, screenpos, dst);
 
     InputData inputData;
     InitializeInputData(input, surfaceData.normalTS, inputData);
