@@ -24,7 +24,7 @@ public class ParticleTriggerDamage : WeaponParticle
     protected void Awake()
     {
         m_transform = transform;
-        m_particlesList = new(2);
+        m_particlesList = new(16);
 
         if (GetStatsCharacter() == null)
             SetStatsCharacter(GetComponent<StatsCharacter>());

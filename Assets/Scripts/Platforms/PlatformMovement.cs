@@ -16,8 +16,6 @@ using UnityEngine;
 
 public class PlatformMovement : MonoBehaviour
 {
-
-
     public float waitTimeOnArrival = 0.1f;
     public bool startsOnInitialisation = true;
     public bool loops = true;

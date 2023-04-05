@@ -78,6 +78,7 @@ public class OdamaBehaviour : MonoBehaviour
     private float m_distanceSmoothRef;
 
     private Transform m_transform;
+    private int m_frameOfEnable;
 
     // private CharacterController
     // Start is called before the first frame update
@@ -94,11 +95,17 @@ public class OdamaBehaviour : MonoBehaviour
         m_currentTargetDst = m_desiredTargetDst;
         m_currentBopValue = 0;
         m_currentRotationRelativeToParentRad = 0;
+        m_frameOfEnable = Time.frameCount;
+        m_currentRotationSpeed = m_rotationSpeed;
+        m_rotationSmoothRef = 0;
+        m_bopCoef = 1;
+        m_bopSmoothRef = 0;
+        m_distanceSmoothVelocity = Vector3.zero;
     }
 
     private void LateUpdate()
     {
-        if (m_weaponBasic)
+        if (m_weaponBasic && m_frameOfEnable != Time.frameCount)
         {
             GfMovementGeneric movementParent = m_weaponBasic.GetMovementParent();
             if (movementParent)

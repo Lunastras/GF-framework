@@ -42,6 +42,9 @@ public class CameraController : MonoBehaviour
     private float m_distanceSmoothTime = 0.04f;
 
     [SerializeField]
+    private float m_minimumDistanceSmoothTime = 0.04f;
+
+    [SerializeField]
     private bool m_invertedY = false;
 
     private PriorityValue<float> m_distanceMultiplier = new(1);
@@ -84,6 +87,8 @@ public class CameraController : MonoBehaviour
     private Transform m_transform;
 
     private float m_fovSmoothTime = 1f;
+
+    private float m_currentSmoothTimeDistance;
 
     // Start is called before the first frame update
     void Start()
@@ -139,6 +144,8 @@ public class CameraController : MonoBehaviour
             m_timeUntilPhysCheck = m_physCheckInterval;
 
             int layermask = GfPhysics.NonCharacterCollisions();
+            float currentDistance = (m_currentTargetPos - m_transform.position).magnitude;
+            float previousDesiredDistance = m_desiredDst;
             m_desiredDst = m_dstFromtarget;
 
             RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
@@ -149,9 +156,12 @@ public class CameraController : MonoBehaviour
                 m_raycastHit = raycastHits[0];
                 m_desiredDst = Mathf.Max(m_raycastHit.distance, m_minDstFromtarget);
             }
+
+            if (System.MathF.Abs(previousDesiredDistance - m_desiredDst) > 0.1f)
+                m_currentSmoothTimeDistance = System.MathF.Max(m_minimumDistanceSmoothTime, m_distanceSmoothTime * (System.MathF.Max(0, System.MathF.Abs(currentDistance - m_desiredDst) - 2f) / m_dstFromtarget));
         }
 
-        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_desiredDst * m_distanceMultiplier, ref m_refDistanceVel, m_distanceSmoothTime);
+        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_desiredDst * m_distanceMultiplier, ref m_refDistanceVel, m_currentSmoothTimeDistance);
 
         m_transform.position = m_currentTargetPos - forward * m_currentTargetDst;
         m_camera.fieldOfView = Mathf.SmoothDamp(m_camera.fieldOfView, m_fovMultiplier * m_targetFov, ref m_fovRefSpeed, m_fovSmoothTime);

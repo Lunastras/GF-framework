@@ -56,9 +56,9 @@ public class Sound
 
     public void Play(AudioSource source, float delay = 0, float volume = 1, float pitch = 1)
     {
-        double currentTime = Time.timeAsDouble;
+        double currentTime;
 
-        if (source && m_clip != null && currentTime >= m_timeOfCoolDownOver)
+        if (source && m_clip != null && (currentTime = Time.timeAsDouble) >= m_timeOfCoolDownOver)
         {
             m_timeOfCoolDownOver = currentTime + m_coolDownTime + delay;
 

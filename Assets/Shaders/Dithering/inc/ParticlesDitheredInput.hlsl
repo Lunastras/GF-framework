@@ -65,7 +65,7 @@ void InitParticleParamsDither(DitheredV2f input, out ParticleParams output)
 }
 
 half4 SampleAlbedoDither(float2 uv, float3 blendUv, half4 color, float4 particleColor, float4 projectedPosition
-, TEXTURE2D_PARAM(albedoMap, sampler_albedoMap), float2 screencoords, float distance)
+, TEXTURE2D_PARAM(albedoMap, sampler_albedoMap), float2 screencoords, float distance, float ditherIntensity, float ditherScale)
 {
     half4 albedo = BlendTexture(TEXTURE2D_ARGS(albedoMap, sampler_albedoMap), uv, blendUv) * color;
 
@@ -76,7 +76,7 @@ half4 SampleAlbedoDither(float2 uv, float3 blendUv, half4 color, float4 particle
 #endif
     albedo = MixParticleColor(albedo, half4(particleColor), colorAddSubDiff);
 
-    ApplyDistanceDither_float(1, screencoords, distance, _StartFadeDistance, _Cutoff, albedo);
+    ApplyDistanceDither_float(ditherIntensity, ditherScale, screencoords, distance, _StartFadeDistance, _Cutoff, albedo);
     AlphaDiscard(albedo.a, _Cutoff);
 
     albedo.rgb = AlphaModulate(albedo.rgb, albedo.a);
@@ -92,17 +92,17 @@ half4 SampleAlbedoDither(float2 uv, float3 blendUv, half4 color, float4 particle
     return albedo;
 }
 
-half4 SampleAlbedoDither(TEXTURE2D_PARAM(albedoMap, sampler_albedoMap), ParticleParams params, float2 screencoords, float distance)
+half4 SampleAlbedoDither(TEXTURE2D_PARAM(albedoMap, sampler_albedoMap), ParticleParams params, float2 screencoords, float distance, float ditherIntensity, float ditherScale)
 {
     half4 albedo = BlendTexture(TEXTURE2D_ARGS(albedoMap, sampler_albedoMap), params.uv, params.blendUv) * params.baseColor;
 
-    half4 colorAddSubDiff = half4(0, 0, 0, 0);
+    half4 colorAddSubDiff = half4(0, 0, 0, 0); 
 #if defined(_COLORADDSUBDIFF_ON)
     colorAddSubDiff = _BaseColorAddSubDiff;
 #endif
     albedo = MixParticleColor(albedo, half4(params.vertexColor), colorAddSubDiff);
 
-    ApplyDistanceDither_float(1, screencoords, distance, _StartFadeDistance, _Cutoff, albedo);
+    ApplyDistanceDither_float(ditherIntensity, ditherScale, screencoords, distance, _StartFadeDistance, _Cutoff, albedo);
     AlphaDiscard(albedo.a, _Cutoff);
 
 #if defined(_SOFTPARTICLES_ON)

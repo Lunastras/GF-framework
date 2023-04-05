@@ -21,9 +21,11 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ParticleMat
-  m_Shader: {fileID: 4800000, guid: 064ae63cf04e3cb4d920dc998d8cbaa5, type: 3}
+  m_Shader: {fileID: 4800000, guid: 2dd5069d37783d44691ce42224b9e311, type: 3}
   m_ValidKeywords:
   - _ALPHATEST_ON
+  - _DITHERED_SHADOWS
+  - _LAMBERT_DISABLED
   - _RECEIVE_SHADOWS_OFF
   - _SPECULAR_COLOR
   m_InvalidKeywords:
@@ -117,13 +119,15 @@ Material:
     - _ColorMask: 15
     - _ColorMode: 0
     - _Cull: 2
-    - _Cutoff: 0.5
+    - _Cutoff: 0.01
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DistortionBlend: 0.5
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0.1
+    - _DitherIntensity: 1
+    - _DitherScale: 1
     - _DstBlend: 0
     - _EnableExternalAlpha: 0
     - _EnvironmentReflections: 0
@@ -133,6 +137,7 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _LambertDotOverride: 1
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1

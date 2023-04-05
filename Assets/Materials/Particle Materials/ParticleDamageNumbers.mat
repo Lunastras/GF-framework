@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ParticleDamageNumbers
-  m_Shader: {fileID: 4800000, guid: 9fb03d414de82d044acea98160247df2, type: 3}
+  m_Shader: {fileID: 4800000, guid: 35684ad38a39bdd4d89963156aff220b, type: 3}
   m_ValidKeywords:
   - _ALPHATEST_ON
   m_InvalidKeywords:
@@ -103,6 +103,8 @@ Material:
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0.1
+    - _DitherIntensity: 1
+    - _DitherScale: 1
     - _DstBlend: 0
     - _EnvironmentReflections: 1
     - _FadeDistanceOffset: 1

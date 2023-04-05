@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: mt_yellow
-  m_Shader: {fileID: 4800000, guid: e3b56e436d5e89f45a3610e6aee6472f, type: 3}
+  m_Shader: {fileID: 4800000, guid: 34e465490c627f043a438d68be42b7df, type: 3}
   m_ValidKeywords:
   - _ALPHATEST_ON
   m_InvalidKeywords: []
@@ -107,6 +107,8 @@ Material:
     - _Cull: 2
     - _Cutoff: 0
     - _DetailNormalMapScale: 1
+    - _DitherIntensity: 1
+    - _DitherScale: 1
     - _DstBlend: 0
     - _FadeDistanceOffset: 1
     - _GlossMapScale: 1

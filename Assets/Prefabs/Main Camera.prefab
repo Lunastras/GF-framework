@@ -102,15 +102,16 @@ MonoBehaviour:
   m_sensitivity: 400
   m_targetFov: 90
   m_offset: {x: 0, y: 2, z: 0}
-  m_physCheckInterval: 0.02
-  m_dstFromtarget: 9
-  m_collisionRadius: 0.5
+  m_physCheckInterval: 0
+  m_dstFromtarget: 7
+  m_collisionRadius: 1
   m_minDstFromtarget: 4
-  m_pitchMin: -89
-  m_pitchMax: 89
+  m_pitchMin: -89.9
+  m_pitchMax: 89.9
   m_rotationSmoothTime: 0
   m_movementSmoothTime: 0.095
-  m_distanceSmoothTime: 0.3
+  m_distanceSmoothTime: 0.4
+  m_minimumDistanceSmoothTime: 0.05
   m_invertedY: 1
   m_upvec: {x: 0, y: 1, z: 0}
 --- !u!114 &3676997061914269402

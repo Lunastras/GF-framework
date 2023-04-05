@@ -465,8 +465,8 @@
         "affectsMAOS": false,
         "affectsEmission": false,
         "drawOrder": 0,
-        "supportLodCrossFade": true,
-        "angleFade": true
+        "supportLodCrossFade": false,
+        "angleFade": false
     }
 }
 

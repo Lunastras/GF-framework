@@ -9,7 +9,7 @@ public class Sprite3DAnimator : MonoBehaviour
     private Transform m_objectTransform = null;
 
     [SerializeField]
-    private SpriteRenderer m_spriteRenderer = null;
+    private GfSpriteRenderer m_spriteRenderer = null;
 
     [SerializeField]
     private AnimationSpriteState[] m_animationStates = null;
@@ -39,18 +39,23 @@ public class Sprite3DAnimator : MonoBehaviour
     private static CameraController m_cameraController;
     private static Transform m_cameraTransform;
 
+    private bool m_initialised = false;
+
     // private Dictionary<string, AnimationSpriteState> statesDictionary;
     // private Dictionary<string, int> stateStartIndex;
 
-    void Awake()
+    void Start()
     {
+        m_initialised = true;
         m_cameraTransform = Camera.main.transform;
         m_cameraController = m_cameraTransform.GetComponent<CameraController>();
 
+        if (!m_spriteRenderer)
+            m_spriteRenderer = GetComponent<GfSpriteRenderer>();
+
         PlayState(m_playAnimationOnStart);
 
-        if (!m_spriteRenderer)
-            m_spriteRenderer = GetComponent<SpriteRenderer>();
+
 
         if (!m_objectTransform)
             //most likely not something you want because 
@@ -85,7 +90,7 @@ public class Sprite3DAnimator : MonoBehaviour
         GfTools.RemoveAxis(ref mainCameraForward, upVec);
         GfTools.RemoveAxis(ref transForward, upVec);
 
-        float angleToCamera = GfTools.SignedAngleDeg(mainCameraForward, transForward, upVec);
+        float angleToCamera = -GfTools.SignedAngleDeg(mainCameraForward, transForward, upVec);
         if (angleToCamera < 0) angleToCamera += 360;
 
         angleToCamera += degreesBetweenSteps / 2 + m_currentState.rotationOffsetDegrees;
@@ -118,13 +123,13 @@ public class Sprite3DAnimator : MonoBehaviour
         }
 
         m_currentViewIndex = (int)Min(m_currentViewIndex, m_currentState.animations.Length - 1);
-        m_spriteRenderer.flipX = isMirrored;
+        m_spriteRenderer.SetFlippedX(isMirrored);
         // Debug.Log("The angle is: " + angleToCamera + " with a view index of: " + m_currentViewIndex + " and num sides: " + numberSides);
     }
 
     protected void OnEnable()
     {
-        PlayState(m_playAnimationOnStart);
+        if (m_initialised) PlayState(m_playAnimationOnStart);
     }
 
     protected void OnDisable()
@@ -144,7 +149,7 @@ public class Sprite3DAnimator : MonoBehaviour
 
         CurrentAnimation = m_currentState.animations[m_currentViewIndex];
         Playing = true;
-        m_spriteRenderer.sprite = CurrentAnimation.frames[CurrentFrame];
+        m_spriteRenderer.SetSprite(CurrentAnimation.frames[CurrentFrame]);
     }
 
     public void PlayState(int stateIndex, bool loops = true, int startFrame = 0)
@@ -171,7 +176,7 @@ public class Sprite3DAnimator : MonoBehaviour
         CurrentAnimation = animation;
         CurrentFrame = startFrame;
         Playing = true;
-        m_spriteRenderer.sprite = animation.frames[CurrentFrame];
+        m_spriteRenderer.SetSprite(animation.frames[CurrentFrame]);
         TimeUntilNextFrame = CurrentAnimation.timeUntilNextFrame[(int)Min(CurrentAnimation.timeUntilNextFrame.Length - 1, CurrentFrame)];
     }
 
@@ -203,7 +208,7 @@ public class Sprite3DAnimator : MonoBehaviour
             }
         }
 
-        m_spriteRenderer.sprite = CurrentAnimation.frames[CurrentFrame];
+        m_spriteRenderer.SetSprite(CurrentAnimation.frames[CurrentFrame]);
     }
 }
 

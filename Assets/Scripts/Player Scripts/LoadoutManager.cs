@@ -545,7 +545,6 @@ public class LoadoutManager : MonoBehaviour
         public WeaponData(WeaponData data, bool copyPoints = true)
         {
             weaponPoints = new float[(int)WeaponPointsTypes.NUMBER_OF_TYPES];
-            Debug.Log("copying something");
             weapon = data.weapon;
             int count = (int)WeaponPointsTypes.NUMBER_OF_TYPES;
             for (int i = 0; i < count & copyPoints; ++i)
