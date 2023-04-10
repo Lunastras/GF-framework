@@ -22,14 +22,15 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: ToonLitShader
   m_Shader: {fileID: 4800000, guid: 34e465490c627f043a438d68be42b7df, type: 3}
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _ALPHATEST_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2450
   stringTagMap:
-    RenderType: Opaque
+    RenderType: TransparentCutout
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
@@ -105,7 +106,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AdditionalLightIgnoreCelShade: 0.9
-    - _AlphaClip: 0
+    - _AlphaClip: 1
     - _AlphaClippingThreshold: 0
     - _Blend: 0
     - _BumpScale: 1
@@ -114,7 +115,7 @@ Material:
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
-    - _Cutoff: 0.047
+    - _Cutoff: 0.05
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DirectLightMultiplier: 1
@@ -130,6 +131,7 @@ Material:
     - _GlossyReflections: 0
     - _IndirectLightMultiplier: 1
     - _IsFace: 0
+    - _LambertDotOverride: 0.906
     - _MainLightIgnoreCelShade: 0
     - _Metallic: 0
     - _OcclusionRemapEnd: 1

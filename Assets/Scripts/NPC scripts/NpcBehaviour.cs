@@ -120,6 +120,7 @@ public class NpcBehaviour : NpcController
 
     protected override void EngageEnemyBehaviour(float deltaTime, Vector3 dirToTarget)
     {
+        Debug.Log("I do see the enemy!!! Distance from enemy is: ");
         if (0 > m_timeUntilFireChange)
         {
 
@@ -174,6 +175,8 @@ public class NpcBehaviour : NpcController
 
     protected override void NoDestinationsBehaviour(float deltaTime)
     {
+        if (m_turret) m_turret.Stop();
+
         m_currentSpeedMultiplier = m_walkSpeedMultiplyer;
         if (0 >= m_timeUntilNextWalkChange)
         {
@@ -181,22 +184,23 @@ public class NpcBehaviour : NpcController
 
             float movementDirMagnitude = m_movement.MovementDirRaw.magnitude;
 
-            if (movementDirMagnitude > 0.9f)
+            if (movementDirMagnitude > 0.9f) //if currently walking, stop
             {
                 m_movement.SetMovementDir(Vector3.zero);
             }
-            else
+            else //if not idle, start walking
             {
-                Vector3 dirToSpawn = m_spawnPos - m_transform.position;
-                dirToSpawn.y = 0;
+                Vector3 dirToSpawn = m_spawnPos;
+                GfTools.Minus3(ref m_spawnPos, m_transform.position);
+                float distanceFromSpawn = dirToSpawn.magnitude;
 
-                if (dirToSpawn.magnitude >= m_maxDstFromSpawnWalk)
+                if (distanceFromSpawn >= m_maxDstFromSpawnWalk)
                 {
-                    m_movement.SetMovementDir(dirToSpawn.normalized);
+                    GfTools.Div3(ref dirToSpawn, distanceFromSpawn);
+                    m_movement.SetMovementDir(dirToSpawn);
                 }
                 else
                 {
-                    float randomRadian = GfRandom.Range(0, 360);
                     m_movement.SetMovementDir(Random.insideUnitSphere);
                 }
             }
@@ -213,7 +217,8 @@ public class NpcBehaviour : NpcController
 
     protected override void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
-        if (m_turret) m_turret.Stop();
+        Debug.Log("i am searching for the bastard heeeehee");
+        m_turret.Stop();
         m_movement.SetMovementDir(dirToTarget.normalized);
     }
 
@@ -227,20 +232,20 @@ public class NpcBehaviour : NpcController
 
     protected override void LostTargetBehaviour(float deltaTime)
     {
-        //Debug.Log("i lost the target");
+        Debug.Log("i lost the target");
         PauseMovement(1);
         m_movement.SetMovementDir(Vector3.zero);
         m_turret.Stop();
         m_currentState = NpcState.NO_DESTINATION;
-        SetDestination(null);
+        m_destination.RemoveDestination();
     }
 
     protected override void DestinationDestroyedBehaviour(float deltaTime)
     {
-        //  Debug.Log("enemy was destroyed");
+        Debug.Log("enemy was destroyed");
         m_movement.SetMovementDir(Vector3.zero);
         m_turret.Stop();
         m_currentState = NpcState.NO_DESTINATION;
-        SetDestination(null);
+        m_destination.RemoveDestination();
     }
 }

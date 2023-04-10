@@ -56,19 +56,20 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
             public static void DrawCustomLightingOptions(Material material)
             {
                 EditorGUILayout.LabelField("");
-                bool lambertEnabled = Array.IndexOf(material.shaderKeywords, LAMBERT_ENABLED) != -1;
+                bool lambertDisabled = Array.IndexOf(material.shaderKeywords, LAMBERT_ENABLED) != -1;
                 bool fogEnabled = Array.IndexOf(material.shaderKeywords, FOG_ENABLE) != -1;
                 float lambertOverride = material.GetFloat(LAMBERT_OVERRIDE);
 
                 EditorGUI.BeginChangeCheck();
-                lambertEnabled = EditorGUILayout.Toggle("Lambert disabled", lambertEnabled);
+                lambertDisabled = EditorGUILayout.Toggle("Lambert disabled", lambertDisabled);
                 fogEnabled = EditorGUILayout.Toggle("Fog disabled", fogEnabled);
                 //float.TryParse(EditorGUILayout.TextField("Lambert override", lambertOverride.ToString()), out lambertOverride);
-                lambertOverride = EditorGUILayout.Slider("Lambert override", lambertOverride, 0, 1);
+                if (lambertDisabled)
+                    lambertOverride = EditorGUILayout.Slider("Lambert override", lambertOverride, 0, 1);
                 if (EditorGUI.EndChangeCheck())
                 {
                     // enable or disable the keyword based on checkbox
-                    if (lambertEnabled)
+                    if (lambertDisabled)
                         material.EnableKeyword(LAMBERT_ENABLED);
                     else
                         material.DisableKeyword(LAMBERT_ENABLED);

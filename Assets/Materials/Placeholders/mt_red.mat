@@ -107,17 +107,17 @@ Material:
     - _Blend: 0
     - _BumpScale: 1
     - _Cull: 2
-    - _Cutoff: 0.369
+    - _Cutoff: 0.115
     - _DetailNormalMapScale: 1
     - _DitherIntensity: 1
-    - _DitherScale: 0.7
+    - _DitherScale: 1
     - _DstBlend: 0
     - _FadeDistanceOffset: 0.5
     - _GlossMapScale: 1
     - _Glossiness: 0.477
     - _GlossinessSource: 0
     - _GlossyReflections: 1
-    - _LambertDotOverride: 0.68
+    - _LambertDotOverride: 0.231
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -132,7 +132,7 @@ Material:
     - _SpecSource: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StartFadeDistance: 10
+    - _StartFadeDistance: 5
     - _Surface: 0
     - _UVSec: 0
     - _ZWrite: 1

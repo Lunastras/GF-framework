@@ -13,6 +13,8 @@ public struct Destination
 
     private bool destinationIsTransform;
 
+    public bool HasDestination { get; private set; }
+
     public Destination(Transform destination = null, bool isEnemy = false, bool canLoseTrackOfTarget = false)
     {
         //Debug.Log("new destination TRANSFORM set!");
@@ -22,6 +24,7 @@ public struct Destination
         CanLoseTrackOfTarget = canLoseTrackOfTarget;
         vector3Dest = destination != null ? destination.position : Vector3.zero;
         destinationIsTransform = true;
+        HasDestination = destination != null;
     }
 
     public Destination(Vector3 position)
@@ -31,6 +34,7 @@ public struct Destination
         CanLoseTrackOfTarget = false;
         vector3Dest = position;
         destinationIsTransform = false;
+        HasDestination = true;
     }
 
     public void SetDestination(Vector3 position)
@@ -40,6 +44,7 @@ public struct Destination
         CanLoseTrackOfTarget = false;
         vector3Dest = position;
         destinationIsTransform = false;
+        HasDestination = true;
     }
 
     public void SetDestination(Transform destination = null, bool isEnemy = false, bool canLoseTrackOfTarget = false)
@@ -49,6 +54,12 @@ public struct Destination
         CanLoseTrackOfTarget = canLoseTrackOfTarget;
         vector3Dest = destination != null ? destination.position : Vector3.zero;
         destinationIsTransform = true;
+        HasDestination = destination != null;
+    }
+
+    public void RemoveDestination()
+    {
+        HasDestination = false;
     }
 
     public Vector3 LastKnownPosition()
@@ -71,9 +82,7 @@ public struct Destination
     //vector or if canLoseTrackOfTarget = false 
     public void UpdatePosition()
     {
-        if (TransformDest != null && TransformDest.gameObject.activeSelf)
-            vector3Dest = TransformDest.position;
-
+        if (TransformDest != null) vector3Dest = TransformDest.position;
         //Debug.Log("Vector3 dest set to " + vector3Dest);
     }
 }

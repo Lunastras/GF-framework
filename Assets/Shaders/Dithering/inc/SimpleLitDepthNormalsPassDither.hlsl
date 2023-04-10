@@ -69,7 +69,7 @@ half4 DepthNormalsFragment(Varyings input) : SV_TARGET
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
     
-    float2 screenpos = input.positionSS.xy / input.positionSS.w + float2(0.00f, 0.00f);
+    float2 screenpos = input.positionSS.xy / input.positionSS.w;
     float dst = (1.0 / (_ZBufferParams.z * input.positionCS.z + _ZBufferParams.w));
     dst = max(0.0, dst - _FadeDistanceOffset);
     float4 color = SampleAlbedoAlpha(input.uv, TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap)).a;

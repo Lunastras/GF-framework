@@ -553,7 +553,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 5
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -660,7 +660,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.93250316, g: 0.5801887, b: 1, a: 1}
+      maxColor: {r: 0, g: 1, b: 0.1493411, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -1734,7 +1734,7 @@ ParticleSystem:
         m_RotationOrder: 4
     separateAxes: 0
   ColorModule:
-    enabled: 0
+    enabled: 1
     gradient:
       serializedVersion: 2
       minMaxState: 1
@@ -1742,33 +1742,33 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 1, g: 1, b: 1, a: 1}
-        key1: {r: 1, g: 1, b: 1, a: 1}
-        key2: {r: 0, g: 0, b: 0, a: 0}
-        key3: {r: 0, g: 0, b: 0, a: 0}
-        key4: {r: 0, g: 0, b: 0, a: 0}
+        key0: {r: 0, g: 1, b: 0.0323627, a: 1}
+        key1: {r: 0.6965501, g: 0.24056602, b: 1, a: 1}
+        key2: {r: 0.19339621, g: 0.612154, b: 1, a: 0}
+        key3: {r: 0.999351, g: 1, b: 0.3537736, a: 0}
+        key4: {r: 1, g: 1, b: 1, a: 0}
         key5: {r: 0, g: 0, b: 0, a: 0}
         key6: {r: 0, g: 0, b: 0, a: 0}
         key7: {r: 0, g: 0, b: 0, a: 0}
         ctime0: 0
-        ctime1: 65535
-        ctime2: 0
-        ctime3: 0
-        ctime4: 0
+        ctime1: 18119
+        ctime2: 37972
+        ctime3: 51464
+        ctime4: 65535
         ctime5: 0
         ctime6: 0
         ctime7: 0
         atime0: 0
-        atime1: 65535
-        atime2: 0
-        atime3: 0
+        atime1: 54741
+        atime2: 65535
+        atime3: 65535
         atime4: 0
         atime5: 0
         atime6: 0
         atime7: 0
         m_Mode: 0
-        m_NumColorKeys: 2
-        m_NumAlphaKeys: 2
+        m_NumColorKeys: 5
+        m_NumAlphaKeys: 3
       minGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -5295,7 +5295,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4759944753111975126
 Transform:
   m_ObjectHideFlags: 0
@@ -5344,9 +5344,9 @@ MonoBehaviour:
   m_updateInterval: 0.05
   m_usesRigidBody: 0
   m_usesFixedUpdate: 1
-  m_cosFieldOfView: -0.2
+  m_cosFieldOfView: -0.5
   m_lineOfSightLength: 40
-  m_targetTrackingTimeWindow: 5
+  m_targetTrackingTimeWindow: 0.001
   m_updatePhysicsValuesAutomatically: 0
   m_hostileValues:
     m_likelyHoodToCircleTarget: 0.5
@@ -5373,7 +5373,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 608644a682216bf4eaec6b2595f21fc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 0}
+  m_statsCharacter: {fileID: 7866579364068057338}
   m_parentDamageSource: {fileID: 0}
   m_turretPhases:
   - weapons:

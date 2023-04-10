@@ -140,7 +140,7 @@ public class NpcController : MonoBehaviour
                 m_currentState = NpcState.NO_DESTINATION;
             }
 
-            if (NpcState.NO_DESTINATION != m_currentState || !m_destination.WasDestroyed())
+            if (m_destination.HasDestination)
             {
                 MoveTowardsDestination(deltaTime, m_destination);
             }
@@ -166,10 +166,10 @@ public class NpcController : MonoBehaviour
 
     protected bool CheckCanSeeTarget(Transform target, float lineOfSightLength, bool currentlySeesTarget, bool unlimitedFov = false, bool forceRayCast = false)
     {
-        bool auxCanSeeTarget = currentlySeesTarget;
         bool validTarget = target != null && target.gameObject.activeSelf;
+        bool auxCanSeeTarget = currentlySeesTarget && validTarget;
 
-        if ((forceRayCast || 0 >= m_timeUntilNextTargetCheck) && validTarget)
+        if (validTarget && (forceRayCast || 0 >= m_timeUntilNextTargetCheck))
         {
             Vector3 currentPosition = m_transform.position;
             Vector3 dirToTarget = target.position;
@@ -177,20 +177,20 @@ public class NpcController : MonoBehaviour
             float distanceFromTarget = dirToTarget.magnitude;
             if (distanceFromTarget >= 0.00001f) GfTools.Div3(ref dirToTarget, distanceFromTarget);
 
-            auxCanSeeTarget = unlimitedFov || (distanceFromTarget <= lineOfSightLength
-                                && m_cosFieldOfView <= Vector3.Dot(m_transform.forward, dirToTarget));
+            auxCanSeeTarget = distanceFromTarget <= lineOfSightLength
+                                && (unlimitedFov || m_cosFieldOfView <= Vector3.Dot(m_transform.forward, dirToTarget));
 
             //check if uses raycast
             if (m_targetCheckCooldown >= 0 && auxCanSeeTarget)
             {
-                m_timeUntilNextTargetCheck = m_targetCheckCooldown * GfRandom.Range(0.5f, 1.5f);
+                m_timeUntilNextTargetCheck = m_targetCheckCooldown;
 
                 Ray ray = new(currentPosition, dirToTarget);
                 RaycastHit[] hits = GfPhysics.GetRaycastHits();
                 auxCanSeeTarget = 0 == Physics.RaycastNonAlloc(ray, hits, distanceFromTarget, GfPhysics.CollisionsNoGroundLayers());
                 //check if the hit's distance is within x amount of units away from the destination
                 //I was thinking of using auxCanSeeTarget|=, but as far as I know that is the OR bitwise operator ' | ', not the boolean check operator ' || ' and I am not sure if it will actually skip the second bool, || skips the second bool if the first one is true. 
-                auxCanSeeTarget = auxCanSeeTarget || hits[0].distance >= (distanceFromTarget - 1.0f);
+                auxCanSeeTarget = auxCanSeeTarget || hits[0].distance >= (distanceFromTarget - 0.2f);
             }
         }
 
@@ -200,10 +200,11 @@ public class NpcController : MonoBehaviour
     protected virtual void MoveTowardsDestination(float deltaTime, Destination destination)
     {
         bool canSeeTarget = CheckCanSeeTarget(destination.TransformDest, m_lineOfSightLength, NpcState.ENGAGING_TARGET == m_currentState);
-        if (canSeeTarget) destination.UpdatePosition();
+        if (canSeeTarget || 0 < m_timeUntilLosetarget) destination.UpdatePosition();
 
         Vector3 targetPosition = destination.LastKnownPosition();
-        Vector3 dirToTarget = targetPosition - m_transform.position;
+        Vector3 dirToTarget = targetPosition;
+        GfTools.Minus3(ref dirToTarget, m_transform.position);
 
         if (canSeeTarget)
         {
@@ -279,24 +280,26 @@ public class NpcController : MonoBehaviour
     protected virtual void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
         Debug.Log("finding the target");
-
         m_movement.SetMovementDir(dirToTarget.normalized);
     }
 
     protected virtual void ArrivedAtDestinationBehaviour(float deltaTime)
     {
+        m_destination.RemoveDestination();
         m_movement.SetMovementDir(Vector3.zero);
     }
 
     protected virtual void LostTargetBehaviour(float deltaTime)
     {
         m_movement.SetMovementDir(Vector3.zero);
+        m_destination.RemoveDestination();
     }
 
     protected virtual void DestinationDestroyedBehaviour(float deltaTime)
     {
-        PauseMovement(3);
+        PauseMovement(1);
         m_movement.SetMovementDir(Vector3.zero);
+        m_destination.RemoveDestination();
     }
 
     protected virtual void NoDestinationsBehaviour(float deltaTime)
@@ -306,7 +309,9 @@ public class NpcController : MonoBehaviour
 
     public void SetDestination(Transform destinationTrans, bool isEnemy = false, bool canLoseTrackOfTarget = true)
     {
+
         m_destination.SetDestination(destinationTrans, isEnemy, canLoseTrackOfTarget);
+        Debug.Log("I am setting a destination! " + m_destination.HasDestination);
     }
 
     public void SetDestination(Vector3 destinationPos)
