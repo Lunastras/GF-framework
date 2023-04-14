@@ -1,15 +1,20 @@
-
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using System.IO;
 using Unity.Collections;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 using Unity.Burst;
 using Unity.Jobs;
 using Unity.Mathematics;
+using System.Runtime.Serialization.Formatters.Binary;
 
 using static Unity.Mathematics.math;
 
 [ExecuteInEditMode]
-public class GfPathfinding : MonoBehaviour
+public class OldGfPathfinding : MonoBehaviour
 {
     [SerializeField]
     private Vector3 m_distanceBetweenNodes = new(0.5f, 0.5f, 0.5f);
@@ -18,22 +23,22 @@ public class GfPathfinding : MonoBehaviour
     private float m_collisionRadius = 1.0f;
 
     [SerializeField]
-    private LayerMask m_layerMask = 0;
+    private LayerMask m_layerMask;
 
 
     [SerializeField]
-    private Transform m_start = null;
+    private Transform m_start;
 
     [SerializeField]
-    private Transform m_end = null;
+    private Transform m_end;
 
 #if UNITY_EDITOR
 
     [SerializeField]
-    private bool m_visualizePoints = false;
+    private bool m_visualizePoints;
 
     [SerializeField]
-    private bool m_visualiseCollisionRadius = false;
+    private bool m_visualiseCollisionRadius;
 
     [SerializeField]
     private float m_visualiseDrawDistanceSquared = 100;
@@ -43,7 +48,7 @@ public class GfPathfinding : MonoBehaviour
 #endif //UNITY_EDITOR
 
     [System.Serializable]
-    private struct NodePathSaveData
+    private struct NodePathData
     {
         public int3 gridSize;
         public float3 startPoint;
@@ -56,9 +61,7 @@ public class GfPathfinding : MonoBehaviour
     private int m_gridLength = 0;
     private float3 m_startPoint;
 
-    private float3 m_invDistanceBetweenNodes = new(0.5f, 0.5f, 0.5f);
-
-    private NativeArray<PathNode> m_pathNodes;
+    private PathNode[] m_pathNodes;
 
     NativeArray<int> m_neighbourOffsetArray;
 
@@ -150,7 +153,7 @@ public class GfPathfinding : MonoBehaviour
 
         //Save data
 
-        NodePathSaveData data = new();
+        NodePathData data = new();
         data.gridSize = gridSize;
         data.pathNodeArray = pathNodes;
         data.gridLength = length;
@@ -167,7 +170,6 @@ public class GfPathfinding : MonoBehaviour
 
     private void Start()
     {
-        if (m_pathNodes.IsCreated) m_pathNodes.Dispose();
 
 #if UNITY_EDITOR
         m_camera = UnityEditor.SceneView.lastActiveSceneView.camera.transform;
@@ -178,17 +180,11 @@ public class GfPathfinding : MonoBehaviour
 
         if (File.Exists(Application.persistentDataPath + "/TestLevel.dat"))
         {
-            NodePathSaveData data = JsonUtility.FromJson<NodePathSaveData>(File.ReadAllText(Application.persistentDataPath + "/TestLevel.dat"));
+            NodePathData data = JsonUtility.FromJson<NodePathData>(File.ReadAllText(Application.persistentDataPath + "/TestLevel.dat"));
             m_gridSize = data.gridSize;
             m_gridLength = data.gridLength;
             m_startPoint = data.startPoint;
-            var pathNodeArray = data.pathNodeArray;
-            Debug.Log("The nodepath length is: " + m_gridLength);
-            m_pathNodes = new(pathNodeArray, Allocator.Persistent);
-
-            m_invDistanceBetweenNodes.x = 1.0f / m_distanceBetweenNodes.x;
-            m_invDistanceBetweenNodes.y = 1.0f / m_distanceBetweenNodes.y;
-            m_invDistanceBetweenNodes.z = 1.0f / m_distanceBetweenNodes.z;
+            m_pathNodes = data.pathNodeArray;
         }
 
         if (m_neighbourOffsetArray.IsCreated == false)
@@ -230,28 +226,34 @@ public class GfPathfinding : MonoBehaviour
     }
 #endif //UNITY_EDITOR
 
-    public JobHandle GetPathfindingJob(float3 start, float3 end, NativeList<float3> path)
+    private NativeList<float3> FindPath(float3 start, float3 end)
     {
-        JobHandle handle = default;
+        NativeList<float3> path = new(Allocator.TempJob);
+
         if (m_pathNodes.Length > 0)
         {
+            NativeArray<PathNode> pathNodeArray = new(m_pathNodes, Allocator.TempJob);
+
             FindPathJob pathJob = new FindPathJob
             {
                 startPoint = start,
                 endPoint = end,
-                pathNodeArray = m_pathNodes.AsReadOnly(),
+                pathNodeArray = pathNodeArray,
                 gridSize = m_gridSize,
-                neighbourOffsetArray = m_neighbourOffsetArray.AsReadOnly(),
+                neighbourOffsetArray = m_neighbourOffsetArray,
                 gridLength = m_gridLength,
-                invDistanceBetweenNodes = m_invDistanceBetweenNodes,
+                distanceBetweenNodes = m_distanceBetweenNodes,
                 startPosition = m_startPoint,
                 path = path
             };
 
-            handle = pathJob.Schedule();
+            pathJob.Run();
+            pathNodeArray.Dispose();
+            //JobHandle handle = pathJob.Schedule();
+            //handle.Complete();
         }
 
-        return handle;
+        return path;
     }
 
     [BurstCompile]
@@ -262,123 +264,118 @@ public class GfPathfinding : MonoBehaviour
 
         public NativeList<float3> path;
 
-        public NativeArray<PathNode>.ReadOnly pathNodeArray;
+        public NativeArray<PathNode> pathNodeArray;
 
-        public NativeArray<int>.ReadOnly neighbourOffsetArray;
+        public NativeArray<int> neighbourOffsetArray;
 
         public int3 gridSize;
 
-        public int gridLength;
+        public float gridLength;
 
-        public float3 invDistanceBetweenNodes;
+        public float3 distanceBetweenNodes;
 
         public float3 startPosition;
 
         public void Execute()
         {
-            NativeArray<PathNodeData> nodesData = new(gridLength, Allocator.Temp);
-            NativeList<int> openList = new(32, Allocator.Temp);
 
             for (int i = 0; i < gridLength; ++i)
             {
-                PathNodeData nodeData = new PathNodeData
-                {
-                    cameFromNodeIndex = -1,
-                    openListIndex = -1,
-                    gCost = float.MaxValue,
-                };
-
-                nodesData[i] = nodeData;
+                var node = pathNodeArray[i];
+                node.cameFromNodeIndex = -1;
+                node.gCost = float.MaxValue;
+                node.openListIndex = -1;
+                // node.fCost = node.gCost + CalculateDistanceCost(node.position, endPoint);
+                //node.blue = false;
+                pathNodeArray[i] = node;
             }
 
             int endNodeIndex = CalculateIndex(endPoint);
-            endPoint = pathNodeArray[endNodeIndex].position;
-            bool endValid = pathNodeArray[endNodeIndex].isWalkable;
+            PathNode endNode = pathNodeArray[endNodeIndex];
+            endNode.cameFromNodeIndex = -1;
+            endNode.gCost = float.MaxValue;
+            endNode.fCost = float.MaxValue;
+            endPoint = endNode.position;
+            pathNodeArray[endNodeIndex] = endNode;
+
+            NativeList<int> openList = new(Allocator.Temp);
 
             int startNodeIndex = CalculateIndex(startPoint);
-            PathNodeData startNode = nodesData[startNodeIndex];
+            PathNode startNode = pathNodeArray[CalculateIndex(startPoint)];
             startNode.gCost = 0;
             startNode.openListIndex = 0;
-            startNode.fCost = CalculateDistanceCost(pathNodeArray[startNodeIndex].position, endPoint);
-            nodesData[startNodeIndex] = startNode;
+            startNode.fCost = CalculateDistanceCost(startNode.position, endPoint);
+            startNode.cameFromNodeIndex = -1;
+            pathNodeArray[startNodeIndex] = startNode;
 
             openList.Add(startNodeIndex);
 
-            int currentNodeIndex = startNodeIndex;
-            PathNode currentNode;
-            PathNodeData currentNodeData;
-
-            while (openList.Length > 0 && currentNodeIndex != endNodeIndex && endValid)
+            while (openList.Length > 0)
             {
-                currentNode = pathNodeArray[currentNodeIndex];
-                currentNodeData = nodesData[currentNodeIndex];
+                int currentNodeIndex = GetLowestFNodeIndex(openList);
+                PathNode currentNode = pathNodeArray[currentNodeIndex];
 
-                if (-1 != currentNodeData.openListIndex) //is in openlist
+                if (currentNodeIndex == endNodeIndex) break;
+
+                if (-1 != currentNode.openListIndex)
                 {
-                    int indexToRemove = currentNodeData.openListIndex;
+                    int indexToRemove = currentNode.openListIndex;
                     openList.RemoveAtSwapBack(indexToRemove);
-                    currentNodeData.openListIndex = -1;
+                    currentNode.openListIndex = -1;
 
                     if (openList.Length != indexToRemove)
                     {
                         int lastNodeIndex = openList[indexToRemove];
-                        PathNodeData lastNodeData = nodesData[lastNodeIndex];
-                        lastNodeData.openListIndex = indexToRemove;
-                        nodesData[lastNodeIndex] = lastNodeData;
+                        PathNode lastNode = pathNodeArray[lastNodeIndex];
+                        lastNode.openListIndex = indexToRemove;
+                        pathNodeArray[lastNodeIndex] = lastNode;
                     }
                 }
 
-                currentNodeData.inClosedList = true; //visited node, not walkable anymore
-                nodesData[currentNodeIndex] = currentNodeData;
+                currentNode.isWalkable = false; //visited node, not walkable anymore
+                pathNodeArray[currentNodeIndex] = currentNode;
 
                 for (int i = 0; i < neighbourOffsetArray.Length; ++i)
                 {
                     int neighbourIndex = currentNodeIndex + neighbourOffsetArray[i];
-                    if (0 > neighbourIndex || gridLength <= neighbourIndex) continue; //node not valid
+                    if (0 > neighbourIndex || pathNodeArray.Length <= neighbourIndex) continue; //node not valid
 
                     PathNode neighbourNode = pathNodeArray[neighbourIndex];
-                    PathNodeData neighbourNodeData = nodesData[neighbourIndex];
-                    if (neighbourNodeData.inClosedList || !neighbourNode.isWalkable) continue; //already visited node or it isn't walkable
+                    if (!neighbourNode.isWalkable) continue; //already visited node or it isn't walkable
 
-                    float tentativeGCost = currentNodeData.gCost + CalculateDistanceCost(currentNode.position, neighbourNode.position);
-                    if (tentativeGCost < neighbourNodeData.gCost)
+                    float tentativeGCost = currentNode.gCost + CalculateDistanceCost(currentNode.position, neighbourNode.position);
+                    if (tentativeGCost < neighbourNode.gCost)
                     {
-                        neighbourNodeData.cameFromNodeIndex = currentNodeIndex;
-                        neighbourNodeData.gCost = tentativeGCost;
-                        neighbourNodeData.fCost = tentativeGCost + CalculateDistanceCost(neighbourNode.position, endPoint);
+                        neighbourNode.cameFromNodeIndex = currentNodeIndex;
+                        neighbourNode.gCost = tentativeGCost;
+                        neighbourNode.fCost = tentativeGCost + CalculateDistanceCost(neighbourNode.position, endPoint);
 
-                        if (-1 == neighbourNodeData.openListIndex)
+                        if (-1 == neighbourNode.openListIndex)
                         {
-                            neighbourNodeData.openListIndex = openList.Length;
+                            neighbourNode.openListIndex = openList.Length;
                             openList.Add(neighbourIndex);
                         }
 
-                        nodesData[neighbourIndex] = neighbourNodeData;
+                        pathNodeArray[neighbourIndex] = neighbourNode;
                     }
                 }
-
-                currentNodeIndex = GetLowestFNodeIndex(openList, nodesData);
             }
 
-            path = CalculatePath(nodesData[endNodeIndex], pathNodeArray[endNodeIndex], nodesData);
-            nodesData.Dispose();
             openList.Dispose();
+            path = CalculatePath(pathNodeArray[endNodeIndex]);
         }
 
-        private NativeList<float3> CalculatePath(PathNodeData endNodeData, PathNode endNode, NativeArray<PathNodeData> nodesData)
+        private NativeList<float3> CalculatePath(PathNode endNode)
         {
-            if (endNodeData.cameFromNodeIndex != -1) //found path
+            if (endNode.cameFromNodeIndex != -1) //found path
             {
-                while (endNodeData.cameFromNodeIndex != -1)
+                path.Add(endNode.position);
+                while (endNode.cameFromNodeIndex != -1)
                 {
-                    PathNode pathNode = pathNodeArray[endNodeData.cameFromNodeIndex];
-                    PathNodeData pathNodeData = nodesData[endNodeData.cameFromNodeIndex];
-
+                    PathNode pathNode = pathNodeArray[endNode.cameFromNodeIndex];
                     path.Add(endNode.position);
                     endNode = pathNode;
-                    endNodeData = pathNodeData;
                 }
-
 
                 path.Add(endNode.position);
             }
@@ -401,9 +398,9 @@ public class GfPathfinding : MonoBehaviour
         private int CalculateIndex(float3 position)
         {
             position -= startPosition;
-            int x = (int)round(position.x * invDistanceBetweenNodes.x);
-            int y = (int)round(position.y * invDistanceBetweenNodes.y);
-            int z = (int)round(position.z * invDistanceBetweenNodes.z);
+            int x = (int)round(position.x / distanceBetweenNodes.x);
+            int y = (int)round(position.y / distanceBetweenNodes.y);
+            int z = (int)round(position.z / distanceBetweenNodes.z);
 
             //make sure the value is in bounds
             x = clamp(x, 0, gridSize.x - 1);
@@ -413,13 +410,13 @@ public class GfPathfinding : MonoBehaviour
             return x + y * gridSize.x + z * gridSize.x * gridSize.y;
         }
 
-        private int GetLowestFNodeIndex(NativeList<int> openList, NativeArray<PathNodeData> nodeDatas)
+        private int GetLowestFNodeIndex(NativeList<int> openList)
         {
             int lowestFCostIndex = openList[0];
-            float lowestFCost = nodeDatas[lowestFCostIndex].fCost;
+            float lowestFCost = pathNodeArray[lowestFCostIndex].fCost;
             for (int i = 1; i < openList.Length; ++i)
             {
-                PathNodeData testPathNode = nodeDatas[openList[i]];
+                PathNode testPathNode = pathNodeArray[openList[i]];
                 if (testPathNode.fCost < lowestFCost)
                 {
                     lowestFCost = testPathNode.fCost;
@@ -431,28 +428,15 @@ public class GfPathfinding : MonoBehaviour
         }
     }
 
-    /*
-    const int TEST_COUNT = 1024;
-    List<NativeList<float3>> m_paths = new(TEST_COUNT);
-
     private void Update()
     {
         if (m_start && m_end)
         {
             double time = Time.realtimeSinceStartupAsDouble;
-            NativeArray<JobHandle> handles = new(TEST_COUNT, Allocator.Temp);
-
-            for (int i = 0; i < TEST_COUNT; ++i)
-            {
-                m_paths.Add(new(Allocator.TempJob));
-                handles[i] = GetPathfindingJob(m_start.position, m_end.position, m_paths[i]);
-            }
-
-            JobHandle.CompleteAll(handles);
+            var path = FindPath(m_start.position, m_end.position);
 
             double elapsed = Time.realtimeSinceStartupAsDouble - time;
 
-            var path = m_paths[0];
             if (path.Length > 0)
             {
                 Debug.Log("yeeee found it");
@@ -466,19 +450,15 @@ public class GfPathfinding : MonoBehaviour
                 Debug.Log("No path, baddyy");
             }
 
-            for (int i = 0; i < TEST_COUNT; ++i)
-                m_paths[i].Dispose();
-
-            m_paths.Clear();
+            path.Dispose();
 
             Debug.Log("The time it took for the path to be calculated is: " + elapsed);
         }
 
-    }*/
+    }
 
     private void OnDestroy()
     {
-        if (m_pathNodes.IsCreated) m_pathNodes.Dispose();
         if (m_neighbourOffsetArray.IsCreated) m_neighbourOffsetArray.Dispose();
     }
 
@@ -488,25 +468,35 @@ public class GfPathfinding : MonoBehaviour
         public PathNode(float3 position, int3 indexPosition, bool isWalkable = true)
         {
             this.position = position;
+            gCost = float.MaxValue;
+            fCost = gCost;
             this.isWalkable = isWalkable;
+            cameFromNodeIndex = -1;
+            openListIndex = -1;
         }
 
         public float3 position;
+
+        public float gCost;
+        public float fCost;
+
+        public int openListIndex;
+
         public bool isWalkable;
+
+        public int cameFromNodeIndex;
     }
 
     private struct PathNodeData
     {
-        public PathNodeData(float gCost = float.MaxValue, float fCost = 0, int cameFromNodeIndex = -1, int openListIndex = -1)
+        public PathNodeData(float gCost = float.MaxValue, float fCost = float.MaxValue, int cameFromNodeIndex = -1, int openListIndex = -1)
         {
             this.gCost = gCost;
             this.fCost = fCost;
             this.cameFromNodeIndex = cameFromNodeIndex;
             this.openListIndex = openListIndex;
-            inClosedList = false;
         }
 
-        public bool inClosedList;
         public float gCost;
         public float fCost;
 

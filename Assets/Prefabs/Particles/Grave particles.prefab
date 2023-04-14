@@ -46,6 +46,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f19aff92b795cef4db8d7f6fd6002938, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 1
   m_particleSystem: {fileID: 0}
   m_mainTarget: {fileID: 0}
   m_physInterval: 0.2

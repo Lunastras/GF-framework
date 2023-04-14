@@ -67,7 +67,7 @@ public class ParticleHoming : JobChild
     }
     void Start()
     {
-        Init();
+        InitJobChild();
         m_initialised = true;
         UpdateDefaultGravityCustomData();
     }
@@ -75,18 +75,18 @@ public class ParticleHoming : JobChild
     void OnEnable()
     {
         if (m_initialised)
-            Init();
+            InitJobChild();
     }
 
     void OnDisable()
     {
         ResetToDefault();
-        Deinit();
+        DeinitJobChild();
     }
 
     void OnDestroy()
     {
-        Deinit();
+        DeinitJobChild();
     }
 
     public void ResetToDefault()
@@ -97,7 +97,7 @@ public class ParticleHoming : JobChild
     }
 
 
-    public override bool ScheduleJob(out JobHandle handle, float deltaTime, int batchSize = 512)
+    public override bool ScheduleJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512)
     {
         m_hasAJob = false;
         handle = default;
@@ -147,7 +147,7 @@ public class ParticleHoming : JobChild
         return m_particleSystem;
     }
 
-    public override void OnJobFinished()
+    public override void OnJobFinished(float deltaTime, UpdateTypes updateType)
     {
         if (m_hasAJob)
         {

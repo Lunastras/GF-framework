@@ -12,16 +12,35 @@ using Unity.Mathematics;
 
 public class JobParent : MonoBehaviour
 {
+
+    private struct UpdateTypesLists
+    {
+        public List<JobChild> updateList;
+        public List<JobChild> lateUpdateList;
+        public List<JobChild> fixedUpdateList;
+    }
+
     private static JobParent Instance;
-    private Dictionary<Type, List<JobChild>> m_inheritedMembers;
-    private IEnumerable<Type> m_inheritedTypes;
+    private Dictionary<Type, List<JobChild>[]> m_inheritedMembers;
+    private List<Type> m_inheritedTypes;
 
     private NativeList<JobHandle> m_jobHandles;
 
-    public static void AddInstance(JobChild child, Type type, bool checkExistence = false)
+    public static void AddInstance(JobChild child, Type type, UpdateTypes updateType, bool checkExistence = false)
     {
-        List<JobChild> list;
-        if (child.GetJobParentIndex() < 0 && Instance.m_inheritedMembers.TryGetValue(type, out list))
+        if (!Instance.m_inheritedMembers.ContainsKey(type))
+        {
+            Instance.m_inheritedMembers.Add(type, new List<JobChild>[3]);
+            Instance.m_inheritedTypes.Add(type);
+        }
+
+        int updateTypeIndex = (int)updateType;
+        List<JobChild>[] lists = Instance.m_inheritedMembers[type];
+        if (null == lists[updateTypeIndex]) lists[updateTypeIndex] = new(4);
+
+        List<JobChild> list = lists[updateTypeIndex];
+
+        if (child.GetJobParentIndex(updateType) < 0)
         {
             bool addToList = true;
             if (checkExistence) addToList = !(list.Contains(child));
@@ -29,27 +48,32 @@ public class JobParent : MonoBehaviour
             if (addToList)
             {
                 list.Add(child);
-                child.SetJobParentIndex(list.Count - 1);
+                child.SetJobParentIndex(list.Count - 1, updateType);
             }
         }
     }
 
-    public static void RemoveInstance(int index, Type type)
+    public static void RemoveInstance(int index, Type type, UpdateTypes updateType)
     {
-        List<JobChild> list;
-        if (index >= 0 && Instance.m_inheritedMembers.TryGetValue(type, out list) && index < list.Count)
+        List<JobChild>[] lists;
+        if (index >= 0 && Instance.m_inheritedMembers.TryGetValue(type, out lists))
         {
-            list[index].SetJobParentIndex(-1);
-            int count = list.Count - 1;
-            list[index] = list[count];
-            list[index].SetJobParentIndex(index);
-            list.RemoveAt(count);
+
+            List<JobChild> list = lists[(int)updateType];
+            if (list.Count > index)
+            {
+                list[index].SetJobParentIndex(-1, updateType);
+                int count = list.Count - 1;
+                list[index] = list[count];
+                list[index].SetJobParentIndex(index, updateType);
+                list.RemoveAt(count);
+            }
         }
     }
 
-    public void RemoveInstance(JobChild child, Type type)
+    public void RemoveInstance(JobChild child, Type type, UpdateTypes updateType)
     {
-        RemoveInstance(child.GetJobParentIndex(), type);
+        RemoveInstance(child.GetJobParentIndex(updateType), type, updateType);
     }
 
     void Awake()
@@ -58,19 +82,13 @@ public class JobParent : MonoBehaviour
         Instance = this;
         int countChildren = 0;
 
-        m_inheritedTypes = Assembly.GetAssembly(typeof(JobChild)).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(JobChild)));
+        var inheritedTypes = Assembly.GetAssembly(typeof(JobChild)).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(JobChild)));
 
-        foreach (Type type in m_inheritedTypes)
+        foreach (Type type in inheritedTypes)
             countChildren++;
 
         m_inheritedMembers = new(countChildren);
-
-        foreach (Type type in m_inheritedTypes)
-        {
-            countChildren++;
-            m_inheritedMembers.Add(type, new(2));
-        }
-
+        m_inheritedTypes = new(countChildren);
         m_jobHandles = new(256, Allocator.Persistent);
         InternalStart();
     }
@@ -78,33 +96,50 @@ public class JobParent : MonoBehaviour
     protected virtual void InternalStart() { }
 
     // Update is called once per frame
-    void FixedUpdate()
+
+    private void RunJobs(UpdateTypes updateType)
     {
         float deltaTime = Time.deltaTime;
         foreach (Type type in m_inheritedTypes)
         {
-            List<JobChild> list = m_inheritedMembers[type];
-            int i, count = list.Count;
-            JobHandle handle;
-            m_jobHandles.Clear();
-            int jobCount = 0;
-
-            for (i = 0; i < count; ++i)
+            List<JobChild> list = m_inheritedMembers[type][(int)updateType];
+            if (null != list)
             {
-                if (list[i].ScheduleJob(out handle, deltaTime))
+                int i, count = list.Count;
+                JobHandle handle;
+                m_jobHandles.Clear();
+                int jobCount = 0;
+
+                for (i = 0; i < count; ++i)
                 {
-                    m_jobHandles.Add(handle);
-                    jobCount++;
+                    if (list[i].ScheduleJob(out handle, deltaTime, updateType))
+                    {
+                        m_jobHandles.Add(handle);
+                        jobCount++;
+                    }
                 }
+
+                if (jobCount > 0)
+                    JobHandle.CompleteAll(m_jobHandles);
+
+                for (i = 0; i < count; ++i)
+                    list[i].OnJobFinished(deltaTime, updateType);
             }
-
-            if (jobCount > 0)
-                JobHandle.CompleteAll(m_jobHandles);
-
-            for (i = 0; i < count; ++i)
-                list[i].OnJobFinished();
         }
+    }
+    void FixedUpdate()
+    {
+        RunJobs(UpdateTypes.FIXED_UPDATE);
+    }
 
+    void Update()
+    {
+        RunJobs(UpdateTypes.UPDATE);
+    }
+
+    void LateUpdate()
+    {
+        RunJobs(UpdateTypes.LATE_UPDATE);
     }
 
     private void OnDestroy()
@@ -113,6 +148,13 @@ public class JobParent : MonoBehaviour
     }
 }
 
+
+public enum UpdateTypes
+{
+    UPDATE,
+    FIXED_UPDATE,
+    LATE_UPDATE
+}
 
 
 

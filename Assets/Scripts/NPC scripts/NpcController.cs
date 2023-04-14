@@ -1,8 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Collections;
+using Unity.Burst;
+using Unity.Jobs;
+using Unity.Mathematics;
 
-public class NpcController : MonoBehaviour
+public class NpcController : JobChild
 {
 
     [SerializeField]
@@ -89,6 +93,17 @@ public class NpcController : MonoBehaviour
         m_currentState = NpcState.NO_DESTINATION;
     }
 
+    public override bool ScheduleJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512)
+    {
+        handle = default;
+        return false;
+    }
+
+    public override void OnJobFinished(float deltaTime, UpdateTypes updateType)
+    {
+
+    }
+
     void Update()
     {
         float deltaTime = Time.deltaTime;
@@ -101,7 +116,7 @@ public class NpcController : MonoBehaviour
             if (0 >= m_timeUntilNextStateUpdate)
             {
                 float stateDelta = m_updateInterval * m_stateCheckBias - m_timeUntilNextStateUpdate;
-                m_stateCheckBias = Random.Range(0.9f, 1.1f);
+                m_stateCheckBias = UnityEngine.Random.Range(0.9f, 1.1f);
                 m_timeUntilNextStateUpdate = m_updateInterval * m_stateCheckBias + m_timeUntilNextStateUpdate;
 
                 stateDelta = System.MathF.Max(deltaTime, stateDelta);
