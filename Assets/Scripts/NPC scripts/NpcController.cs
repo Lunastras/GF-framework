@@ -15,7 +15,10 @@ public class NpcController : JobChild
     //how often the NPC will check if they have direct contact with the target
     //if it's smaller than 0, it will never use raycast checks;
     [SerializeField]
-    protected float m_targetCheckCooldown;
+    protected float m_targetCheckCooldown = 0.3f;
+
+    [SerializeField]
+    protected float m_pathFindingCooldown = 0.3f;
 
     [SerializeField]
     protected float m_updateInterval = 0.05f;
@@ -38,10 +41,14 @@ public class NpcController : JobChild
     [SerializeField]
     private bool m_updatePhysicsValuesAutomatically = false;
 
+    [SerializeField]
+    private GfPathfinding m_pathFindingManager;
+
     private float m_timeUntilUnpause;
     private float m_timeUntilNextTargetCheck = 0;
     private float m_timeUntilNextStateUpdate = 0;
     private float m_timeUntilLosetarget = 0;
+    protected float m_timeUntilPathFind = 0;
 
     //protected DestinationManager destinations;
     protected Destination m_destination;
@@ -56,6 +63,8 @@ public class NpcController : JobChild
 
     protected Transform m_transform;
     protected NpcState m_currentState;
+
+    protected NativeList<float3> m_pathToDestination;
 
     //the interval in seconds the npc will keep track
     //of the exact position of its target upon losing sight of it
@@ -74,7 +83,11 @@ public class NpcController : JobChild
 
     protected virtual void Initialize()
     {
+        Debug.Log("I am initializing");
+        m_pathToDestination = new(32, Allocator.Persistent);
         m_transform = transform;
+        m_destination = new();
+        InitJobChild();
 
         if (m_movement == null)
         {
@@ -82,32 +95,49 @@ public class NpcController : JobChild
         }
     }
 
-    void Awake()
-    {
-        Initialize();
-    }
-
     private void OnEnable()
     {
         SetDestination(null);
         m_currentState = NpcState.NO_DESTINATION;
+        //if m_transform is null, that means Initialize() was not called. If so, do not initialize the job
+        if (m_transform) InitJobChild();
+    }
+
+    private void OnDisable()
+    {
+        DeinitJobChild();
+        if (m_pathToDestination.IsCreated) m_pathToDestination.Dispose();
     }
 
     public override bool ScheduleJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512)
     {
-        handle = default;
-        return false;
+        bool scheduleJob = m_pathFindingManager
+                        && (m_currentState == NpcState.SEARCHING_TARGET || m_currentState == NpcState.ENGAGING_TARGET)
+                        && m_timeUntilPathFind <= 0;
+
+        if (scheduleJob)
+        {
+            m_pathToDestination.Clear();
+            scheduleJob &= m_pathFindingManager.GetPathfindingJob(m_transform.position
+                            , m_destination.LastKnownPosition()
+                            , m_pathToDestination, out handle);
+        }
+        else
+        {
+            handle = default;
+        }
+
+        return scheduleJob;
     }
 
     public override void OnJobFinished(float deltaTime, UpdateTypes updateType)
     {
-
+        Debug.Log("job finished!");
     }
 
     void Update()
     {
         float deltaTime = Time.deltaTime;
-        InternalUpdate(deltaTime);
 
         if (!m_usesFixedUpdate)
         {
@@ -126,8 +156,6 @@ public class NpcController : JobChild
         }
     }
 
-    protected virtual void InternalUpdate(float deltaTime) { }
-
     void FixedUpdate()
     {
         if (m_usesFixedUpdate)
@@ -137,6 +165,12 @@ public class NpcController : JobChild
         }
     }
 
+    void LateUpdate()
+    {
+        if (!m_usesRigidBody)
+            m_movement.Move(Time.deltaTime);
+    }
+
     protected virtual void BeforeStateUpdate(float deltaTime) { }
 
     protected void StateUpdate(float deltaTime, float timeUntilNextUpdate)
@@ -144,6 +178,7 @@ public class NpcController : JobChild
         m_timeUntilUnpause -= deltaTime;
         m_timeUntilLosetarget -= deltaTime;
         m_timeUntilNextTargetCheck -= deltaTime;
+        m_timeUntilPathFind -= deltaTime;
 
         if (0 >= m_timeUntilUnpause)
         {
@@ -155,7 +190,7 @@ public class NpcController : JobChild
                 m_currentState = NpcState.NO_DESTINATION;
             }
 
-            if (m_destination.HasDestination)
+            if (null != m_destination && m_destination.HasDestination)
             {
                 MoveTowardsDestination(deltaTime, m_destination);
             }
@@ -173,11 +208,7 @@ public class NpcController : JobChild
 
     protected virtual void AfterStateUpdate(float deltaTime) { }
 
-    void LateUpdate()
-    {
-        if (!m_usesRigidBody)
-            m_movement.Move(Time.deltaTime);
-    }
+
 
     protected bool CheckCanSeeTarget(Transform target, float lineOfSightLength, bool currentlySeesTarget, bool unlimitedFov = false, bool forceRayCast = false)
     {
@@ -186,6 +217,7 @@ public class NpcController : JobChild
 
         if (validTarget && (forceRayCast || 0 >= m_timeUntilNextTargetCheck))
         {
+            m_timeUntilNextTargetCheck = m_targetCheckCooldown;
             Vector3 currentPosition = m_transform.position;
             Vector3 dirToTarget = target.position;
             GfTools.Minus3(ref dirToTarget, currentPosition);
@@ -198,11 +230,9 @@ public class NpcController : JobChild
             //check if uses raycast
             if (m_targetCheckCooldown >= 0 && auxCanSeeTarget)
             {
-                m_timeUntilNextTargetCheck = m_targetCheckCooldown;
-
                 Ray ray = new(currentPosition, dirToTarget);
                 RaycastHit[] hits = GfPhysics.GetRaycastHits();
-                auxCanSeeTarget = 0 == Physics.RaycastNonAlloc(ray, hits, distanceFromTarget, GfPhysics.CollisionsNoGroundLayers());
+                auxCanSeeTarget = 0 == Physics.RaycastNonAlloc(ray, hits, distanceFromTarget, GfPhysics.NonCharacterCollisions());
                 //check if the hit's distance is within x amount of units away from the destination
                 //I was thinking of using auxCanSeeTarget|=, but as far as I know that is the OR bitwise operator ' | ', not the boolean check operator ' || ' and I am not sure if it will actually skip the second bool, || skips the second bool if the first one is true. 
                 auxCanSeeTarget = auxCanSeeTarget || hits[0].distance >= (distanceFromTarget - 0.2f);
@@ -231,14 +261,12 @@ public class NpcController : JobChild
             m_currentState = NpcState.SEARCHING_TARGET;
         }
 
-        bool auxCanSeeTarget = 0 < m_timeUntilLosetarget;
-
         if (destination.IsEnemy && m_runsAwayFromTarget)
         {
             m_currentState = NpcState.RUNNING_AWAY;
             LowLifeBehaviour(deltaTime, dirToTarget);
         }
-        else if (destination.IsEnemy && auxCanSeeTarget)
+        else if (destination.IsEnemy && canSeeTarget)
         {
             m_currentState = NpcState.ENGAGING_TARGET;
             EngageEnemyBehaviour(deltaTime, dirToTarget);
@@ -292,10 +320,54 @@ public class NpcController : JobChild
  * Calculates path towards destination and changes the 
  * movementDirNorm accordingly
  */
+    protected Vector3 GetPathDirection(Vector3 dirToTarget)
+    {
+        Vector3 movementDir;
+
+        if (m_pathToDestination.Length > 0)
+        {
+            Debug.Log("yeeee found it");
+            for (int i = 0; i < m_pathToDestination.Length - 1; ++i)
+            {
+                Color colour = i == (m_pathToDestination.Length - 2) ? Color.red : Color.green;
+                Debug.DrawRay(m_pathToDestination[i], m_pathToDestination[i + 1] - m_pathToDestination[i], colour, 0.5f);
+            }
+        }
+        else
+        {
+            Debug.Log("No path, baddyy");
+        }
+
+        if (m_pathToDestination.Length > 0)
+        {
+            int pathCount = m_pathToDestination.Length - 1;
+            Vector3 nodePosition = m_pathToDestination[pathCount];
+            Vector3 position = m_transform.position;
+
+            float dstFromNode = (nodePosition - position).magnitude;
+            if (0.1 <= dstFromNode) //arrived at node
+            {
+                m_pathToDestination.RemoveAt(pathCount);
+                if (m_pathToDestination.Length > 0)
+                {
+                    nodePosition = m_pathToDestination[pathCount - 1];
+                }
+            }
+
+            movementDir = nodePosition - position;
+            movementDir.Normalize();
+        }
+        else
+        {
+            movementDir = dirToTarget.normalized;
+        }
+
+        return movementDir;
+    }
     protected virtual void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
         Debug.Log("finding the target");
-        m_movement.SetMovementDir(dirToTarget.normalized);
+        m_movement.SetMovementDir(GetPathDirection(dirToTarget));
     }
 
     protected virtual void ArrivedAtDestinationBehaviour(float deltaTime)
@@ -324,14 +396,15 @@ public class NpcController : JobChild
 
     public void SetDestination(Transform destinationTrans, bool isEnemy = false, bool canLoseTrackOfTarget = true)
     {
-
-        m_destination.SetDestination(destinationTrans, isEnemy, canLoseTrackOfTarget);
-        Debug.Log("I am setting a destination! " + m_destination.HasDestination);
+        if (null != m_destination)
+            m_destination.SetDestination(destinationTrans, isEnemy, canLoseTrackOfTarget);
+        // Debug.Log("I am setting a destination! " + m_destination.HasDestination);
     }
 
     public void SetDestination(Vector3 destinationPos)
     {
-        m_destination.SetDestination(destinationPos);
+        if (null != m_destination)
+            m_destination.SetDestination(destinationPos);
     }
 
     public virtual void SetRunAwayFromTarget(bool value)

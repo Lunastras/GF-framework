@@ -60,15 +60,9 @@ public class NpcBehaviour : NpcController
 
     private float m_timeUntilNextEnemyCheck = 0;
 
-    // Start is called before the first frame update
-    void Awake()
-    {
-        Initialize();
-    }
-
-
     void Start()
     {
+        Initialize();
         // GetDestinationManager().isEma();
 
         // destinations.SetDestination(GameManager.gameManager.GetPlayer(), true, true);
@@ -120,10 +114,9 @@ public class NpcBehaviour : NpcController
 
     protected override void EngageEnemyBehaviour(float deltaTime, Vector3 dirToTarget)
     {
-        // Debug.Log("I do see the enemy!!! Distance from enemy is: ");
+        Debug.Log("I do see the enemy!!!");
         if (0 > m_timeUntilFireChange)
         {
-
             if (!m_destination.WasDestroyed() && null != m_turret)
             {
                 Transform enemyTransform = m_destination.TransformDest;
@@ -154,9 +147,8 @@ public class NpcBehaviour : NpcController
             }
         }
 
-
+        dirToTarget.Normalize();
         Vector3 movementDir = dirToTarget;
-        GfTools.Normalize(ref dirToTarget);
 
         switch (m_currentPhase)
         {
@@ -166,6 +158,10 @@ public class NpcBehaviour : NpcController
 
             case EngageModes.CIRCLE_COUNTER:
                 dirToTarget = Quaternion.AngleAxis(m_hostileValues.m_circleAngleDegFromTarget, m_movement.GetUpVecRaw()) * dirToTarget;
+                break;
+
+            case EngageModes.APPROACH:
+                dirToTarget = GetPathDirection(dirToTarget);
                 break;
         }
 
@@ -217,9 +213,9 @@ public class NpcBehaviour : NpcController
 
     protected override void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
-        //Debug.Log("i am searching for the bastard heeeehee");
+        Debug.Log("i am searching for the bastard heeeehee");
         m_turret.Stop();
-        m_movement.SetMovementDir(dirToTarget.normalized);
+        m_movement.SetMovementDir(GetPathDirection(dirToTarget));
     }
 
     protected override void LowLifeBehaviour(float deltaTime, Vector3 dirToTarget)
@@ -232,7 +228,7 @@ public class NpcBehaviour : NpcController
 
     protected override void LostTargetBehaviour(float deltaTime)
     {
-        // Debug.Log("i lost the target");
+        Debug.Log("i lost the target");
         PauseMovement(1);
         m_movement.SetMovementDir(Vector3.zero);
         m_turret.Stop();
@@ -242,7 +238,7 @@ public class NpcBehaviour : NpcController
 
     protected override void DestinationDestroyedBehaviour(float deltaTime)
     {
-        //Debug.Log("enemy was destroyed");
+        Debug.Log("enemy was destroyed");
         m_movement.SetMovementDir(Vector3.zero);
         m_turret.Stop();
         m_currentState = NpcState.NO_DESTINATION;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public struct Destination
+public class Destination
 {
     public Transform TransformDest { get; private set; }
     public bool IsEnemy { get; private set; }
