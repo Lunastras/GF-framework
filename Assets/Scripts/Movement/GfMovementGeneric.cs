@@ -53,18 +53,20 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
 
     //private new Rigidbody rigidbody;
-    private Collider m_collider;
+    private Collider m_collider = null;
 
     public Vector3 MovementDirRaw { get; protected set; }
 
     [HideInInspector]
-    public bool JumpTrigger = false;
+    public bool JumpFlag = false;
 
-    protected bool m_jumpTriggerReleased;
+    [HideInInspector]
+    public bool DashFlag = false;
+
     protected PriorityValue<Transform> m_parentTransform = new();
 
     [HideInInspector]
-    public Vector3 m_velocity;
+    public Vector3 m_velocity = Zero3;
 
     protected Vector3 m_upVec = UPDIR;
 
@@ -635,7 +637,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
                 bool stairIsGrounded = CheckGround(ref collision, collision.GetHitUpVecAngle());
 
-                Debug.Log("we will see if it's a stair, the angle is: " + collision.GetHitUpVecAngle());
                 if (stairIsGrounded)
                 {
                     //Debug.Log("yes it was a stair");

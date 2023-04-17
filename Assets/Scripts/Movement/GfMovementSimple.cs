@@ -187,9 +187,9 @@ public class GfMovementSimple : GfMovementGeneric
 
     protected virtual void CalculateJump()
     {
-        if (JumpTrigger)
+        if (JumpFlag)
         {
-            JumpTrigger = false;
+            JumpFlag = false;
             if (m_jumpFlagReleased || !m_requireJumpRelease)
             {
                 m_jumpFlagReleased = false;

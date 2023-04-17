@@ -56,6 +56,9 @@
         },
         {
             "m_Id": "fcab6953d696410a9aa7a83eb1d4baca"
+        },
+        {
+            "m_Id": "33e953c91c114a89af07d087f416fc73"
         }
     ],
     "m_GroupDatas": [],
@@ -180,6 +183,9 @@
             },
             {
                 "m_Id": "04cdebf5c4bd44488612dd915504d33e"
+            },
+            {
+                "m_Id": "33e953c91c114a89af07d087f416fc73"
             }
         ]
     },
@@ -460,13 +466,13 @@
     "m_ObjectId": "273e0bc63c834677957513ea3584cf5f",
     "m_DecalData": {
         "affectsAlbedo": true,
-        "affectsNormalBlend": true,
-        "affectsNormal": true,
+        "affectsNormalBlend": false,
+        "affectsNormal": false,
         "affectsMAOS": false,
-        "affectsEmission": false,
+        "affectsEmission": true,
         "drawOrder": 0,
-        "supportLodCrossFade": false,
-        "angleFade": false
+        "supportLodCrossFade": true,
+        "angleFade": true
     }
 }
 
@@ -514,6 +520,39 @@
     "m_ShaderOutputName": "Out",
     "m_StageCapability": 3,
     "m_BareResource": false
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.BlockNode",
+    "m_ObjectId": "33e953c91c114a89af07d087f416fc73",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "SurfaceDescription.Emission",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "5ec9027100974f7d85cb01cd8d0637c0"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_SerializedDescriptor": "SurfaceDescription.Emission"
 }
 
 {
@@ -679,6 +718,36 @@
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.ColorRGBMaterialSlot",
+    "m_ObjectId": "5ec9027100974f7d85cb01cd8d0637c0",
+    "m_Id": 0,
+    "m_DisplayName": "Emission",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Emission",
+    "m_StageCapability": 2,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+    },
+    "m_Labels": [],
+    "m_ColorMode": 1,
+    "m_DefaultColor": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+    }
 }
 
 {

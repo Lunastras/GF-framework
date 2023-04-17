@@ -6,6 +6,8 @@ using Unity.Collections;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 
+using GfPathFindingNamespace;
+
 [CustomEditor(typeof(GfPathfinding))]
 public class GfPathfindingGUI : Editor
 {

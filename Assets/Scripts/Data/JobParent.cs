@@ -12,7 +12,6 @@ using Unity.Mathematics;
 
 public class JobParent : MonoBehaviour
 {
-
     private struct UpdateTypesLists
     {
         public List<JobChild> updateList;
@@ -20,9 +19,9 @@ public class JobParent : MonoBehaviour
         public List<JobChild> fixedUpdateList;
     }
 
-    private static JobParent Instance;
-    private Dictionary<Type, List<JobChild>[]> m_inheritedMembers;
-    private List<Type> m_inheritedTypes;
+    private static JobParent Instance = null;
+    private Dictionary<Type, List<JobChild>[]> m_inheritedMembers = null;
+    private List<Type> m_inheritedTypes = null;
 
     private NativeList<JobHandle> m_jobHandles;
 

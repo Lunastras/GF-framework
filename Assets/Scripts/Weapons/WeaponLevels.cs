@@ -100,7 +100,6 @@ public class WeaponLevels : WeaponBasic
         {
             GetFireSound().Play(m_audioSource);
         }
-
         Vector3 dirBullet = (hit.point - transform.position).normalized;
 
         // Debug.Log("I GOT HERE ehehe");

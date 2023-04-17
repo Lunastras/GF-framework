@@ -118,12 +118,20 @@ public class PlayerController : MonoBehaviour
             if (m_releasedJumpButton || true)
             {
                 m_releasedJumpButton = false;
-                m_movement.JumpTrigger = true;
+                m_movement.JumpFlag = true;
             }
         }
         else
         {
             m_releasedJumpButton = true;
+        }
+    }
+
+    private void CalculateDash()
+    {
+        if (Input.GetAxisRaw("Dash") > 0.8f)
+        {
+            m_movement.DashFlag = true;
         }
     }
 
@@ -179,6 +187,7 @@ public class PlayerController : MonoBehaviour
         m_cameraController.UpdateRotation(deltaTime);
 
         CalculateJump();
+        CalculateDash();
         GetMovementInput();
 
         m_movement.Move(deltaTime);
@@ -186,12 +195,18 @@ public class PlayerController : MonoBehaviour
 
     void LateUpdate()
     {
-        GetFireInput();
-        GetWeaponScrollInput();
-
         float deltaTime = Time.deltaTime;
 
-        PreMoveCalculations(deltaTime);
+        if (!GameManager.IsPaused())
+        {
+            GetFireInput();
+            GetWeaponScrollInput();
+            PreMoveCalculations(deltaTime);
+        }
+        else
+        {
+            m_movement.SetMovementDir(Vector3.zero);
+        }
 
         if (!m_usesRigidBody && !m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
         {

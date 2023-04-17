@@ -5339,15 +5339,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1650e1ef77aadd74bb3eab0891bd102b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 1
   m_movement: {fileID: 0}
   m_targetCheckCooldown: 0.1
+  m_pathFindingCooldown: 0.3
   m_updateInterval: 0.05
   m_usesRigidBody: 0
   m_usesFixedUpdate: 1
   m_cosFieldOfView: -0.5
-  m_lineOfSightLength: 40
-  m_targetTrackingTimeWindow: 0.001
+  m_lineOfSightLength: 100
+  m_targetTrackingTimeWindow: 3
   m_updatePhysicsValuesAutomatically: 0
+  m_pathFindingManager: {fileID: 0}
   m_hostileValues:
     m_likelyHoodToCircleTarget: 0.5
     m_timeBetweenPhases: 2
@@ -5456,7 +5462,8 @@ MonoBehaviour:
   m_fullRotationSeconds: 1
   m_useSimpleCollision: 1
   m_maxAngleNoSmoothDeg: 5
-  JumpTrigger: 0
+  JumpFlag: 0
+  DashFlag: 0
   m_velocity: {x: 0, y: 0, z: 0}
   m_maxOverlaps: 4
   m_maxCasts: 4

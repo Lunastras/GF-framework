@@ -34,7 +34,7 @@ public abstract class JobChild : MonoBehaviour
     }
 
     [SerializeField]
-    private JobParentSubscriberData m_jobSubscriberType;
+    private JobParentSubscriberData m_jobSubscriberType = default;
     private JobParentIndexes m_jobParentIndexes = new(-1, -1, -1);
 
     public int GetJobParentIndex(UpdateTypes updateType)

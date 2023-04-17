@@ -36,6 +36,9 @@ public class GfMovementWallrun : GfMovementSimple
     [SerializeField]
     private float m_wallrunJumpCooldownSeconds = 0.2f;
 
+    [SerializeField]
+    private float m_dashVelocity = 10f;
+
     protected bool m_isWallRunning = false;
 
     protected bool m_touchedWallThisFrame = false;
@@ -59,7 +62,7 @@ public class GfMovementWallrun : GfMovementSimple
 
     private float m_secondsUntilCanJump = 0;
 
-    private bool m_detachFromWall = false;
+    private bool m_dashFlagReleased;
 
     protected override void InternalStart()
     {
@@ -86,6 +89,7 @@ public class GfMovementWallrun : GfMovementSimple
             CalculateEffectiveValues();
             CalculateVelocity(deltaTime, movDir);
             CalculateRotation(deltaTime, movDir);
+            CalculateDash(deltaTime, movDir);
         }
         else
         {
@@ -93,6 +97,29 @@ public class GfMovementWallrun : GfMovementSimple
         }
 
         CalculateJump();
+
+    }
+
+    protected virtual void CalculateDash(float deltaTime, Vector3 movDir)
+    {
+        if (DashFlag)
+        {
+            DashFlag = false;
+            if (m_dashFlagReleased)
+            {
+                m_dashFlagReleased = false;
+                PerformDash(deltaTime, movDir);
+            }
+        }
+        else
+        {
+            m_dashFlagReleased = true;
+        }
+    }
+
+    protected virtual void PerformDash(float deltaTime, Vector3 movDir)
+    {
+        m_velocity += m_dashVelocity * movDir.normalized;
     }
 
     protected override void PerformJump()
@@ -279,10 +306,9 @@ public class GfMovementWallrun : GfMovementSimple
         m_secondsUntilCanJump = -1;
         m_currentJumpsCount = 1;
         //DetachFromParentTransform();
-        Debug.Log("DETACHING");
+        //Debug.Log("DETACHING");
         //return;
         m_isWallRunning = false;
-        m_detachFromWall = false;
         m_slidingOffWall = false;
         Quaternion rotCorrection = Quaternion.FromToRotation(m_transform.up, m_rotationUpVec);
         m_transform.rotation = rotCorrection * m_transform.rotation;
@@ -295,7 +321,7 @@ public class GfMovementWallrun : GfMovementSimple
     {
         m_secondsUntilCanJump = m_wallrunJumpCooldownSeconds;
         //m_secondsUntilWallDetach = -1;
-        Debug.Log("ATTACHING");
+        //Debug.Log("ATTACHING");
         Vector3 normal = collision.selfNormal;
         m_previousWallRunNormal = normal;
         m_wallRunDir = (GetUpvecRotation() - normal * Vector3.Dot(normal, GetUpvecRotation())).normalized;

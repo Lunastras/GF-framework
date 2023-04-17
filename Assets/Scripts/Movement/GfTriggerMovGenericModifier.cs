@@ -13,7 +13,7 @@ public class GfTriggerMovGenericModifier : GfMovementTriggerable
 
     public override void MgOnTrigger(MgCollisionStruct collision, GfMovementGeneric movement)
     {
-        if (!m_onlyForPlayer || GameManager.gameManager.GetPlayer() == movement.transform)
+        if (!m_onlyForPlayer || GameManager.GetPlayer() == movement.transform)
         {
             if (!m_massMultiplier.m_ignore)
                 movement.SetMassMultiplier(m_massMultiplier, m_massMultiplier.m_priority, m_massMultiplier.m_overridePriority);

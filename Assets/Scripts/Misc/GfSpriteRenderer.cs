@@ -21,11 +21,13 @@ public class GfSpriteRenderer : MonoBehaviour
     [SerializeField]
     private float m_targetLenght = 1;
 
+    /*
+
     [SerializeField]
     private AnchorMode m_anchor;
 
     [SerializeField]
-    private ConstantSideMode m_constantAxis;
+    private ConstantSideMode m_constantAxis;*/
 
     private bool m_xFlipped = false;
 

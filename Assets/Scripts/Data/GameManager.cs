@@ -7,27 +7,36 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     //current instance
-    public static GameManager gameManager;
+    public static GameManager Manager;
 
     [SerializeField]
-    private Transform player = null;
+    private Transform m_player = null;
 
-    private bool isPaused = false;
+    [SerializeField]
+    private Image m_loadFadeImage = null;
 
+    [SerializeField]
+    private GameObject m_pauseScreen = null;
+
+    public static bool isMultiplayer = false;
+
+    private bool m_isPaused = false;
+
+    public bool CanPause = true;
+
+    private bool m_pauseButtonReleased = true;
 
     // Start is called before the first frame update
     void Awake()
     {
-        if (gameManager != this && gameManager == null)
-        {
-            Destroy(this);
-        }
+        if (Manager != this)
+            Destroy(Manager);
 
-        gameManager = this;
+        Manager = this;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
-        if (player == null)
+        if (m_player == null)
         {
             // player = FindObjectOfType<MovementAdvanced>().transform;
         }
@@ -37,35 +46,51 @@ public class GameManager : MonoBehaviour
     {
     }
 
-
-
-    private void FixedUpdate()
+    private void Update()
     {
+        if (Input.GetAxisRaw("Pause") > 0.1f)
+        {
+            if (m_pauseButtonReleased)
+            {
+                m_pauseButtonReleased = false;
+                PauseToggle();
+            }
+        }
+        else
+        {
+            m_pauseButtonReleased = true;
+        }
     }
 
+    public void QuitToMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
 
+    public void QuitGame()
+    {
 
-    /*
+    }
+
     public void PauseToggle()
     {
-       // if (gameOver || LoadingScreenManager.currentlyLoading)
-            //return;
+        if (!CanPause || LoadingScreenManager.currentlyLoading)
+            return;
 
-        isPaused = !isPaused;
-        Time.timeScale = isPaused ? 0.0000000000000000000001f : 1;
-        pauseScreen.SetActive(isPaused);
-        overlayUI.SetActive(isPaused);
-        imageFade.gameObject.SetActive(false);
-        Cursor.visible = isPaused;
-    }*/
-
-    public bool IsPaused()
-    {
-        return isPaused;
+        m_isPaused = !m_isPaused;
+        Time.timeScale = m_isPaused && !isMultiplayer ? 0 : 1;
+        m_pauseScreen.SetActive(m_isPaused);
+        Cursor.visible = m_isPaused;
+        Cursor.lockState = m_isPaused ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
-    public Transform GetPlayer()
+    public static bool IsPaused()
     {
-        return player;
+        return Manager.m_isPaused;
+    }
+
+    public static Transform GetPlayer()
+    {
+        return Manager.m_player;
     }
 }

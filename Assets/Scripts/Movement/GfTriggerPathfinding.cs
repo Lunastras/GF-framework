@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using GfPathFindingNamespace;
+
 public class GfTriggerPathfinding : GfMovementTriggerable
 {
     [SerializeField]

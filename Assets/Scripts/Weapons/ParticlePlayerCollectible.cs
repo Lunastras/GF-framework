@@ -24,7 +24,7 @@ public class ParticlePlayerCollectible : ParticleTrigger
 
     protected void Start()
     {
-        Transform player = GameManager.gameManager.GetPlayer();
+        Transform player = GameManager.GetPlayer();
         m_particleSystem.trigger.AddCollider(player);
         m_particleHoming.SetTarget(player);
     }
@@ -37,9 +37,9 @@ public class ParticlePlayerCollectible : ParticleTrigger
 
     private void OnEnable()
     {
-        if (m_particleHoming && GameManager.gameManager)
+        if (m_particleHoming && GameManager.Manager)
         {
-            Transform player = GameManager.gameManager.GetPlayer();
+            Transform player = GameManager.GetPlayer();
             m_particleHoming.SetTarget(player);
         }
     }

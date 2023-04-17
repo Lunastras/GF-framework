@@ -6,6 +6,8 @@ using Unity.Burst;
 using Unity.Jobs;
 using Unity.Mathematics;
 
+using GfPathFindingNamespace;
+
 public class NpcController : JobChild
 {
 

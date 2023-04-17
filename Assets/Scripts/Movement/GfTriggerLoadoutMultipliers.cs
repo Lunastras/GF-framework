@@ -20,7 +20,7 @@ public class GfTriggerLoadoutMultipliers : GfMovementTriggerable
     public override void MgOnTrigger(MgCollisionStruct collision, GfMovementGeneric movement)
     {
         LoadoutManager loadoutManager;
-        if ((!m_onlyForPlayer || GameManager.gameManager.GetPlayer() == movement.transform)
+        if ((!m_onlyForPlayer || GameManager.GetPlayer() == movement.transform)
         && null != (loadoutManager = movement.GetComponent<LoadoutManager>()))
         {
             if (!m_damageMultiplier.m_ignore)
