@@ -132,7 +132,6 @@ public class NpcController : JobChild
 
     public override void OnJobFinished(float deltaTime, UpdateTypes updateType)
     {
-        Debug.Log("job finished!");
     }
 
     void Update()
@@ -324,6 +323,7 @@ public class NpcController : JobChild
     {
         Vector3 movementDir;
 
+        /*
         if (m_pathToDestination.Length > 0)
         {
             Debug.Log("yeeee found it");
@@ -336,7 +336,7 @@ public class NpcController : JobChild
         else
         {
             Debug.Log("No path, baddyy");
-        }
+        }*/
 
         if (m_pathToDestination.Length > 0)
         {
@@ -405,6 +405,16 @@ public class NpcController : JobChild
     {
         if (null != m_destination)
             m_destination.SetDestination(destinationPos);
+    }
+
+    public GfPathfinding GetPathfindingManager()
+    {
+        return m_pathFindingManager;
+    }
+
+    public void SetPathfindingManager(GfPathfinding pathfinding)
+    {
+        m_pathFindingManager = pathfinding;
     }
 
     public virtual void SetRunAwayFromTarget(bool value)

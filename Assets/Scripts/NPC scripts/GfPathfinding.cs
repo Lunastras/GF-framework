@@ -53,6 +53,7 @@ public class GfPathfinding : MonoBehaviour
         public int3 gridSize;
         public float3 startPoint;
         public int gridLength;
+        public float3 scale;
 
         public PathNode[] pathNodeArray;
 
@@ -69,13 +70,18 @@ public class GfPathfinding : MonoBehaviour
     private int m_gridLength = 0;
     private float3 m_startPoint;
 
+    private float3 m_scale;
+
     private float3 m_invDistanceBetweenNodes = new(0.5f, 0.5f, 0.5f);
 
     private NativeArray<PathNode> m_pathNodes;
 
+    private Transform m_transform;
+
     private static NativeArray<int3> NeighboursOffsetArray;
 
     private static NativeArray<int3> AllNeighboursOffsetArray;
+
 
     private static readonly int3[] NEIGHBOUR_OFFSETS =
     {
@@ -225,6 +231,7 @@ public class GfPathfinding : MonoBehaviour
         data.gridLength = length;
         data.collisionType = m_collisionType;
         data.startPoint = startPoint;
+        data.scale = scale;
 
         //if (!File.Exists(Application.persistentDataPath + "/LevelsData/TestLevel.dat"))
         //   File.Create(Application.persistentDataPath + "/LevelsData/TestLevel.dat").Dispose();
@@ -239,10 +246,6 @@ public class GfPathfinding : MonoBehaviour
     {
         if (m_pathNodes.IsCreated) m_pathNodes.Dispose();
 
-#if UNITY_EDITOR
-        m_camera = UnityEditor.SceneView.lastActiveSceneView.camera.transform;
-#endif
-
         m_gridLength = 0;
         m_gridSize = int3(0, 0, 0);
 
@@ -252,6 +255,7 @@ public class GfPathfinding : MonoBehaviour
             m_gridSize = data.gridSize;
             m_gridLength = data.gridLength;
             m_startPoint = data.startPoint;
+            m_scale = data.scale;
             var pathNodeArray = data.pathNodeArray;
             Debug.Log("The nodepath length is: " + m_gridLength);
             m_pathNodes = new(pathNodeArray, Allocator.Persistent);
@@ -261,12 +265,25 @@ public class GfPathfinding : MonoBehaviour
             m_invDistanceBetweenNodes.z = 1.0f / m_distanceBetweenNodes.z;
         }
 
+        m_transform = transform;
+
         if (NeighboursOffsetArray.IsCreated == false)
             NeighboursOffsetArray = new(NEIGHBOUR_OFFSETS, Allocator.Persistent);
 
 
         if (AllNeighboursOffsetArray.IsCreated == false)
             AllNeighboursOffsetArray = new(ALL_NEIGHBOUR_OFFSETS, Allocator.Persistent);
+
+#if UNITY_EDITOR
+        try
+        {
+            m_camera = UnityEditor.SceneView.lastActiveSceneView.camera.transform;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning("The camera could not be found. Error: " + e.ToString());
+        }
+#endif
     }
 
 #if UNITY_EDITOR
@@ -308,7 +325,7 @@ public class GfPathfinding : MonoBehaviour
     public bool GetPathfindingJob(float3 start, float3 end, NativeList<float3> path, out JobHandle handle)
     {
         bool hasJob = false;
-        if (m_pathNodes.Length > 0)
+        if (m_pathNodes.IsCreated && m_pathNodes.Length > 0)
         {
             hasJob = true;
 
@@ -322,8 +339,10 @@ public class GfPathfinding : MonoBehaviour
                 allNeighboursOffsetArray = AllNeighboursOffsetArray.AsReadOnly(),
                 gridLength = m_gridLength,
                 invDistanceBetweenNodes = m_invDistanceBetweenNodes,
-                startPosition = m_startPoint,
-                path = path
+                boundsStart = m_startPoint,
+                path = path,
+                scale = m_scale
+
             };
 
             handle = pathJob.Schedule();
@@ -356,7 +375,9 @@ public class GfPathfinding : MonoBehaviour
 
         public float3 invDistanceBetweenNodes;
 
-        public float3 startPosition;
+        public float3 boundsStart;
+
+        public float3 scale;
 
         public void Execute()
         {
@@ -364,27 +385,32 @@ public class GfPathfinding : MonoBehaviour
             NativeList<int> openList = new(32, Allocator.Temp);
             int zOffset = gridSize.x * gridSize.y;
 
-            for (int i = 0; i < gridLength; ++i)
-            {
-                PathNodeData nodeData = new PathNodeData
-                {
-                    cameFromNodeIndex = -1,
-                    openListIndex = -1,
-                    gCost = float.MaxValue,
-                };
-
-                nodesData[i] = nodeData;
-            }
-
             int endNodeIndex = CalculateSafeIndex(endPoint, zOffset);
             endPoint = pathNodeArray[endNodeIndex].position;
+            PathNodeData endNode = new PathNodeData
+            {
+                gCost = float.MaxValue,
+                openListIndex = -1,
+                cameFromNodeIndex = -1,
+                initialised = true,
+            };
+
+            nodesData[endNodeIndex] = endNode;
+
             bool endValid = pathNodeArray[endNodeIndex].isWalkable;
 
+            endValid = endValid && (PositionInBounds(startPoint) || PositionInBounds(endPoint)); //check if at least one of the positions is in bounds
+
             int startNodeIndex = CalculateSafeIndex(startPoint, zOffset);
-            PathNodeData startNode = nodesData[startNodeIndex];
-            startNode.gCost = 0;
-            startNode.openListIndex = 0;
-            startNode.fCost = CalculateDistanceCost(pathNodeArray[startNodeIndex].position, endPoint);
+            PathNodeData startNode = new PathNodeData
+            {
+                gCost = 0,
+                openListIndex = 0,
+                initialised = true,
+                cameFromNodeIndex = -1,
+                fCost = CalculateDistanceCost(pathNodeArray[startNodeIndex].position, endPoint)
+            };
+
             nodesData[startNodeIndex] = startNode;
 
             openList.Add(startNodeIndex);
@@ -396,6 +422,7 @@ public class GfPathfinding : MonoBehaviour
 
             while (openList.Length > 0 && currentNodeIndex != endNodeIndex && endValid)
             {
+                currentNodeIndex = GetLowestFNodeIndex(openList, nodesData);
                 currentNode = pathNodeArray[currentNodeIndex];
                 currentNodeData = nodesData[currentNodeIndex];
 
@@ -420,12 +447,26 @@ public class GfPathfinding : MonoBehaviour
                 for (int i = 0; i < neighboursOffsetArray.Length; ++i)
                 {
                     int3 neighbourPositionIndex = currentNode.positionIndex + neighboursOffsetArray[i];
-                    if (!IsInBounds(neighbourPositionIndex)) continue; //node not valid
+                    if (!Index3InBounds(neighbourPositionIndex)) continue; //node not valid
 
                     int neighbourIndex = neighbourPositionIndex.x + neighbourPositionIndex.y * gridSize.x + neighbourPositionIndex.z * zOffset;
                     PathNode neighbourNode = pathNodeArray[neighbourIndex];
                     PathNodeData neighbourNodeData = nodesData[neighbourIndex];
+
                     if (neighbourNodeData.inClosedList || !neighbourNode.isWalkable) continue; //already visited node or it isn't walkable
+
+                    if (!neighbourNodeData.initialised)
+                    {
+                        neighbourNodeData = new PathNodeData
+                        {
+                            gCost = float.MaxValue,
+                            openListIndex = -1,
+                            cameFromNodeIndex = -1,
+                            initialised = true,
+                        };
+
+                        nodesData[neighbourIndex] = neighbourNodeData;
+                    }
 
                     float tentativeGCost = currentNodeData.gCost + CalculateDistanceCost(currentNode.position, neighbourNode.position);
                     if (tentativeGCost < neighbourNodeData.gCost)
@@ -443,8 +484,6 @@ public class GfPathfinding : MonoBehaviour
                         nodesData[neighbourIndex] = neighbourNodeData;
                     }
                 }
-
-                currentNodeIndex = GetLowestFNodeIndex(openList, nodesData);
             }
 
             path = CalculatePath(nodesData[endNodeIndex], pathNodeArray[endNodeIndex], nodesData);
@@ -477,16 +516,24 @@ public class GfPathfinding : MonoBehaviour
             return lengthsq(a - b);
         }
 
-        private bool IsInBounds(int3 indexPosition)
+        private bool Index3InBounds(int3 indexPosition)
         {
             return indexPosition.x >= 0 && indexPosition.x < gridSize.x
                 && indexPosition.y >= 0 && indexPosition.y < gridSize.y
                 && indexPosition.z >= 0 && indexPosition.z < gridSize.z;
         }
 
+        private bool PositionInBounds(float3 position)
+        {
+            position -= boundsStart;
+            return position.x >= 0 && position.x < scale.x
+                && position.y >= 0 && position.y < scale.y
+                && position.z >= 0 && position.z < scale.z;
+        }
+
         private int CalculateIndex(float3 position)
         {
-            position -= startPosition;
+            position -= boundsStart;
             int x = (int)round(position.x * invDistanceBetweenNodes.x);
             int y = (int)round(position.y * invDistanceBetweenNodes.y);
             int z = (int)round(position.z * invDistanceBetweenNodes.z);
@@ -509,8 +556,8 @@ public class GfPathfinding : MonoBehaviour
             int3 neighbourPositionIndex;
             for (int i = 0; i < allNeighboursOffsetArray.Length && !node.isWalkable; ++i)
             {
-                neighbourPositionIndex = positionIndex + neighboursOffsetArray[i];
-                if (IsInBounds(neighbourPositionIndex))
+                neighbourPositionIndex = positionIndex + allNeighboursOffsetArray[i];
+                if (Index3InBounds(neighbourPositionIndex))
                 {
                     currentIndex = neighbourPositionIndex.x + neighbourPositionIndex.y * gridSize.x + neighbourPositionIndex.z * zOffset; ;
                     node = pathNodeArray[currentIndex];
@@ -537,7 +584,9 @@ public class GfPathfinding : MonoBehaviour
             return lowestFCostIndex;
         }
     }
+
     /*
+
     const int TEST_COUNT = 128;
     List<NativeList<float3>> m_paths = new(TEST_COUNT);
 
@@ -582,7 +631,8 @@ public class GfPathfinding : MonoBehaviour
             Debug.Log("The time it took for the path to be calculated is: " + elapsed);
         }
 
-    }*/
+    }
+    */
 
     private void OnDestroy()
     {
@@ -609,6 +659,7 @@ public class GfPathfinding : MonoBehaviour
             this.cameFromNodeIndex = cameFromNodeIndex;
             this.openListIndex = openListIndex;
             inClosedList = false;
+            initialised = false;
         }
 
         public bool inClosedList;
@@ -618,6 +669,8 @@ public class GfPathfinding : MonoBehaviour
         public int openListIndex;
 
         public int cameFromNodeIndex;
+
+        public bool initialised;
     }
 }
 

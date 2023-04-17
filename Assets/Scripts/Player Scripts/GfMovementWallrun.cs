@@ -8,7 +8,10 @@ using static System.MathF;
 public class GfMovementWallrun : GfMovementSimple
 {
     [SerializeField]
-    private float m_attachSecondsAfterWallDetach = 0.2f;
+    private float m_moveFwdSecondsAfterWallDetach = 0.2f;
+
+    [SerializeField]
+    private float m_attachSecondsAfterWallDetach = 0.5f;
 
     [SerializeField]
     private float m_wallRunJumpForce = 20;
@@ -52,7 +55,11 @@ public class GfMovementWallrun : GfMovementSimple
 
     private float m_secondsUntilWallDetach = -1;
 
+    private float m_secondsUntilStopMovingFwd = -1;
+
     private float m_secondsUntilCanJump = 0;
+
+    private bool m_detachFromWall = false;
 
     protected override void InternalStart()
     {
@@ -63,12 +70,13 @@ public class GfMovementWallrun : GfMovementSimple
     {
         m_deltaTime = deltaTime;
         m_secondsUntilWallDetach -= deltaTime;
+        m_secondsUntilStopMovingFwd -= deltaTime;
         m_secondsUntilCanJump -= deltaTime;
 
         m_touchedParent = m_jumpedThisFrame = m_touchedWallThisFrame = false;
 
         //keep going forward for a bit after detaching from wall
-        if (0 < m_secondsUntilWallDetach && MovementDirRaw.sqrMagnitude < 0.01f)
+        if (0 < m_secondsUntilStopMovingFwd && MovementDirRaw.sqrMagnitude < 0.01f)
             MovementDirRaw = m_transform.forward;
 
         if (!m_isWallRunning)
@@ -170,15 +178,15 @@ public class GfMovementWallrun : GfMovementSimple
 
     protected override void AfterPhysChecks(float deltaTime)
     {
-        if (!m_touchedParent && null != m_parentTransform.GetValue() && 0 >= m_secondsUntilWallDetach)
+        if (m_isWallRunning && (m_isGrounded || (!m_touchedWallThisFrame && !CheckWall(m_lastWallRunCollision))))
+        {
+            DetachFromWall();
+        }
+
+        if (!m_isWallRunning && !m_touchedParent && null != m_parentTransform.GetValue() && 0 >= m_secondsUntilWallDetach)
         {
             DetachFromParentTransform();
             if (m_breakWhenUnparent) Debug.Break();
-        }
-
-        if (m_isWallRunning && !m_touchedWallThisFrame && !CheckWall(m_lastWallRunCollision))
-        {
-            DetachFromWall();
         }
     }
 
@@ -210,10 +218,10 @@ public class GfMovementWallrun : GfMovementSimple
     protected bool WallCollisionCheck(ref MgCollisionStruct collision)
     {
         Transform collisionTrans = collision.collider.transform;
-        bool canWallRun = !m_isGrounded && !collision.isStair
-                && (!m_isWallRunning ^ (collision.collider == m_lastWallRunCollision.collider || 0 < Vector3.Dot(collision.selfNormal, m_lastWallRunCollision.selfNormal))) //either we are not wall running or the colliders are different
-                && !collision.overlap //overlaps return bad normals from time to time, ignore them
-                && collision.touched
+
+        bool canWallRun = !m_isGrounded
+                && !collision.isStair
+                && !m_isWallRunning ^ (collision.collider == m_lastWallRunCollision.collider || 0 < Vector3.Dot(collision.selfNormal, m_lastWallRunCollision.selfNormal)) //either we are not wall running or the colliders are different
                 && !collision.isGrounded
                 && GfPhysics.LayerIsInMask(collisionTrans.gameObject.layer, GfPhysics.WallrunLayers())
                 && collision.selfUpVecAngle <= MAX_WALL_ANGLE
@@ -265,14 +273,16 @@ public class GfMovementWallrun : GfMovementSimple
             //GfTools.Add3(ref m_velocity, m_wallRunDetachForce * m_wallRunDir);
             m_velocity = m_wallRunDetachForce * m_upVec;
             m_secondsUntilWallDetach = m_attachSecondsAfterWallDetach;
+            m_secondsUntilStopMovingFwd = m_moveFwdSecondsAfterWallDetach;
         }
 
         m_secondsUntilCanJump = -1;
         m_currentJumpsCount = 1;
-        DetachFromParentTransform();
-        // Debug.Log("DETACHING");
+        //DetachFromParentTransform();
+        Debug.Log("DETACHING");
         //return;
         m_isWallRunning = false;
+        m_detachFromWall = false;
         m_slidingOffWall = false;
         Quaternion rotCorrection = Quaternion.FromToRotation(m_transform.up, m_rotationUpVec);
         m_transform.rotation = rotCorrection * m_transform.rotation;
@@ -284,8 +294,8 @@ public class GfMovementWallrun : GfMovementSimple
     private void InitiateWallRun(MgCollisionStruct collision)
     {
         m_secondsUntilCanJump = m_wallrunJumpCooldownSeconds;
-        m_secondsUntilWallDetach = -1;
-        // Debug.Log("ATTACHING");
+        //m_secondsUntilWallDetach = -1;
+        Debug.Log("ATTACHING");
         Vector3 normal = collision.selfNormal;
         m_previousWallRunNormal = normal;
         m_wallRunDir = (GetUpvecRotation() - normal * Vector3.Dot(normal, GetUpvecRotation())).normalized;

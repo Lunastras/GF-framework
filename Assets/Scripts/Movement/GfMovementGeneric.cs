@@ -39,7 +39,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     protected Transform m_transform;
 
-    protected float m_previousPhysDeltaTime;
+    protected float m_lastPhysDeltaTime;
     protected static readonly Vector3 UPDIR = Vector3.up;
 
 
@@ -118,7 +118,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     private readonly float DOWNPULL = 0.25F;
 
     protected const float OVERLAP_SKIN = 0.0f;
-    private const float MIN_DISPLACEMENT = 0.000000001F; // min squared length of a displacement vector required for a Move() to proceed.
+    private const float MIN_DISPLACEMENT = 0.00000001F; // min squared length of a displacement vector required for a Move() to proceed.
     private const float MIN_PUSHBACK_DEPTH = 0.000001F;
 
     private float m_refUpVecSmoothRot;
@@ -227,7 +227,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 m_adjustedVelocityToParent = true;
 
                 ParentingVelocityAdjustVector(ref m_velocity, parentVelocity);
-                GfTools.Mult3(ref parentVelocity, m_previousPhysDeltaTime);
+                GfTools.Mult3(ref parentVelocity, m_lastPhysDeltaTime);
                 GfTools.Minus3(ref parentVelocity, m_upVec * Vector3.Dot(m_upVec, parentVelocity)); //remove any vertical movement from parent velocity            
                 ParentingVelocityAdjustVector(ref m_interpolationMovement, parentVelocity); //adjust interpolation 
             }
@@ -292,9 +292,10 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         m_timeBetweenPhysChecks = timeUntilNextUpdate;
         m_timeOfLastPhysCheck = currentTime;
-        m_previousPhysDeltaTime = deltaTime;
+        m_lastPhysDeltaTime = deltaTime;
 
         UpdateSphericalOrientation(deltaTime, false);
+
         if (updateParentMovement)
             m_transform.position += GetParentMovement(m_transform.position, deltaTime, currentTime);
 
@@ -334,19 +335,19 @@ public abstract class GfMovementGeneric : MonoBehaviour
             GfTools.Add3(ref position, deltaTime * m_velocity);
         }
 
-
+        m_interpolationMovement = Zero3;
 
         AfterPhysChecks(deltaTime);
 
         /* TRACING SECTION END*/
         if (m_interpolateThisFrame)
         {
-            m_interpolationMovement = position;
+            GfTools.Add3(ref m_interpolationMovement, position);
             GfTools.Minus3(ref m_interpolationMovement, initialPos);
             m_transform.position = initialPos;
 
             m_desiredRotation = m_transform.rotation;
-            if (!initialRot.Equals(m_desiredRotation)) //== operator is more appropriate but it doesn't have enough accuray
+            if (!initialRot.Equals(m_desiredRotation)) //== operator is more appropriate but it doesn't have enough accuracy
             {
                 m_interpolationRotation = Quaternion.Inverse(initialRot) * m_desiredRotation;
                 m_transform.rotation = initialRot;
@@ -499,8 +500,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                     collision.selfVelocity = m_velocity;
                     CallTriggerableEvents(ref collision);
 
-                    if (Vector3.Dot(m_velocity, normal) <= 0F) /* only consider normals that we are technically penetrating into */
-                        DetermineGeometryType(ref m_velocity, ref lastNormal, ref collision, ref geometryclips);
+                    DetermineGeometryType(ref m_velocity, ref lastNormal, ref collision, ref geometryclips);
 
                     MgOnCollision(ref collision);
                     position = collision.selfPosition;
@@ -608,7 +608,12 @@ public abstract class GfMovementGeneric : MonoBehaviour
         Vector3 bottomPos = m_archetypeCollision.GetLocalBottomPoint();
         Vector3 localStepHitPos = (point - position);
 
-        return Vector3.Dot(m_upVec, localStepHitPos) - Vector3.Dot(m_upVec, bottomPos);
+        Debug.DrawRay(position, bottomPos, Color.red, 0.1f);
+        Debug.DrawRay(position, point - position, Color.green, 0.1f);
+
+        //Debug.Break();
+
+        return Vector3.Dot(m_upVec, localStepHitPos - bottomPos);
     }
 
     private void DetermineGeometryType(ref Vector3 velocity, ref Vector3 lastNormal, ref MgCollisionStruct collision, ref int geometryclips)
@@ -619,16 +624,21 @@ public abstract class GfMovementGeneric : MonoBehaviour
         Vector3 normal = collision.selfNormal;
         if (collision.isGrounded) m_currentGroundCollision = collision;
 
+        //Debug.Log("I am here");
         //not perfect TODO
         //Check for stair, if no stair is found, then perform normal velocity calculations
-        if (!underSlopeLimit && false)
+        if (!collision.isGrounded)
         {
             float stepHeight = GetStepHeight(collision.GetPoint(), collision.selfPosition);
-            if (stepHeight <= m_stepOffset - 0.05f && stepHeight > 0.0001f)
+            if (stepHeight <= m_stepOffset && stepHeight > 0.00001f)
             {
+
                 bool stairIsGrounded = CheckGround(ref collision, collision.GetHitUpVecAngle());
+
+                Debug.Log("we will see if it's a stair, the angle is: " + collision.GetHitUpVecAngle());
                 if (stairIsGrounded)
                 {
+                    //Debug.Log("yes it was a stair");
                     m_isGrounded = true;
                     collision.selfPosition += m_upVec * (stepHeight + 0.05f);
                     recalculateVelocity = false;
@@ -639,7 +649,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
             }
             else
             {
-                Debug.Log("The bad step height was: " + stepHeight);
+                //Debug.Log("The bad step height was: " + stepHeight);
             }
         }
 
@@ -840,7 +850,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 parentVelocity.y += m_upVec.y * verticalFallSpeed;
                 parentVelocity.z += m_upVec.z * verticalFallSpeed;
 
-                GfTools.Add3(ref m_interpolationMovement, parentVelocity * m_previousPhysDeltaTime); //TODO
+                GfTools.Add3(ref m_interpolationMovement, parentVelocity * m_lastPhysDeltaTime); //TODO
                 GfTools.Add3(ref m_velocity, parentVelocity);
             }
 
@@ -1125,10 +1135,8 @@ public unsafe struct MgCollisionStruct
 
             if (collider)
             {
-                Vector3 dirToPoint = GetPoint();
-                GfTools.Minus3(ref dirToPoint, selfPosition);
-                GfTools.Normalize(ref dirToPoint);
-                Ray stairRay = new Ray(selfPosition, dirToPoint);
+                Vector3 rayStart = GetPoint() + upVec;
+                Ray stairRay = new Ray(rayStart, -upVec);
                 collider.Raycast(stairRay, out hit, 2);
             }
 

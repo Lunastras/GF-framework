@@ -193,15 +193,12 @@ public class PlayerController : MonoBehaviour
 
         PreMoveCalculations(deltaTime);
 
-        if (!m_usesRigidBody)
+        if (!m_usesRigidBody && !m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
         {
-            if (!m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
-            {
-                float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks - m_timeUntilPhysChecks);
-                m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
-                float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
-                m_movement.UpdatePhysics(deltaTime, false, timeUntilNextUpdate); //actually the current deltatime   
-            }
+            float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks - m_timeUntilPhysChecks);
+            m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
+            float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
+            m_movement.UpdatePhysics(physDelta, false, timeUntilNextUpdate);
         }
 
         m_cameraController.Move(deltaTime);

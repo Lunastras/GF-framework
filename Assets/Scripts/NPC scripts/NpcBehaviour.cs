@@ -114,7 +114,7 @@ public class NpcBehaviour : NpcController
 
     protected override void EngageEnemyBehaviour(float deltaTime, Vector3 dirToTarget)
     {
-        Debug.Log("I do see the enemy!!!");
+        //Debug.Log("I do see the enemy!!!");
         if (0 > m_timeUntilFireChange)
         {
             if (!m_destination.WasDestroyed() && null != m_turret)
@@ -213,7 +213,7 @@ public class NpcBehaviour : NpcController
 
     protected override void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
-        Debug.Log("i am searching for the bastard heeeehee");
+        //Debug.Log("i am searching for the bastard heeeehee");
         m_turret.Stop();
         m_movement.SetMovementDir(GetPathDirection(dirToTarget));
     }
@@ -224,6 +224,8 @@ public class NpcBehaviour : NpcController
         m_movement.SetMovementDir(-dirToTarget.normalized);
         m_turret.Stop();
     }
+
+
 
 
     protected override void LostTargetBehaviour(float deltaTime)
