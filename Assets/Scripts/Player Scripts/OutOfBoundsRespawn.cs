@@ -12,6 +12,8 @@ public class OutOfBoundsRespawn : MonoBehaviour
     void Start()
     {
         movement = GetComponent<GfMovementGeneric>();
+
+        if (null == respawnPoint) respawnPoint = GameObject.Find("Spawnpoint").transform;
         if (respawnPoint)
         {
             transform.position = respawnPoint.position;

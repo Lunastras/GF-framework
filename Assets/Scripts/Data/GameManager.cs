@@ -12,8 +12,8 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Transform m_player = null;
 
-    [SerializeField]
-    private Image m_loadFadeImage = null;
+    //[SerializeField]
+    //private Image m_loadFadeImage = null;
 
     [SerializeField]
     private GameObject m_pauseScreen = null;

@@ -36,7 +36,7 @@ public class WeaponFiring : MonoBehaviour
     void Awake()
     {
         if (null == m_aimTransform)
-            m_aimTransform = transform;
+            m_aimTransform = Camera.main.transform;
 
         if (m_statsCharacter == null)
             m_statsCharacter = GetComponent<StatsCharacter>();

@@ -33,17 +33,20 @@ public class QuadFollowCamera : MonoBehaviour
 
     private void LateUpdate()
     {
-        Vector3 upVec = m_defaultUpvec;
-        if (m_transformCharacter) upVec = m_transformCharacter.up;
+        if (m_cameraTransform)
+        {
+            Vector3 upVec = m_defaultUpvec;
+            if (m_transformCharacter) upVec = m_transformCharacter.up;
 
-        Vector3 dirFromCamera = m_transform.position;
-        GfTools.Minus3(ref dirFromCamera, m_cameraTransform.position);
-        GfTools.Normalize(ref dirFromCamera);
+            Vector3 dirFromCamera = m_transform.position;
+            GfTools.Minus3(ref dirFromCamera, m_cameraTransform.position);
+            GfTools.Normalize(ref dirFromCamera);
 
-        float angle = GfTools.AngleDeg(upVec, dirFromCamera);
-        float auxAngle = 90f + m_xFollowFactor * (angle - 90f);
+            float angle = GfTools.AngleDeg(upVec, dirFromCamera);
+            float auxAngle = 90f + m_xFollowFactor * (angle - 90f);
 
-        transform.rotation = Quaternion.LookRotation(dirFromCamera, upVec) * Quaternion.AngleAxis(auxAngle - angle, RIGHT3);
+            transform.rotation = Quaternion.LookRotation(dirFromCamera, upVec) * Quaternion.AngleAxis(auxAngle - angle, RIGHT3);
+        }
     }
 
     public void SetUpVec(Vector3 upVec)

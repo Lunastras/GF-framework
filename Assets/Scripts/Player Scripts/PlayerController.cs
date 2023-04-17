@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     [SerializeField]
     private WeaponFiring m_weaponFiring;
@@ -39,48 +40,51 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (m_movement == null)
+        if (IsOwner)
         {
-            m_movement = GetComponent<GfMovementGeneric>();
-            //  if (null == m_movement)
-            // Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
+            if (m_movement == null)
+            {
+                m_movement = GetComponent<GfMovementGeneric>();
+                //  if (null == m_movement)
+                // Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
 
+            }
+
+            if (m_loadoutManager == null)
+            {
+                m_loadoutManager = GetComponent<LoadoutManager>();
+                if (null == m_loadoutManager)
+                    Debug.LogWarning("PlayerControler: The loadout manager is null, please give it a value in the inspector. Object: " + gameObject.name);
+            }
+
+            if (m_cameraController == null)
+            {
+                m_playerCamera = Camera.main.transform;
+
+            }
+            else m_playerCamera = m_cameraController.transform;
+
+            m_cameraController = m_playerCamera.GetComponent<CameraController>();
+            if (null == m_cameraController)
+                Debug.LogError("ERROR: The main camera does not have a CameraController component. Please add it to the main camera.");
+            else
+                m_cameraController.SetMainTarget(m_movement.transform);
+
+
+            if (m_weaponFiring == null)
+            {
+                m_weaponFiring = GetComponent<WeaponFiring>();
+                if (null == m_weaponFiring)
+                    Debug.LogError("ERROR: The gameobject does not have a WeaponFiring component! Please add on to the object");
+            }
+            //Physics.autoSyncTransforms |= !m_fixedUpdatePhysics;
         }
-
-        if (m_loadoutManager == null)
-        {
-            m_loadoutManager = GetComponent<LoadoutManager>();
-            if (null == m_loadoutManager)
-                Debug.LogWarning("PlayerControler: The loadout manager is null, please give it a value in the inspector. Object: " + gameObject.name);
-        }
-
-        if (m_cameraController == null)
-        {
-            m_playerCamera = Camera.main.transform;
-
-        }
-        else m_playerCamera = m_cameraController.transform;
-
-        m_cameraController = m_playerCamera.GetComponent<CameraController>();
-        if (null == m_cameraController)
-            Debug.LogError("ERROR: The main camera does not have a CameraController component. Please add it to the main camera.");
-        else
-            m_cameraController.SetMainTarget(m_movement.transform);
-
-
-        if (m_weaponFiring == null)
-        {
-            m_weaponFiring = GetComponent<WeaponFiring>();
-            if (null == m_weaponFiring)
-                Debug.LogError("ERROR: The gameobject does not have a WeaponFiring component! Please add on to the object");
-        }
-
-        //Physics.autoSyncTransforms |= !m_fixedUpdatePhysics;
     }
 
 
     private void GetMovementInput()
     {
+
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         float movementDirMagnitude = input.magnitude;
 
@@ -174,7 +178,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (m_fixedUpdatePhysics && !m_usesRigidBody)
+        if (IsOwner && m_fixedUpdatePhysics && !m_usesRigidBody)
         {
             float physDelta = Time.fixedDeltaTime;
             m_movement.UpdatePhysics(physDelta, true, physDelta); //actually the current deltatime   
@@ -195,27 +199,30 @@ public class PlayerController : MonoBehaviour
 
     void LateUpdate()
     {
-        float deltaTime = Time.deltaTime;
-
-        if (!GameManager.IsPaused())
+        if (IsOwner)
         {
-            GetFireInput();
-            GetWeaponScrollInput();
-            PreMoveCalculations(deltaTime);
-        }
-        else
-        {
-            m_movement.SetMovementDir(Vector3.zero);
-        }
+            float deltaTime = Time.deltaTime;
 
-        if (!m_usesRigidBody && !m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
-        {
-            float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks - m_timeUntilPhysChecks);
-            m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
-            float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
-            m_movement.UpdatePhysics(physDelta, false, timeUntilNextUpdate);
-        }
+            if (!GameManager.IsPaused())
+            {
+                GetFireInput();
+                GetWeaponScrollInput();
+                PreMoveCalculations(deltaTime);
+            }
+            else
+            {
+                m_movement.SetMovementDir(Vector3.zero);
+            }
 
-        m_cameraController.Move(deltaTime);
+            if (!m_usesRigidBody && !m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
+            {
+                float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks - m_timeUntilPhysChecks);
+                m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
+                float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
+                m_movement.UpdatePhysics(physDelta, false, timeUntilNextUpdate);
+            }
+
+            m_cameraController.Move(deltaTime);
+        }
     }
 }

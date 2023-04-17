@@ -14,6 +14,12 @@ public class JobParent : MonoBehaviour
 {
     private struct UpdateTypesLists
     {
+        public UpdateTypesLists(int empty = 0)
+        {
+            updateList = null;
+            lateUpdateList = null;
+            fixedUpdateList = null;
+        }
         public List<JobChild> updateList;
         public List<JobChild> lateUpdateList;
         public List<JobChild> fixedUpdateList;

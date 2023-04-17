@@ -42,14 +42,26 @@ public class LoadingScreenManager : MonoBehaviour
 
     static int MainMenuIndex = 0;
 
-    static int GameObjectsContainerSceneIndex = 4;
+    static int DoNotDestroyScene = 4;
     public static bool currentlyLoading = false;
 
     public static void LoadScene(int levelNum)
     {
         Application.backgroundLoadingPriority = ThreadPriority.High;
         SceneToLoad = levelNum;
-        SceneManager.LoadScene(LoadingSceneIndex);
+
+        SceneManager.LoadScene(LoadingSceneIndex, LoadSceneMode.Additive);
+
+        int countScenes = SceneManager.sceneCount;
+        for (int i = 0; i < countScenes; ++i)
+        {
+            Scene scene = SceneManager.GetSceneAt(i);
+            int buildIndex = scene.buildIndex;
+            if (buildIndex != DoNotDestroyScene && buildIndex != LoadingSceneIndex)
+            {
+                SceneManager.UnloadSceneAsync(scene);
+            }
+        }
     }
 
     void Start()
@@ -66,8 +78,10 @@ public class LoadingScreenManager : MonoBehaviour
 
         currentlyLoading = true;
 
-        // Debug.Log("GOT HERE");
-        StartCoroutine(LoadAsync(SceneToLoad));
+        if (SceneToLoad != MainMenuIndex)
+            StartCoroutine(LoadAsync(SceneToLoad));
+        else
+            SceneManager.LoadScene(MainMenuIndex);
     }
 
     private IEnumerator LoadAsync(int levelNum)
@@ -75,27 +89,15 @@ public class LoadingScreenManager : MonoBehaviour
         m_fadeOverlay.CrossFadeAlpha(1, 0, true);
         m_fadeOverlay.CrossFadeAlpha(0, m_fadeDuration, true);
 
+        Debug.Log("loading start");
+
         ShowLoadingVisuals();
         FadeOut();
 
         float lastProgress = 0f;
-
         yield return new WaitForSeconds(m_fadeDuration);
-        StartSceneLoadingOperation(GameObjectsContainerSceneIndex);
 
-
-        while (DoneLoading() == false)
-        {
-            yield return null;
-
-            if (Mathf.Approximately(m_operation.progress, lastProgress) == false)
-            {
-                //progressBar.fillAmount = operation.progress;
-                lastProgress = m_operation.progress;
-            }
-        }
-
-        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(GameObjectsContainerSceneIndex));
+        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(DoNotDestroyScene));
 
         if (levelNum != MainMenuIndex)
         {
@@ -167,7 +169,7 @@ public class LoadingScreenManager : MonoBehaviour
 
         if (m_loadSceneMode == LoadSceneMode.Additive)
         {
-            SceneManager.UnloadSceneAsync(m_currentScene.name);
+            SceneManager.UnloadSceneAsync(LoadingSceneIndex);
         }
         else
         {
