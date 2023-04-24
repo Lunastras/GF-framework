@@ -16,17 +16,17 @@ public class ParticlePlayerCollectible : ParticleTrigger
     [SerializeField]
     private ParticleHoming m_particleHoming = null;
 
+    private Transform m_player = null;
+
     // Start is called before the first frame update
     protected override void InternalAwake()
     {
-        m_particleHoming = GetComponent<ParticleHoming>();
+        if (null == m_particleHoming) m_particleHoming = GetComponent<ParticleHoming>();
     }
 
     protected void Start()
     {
-        Transform player = GameManager.GetPlayer();
-        m_particleSystem.trigger.AddCollider(player);
-        m_particleHoming.SetTarget(player);
+        OnEnable();
     }
 
     private void OnParticleSystemStopped()
@@ -37,10 +37,11 @@ public class ParticlePlayerCollectible : ParticleTrigger
 
     private void OnEnable()
     {
-        if (m_particleHoming && GameManager.Manager)
+        if (m_particleHoming && GameManager.Instance && m_player != GameManager.GetPlayer())
         {
-            Transform player = GameManager.GetPlayer();
-            m_particleHoming.SetTarget(player);
+            m_player = GameManager.GetPlayer();
+            m_particleHoming.SetTarget(m_player);
+            m_particleSystem.trigger.AddCollider(m_player);
         }
     }
 

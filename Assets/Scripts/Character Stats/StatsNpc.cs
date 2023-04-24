@@ -59,7 +59,6 @@ public class StatsNpc : StatsCharacter
         if (null == m_objectCollider)
             m_objectCollider = GetComponent<Collider>();
 
-
         if (null == m_movement)
             m_movement = GetComponent<GfMovementGeneric>();
 
@@ -83,7 +82,8 @@ public class StatsNpc : StatsCharacter
 
         m_transform = transform;
 
-        m_currentHealth = GetMaxHealthEffective();
+        if (!IsClient)
+            m_currentHealth.Value = GetMaxHealthEffective();
 
         m_initialised = true;
         HostilityManager.AddCharacter(this);
@@ -106,9 +106,6 @@ public class StatsNpc : StatsCharacter
 
     public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
     {
-        if (killer) killer.OnCharacterKilled(this);
-        if (weaponUsed) weaponUsed.OnCharacterKilled(this);
-
         Vector3 currentPos = m_transform.position;
         GameParticles.PlayDeathDust(currentPos);
         GameParticles.PlayPowerItems(currentPos, m_powerItemsToDrop, m_movement);
@@ -130,7 +127,13 @@ public class StatsNpc : StatsCharacter
 
         AudioManager.PlayAudio(m_deathSound, m_transform.position);
 
-        IsDead = true;
+        if (IsClient) // needs more work
+        {
+            if (killer) killer.OnCharacterKilled(this);
+            if (weaponUsed) weaponUsed.OnCharacterKilled(this);
+
+            IsDead.Value = true;
+        }
 
         if (null != m_graphics)
             m_graphics.SetActive(false);
@@ -149,38 +152,41 @@ public class StatsNpc : StatsCharacter
 
     public override void Damage(float damage, float damageMultiplier = 1, StatsCharacter enemy = null, DamageSource weaponUsed = null)
     {
-        if (IsDead)
-            return;
-
-        if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
-        if (weaponUsed) weaponUsed.OnDamageDealt(damage, this);
-
-        damage *= damageMultiplier * m_receivedDamageMultiplier;
-        GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.GetUpVecRaw());
-
-        m_currentHealth -= damage;
-
-        if (m_currentHealth <= GetMaxHealthEffective() * m_lowHealthThreshold)
-            m_damageSound.Play(m_audioSource, 1.5f, 2);
-        else
-            m_damageSound.Play(m_audioSource);
-
-        if (m_currentHealth <= 0)
+        if (!IsDead.Value)
         {
-            Kill(enemy, weaponUsed);
-        }
-        else if (m_npcController && enemy && damage > 0)
-        {
-            if (m_lastEnemy != enemy)
+            if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
+            if (weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+
+            if (!IsClient)
             {
-                m_lastEnemy = enemy;
-                m_damageFromLastEnemy = 0;
+                damage *= damageMultiplier * m_receivedDamageMultiplier.Value;
+                GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.GetUpVecRaw());
+
+                m_currentHealth.Value -= damage;
+
+                if (m_currentHealth.Value <= GetMaxHealthEffective() * m_lowHealthThreshold)
+                    m_damageSound.Play(m_audioSource, 1.5f, 2);
+                else
+                    m_damageSound.Play(m_audioSource);
+
+                if (m_currentHealth.Value <= 0)
+                {
+                    Kill(enemy, weaponUsed);
+                }
+                else if (m_npcController && enemy && damage > 0)
+                {
+                    if (m_lastEnemy != enemy)
+                    {
+                        m_lastEnemy = enemy;
+                        m_damageFromLastEnemy = 0;
+                    }
+
+                    m_damageFromLastEnemy += damage;
+
+                    if (m_damageFromLastEnemy >= m_aggroDamage)
+                        m_npcController.SetDestination(enemy.transform, true);
+                }
             }
-
-            m_damageFromLastEnemy += damage;
-
-            if (m_damageFromLastEnemy >= m_aggroDamage)
-                m_npcController.SetDestination(enemy.transform, true);
         }
     }
 }

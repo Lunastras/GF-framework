@@ -6,12 +6,12 @@ using UnityEngine.UI;
 
 public class HudManager : MonoBehaviour
 {
-
     [SerializeField]
     private bool m_onlyShowFirstWeapon = false;
 
     [SerializeField]
     private GameObject m_levelSliderPrefab = null;
+
 
     [SerializeField]
     private float m_levelSlidersYOffset = 10;
@@ -20,6 +20,9 @@ public class HudManager : MonoBehaviour
 
     [SerializeField]
     private RectTransform m_levelSlidersParent = null;
+
+    [SerializeField]
+    private HealthUIBehaviour m_healthUI = null;
 
     private List<WeaponLevelSlider> m_weaponSliders = null;
 
@@ -35,6 +38,7 @@ public class HudManager : MonoBehaviour
     */
     public void UpdateSliders(List<WeaponBasic> weapons)
     {
+        Debug.Log("I was called indeed, updating sliders");
         int desiredWeaponCount = 1;
         int currentWeaponCount = weapons.Count;
         if (!m_onlyShowFirstWeapon || 0 == currentWeaponCount) desiredWeaponCount = currentWeaponCount;
@@ -63,6 +67,11 @@ public class HudManager : MonoBehaviour
         }
 
         UpdateSlidersValues(weapons);
+    }
+
+    public HealthUIBehaviour GetHealthUI()
+    {
+        return m_healthUI;
     }
 
     public void UpdateSlidersValues(List<WeaponBasic> weapons)

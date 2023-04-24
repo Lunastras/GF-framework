@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_mainTarget: {fileID: 0}
-  m_sensitivity: 400
+  m_sensitivity: 1.5
   m_targetFov: 90
   m_offset: {x: 0, y: 2, z: 0}
   m_physCheckInterval: 0

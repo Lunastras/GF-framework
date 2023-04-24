@@ -139,7 +139,7 @@ CustomV2f ParticlesLitVertex(CustomVertInput input)
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-    VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS);
+    VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
     VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
 
     half3 viewDirWS = GetWorldSpaceNormalizeViewDir(vertexInput.positionWS);
@@ -172,6 +172,7 @@ CustomV2f ParticlesLitVertex(CustomVertInput input)
     const int MAX_DECIMALS = 4;
     const float DIGIT_OFFSET = 1.0 / 4.0;              // 1.0 / MAX_DECIMALS
     const float DIGIT_OFFSET_HALF = (1.0 / 4.0) / 2.0; // DIGIT_OFFSET / 2.0
+    const uint TWO = 2;
 
     float value = round(input.texcoords.z);
     value = min(value, MAX_VALUE);
@@ -185,7 +186,7 @@ CustomV2f ParticlesLitVertex(CustomVertInput input)
         value = floor(value / 10.0);
     }
 
-    float startUvXCoord = 0.5 - (DIGIT_OFFSET_HALF * (numDigits % 2) + floor(numDigits * 0.5) * DIGIT_OFFSET);
+    float startUvXCoord = 0.5 - (DIGIT_OFFSET_HALF * (numDigits % TWO) + floor(numDigits * 0.5) * DIGIT_OFFSET);
     float2 finalTexCoords;
     GetParticleTexcoords(finalTexCoords, input.texcoords.xy);
     output.texcoord = float4(finalTexCoords, startUvXCoord, MAX_DECIMALS - numDigits);
@@ -207,7 +208,7 @@ float _DitherIntensity;
 float _DitherScale;
 float _LambertDotOverride;
 
-half4 SampleAlbedoDither(TEXTURE2D_PARAM(albedoMap, sampler_albedoMap), ParticleParams params, float4 screencoords, float distance, float4 digits, float4 texCoords, float ditherIntensity, float ditherScale)
+half4 SampleAlbedoDither(TEXTURE2D_PARAM(albedoMap, sampler_albedoMap), ParticleParams params, float2 screencoords, float distance, float4 digits, float4 texCoords, float ditherIntensity, float ditherScale)
 {
     float startUvXCoord = texCoords.z;
 
@@ -253,7 +254,7 @@ half4 ParticlesLitFragment(CustomV2f input) : SV_Target
     ParticleParams particleParams;
     InitParticleParamsCustom(input, particleParams);
 
-    float4 screenpos = float4(input.positionSS.xy / input.positionSS.w, 0, 0);
+    float2 screenpos = float2(input.positionSS.xy / input.positionSS.w);
     float dst = max(0.0, length(input.positionVS) - _FadeDistanceOffset);
 
     half3 normalTS = SampleNormalTS(particleParams.uv, particleParams.blendUv, TEXTURE2D_ARGS(_BumpMap, sampler_BumpMap));

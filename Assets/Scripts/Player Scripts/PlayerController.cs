@@ -31,23 +31,28 @@ public class PlayerController : NetworkBehaviour
     //misc
     private float m_timeBetweenPhysChecks = 0.02f;
 
-    private bool m_releasedJumpButton = false;
-
     private float m_timeUntilPhysChecks = 0;
+
+    private bool m_wasFiring = false;
     //misc
     private Transform m_playerCamera;
+
+    private Vector3 m_movDir = Vector3.zero;
+    private bool m_flagFire = false;
+    private bool m_flagJump = false;
+    private bool m_flagDash = false;
 
     // Start is called before the first frame update
     void Start()
     {
         if (IsOwner)
         {
+            GameManager.SetPlayer(transform);
             if (m_movement == null)
             {
                 m_movement = GetComponent<GfMovementGeneric>();
                 //  if (null == m_movement)
                 // Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
-
             }
 
             if (m_loadoutManager == null)
@@ -70,89 +75,60 @@ public class PlayerController : NetworkBehaviour
             else
                 m_cameraController.SetMainTarget(m_movement.transform);
 
+        }
 
-            if (m_weaponFiring == null)
-            {
-                m_weaponFiring = GetComponent<WeaponFiring>();
-                if (null == m_weaponFiring)
-                    Debug.LogError("ERROR: The gameobject does not have a WeaponFiring component! Please add on to the object");
-            }
-            //Physics.autoSyncTransforms |= !m_fixedUpdatePhysics;
+        if (m_weaponFiring == null)
+        {
+            m_weaponFiring = GetComponent<WeaponFiring>();
+            if (null == m_weaponFiring)
+                Debug.LogError("ERROR: The gameobject does not have a WeaponFiring component! Please add on to the object");
         }
     }
 
 
-    private void GetMovementInput()
+    private Vector3 GetMovementInput(Vector3 upVec)
     {
-
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         float movementDirMagnitude = input.magnitude;
+        Vector3 movDir = Vector3.zero;
 
         if (movementDirMagnitude > 0.001f)
         {
             //float effectiveMagnitude = System.MathF.Min(1.0f, System.MathF.Max(input.x, input.y));
             if (movementDirMagnitude > 1) GfTools.Div2(ref input, movementDirMagnitude);
 
-            Vector3 cameraForward = m_playerCamera.forward * input.y;
-            Vector3 cameraRight = m_playerCamera.right * input.x;
+            Vector3 cameraForward = m_playerCamera.forward;
+            GfTools.Mult3(ref cameraForward, input.y);
 
-            Vector3 upVec = m_movement.GetUpvecRotation();
+            Vector3 cameraRight = m_playerCamera.right;
+            GfTools.Mult3(ref cameraRight, input.x);
 
             if (!m_movement.CanFly)
             {
                 GfTools.Minus3(ref cameraForward, upVec * Vector3.Dot(upVec, cameraForward));
-                cameraForward.Normalize();
+                GfTools.Normalize(ref cameraForward);
             }
 
-            Vector3 movementDir = cameraForward + cameraRight;
-            m_movement.SetMovementDir(movementDir);
-        }
-        else
-        {
-            m_movement.SetMovementDir(Vector3.zero);
+            movDir = cameraForward;
+            GfTools.Add3(ref movDir, cameraRight);
         }
 
-
+        return movDir;
     }
 
-    private void CalculateJump()
-    {
-        if (Input.GetAxisRaw("Jump") > 0.8f)
-        {
-            if (m_releasedJumpButton || true)
-            {
-                m_releasedJumpButton = false;
-                m_movement.JumpFlag = true;
-            }
-        }
-        else
-        {
-            m_releasedJumpButton = true;
-        }
-    }
-
-    private void CalculateDash()
-    {
-        if (Input.GetAxisRaw("Dash") > 0.8f)
-        {
-            m_movement.DashFlag = true;
-        }
-    }
-
-    private bool wasFiring = false;
-    private void GetFireInput()
+    private void Fire(bool fire, FireType fireType = FireType.MAIN)
     {
         if (!m_weaponFiring)
             return;
 
-        if (Input.GetAxisRaw("Fire1") > 0.2f)
+        if (fire)
         {
-            wasFiring = true;
+            m_wasFiring = true;
             m_weaponFiring.Fire();
         }
-        else if (wasFiring)
+        else if (m_wasFiring)
         {
-            wasFiring = false;
+            m_wasFiring = false;
             m_weaponFiring.ReleaseFire();
         }
     }
@@ -178,41 +154,65 @@ public class PlayerController : NetworkBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (IsOwner && m_fixedUpdatePhysics && !m_usesRigidBody)
+        if (IsServer && m_fixedUpdatePhysics && !m_usesRigidBody)
         {
             float physDelta = Time.fixedDeltaTime;
             m_movement.UpdatePhysics(physDelta, true, physDelta); //actually the current deltatime   
+
+            if (IsOwner)
+            {
+                m_flagDash = false;
+                m_flagJump = false;
+            }
+            else
+            {
+                FinishedMovementCalculationsClientRpc();
+            }
         }
-    }
-
-    private void PreMoveCalculations(float deltaTime)
-    {
-        m_cameraController.m_upvec = m_movement.GetUpvecRotation();
-        m_cameraController.UpdateRotation(deltaTime);
-
-        CalculateJump();
-        CalculateDash();
-        GetMovementInput();
-
-        m_movement.Move(deltaTime);
     }
 
     void LateUpdate()
     {
+        float deltaTime = Time.deltaTime;
+
         if (IsOwner)
         {
-            float deltaTime = Time.deltaTime;
+            bool auxFlagFire = false;
+            bool auxFlagDash = false;
+            bool auxFlagJump = false;
+            Vector3 auxMovDir = Vector3.zero;
 
-            if (!GameManager.IsPaused())
+            if (!GameManager.IsPaused()) //get inputs
             {
-                GetFireInput();
+                Vector3 upVec = m_movement.GetUpvecRotation();
+                m_cameraController.m_upvec = m_movement.GetUpvecRotation();
+                m_cameraController.UpdateRotation(deltaTime);
+
+                auxFlagFire = Input.GetAxisRaw("Fire1") > 0.5f;
+                auxFlagDash = Input.GetAxisRaw("Dash") > 0.8f;
+                auxFlagJump = Input.GetAxisRaw("Jump") > 0.8f;
+                auxMovDir = GetMovementInput(upVec);
+
                 GetWeaponScrollInput();
-                PreMoveCalculations(deltaTime);
             }
-            else
-            {
-                m_movement.SetMovementDir(Vector3.zero);
-            }
+
+            if (m_flagFire != auxFlagFire) SetFireServerRpc(auxFlagFire);
+            if (m_flagDash != auxFlagDash) SetDashFlagServerRpc(auxFlagDash);
+            if (m_flagJump != auxFlagJump) SetJumpFlagServerRpc(auxFlagJump);
+            if (auxMovDir != m_movDir) SetMovementDirServerRpc(auxMovDir);
+
+            m_flagFire = auxFlagFire; //calculated every frame, we just need the raw input
+            m_flagDash |= auxFlagDash; // used the | operator to keep the flag true until the next phys update call
+            m_flagJump |= auxFlagJump;
+            m_movDir = auxMovDir;
+
+            m_cameraController.Move(deltaTime);
+            //m_movement.SetMovementDir(m_movDir);
+        }
+
+        if (IsServer)
+        {
+            m_movement.Move(deltaTime);
 
             if (!m_usesRigidBody && !m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
             {
@@ -220,9 +220,66 @@ public class PlayerController : NetworkBehaviour
                 m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
                 float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
                 m_movement.UpdatePhysics(physDelta, false, timeUntilNextUpdate);
-            }
 
-            m_cameraController.Move(deltaTime);
+                if (IsOwner)
+                {
+                    m_flagDash = false;
+                    m_flagJump = false;
+                }
+                else
+                {
+                    FinishedMovementCalculationsClientRpc();
+                }
+            }
         }
+
+        Fire(m_flagFire);
+    }
+
+    [ClientRpc]
+    private void FinishedMovementCalculationsClientRpc()
+    {
+        m_flagDash = false;
+        m_flagJump = false;
+    }
+
+
+    [ClientRpc]
+    private void FireWeaponClientRpc(bool fire)
+    {
+        m_flagFire = fire;
+        Fire(fire);
+    }
+
+    [ServerRpc]
+    private void SetFireServerRpc(bool fire)
+    {
+        m_flagFire = fire;
+        Fire(fire);
+        FireWeaponClientRpc(fire);
+    }
+
+    [ServerRpc]
+    private void SetMovementDirServerRpc(Vector3 dir)
+    {
+        float sqrMagnitude = dir.sqrMagnitude;
+        if (1 < sqrMagnitude) //make sure the magnitude isn't higher than 1
+            GfTools.Div3(ref dir, System.MathF.Sqrt(sqrMagnitude)); //normalise vector
+
+        m_movement.SetMovementDir(dir);
+    }
+
+    [ServerRpc]
+    private void SetDashFlagServerRpc(bool dash)
+    {
+        m_flagDash = dash;
+        m_movement.FlagDash = dash;
+    }
+
+    [ServerRpc]
+    private void SetJumpFlagServerRpc(bool dash)
+    {
+        m_flagJump = dash;
+        m_movement.FlagJump = dash;
     }
 }

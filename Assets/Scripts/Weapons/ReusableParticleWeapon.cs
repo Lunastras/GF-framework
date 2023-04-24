@@ -115,7 +115,7 @@ public class ReusableParticleWeapon : WeaponBasic
         m_particlesFired = 0;
     }
 
-    public override void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false)
+    public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)
     {
         Vector3 dirBullet = hit.point - m_transform.position;
         GfTools.Normalize(ref dirBullet);
@@ -126,7 +126,7 @@ public class ReusableParticleWeapon : WeaponBasic
         m_firing = true;
     }
 
-    public override void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false) { }
+    public override void ReleasedFire(FireHit hit = default, FireType fireType = FireType.MAIN) { }
 
     public override bool IsAlive()
     {

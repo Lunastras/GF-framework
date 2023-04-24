@@ -1,10 +1,12 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Netcode;
 
 
-public class WeaponFiring : MonoBehaviour
+public class WeaponFiring : NetworkBehaviour
 {
     [SerializeField]
     private Transform m_aimTransform = null;
@@ -13,7 +15,7 @@ public class WeaponFiring : MonoBehaviour
     private StatsCharacter m_statsCharacter = null;
 
     [SerializeField]
-    private float m_distanceUpdateInterval = 0.05f;
+    private float m_distanceUpdateInterval = 0.01f;
 
     [SerializeField]
     private float m_distanceOffset = 0;
@@ -28,9 +30,14 @@ public class WeaponFiring : MonoBehaviour
 
     private RaycastHit m_lastRayHit;
 
-    private bool m_hitAnObject;
-
     private double m_timeOflastCheck = 0;
+
+    protected NetworkVariable<Vector3> m_lastPoint = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    protected NetworkVariable<Vector3> m_lastNormal = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    protected NetworkVariable<Vector3> m_lastCollisionId = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+
+    public bool IsFiring { get; private set; } = false;
 
     // Start is called before the first frame update
     void Awake()
@@ -65,44 +72,67 @@ public class WeaponFiring : MonoBehaviour
     }
 
     // Update is called once per frame
-    public void Fire()
+    public void Fire(FireType fireType = FireType.MAIN)
     {
-        Vector3 fireTargetDir = m_aimTransform.forward;
-        double currentTime = Time.timeAsDouble;
+        IsFiring = true;
 
-        if ((currentTime - m_timeOflastCheck) >= m_distanceUpdateInterval)
+        if (IsOwner)
         {
-            m_timeOflastCheck = Time.timeAsDouble;
+            Vector3 fireTargetDir = m_aimTransform.forward;
+            double currentTime = Time.timeAsDouble;
 
-            Ray ray = new(m_aimTransform.position, fireTargetDir);
-            RaycastHit[] rayHits = GfPhysics.GetRaycastHits();
-
-            m_hitAnObject = 0 != Physics.RaycastNonAlloc(ray, rayHits, m_maxFireDistance, GfPhysics.CharacterCollisions() - (int)Mathf.Pow(2, (gameObject.layer)));
-
-            if (m_hitAnObject)
+            if ((currentTime - m_timeOflastCheck) >= m_distanceUpdateInterval)
             {
-                m_lastRayHit = rayHits[0];
-                m_lastRayHit.distance += m_distanceOffset;
+                m_timeOflastCheck = Time.timeAsDouble;
+
+                Ray ray = new(m_aimTransform.position, fireTargetDir);
+                RaycastHit[] rayHits = GfPhysics.GetRaycastHits();
+
+                bool hitAnObject = 0 != Physics.RaycastNonAlloc(ray, rayHits, m_maxFireDistance, GfPhysics.CharacterCollisions() - (int)Mathf.Pow(2, (gameObject.layer)));
+
+                if (hitAnObject)
+                {
+                    m_lastRayHit = rayHits[0];
+                    m_lastRayHit.distance += m_distanceOffset;
+                }
+                else
+                {
+                    m_lastRayHit.distance = m_maxFireDistance;
+                }
             }
-            else
-            {
-                m_lastRayHit.distance = m_maxFireDistance;
-            }
+
+            m_lastRayHit.point = m_aimTransform.position + fireTargetDir * m_lastRayHit.distance;
+
+            m_lastPoint.Value = m_lastRayHit.point;
+            m_lastNormal.Value = m_lastRayHit.normal;
         }
 
-        m_lastRayHit.point = m_aimTransform.position + fireTargetDir * m_lastRayHit.distance;
+        FireHit hit = new FireHit
+        {
+            point = m_lastPoint.Value,
+            normal = m_lastNormal.Value,
+            collisionId = -1,
+        };
 
         for (int i = 0; null != m_weapons && i < m_weapons.Count; ++i)
-            m_weapons[i].Fire(m_lastRayHit, m_hitAnObject);
-
+            m_weapons[i].Fire(hit, fireType);
     }
 
-    public void ReleaseFire()
+    public void ReleaseFire(FireType fireType = FireType.MAIN)
     {
+        IsFiring = false;
+
+        FireHit hit = new FireHit
+        {
+            point = m_lastPoint.Value,
+            normal = m_lastNormal.Value,
+            collisionId = -1,
+        };
+
         for (int i = 0; null != m_weapons && i < m_weapons.Count; ++i)
         {
             if (m_weapons[i] != null && m_weapons[i].gameObject.activeSelf)
-                m_weapons[i].ReleasedFire(m_lastRayHit, m_hitAnObject);
+                m_weapons[i].ReleasedFire(hit, fireType);
         }
     }
 
@@ -115,5 +145,11 @@ public class WeaponFiring : MonoBehaviour
     {
         m_statsCharacter = character;
     }
+}
 
+public struct FireHit
+{
+    public Vector3 point;
+    public Vector3 normal;
+    public int collisionId;
 }

@@ -70,7 +70,7 @@ float _DitherScale;
 half4 ShadowPassFragment(Varyings input) : SV_TARGET
 {
     input.positionSS.xy /= input.positionSS.w;
-    half4 alpha = SampleAlbedoAlpha(input.uv, TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap));
+    half4 alpha = SampleAlbedoAlpha(input.uv.xy, TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap));
     alpha.a *= _BaseColor.a * input.uv.z;
     ApplyDither_float(_DitherIntensity, _DitherScale, input.positionSS.xy, _Cutoff, alpha);
     Alpha(alpha.a, half4(0,0,0,1), _Cutoff);

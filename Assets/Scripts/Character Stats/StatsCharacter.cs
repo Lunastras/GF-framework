@@ -1,21 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
-public abstract class StatsCharacter : MonoBehaviour
+public abstract class StatsCharacter : NetworkBehaviour
 {
     [SerializeField]
-    protected float m_maxHealth = 100;
+    protected NetworkVariable<float> m_maxHealth = new(100);
 
     [SerializeField]
-    private CharacterTypes m_characterType;
+    private NetworkVariable<CharacterTypes> m_characterType = null;
 
-    protected PriorityValue<float> m_maxHealthMultiplier = new(1);
+    protected NetworkVariable<PriorityValue<float>> m_maxHealthMultiplier = new(new(1));
 
-    protected PriorityValue<float> m_receivedDamageMultiplier = new(1);
+    protected NetworkVariable<PriorityValue<float>> m_receivedDamageMultiplier = new(new(1));
 
-    public bool IsDead { get; protected set; }
-    protected float m_currentHealth;
+    public NetworkVariable<bool> IsDead { get; protected set; } = new(false);
+    protected NetworkVariable<float> m_currentHealth = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     private int m_characterIndex = -1;
 
@@ -36,20 +37,20 @@ public abstract class StatsCharacter : MonoBehaviour
 
     public CharacterTypes GetCharacterType()
     {
-        return m_characterType;
+        return m_characterType.Value;
     }
 
     public void SetCharacterType(CharacterTypes type)
     {
-        if (m_characterType != type)
+        if (m_characterType.Value != type && !IsClient)
         {
             HostilityManager.RemoveCharacter(this);
-            m_characterType = type;
+            m_characterType.Value = type;
             HostilityManager.AddCharacter(this);
         }
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
         HostilityManager.RemoveCharacter(this);
     }
@@ -82,16 +83,28 @@ public abstract class StatsCharacter : MonoBehaviour
 
     public int GetParticleTriggerDamageIndex() { return m_particleTriggerDamageListIndex; }
 
-    public float GetMaxHealthRaw() { return m_maxHealth; }
-    public float GetMaxHealthEffective() { return m_maxHealth * m_maxHealthMultiplier; }
-    public float GetCurrentHealth() { return m_currentHealth; }
-    public void SetMaxHealthRaw(float maxHealth) { m_maxHealth = maxHealth; }
+    public virtual float GetMaxHealthRaw() { return m_maxHealth.Value; }
+    public virtual float GetMaxHealthEffective() { return m_maxHealth.Value * m_maxHealthMultiplier.Value; }
+    public virtual float GetCurrentHealth() { return m_currentHealth.Value; }
+    public virtual void SetMaxHealthRaw(float maxHealth)
+    {
+        if (!IsClient)
+            m_maxHealth.Value = maxHealth;
+    }
 
-    public PriorityValue<float> GetMaxHealthMultiplier() { return m_maxHealthMultiplier; }
+    public virtual PriorityValue<float> GetMaxHealthMultiplier() { return m_maxHealthMultiplier.Value; }
 
-    public void SetMaxHealthMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false) { m_maxHealthMultiplier.SetValue(maxHealthMultiplier, priority, overridePriority); }
+    public virtual void SetMaxHealthMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
+    {
+        if (!IsClient)
+            m_maxHealthMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority);
+    }
 
-    public PriorityValue<float> GetReceivedDamageMultiplier() { return m_receivedDamageMultiplier; }
+    public virtual PriorityValue<float> GetReceivedDamageMultiplier() { return m_receivedDamageMultiplier.Value; }
 
-    public void SetReceivedDamageMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false) { m_receivedDamageMultiplier.SetValue(maxHealthMultiplier, priority, overridePriority); }
+    public virtual void SetReceivedDamageMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
+    {
+        if (!IsClient)
+            m_receivedDamageMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority);
+    }
 }

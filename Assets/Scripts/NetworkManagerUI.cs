@@ -15,16 +15,19 @@ public class NetworkManagerUI : MonoBehaviour
     {
         m_serverBtn.onClick.AddListener(() =>
         {
+            GameManager.IsMultiplayer = true;
             NetworkManager.Singleton.StartServer();
         });
 
         m_hostBtn.onClick.AddListener(() =>
         {
+            GameManager.IsMultiplayer = true;
             NetworkManager.Singleton.StartHost();
         });
 
         m_clientBtn.onClick.AddListener(() =>
         {
+            GameManager.IsMultiplayer = true;
             NetworkManager.Singleton.StartClient();
         });
     }

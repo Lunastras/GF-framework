@@ -139,9 +139,7 @@ MonoBehaviour:
   m_color:
     serializedVersion: 2
     rgba: 4294967295
-  m_targetLenght: 5
-  m_anchor: 0
-  m_constantAxis: 0
+  m_lengthMultiplier: 5
 --- !u!114 &3038054582063127416
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -469,6 +467,7 @@ MonoBehaviour:
     m_maxDistance: 500
     m_spatialBlend: 0
   m_canDamageSelf: 0
+  m_canAim: 1
   m_getDamageSourceFromColor: 0
 --- !u!198 &1608161839850249133
 ParticleSystem:
@@ -5289,13 +5288,14 @@ GameObject:
   - component: {fileID: 7866579364068057338}
   - component: {fileID: 432613321654859549}
   - component: {fileID: 1810723438}
+  - component: {fileID: 1422192360}
   m_Layer: 12
   m_Name: EnemyGeneric
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4759944753111975126
 Transform:
   m_ObjectHideFlags: 0
@@ -5399,8 +5399,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc0cd145eb83aeb4091ff21fb63c9f26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_maxHealth: 200
-  m_characterType: 2
+  m_maxHealth:
+    m_InternalValue: 100
+  m_characterType:
+    m_InternalValue: 0
   m_graphics: {fileID: 0}
   m_movement: {fileID: 0}
   m_powerItemsToDrop: 10
@@ -5462,8 +5464,8 @@ MonoBehaviour:
   m_fullRotationSeconds: 1
   m_useSimpleCollision: 1
   m_maxAngleNoSmoothDeg: 5
-  JumpFlag: 0
-  DashFlag: 0
+  FlagJump: 0
+  FlagDash: 0
   m_velocity: {x: 0, y: 0, z: 0}
   m_maxOverlaps: 4
   m_maxCasts: 4
@@ -5574,3 +5576,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1422192360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1

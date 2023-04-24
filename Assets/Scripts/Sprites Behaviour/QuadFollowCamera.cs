@@ -27,7 +27,8 @@ public class QuadFollowCamera : MonoBehaviour
     void Start()
     {
         m_transform = transform;
-        m_cameraTransform = Camera.main.transform;
+        Camera mainCamera = Camera.main;
+        if (mainCamera) m_cameraTransform = mainCamera.transform;
     }
 
 

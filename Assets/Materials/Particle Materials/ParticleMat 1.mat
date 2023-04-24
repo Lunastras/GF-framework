@@ -24,6 +24,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: 2dd5069d37783d44691ce42224b9e311, type: 3}
   m_ValidKeywords:
   - _ALPHATEST_ON
+  - _DITHERED_SHADOWS
   - _LAMBERT_DISABLED
   - _RECEIVE_SHADOWS_OFF
   - _SPECULAR_COLOR

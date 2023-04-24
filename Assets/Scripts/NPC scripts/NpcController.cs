@@ -85,7 +85,6 @@ public class NpcController : JobChild
 
     protected virtual void Initialize()
     {
-        Debug.Log("I am initializing");
         m_pathToDestination = new(32, Allocator.Persistent);
         m_transform = transform;
         m_destination = new();

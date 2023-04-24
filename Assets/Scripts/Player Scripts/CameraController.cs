@@ -108,8 +108,8 @@ public class CameraController : MonoBehaviour
         float pitchCoef = 1;
         if (m_invertedY) pitchCoef = -1;
 
-        m_yaw += Input.GetAxisRaw("Mouse X") * m_sensitivity * deltaTime;
-        m_pitch += Input.GetAxisRaw("Mouse Y") * m_sensitivity * deltaTime * pitchCoef;
+        m_yaw += Input.GetAxisRaw("Mouse X") * m_sensitivity;
+        m_pitch += Input.GetAxisRaw("Mouse Y") * m_sensitivity * pitchCoef;
         m_pitch = Mathf.Clamp(m_pitch, m_pitchMin, m_pitchMax);
 
         Quaternion mouseRot = Quaternion.Euler(m_pitch, m_yaw, 0);

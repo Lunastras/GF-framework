@@ -19,7 +19,7 @@ public class GfSpriteRenderer : MonoBehaviour
     private Color32 m_color = new Color32(1, 1, 1, 1);
 
     [SerializeField]
-    private float m_targetLenght = 1;
+    private float m_lengthMultiplier = 1;
 
     /*
 
@@ -103,8 +103,8 @@ public class GfSpriteRenderer : MonoBehaviour
             float width = spriteRect.width;
             float pixelsPerUnit = sprite.pixelsPerUnit;
 
-            float xScale = m_targetLenght * (spriteRect.width / pixelsPerUnit);
-            float yScale = m_targetLenght * (spriteRect.height / pixelsPerUnit);
+            float xScale = m_lengthMultiplier * (spriteRect.width / pixelsPerUnit);
+            float yScale = m_lengthMultiplier * (spriteRect.height / pixelsPerUnit);
             if (m_xFlipped) xScale *= -1.0f;
             if (m_yFlipped) yScale *= -1.0f;
 

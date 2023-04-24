@@ -22,7 +22,7 @@ public class WeaponMaster : MonoBehaviour
     public static GameObject GetWeapon(int index)
     {
         if (0 > index || m_instance.m_weapons.Length <= index)
-            return null;
+            return m_instance.m_weapons[0];
 
         return m_instance.m_weapons[index];
     }

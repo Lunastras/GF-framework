@@ -82,7 +82,7 @@ DitheredV2f ParticlesLitVertex(CustomVertInput input)
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
 
-    VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS);
+    VertexPositionInputs vertexInput = GetVertexPositionInputs(input.positionOS.xyz);
     VertexNormalInputs normalInput = GetVertexNormalInputs(input.normalOS, input.tangentOS);
 
     half3 viewDirWS = GetWorldSpaceNormalizeViewDir(vertexInput.positionWS);
@@ -132,7 +132,7 @@ half4 ParticlesLitFragment(DitheredV2f input) : SV_Target
     ParticleParams particleParams;
     InitParticleParamsDither(input, particleParams);
 
-    float4 screenpos = float4(input.positionSS.xy / input.positionSS.w, 0, 0);
+    float2 screenpos = float2(input.positionSS.xy / input.positionSS.w);
     float dst = max(0.0, length(input.positionVS) - _FadeDistanceOffset);
 
     half3 normalTS = SampleNormalTS(particleParams.uv, particleParams.blendUv, TEXTURE2D_ARGS(_BumpMap, sampler_BumpMap));

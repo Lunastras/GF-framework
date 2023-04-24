@@ -62,7 +62,7 @@
                     float3 crossf = cross(float3(1,0,0), initial);
                     if (length(crossf) < 0.000001f)
                         crossf = cross(float3(0,1,0), initial);
-                    return angleRadAxis(0, 1, normalize(crossf)); //(in float cosRadiansHalf, in float sinRadiansHalf, float3 axisNormalised, out float4 quat) 
+                    outQuat = angleRadAxis(0, 1, normalize(crossf)); //(in float cosRadiansHalf, in float sinRadiansHalf, float3 axisNormalised, out float4 quat) 
                 } 
                 else if (dotf < 0.999999f) // normal case
                 {

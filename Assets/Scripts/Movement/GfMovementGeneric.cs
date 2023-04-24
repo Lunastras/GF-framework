@@ -58,10 +58,10 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public Vector3 MovementDirRaw { get; protected set; }
 
     [HideInInspector]
-    public bool JumpFlag = false;
+    public bool FlagJump = false;
 
     [HideInInspector]
-    public bool DashFlag = false;
+    public bool FlagDash = false;
 
     protected PriorityValue<Transform> m_parentTransform = new();
 

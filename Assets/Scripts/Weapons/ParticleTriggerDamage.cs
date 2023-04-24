@@ -11,6 +11,9 @@ public class ParticleTriggerDamage : WeaponParticle
     [SerializeField]
     protected bool m_canDamageSelf;
 
+    [SerializeField]
+    protected bool m_canAim = true;
+
     protected Transform m_transform;
 
     //whether or not it reads the damage source and stats character from the red index of a particle's start colour. 
@@ -41,7 +44,7 @@ public class ParticleTriggerDamage : WeaponParticle
 
     private void Update()
     {
-        if (m_target)
+        if (m_canAim && m_target)
         {
             if (m_movementParent)
                 m_transform.LookAt(m_target, m_movementParent.GetUpvecRotation());

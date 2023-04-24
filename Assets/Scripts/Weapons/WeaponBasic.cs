@@ -34,9 +34,9 @@ public abstract class WeaponBasic : DamageSource
 
     public abstract void StopFiring();
 
-    public abstract void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false);
+    public abstract void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false);
 
-    public abstract void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false);
+    public abstract void ReleasedFire(FireHit hit = default, FireType fireType = FireType.MAIN);
 
     public virtual bool IsAlive() { return false; }
 

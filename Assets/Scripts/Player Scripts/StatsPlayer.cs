@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
 public class StatsPlayer : StatsCharacter
 {
@@ -33,9 +34,12 @@ public class StatsPlayer : StatsCharacter
     [SerializeField]
     private Sound m_itemPickUpSound = null;
 
+    private HealthUIBehaviour m_healthUI;
+
     private void Awake()
     {
-        instance = this;
+        if (IsOwner)
+            instance = this;
     }
 
     private void Start()
@@ -49,7 +53,6 @@ public class StatsPlayer : StatsCharacter
         m_audioObjectPickUp = objPickUp.GetAudioSource();
         m_audioObjectDamageDealt = objDamageDealt.GetAudioSource();
         m_audioObjectDamageReceived = objDamageReceived.GetAudioSource();
-
 
         m_currentHealth = m_maxHealth;
 
@@ -68,46 +71,77 @@ public class StatsPlayer : StatsCharacter
             }
         }
 
+        if (IsOwner)
+        {
+            m_healthUI = GameManager.GetHudManager().GetHealthUI();
+
+            if (m_healthUI)
+            {
+                m_healthUI.SetMaxHealth(m_maxHealth.Value);
+                m_healthUI.SetHealthPoints(m_currentHealth.Value);
+            }
+        }
+
+
         m_initialised = true;
         HostilityManager.AddCharacter(this);
     }
 
     public override void Damage(float damage, float damageMultiplier = 1, StatsCharacter enemy = null, DamageSource weaponUsed = null)
     {
-        if (IsDead && false)
-            return;
-
-        m_damageSound.Play(m_audioObjectDamageReceived);
-
-        if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
-        if (null != weaponUsed) weaponUsed.OnDamageDealt(damage, this);
-
-        damage *= damageMultiplier * m_receivedDamageMultiplier;
-        float damagePercent = damage / m_maxHealth;
-
-        m_loadoutManager.AddPoints(WeaponPointsTypes.EXPERIENCE, -damage);
-
-        m_currentHealth -= damage;
-        m_currentHealth = Mathf.Max(0, m_currentHealth);
-
-        // Debug.Log("I HAVE BEEN DAMAGED, i have " + currentHealth + "hp");
-
-        m_damageSound.Play(m_audioSource);
-
-        if (m_currentHealth == 0)
+        if (!IsDead.Value || true)
         {
-            IsDead = true;
-            Kill(enemy, weaponUsed);
+            m_damageSound.Play(m_audioObjectDamageReceived);
+            //m_damageSound.Play(m_audioSource);
+
+            if (!IsClient)
+            {
+                if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
+                if (null != weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+
+                damage *= damageMultiplier * m_receivedDamageMultiplier.Value;
+                m_loadoutManager.AddPoints(WeaponPointsTypes.EXPERIENCE, -damage);
+
+                m_currentHealth.Value -= damage;
+                m_currentHealth.Value = Mathf.Max(0, m_currentHealth.Value);
+
+                if (m_healthUI) m_healthUI.SetHealthPoints(m_currentHealth.Value);
+
+                if (m_currentHealth.Value == 0)
+                {
+                    IsDead.Value = true;
+                    Kill(enemy, weaponUsed);
+                }
+            }
         }
     }
 
     public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
     {
-        if (killer) killer.OnCharacterKilled(this);
-        if (null != weaponUsed) weaponUsed.OnCharacterKilled(this);
+        if (!IsClient)
+        {
+            if (killer) killer.OnCharacterKilled(this);
+            if (null != weaponUsed) weaponUsed.OnCharacterKilled(this);
 
-        IsDead = true;
-        // Debug.Log("I DIED");
+            IsDead.Value = true;
+        }
+    }
+
+    public override void SetMaxHealthRaw(float maxHealth)
+    {
+        if (!IsClient)
+        {
+            m_maxHealth.Value = maxHealth;
+            if (m_healthUI) m_healthUI.SetMaxHealth(m_maxHealth.Value * m_maxHealthMultiplier.Value);
+        }
+    }
+
+    public override void SetMaxHealthMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
+    {
+        if (!IsClient && m_maxHealthMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority) && m_healthUI)
+        {
+            m_healthUI.SetMaxHealth(m_maxHealth.Value * m_maxHealthMultiplier.Value);
+        }
     }
 
     public void AddPoints(CollectibleType itemType, float value)
@@ -122,6 +156,11 @@ public class StatsPlayer : StatsCharacter
 
             case (CollectibleType.POWER):
                 m_loadoutManager.AddPointsAll(WeaponPointsTypes.EXPERIENCE, value);
+                break;
+
+            case (CollectibleType.HEALTH):
+                m_currentHealth.Value += value;
+                if (m_healthUI) m_healthUI.SetHealthPoints(m_currentHealth.Value);
                 break;
         }
 

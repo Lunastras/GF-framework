@@ -19,9 +19,6 @@ public class WeaponLevels : WeaponBasic
     [SerializeField]
     public float[] m_expRequiredForLevels = null;
 
-    [SerializeField]
-    private OdamaBehaviour m_odama = null;
-
     public float CurrentExp { get; private set; } = 0;
 
     public int CurrentLevel { get; private set; } = 0;
@@ -39,12 +36,6 @@ public class WeaponLevels : WeaponBasic
         DestroyWhenDone = DisableWhenDone = false;
     }
 
-    public override void WasSwitchedOn()
-    {
-        if (m_odama)
-            m_odama.OnEnable();
-    }
-
     private void Awake()
     {
         if (null == m_turret)
@@ -60,8 +51,6 @@ public class WeaponLevels : WeaponBasic
                 m_audioSource = gameObject.AddComponent<AudioSource>();
             }
         }
-
-        if (null == m_odama) m_odama = GetComponent<OdamaBehaviour>();
     }
 
     public override bool IsFiring() { return m_turret.IsFiring(); }
@@ -92,7 +81,7 @@ public class WeaponLevels : WeaponBasic
         return m_levelReleaseFireSounds.Length > 0 ? m_levelReleaseFireSounds[Mathf.Clamp(CurrentLevel, 0, m_levelReleaseFireSounds.Length - 1)] : null;
     }
 
-    public override void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false)
+    public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)
     {
         m_isFiring = true;
 
@@ -108,7 +97,7 @@ public class WeaponLevels : WeaponBasic
         m_turret.Play(false, CurrentLevel);
     }
 
-    public override void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false)
+    public override void ReleasedFire(FireHit hit = default, FireType fireType = FireType.MAIN)
     {
         if (m_levelReleaseFireSounds.Length > 0)
             GetReleaseFireSound().Play(m_audioSource);

@@ -7,10 +7,13 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     //current instance
-    public static GameManager Manager;
+    public static GameManager Instance;
 
     [SerializeField]
     private Transform m_player = null;
+
+    [SerializeField]
+    private HudManager m_hudManager = null;
 
     //[SerializeField]
     //private Image m_loadFadeImage = null;
@@ -18,7 +21,10 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject m_pauseScreen = null;
 
-    public static bool isMultiplayer = false;
+    [SerializeField]
+    private GameObject m_loadFadeScreen = null;
+
+    public static bool IsMultiplayer = false;
 
     private bool m_isPaused = false;
 
@@ -29,10 +35,10 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        if (Manager != this)
-            Destroy(Manager);
+        if (Instance != this)
+            Destroy(Instance);
 
-        Manager = this;
+        Instance = this;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
@@ -72,13 +78,16 @@ public class GameManager : MonoBehaviour
 
     }
 
+    public static HudManager GetHudManager() { return Instance.m_hudManager; }
+
     public void PauseToggle()
     {
         if (!CanPause || LoadingScreenManager.currentlyLoading)
             return;
 
+        if (m_loadFadeScreen) m_loadFadeScreen.SetActive(false);
         m_isPaused = !m_isPaused;
-        Time.timeScale = m_isPaused && !isMultiplayer ? 0 : 1;
+        Time.timeScale = m_isPaused && !IsMultiplayer ? 0 : 1;
         m_pauseScreen.SetActive(m_isPaused);
         Cursor.visible = m_isPaused;
         Cursor.lockState = m_isPaused ? CursorLockMode.None : CursorLockMode.Locked;
@@ -86,11 +95,16 @@ public class GameManager : MonoBehaviour
 
     public static bool IsPaused()
     {
-        return Manager.m_isPaused;
+        return Instance.m_isPaused;
     }
 
     public static Transform GetPlayer()
     {
-        return Manager.m_player;
+        return Instance.m_player;
+    }
+
+    public static void SetPlayer(Transform player)
+    {
+        Instance.m_player = player;
     }
 }

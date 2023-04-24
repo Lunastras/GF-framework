@@ -32,7 +32,7 @@ public abstract class WeaponParticle : WeaponBasic
         m_particleSystem.Stop(true);
     }
 
-    public override void Fire(RaycastHit hit = default, bool hitAnObject = true, bool forceFire = false)
+    public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)
     {
         m_isFiring = true;
         m_particleSystem.Play();
@@ -44,7 +44,7 @@ public abstract class WeaponParticle : WeaponBasic
 
     public int GetParticleTriggerDamageIndex() { return m_particleTriggerDamageListIndex; }
 
-    public override void ReleasedFire(RaycastHit hit = default, bool hitAnObject = false) { }
+    public override void ReleasedFire(FireHit hit = default, FireType fireType = FireType.MAIN) { }
 
     public override bool IsAlive() { return m_particleSystem.IsAlive(true); }
 

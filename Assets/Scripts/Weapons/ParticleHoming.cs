@@ -60,15 +60,17 @@ public class ParticleHoming : JobChild
     protected float m_timeUntilPhysUpdate = 0;
 
     // Start is called before the first frame update
-
     void Awake()
     {
         if (null == m_particleSystem) m_particleSystem = GetComponent<ParticleSystem>();
     }
+
     void Start()
     {
         InitJobChild();
         m_initialised = true;
+        var customData = m_particleSystem.customData;
+        customData.enabled = true;
         UpdateDefaultGravityCustomData();
     }
 
@@ -80,7 +82,6 @@ public class ParticleHoming : JobChild
 
     void OnDisable()
     {
-        ResetToDefault();
         DeinitJobChild();
     }
 
@@ -106,7 +107,7 @@ public class ParticleHoming : JobChild
 
         if (0 >= m_timeUntilPhysUpdate)
         {
-            float timeSinceLastCheck = m_physInterval - m_timeUntilPhysUpdate;
+            float timeSinceLastCheck = System.MathF.Max(deltaTime, System.MathF.Min(2 * m_physInterval, m_physInterval - m_timeUntilPhysUpdate));
             m_timeUntilPhysUpdate += m_physInterval;
             m_numActiveParticles = m_particleSystem.particleCount;
             //Debug.Log("The num of particles i have is: " + m_numActiveParticles + " name is: " + gameObject.name);
@@ -237,7 +238,6 @@ public class ParticleHoming : JobChild
     private void UpdateDefaultGravityCustomData()
     {
         var customData = m_particleSystem.customData;
-        customData.enabled = true;
         customData.SetVector(ParticleSystemCustomData.Custom1, 0, m_defaultGravityDir.x);
         customData.SetVector(ParticleSystemCustomData.Custom1, 1, m_defaultGravityDir.y);
         customData.SetVector(ParticleSystemCustomData.Custom1, 2, m_defaultGravityDir.z);

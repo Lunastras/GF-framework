@@ -102,9 +102,9 @@ public class GfMovementWallrun : GfMovementSimple
 
     protected virtual void CalculateDash(float deltaTime, Vector3 movDir)
     {
-        if (DashFlag)
+        if (FlagDash)
         {
-            DashFlag = false;
+            FlagDash = false;
             if (m_dashFlagReleased)
             {
                 m_dashFlagReleased = false;

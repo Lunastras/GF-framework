@@ -2,51 +2,53 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using Unity.Netcode;
 
 using System.Runtime.InteropServices;
 
-public class LoadoutManager : MonoBehaviour
+public class LoadoutManager : NetworkBehaviour
 {
     [SerializeField]
-    private GfMovementGeneric m_parentMovement;
+    protected GfMovementGeneric m_movementParent;
 
     [SerializeField]
-    private StatsCharacter m_statsCharacter;
+    protected StatsCharacter m_statsCharacter;
 
     [SerializeField]
-    private WeaponFiring m_weaponFiring;
+    protected WeaponFiring m_weaponFiring;
 
-
-
-    private int[] m_weaponsInInventory;
+    protected int[] m_weaponsInInventory;
 
     [SerializeField]
-    private bool m_infiniteInventory = true;
+    protected bool m_infiniteInventory = true;
 
     [SerializeField]
-    private HudManager m_hudManager = null;
+    protected HudManager m_hudManager = null;
 
-    private int m_weaponCapacity = 2;
+    protected int m_weaponCapacity = 2;
 
-    private List<List<WeaponData>> m_loadouts;
+    protected List<List<WeaponData>> m_loadouts;
 
-    private int m_currentLoadOutIndex = 0;
+    protected int m_currentLoadOutIndex = 0;
 
-    private static int m_countWeaponTypes = -1;
+    protected static int m_countWeaponTypes = -1;
 
-    private PriorityValue<float> m_weaponCapacityMultiplier = new(1);
-    private PriorityValue<float> m_speedMultiplier = new(1);
-    private PriorityValue<float> m_damageMultiplier = new(1);
-    private PriorityValue<float> m_fireRateMultiplier = new(1);
+    protected PriorityValue<float> m_weaponCapacityMultiplier = new(1);
+    protected PriorityValue<float> m_speedMultiplier = new(1);
+    protected PriorityValue<float> m_damageMultiplier = new(1);
+    protected PriorityValue<float> m_fireRateMultiplier = new(1);
 
-    private List<WeaponBasic> m_weapons = null;
+    protected List<WeaponBasic> m_weapons = null;
 
-    private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
+    protected static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
 
+    protected virtual void InternalStart() { }
 
     // Start is called before the first frame update
     void Start()
     {
+        InternalStart();
+
         if (-1 == m_countWeaponTypes)
             m_countWeaponTypes = Enum.GetValues(typeof(CharacterTypes)).Length;
 
@@ -57,15 +59,17 @@ public class LoadoutManager : MonoBehaviour
             m_weaponFiring = GetComponent<WeaponFiring>();
         }
 
-        if (null == m_parentMovement)
+        if (null == m_movementParent)
         {
-            m_parentMovement = GetComponent<GfMovementGeneric>();
+            m_movementParent = GetComponent<GfMovementGeneric>();
         }
 
         if (null == m_statsCharacter)
         {
             m_statsCharacter = GetComponent<StatsCharacter>();
         }
+
+
 
         m_weaponsInInventory = new int[WeaponMaster.NumWeapons()];
 
@@ -76,22 +80,26 @@ public class LoadoutManager : MonoBehaviour
 
         SetCurrentLoadout(m_currentLoadOutIndex);
 
+        if (IsOwner) m_hudManager = GameManager.GetHudManager();
+
         Test();
     }
 
     private void Test()
     {
-        SetWeaponCapacity(3);
-        AddLoadout(2);
+        SetWeaponCapacity(4);
+        AddLoadout(3);
 
         SetLoadoutWeapon(0, 0, 1);
         SetLoadoutWeapon(0, 1, 1);
         SetLoadoutWeapon(0, 2, 1);
 
         SetLoadoutWeapon(1, 0, 2);
-        SetLoadoutWeapon(1, 1, 0);
+        SetLoadoutWeapon(1, 1, 2);
         SetLoadoutWeapon(1, 2, 2);
-        //ChangeLoadOutWeapon(0, 2, 2);
+
+        SetLoadoutWeapon(2, 0, 3);
+        SetLoadoutWeapon(2, 1, 3);
 
         SetCurrentLoadout(0);
     }
@@ -223,6 +231,11 @@ public class LoadoutManager : MonoBehaviour
         GfPooling.DestroyInsert(obj, isAlive);
     }
 
+    protected virtual void OnWeaponSet(WeaponBasic weapon) { }
+
+    protected virtual void OnWeaponsCleared() { }
+
+
     private void InternalSetCurrentLoadout(int indexLoadout)
     {
         if (null != m_loadouts && 0 < m_loadouts.Count)
@@ -236,34 +249,31 @@ public class LoadoutManager : MonoBehaviour
                 m_weapons.RemoveAt(i);
             }
 
-            int weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
-            // float angleBetweenOdamas = 360.0f / weaponsCount;
-
+            OnWeaponsCleared();
             m_weaponFiring.ClearWeapons();
+
+            int weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
 
             for (i = 0; i < weaponsCount; ++i)
             {
                 GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].weapon);
                 m_weapons.Add(GetWeapon(desiredWeapon));
 
-                //OdamaBehaviour ob = m_weapons[i].GetComponent<OdamaBehaviour>();
-                // ob.SetAngle(i * angleBetweenOdamas);
-                // ob.enabled = true;
-                // ob.SetParent(m_parentMovement);
-                //ob.transform.position = transform.position;
-                m_weapons[i].SetMovementParent(m_parentMovement);
-                m_weapons[i].SetSpeedMultiplier(m_speedMultiplier, 0, true);
-                m_weapons[i].SetFireRateMultiplier(m_fireRateMultiplier, 0, true);
-                m_weapons[i].SetDamageMultiplier(m_damageMultiplier, 0, true);
-                m_weapons[i].SetLoadoutCount(weaponsCount);
-                m_weapons[i].SetLoadoutWeaponIndex(i);
-                m_weapons[i].SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
-                m_weapons[i].WasSwitchedOn();
-                m_weapons[i].DisableWhenDone = false;
-                m_weapons[i].DestroyWhenDone = false;
-                m_weapons[i].transform.position = m_parentMovement.transform.position;
+                WeaponBasic weapon = m_weapons[i];
+                weapon.SetMovementParent(m_movementParent);
+                weapon.SetSpeedMultiplier(m_speedMultiplier, 0, true);
+                weapon.SetFireRateMultiplier(m_fireRateMultiplier, 0, true);
+                weapon.SetDamageMultiplier(m_damageMultiplier, 0, true);
+                weapon.SetLoadoutCount(weaponsCount);
+                weapon.SetLoadoutWeaponIndex(i);
+                weapon.SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
+                weapon.WasSwitchedOn();
+                weapon.DisableWhenDone = false;
+                weapon.DestroyWhenDone = false;
+                weapon.transform.position = m_movementParent.transform.position;
 
-                m_weaponFiring.SetWeapon(m_weapons[i], i);
+                m_weaponFiring.SetWeapon(weapon, i);
+                OnWeaponSet(weapon);
             }
 
             //refresh the levelweapons
@@ -331,6 +341,14 @@ public class LoadoutManager : MonoBehaviour
         if (updateCurrentWeapon)
         {
             InternalSetCurrentLoadout(m_currentLoadOutIndex);
+        }
+    }
+
+    private void OnDisable()
+    {
+        for (int i = 0; i < m_weapons.Count; ++i)
+        {
+            DestroyWeapon(m_weapons[i]);
         }
     }
 
