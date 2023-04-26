@@ -75,7 +75,7 @@ public class OdamaManager : LoadoutManager
         if (length > 0)
         {
             float deltaTime = Time.deltaTime;
-            Vector3 upVec = m_movementParent.GetUpvecRotation();
+            Vector3 upVec = m_parentMovement.GetUpvecRotation();
 
             float rotationCoef = 1;
             float dstCoef = 1;
@@ -105,18 +105,18 @@ public class OdamaManager : LoadoutManager
             {
                 odama = m_list[i];
 
-                if (m_movementParent)
+                if (m_parentMovement)
                 {
                     float angleOffset = angleBetweenOdamas * i;
                     float angle = m_currentRotationRelativeToParentRad.Value + angleOffset;
                     float height = System.MathF.Sin(m_currentBopValue.Value + angleOffset * Mathf.Deg2Rad * 2.0f) * m_bopRange * m_bopCoef * 0.5f;
 
-                    Vector3 dirFromPlayer = m_movementParent.GetCurrentRotation() * Vector3.right;
+                    Vector3 dirFromPlayer = m_parentMovement.GetCurrentRotation() * Vector3.right;
                     GfTools.Mult3(ref dirFromPlayer, odama.GetDesiredDst());
                     GfTools.Add3(ref dirFromPlayer, height * upVec);
                     dirFromPlayer = Quaternion.AngleAxis(angle, upVec) * dirFromPlayer;
 
-                    odama.UpdateMovement(deltaTime, dirFromPlayer, transform.position, dstCoef);
+                    odama.UpdateMovement(deltaTime, dirFromPlayer, transform.position, dstCoef, m_parentMovement);
                 }
             }
         }

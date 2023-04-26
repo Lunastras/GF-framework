@@ -11,9 +11,6 @@ public class OdamaBehaviour : MonoBehaviour
     private WeaponBasic m_weaponBasic = null;
 
     [SerializeField]
-    private GfMovementGeneric m_parentMovement = null;
-
-    [SerializeField]
     private ShadowProjectorManipulator m_shadowProjector = null;
 
     [SerializeField]
@@ -66,15 +63,15 @@ public class OdamaBehaviour : MonoBehaviour
         m_distanceSmoothVelocity = Vector3.zero;
     }
 
-    public void UpdateMovement(float deltaTime, Vector3 dirFromPlayer, Vector3 parentPosition, float distanceCoef)
+    public void UpdateMovement(float deltaTime, Vector3 dirFromPlayer, Vector3 parentPosition, float distanceCoef, GfMovementGeneric parentMovement)
     {
         m_timeUntilPhysCheck -= deltaTime;
 
-        if (m_parentMovement)
+        if (parentMovement)
         {
-            if (m_followCameraScript) m_followCameraScript.m_defaultUpvec = m_parentMovement.GetUpvecRotation();
-            if (m_shadowProjector) m_shadowProjector.m_parentMovement = m_parentMovement;
-            m_transform.rotation = m_parentMovement.GetCurrentRotation();
+            if (m_followCameraScript) m_followCameraScript.m_defaultUpvec = parentMovement.GetUpvecRotation();
+            if (m_shadowProjector) m_shadowProjector.m_parentMovement = parentMovement;
+            m_transform.rotation = parentMovement.GetCurrentRotation();
         }
 
         if (m_timeUntilPhysCheck <= 0)
@@ -101,11 +98,6 @@ public class OdamaBehaviour : MonoBehaviour
     public float GetDesiredDst()
     {
         return m_desiredTargetDst;
-    }
-
-    public void SetParentMovement(GfMovementGeneric movement)
-    {
-        m_parentMovement = movement;
     }
 
     public virtual WeaponBasic GetWeaponBasic() { return m_weaponBasic; }

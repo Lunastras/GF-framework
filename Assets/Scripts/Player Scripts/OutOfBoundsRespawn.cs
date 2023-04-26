@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Unity.Netcode;
 public class OutOfBoundsRespawn : MonoBehaviour
 {
     public float respawnYCoord = -10;
@@ -22,6 +22,8 @@ public class OutOfBoundsRespawn : MonoBehaviour
         {
             respawnPosition = Vector3.zero;
         }
+
+        if (!NetworkManager.Singleton.IsServer) Destroy(this);
     }
 
     // Update is called once per frame
@@ -33,7 +35,7 @@ public class OutOfBoundsRespawn : MonoBehaviour
             transform.position = respawnPoint.position;
             if (movement != null)
             {
-                movement.m_velocity = Vector3.zero;
+                movement.SetVelocity(Vector3.zero);
             }
         }
     }

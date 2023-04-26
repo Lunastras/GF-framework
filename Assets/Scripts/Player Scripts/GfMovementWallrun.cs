@@ -78,13 +78,13 @@ public class GfMovementWallrun : GfMovementSimple
 
         m_touchedParent = m_jumpedThisFrame = m_touchedWallThisFrame = false;
 
-        //keep going forward for a bit after detaching from wall
-        if (0 < m_secondsUntilStopMovingFwd && MovementDirRaw.sqrMagnitude < 0.01f)
-            MovementDirRaw = m_transform.forward;
-
         if (!m_isWallRunning)
         {
             Vector3 movDir = MovementDirComputed();
+
+            //keep going forward for a bit after detaching from wall
+            if (0 < m_secondsUntilStopMovingFwd && movDir.sqrMagnitude < 0.01f)
+                movDir = m_transform.forward;
 
             CalculateEffectiveValues();
             CalculateVelocity(deltaTime, movDir);

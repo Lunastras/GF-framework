@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using Unity.Netcode;
 
-public abstract class GfMovementGeneric : MonoBehaviour
+public abstract class GfMovementGeneric : NetworkBehaviour
 {
     #region Variables
     [SerializeField]
@@ -66,7 +67,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     protected PriorityValue<Transform> m_parentTransform = new();
 
     [HideInInspector]
-    public Vector3 m_velocity = Zero3;
+    protected Vector3 m_velocity = Zero3;
 
     protected Vector3 m_upVec = UPDIR;
 
@@ -1013,6 +1014,17 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public Quaternion GetCurrentRotation()
     {
         return m_currentRotation;
+    }
+
+    public Vector3 GetVelocity()
+    {
+        return m_velocity;
+    }
+
+    public void SetVelocity(Vector3 velocity)
+    {
+        if (IsServer)
+            m_velocity = velocity;
     }
 
     public bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)

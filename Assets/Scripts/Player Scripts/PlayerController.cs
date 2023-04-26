@@ -210,7 +210,7 @@ public class PlayerController : NetworkBehaviour
             //m_movement.SetMovementDir(m_movDir);
         }
 
-        if (IsServer)
+        if (IsServer || true)
         {
             m_movement.Move(deltaTime);
 

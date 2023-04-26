@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 public class LoadoutManager : NetworkBehaviour
 {
     [SerializeField]
-    protected GfMovementGeneric m_movementParent;
+    protected GfMovementGeneric m_parentMovement;
 
     [SerializeField]
     protected StatsCharacter m_statsCharacter;
@@ -54,14 +54,14 @@ public class LoadoutManager : NetworkBehaviour
 
         m_weapons = new(4);
 
-        if (m_weaponFiring == null)
+        if (null == m_weaponFiring)
         {
             m_weaponFiring = GetComponent<WeaponFiring>();
         }
 
-        if (null == m_movementParent)
+        if (null == m_parentMovement)
         {
-            m_movementParent = GetComponent<GfMovementGeneric>();
+            m_parentMovement = GetComponent<GfMovementGeneric>();
         }
 
         if (null == m_statsCharacter)
@@ -260,7 +260,7 @@ public class LoadoutManager : NetworkBehaviour
                 m_weapons.Add(GetWeapon(desiredWeapon));
 
                 WeaponBasic weapon = m_weapons[i];
-                weapon.SetMovementParent(m_movementParent);
+                weapon.SetMovementParent(m_parentMovement);
                 weapon.SetSpeedMultiplier(m_speedMultiplier, 0, true);
                 weapon.SetFireRateMultiplier(m_fireRateMultiplier, 0, true);
                 weapon.SetDamageMultiplier(m_damageMultiplier, 0, true);
@@ -270,7 +270,7 @@ public class LoadoutManager : NetworkBehaviour
                 weapon.WasSwitchedOn();
                 weapon.DisableWhenDone = false;
                 weapon.DestroyWhenDone = false;
-                weapon.transform.position = m_movementParent.transform.position;
+                weapon.transform.position = m_parentMovement.transform.position;
 
                 m_weaponFiring.SetWeapon(weapon, i);
                 OnWeaponSet(weapon);
