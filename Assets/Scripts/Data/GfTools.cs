@@ -95,13 +95,13 @@ public class GfTools
         return RotationTo(initial, final, Vector3.forward);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //inlining these functions makes it slower by a considerable ammount from the local tests performed
     public static void Minus3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x -= rightHand.x; leftHand.y -= rightHand.y; leftHand.z -= rightHand.z; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static void Add3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x += rightHand.x; leftHand.y += rightHand.y; leftHand.z += rightHand.z; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
     public static void Mult3(ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
 
     public static void Div3(ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }

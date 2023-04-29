@@ -38,7 +38,7 @@ public class PlayerController : NetworkBehaviour
     private Transform m_playerCamera;
 
     private Vector3 m_movDir = Vector3.zero;
-    private bool m_flagFire = false;
+    private NetworkVariable<bool> m_flagFire = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     private bool m_flagJump = false;
     private bool m_flagDash = false;
 
@@ -48,21 +48,14 @@ public class PlayerController : NetworkBehaviour
         if (IsOwner)
         {
             GameManager.SetPlayer(transform);
-            if (m_movement == null)
+            if (null == m_movement)
             {
                 m_movement = GetComponent<GfMovementGeneric>();
                 //  if (null == m_movement)
                 // Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
             }
 
-            if (m_loadoutManager == null)
-            {
-                m_loadoutManager = GetComponent<LoadoutManager>();
-                if (null == m_loadoutManager)
-                    Debug.LogWarning("PlayerControler: The loadout manager is null, please give it a value in the inspector. Object: " + gameObject.name);
-            }
-
-            if (m_cameraController == null)
+            if (null == m_cameraController)
             {
                 m_playerCamera = Camera.main.transform;
 
@@ -77,7 +70,14 @@ public class PlayerController : NetworkBehaviour
 
         }
 
-        if (m_weaponFiring == null)
+        if (null == m_loadoutManager)
+        {
+            m_loadoutManager = GetComponent<LoadoutManager>();
+            if (null == m_loadoutManager)
+                Debug.LogWarning("PlayerControler: The loadout manager is null, please give it a value in the inspector. Object: " + gameObject.name);
+        }
+
+        if (null == m_weaponFiring)
         {
             m_weaponFiring = GetComponent<WeaponFiring>();
             if (null == m_weaponFiring)
@@ -139,44 +139,36 @@ public class PlayerController : NetworkBehaviour
             return;
 
         float wheelValue = Input.GetAxisRaw("Mouse ScrollWheel");
+
         if (wheelValue >= 0.1f)
         {
-            Debug.Log("MOUSE UP");
-            m_loadoutManager.NextLoadout();
+            ChangedWeaponServerRpc(true);
         }
         else if (wheelValue <= -0.1f)
         {
-            Debug.Log("MOUSE DOWN");
-            m_loadoutManager.PreviousLoadout();
+            ChangedWeaponServerRpc(false);
         }
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (IsServer && m_fixedUpdatePhysics && !m_usesRigidBody)
+        if (IsOwner && m_fixedUpdatePhysics && !m_usesRigidBody)
         {
             float physDelta = Time.fixedDeltaTime;
             m_movement.UpdatePhysics(physDelta, true, physDelta); //actually the current deltatime   
 
-            if (IsOwner)
-            {
-                m_flagDash = false;
-                m_flagJump = false;
-            }
-            else
-            {
-                FinishedMovementCalculationsClientRpc();
-            }
+            m_flagDash = false;
+            m_flagJump = false;
         }
     }
 
     void LateUpdate()
     {
-        float deltaTime = Time.deltaTime;
-
         if (IsOwner)
         {
+            float deltaTime = Time.deltaTime;
+
             bool auxFlagFire = false;
             bool auxFlagDash = false;
             bool auxFlagJump = false;
@@ -196,22 +188,14 @@ public class PlayerController : NetworkBehaviour
                 GetWeaponScrollInput();
             }
 
-            if (m_flagFire != auxFlagFire) SetFireServerRpc(auxFlagFire);
-            if (m_flagDash != auxFlagDash) SetDashFlagServerRpc(auxFlagDash);
-            if (m_flagJump != auxFlagJump) SetJumpFlagServerRpc(auxFlagJump);
-            if (auxMovDir != m_movDir) SetMovementDirServerRpc(auxMovDir);
-
-            m_flagFire = auxFlagFire; //calculated every frame, we just need the raw input
+            m_flagFire.Value = auxFlagFire; //calculated every frame, we just need the raw input
             m_flagDash |= auxFlagDash; // used the | operator to keep the flag true until the next phys update call
             m_flagJump |= auxFlagJump;
             m_movDir = auxMovDir;
 
-            m_cameraController.Move(deltaTime);
-            //m_movement.SetMovementDir(m_movDir);
-        }
-
-        if (IsServer || true)
-        {
+            m_movement.FlagDash = m_flagDash;
+            m_movement.FlagJump = m_flagJump;
+            m_movement.SetMovementDir(m_movDir);
             m_movement.Move(deltaTime);
 
             if (!m_usesRigidBody && !m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
@@ -221,20 +205,37 @@ public class PlayerController : NetworkBehaviour
                 float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
                 m_movement.UpdatePhysics(physDelta, false, timeUntilNextUpdate);
 
-                if (IsOwner)
-                {
-                    m_flagDash = false;
-                    m_flagJump = false;
-                }
-                else
-                {
-                    FinishedMovementCalculationsClientRpc();
-                }
+                m_flagDash = false;
+                m_flagJump = false;
             }
+
+            m_cameraController.Move(deltaTime);
         }
 
-        Fire(m_flagFire);
+        Fire(m_flagFire.Value);
     }
+
+    [ServerRpc]
+    private void ChangedWeaponServerRpc(bool nextWeapon)
+    {
+        if (nextWeapon)
+            m_loadoutManager.NextLoadout();
+        else
+            m_loadoutManager.PreviousLoadout();
+
+        ChangedWeaponClientRpc(nextWeapon);
+    }
+
+    [ClientRpc]
+    private void ChangedWeaponClientRpc(bool nextWeapon)
+    {
+        if (nextWeapon)
+            m_loadoutManager.NextLoadout();
+        else
+            m_loadoutManager.PreviousLoadout();
+    }
+
+    /*
 
     [ClientRpc]
     private void FinishedMovementCalculationsClientRpc()
@@ -281,5 +282,5 @@ public class PlayerController : NetworkBehaviour
     {
         m_flagJump = dash;
         m_movement.FlagJump = dash;
-    }
+    }*/
 }

@@ -458,7 +458,6 @@ GameObject:
   - component: {fileID: 148854930636548515}
   - component: {fileID: 148854930636548537}
   - component: {fileID: 3072452865096101450}
-  - component: {fileID: 3152671482662933855}
   - component: {fileID: -1934781534553659541}
   m_Layer: 8
   m_Name: Player
@@ -625,32 +624,6 @@ MonoBehaviour:
   m_rotationSpeedSmoothTime: 0.2
   m_bopValueSmoothTime: 0.2
   m_positionOffset: {x: 0, y: 0, z: 0}
---- !u!114 &3152671482662933855
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148854930636548520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
-  ScaleThreshold: 0.01
-  InLocalSpace: 0
-  Interpolate: 1
 --- !u!114 &-1934781534553659541
 MonoBehaviour:
   m_ObjectHideFlags: 0

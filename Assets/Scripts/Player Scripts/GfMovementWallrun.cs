@@ -230,12 +230,14 @@ public class GfMovementWallrun : GfMovementSimple
         }
         else
         {
-            float velMag = collision.selfVelocity.magnitude;
+            Vector3 horizontalVelocity = collision.selfVelocity;
+            GfTools.RemoveAxis(ref horizontalVelocity, m_upVec);
+            float velSqrMag = horizontalVelocity.sqrMagnitude;
 
-            if (velMag >= m_wallrunSpeedRequired)
+            if (velSqrMag >= m_wallrunSpeedRequired * m_wallrunSpeedRequired)
             {
-                testVector = collision.selfVelocity;
-                GfTools.Div3(ref testVector, velMag);
+                testVector = horizontalVelocity;
+                GfTools.Div3(ref testVector, System.MathF.Sqrt(velSqrMag));
             }
         }
 
