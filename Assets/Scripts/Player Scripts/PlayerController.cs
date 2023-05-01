@@ -142,11 +142,11 @@ public class PlayerController : NetworkBehaviour
 
         if (wheelValue >= 0.1f)
         {
-            ChangedWeaponServerRpc(true);
+            m_loadoutManager.NextLoadout();
         }
         else if (wheelValue <= -0.1f)
         {
-            ChangedWeaponServerRpc(false);
+            m_loadoutManager.PreviousLoadout();
         }
     }
 
@@ -213,26 +213,6 @@ public class PlayerController : NetworkBehaviour
         }
 
         Fire(m_flagFire.Value);
-    }
-
-    [ServerRpc]
-    private void ChangedWeaponServerRpc(bool nextWeapon)
-    {
-        if (nextWeapon)
-            m_loadoutManager.NextLoadout();
-        else
-            m_loadoutManager.PreviousLoadout();
-
-        ChangedWeaponClientRpc(nextWeapon);
-    }
-
-    [ClientRpc]
-    private void ChangedWeaponClientRpc(bool nextWeapon)
-    {
-        if (nextWeapon)
-            m_loadoutManager.NextLoadout();
-        else
-            m_loadoutManager.PreviousLoadout();
     }
 
     /*

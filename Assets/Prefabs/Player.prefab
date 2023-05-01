@@ -453,12 +453,14 @@ GameObject:
   m_Component:
   - component: {fileID: 148854930636548524}
   - component: {fileID: 148854930636548512}
+  - component: {fileID: 6390946529941703449}
   - component: {fileID: 148854930636548526}
   - component: {fileID: 148854930636548514}
   - component: {fileID: 148854930636548515}
   - component: {fileID: 148854930636548537}
   - component: {fileID: 3072452865096101450}
   - component: {fileID: -1934781534553659541}
+  - component: {fileID: 5733648712073414754}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -499,6 +501,77 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6390946529941703449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07d19a7513f65af46abe5a560ef1070a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_maxHealth:
+    m_InternalValue: 100
+  m_characterType:
+    m_InternalValue: 0
+  m_playerGun: {fileID: 0}
+  m_loadoutManager: {fileID: 0}
+  m_audioSource: {fileID: 0}
+  m_damageSound:
+    m_clip: {fileID: 0}
+    m_mixerType: 0
+    m_mixerGroupOverride: {fileID: 0}
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_damageDealtSound:
+    m_clip: {fileID: 8300000, guid: 0c5b647354c22304a9ae8c2cff48c266, type: 3}
+    m_mixerType: 0
+    m_mixerGroupOverride: {fileID: 0}
+    m_volume: 0.3
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_deathSound:
+    m_clip: {fileID: 8300000, guid: 3de99b229ce91c545933bf05cd6c5530, type: 3}
+    m_mixerType: 0
+    m_mixerGroupOverride: {fileID: 0}
+    m_volume: 0.224
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_itemPickUpSound:
+    m_clip: {fileID: 8300000, guid: 60f8fc80e7557ca408af257449f40834, type: 3}
+    m_mixerType: 0
+    m_mixerGroupOverride: {fileID: 0}
+    m_volume: 0.298
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
 --- !u!114 &148854930636548526
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -640,3 +713,29 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!114 &5733648712073414754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df2868252ab5c4d1da357e8f11f1b524, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  InLocalSpace: 0
+  Interpolate: 1

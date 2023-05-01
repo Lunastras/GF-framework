@@ -38,7 +38,6 @@ public class HudManager : MonoBehaviour
     */
     public void UpdateSliders(List<WeaponBasic> weapons)
     {
-        Debug.Log("I was called indeed, updating sliders");
         int desiredWeaponCount = 1;
         int currentWeaponCount = weapons.Count;
         if (!m_onlyShowFirstWeapon || 0 == currentWeaponCount) desiredWeaponCount = currentWeaponCount;

@@ -29,9 +29,18 @@ public class ParticlePlayerCollectible : ParticleTrigger
         OnEnable();
     }
 
+    private void FixedUpdate()
+    {
+        if (m_particleHoming && GameManager.Instance && m_player != GameManager.GetPlayer())
+        {
+            m_player = GameManager.GetPlayer();
+            m_particleHoming.SetTarget(m_player);
+            m_particleSystem.trigger.AddCollider(m_player);
+        }
+    }
+
     private void OnParticleSystemStopped()
     {
-        m_particleHoming.ResetToDefault();
         gameObject.SetActive(false);
     }
 

@@ -30,7 +30,7 @@ public class GfTriggerLoadoutSetter : GfMovementTriggerable
         && null != (loadoutManager = movement.GetComponent<LoadoutManager>()))
         {
             if (m_fillToCapacity)
-                loadoutManager.SetLoadoutWeapon(m_loadoutIndex, m_weapon, true);
+                loadoutManager.SetLoadoutAllWeapons(m_loadoutIndex, m_weapon, true);
             else
                 loadoutManager.SetLoadoutWeapon(m_loadoutIndex, m_weaponIndex, m_weapon);
 

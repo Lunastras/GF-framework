@@ -83,6 +83,7 @@ public class ParticleHoming : JobChild
     void OnDisable()
     {
         DeinitJobChild();
+        ResetToDefault();
     }
 
     void OnDestroy()

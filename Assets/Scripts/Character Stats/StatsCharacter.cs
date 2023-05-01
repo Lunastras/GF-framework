@@ -16,6 +16,7 @@ public abstract class StatsCharacter : NetworkBehaviour
     protected NetworkVariable<PriorityValue<float>> m_receivedDamageMultiplier = new(new(1));
 
     public NetworkVariable<bool> IsDead { get; protected set; } = new(false);
+   
     protected NetworkVariable<float> m_currentHealth = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     private int m_characterIndex = -1;

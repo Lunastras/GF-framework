@@ -80,6 +80,8 @@ public class StatsPlayer : StatsCharacter
                 m_healthUI.SetMaxHealth(m_maxHealth.Value);
                 m_healthUI.SetHealthPoints(m_currentHealth.Value);
             }
+
+            GameManager.SetPlayer(transform);
         }
 
 
