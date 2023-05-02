@@ -40,9 +40,14 @@ public class WeaponTurret : DamageSource
         for (int i = 0; i < m_turretPhases.Length; ++i)
         {
             var weapons = m_turretPhases[i].weapons;
-            for (int j = 0; j < weapons.Length; ++j)
+            int weaponsLength = weapons.Length;
+
+            for (int j = 0; j < weaponsLength; ++j)
             {
                 weapons[j].m_parentDamageSource = this;
+                weapons[j].SetLoadoutWeaponIndex(j);
+                weapons[j].SetLoadoutCount(weaponsLength);
+                weapons[j].SetLoadoutIndex(i);
             }
         }
     }
@@ -145,9 +150,19 @@ public class WeaponTurret : DamageSource
         return isPlaying;
     }
 
+    public WeaponBasic GetWeapon(int phaseIndex, int weaponIndex)
+    {
+        return m_turretPhases[phaseIndex].weapons[weaponIndex];
+    }
+
     public int GetNumPhases()
     {
         return m_turretPhases.Length;
+    }
+
+    public int GetNumWeapons(int phaseIndex)
+    {
+        return m_turretPhases[phaseIndex].weapons.Length;
     }
 
     /*

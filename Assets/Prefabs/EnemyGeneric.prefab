@@ -5289,13 +5289,14 @@ GameObject:
   - component: {fileID: 432613321654859549}
   - component: {fileID: 1810723438}
   - component: {fileID: 1422192360}
+  - component: {fileID: 6956267960600933848}
   m_Layer: 12
   m_Name: EnemyGeneric
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4759944753111975126
 Transform:
   m_ObjectHideFlags: 0
@@ -5402,8 +5403,8 @@ MonoBehaviour:
   m_maxHealth:
     m_InternalValue: 100
   m_characterType:
-    m_InternalValue: 0
-  m_graphics: {fileID: 0}
+    m_InternalValue: 2
+  m_graphics: {fileID: 3538087118917617869}
   m_movement: {fileID: 0}
   m_powerItemsToDrop: 10
   m_itemDropsAfterDeath: []
@@ -5466,7 +5467,6 @@ MonoBehaviour:
   m_maxAngleNoSmoothDeg: 5
   FlagJump: 0
   FlagDash: 0
-  m_velocity: {x: 0, y: 0, z: 0}
   m_maxOverlaps: 4
   m_maxCasts: 4
   m_acceleration: 45
@@ -5592,3 +5592,29 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!114 &6956267960600933848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  InLocalSpace: 0
+  Interpolate: 1

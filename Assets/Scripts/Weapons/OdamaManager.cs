@@ -5,7 +5,6 @@ using Unity.Netcode;
 
 public class OdamaManager : LoadoutManager
 {
-
     [SerializeField]
     public float m_rotationSpeedCoefOnFire = 5;
 
@@ -44,47 +43,52 @@ public class OdamaManager : LoadoutManager
 
     private float m_bopSmoothRef = 0;
 
-    private List<OdamaBehaviour> m_list = new(4);
+    private const float DEG_2_RAD_MULT_2 = Mathf.Deg2Rad * 2F;
+
+    private const float PI_MULT_2 = Mathf.PI * 2F;
+
+    private List<OdamaBehaviour> m_odamaList = new(4);
 
     protected override void InternalStart()
     {
         m_currentRotationSpeed = m_rotationSpeed;
     }
 
+    private static readonly Vector3 RIGHT3 = Vector3.right;
+
     protected override void OnWeaponSet(WeaponBasic weapon)
     {
         OdamaBehaviour odama = weapon.GetComponent<OdamaBehaviour>();
-        if (odama) m_list.Add(odama);
+        if (odama) m_odamaList.Add(odama);
     }
 
     protected override void OnWeaponsCleared()
     {
-        m_list.Clear();
+        m_odamaList.Clear();
         if (IsOwner)
         {
-            m_currentBopValue.Value = Random.Range(0, 6.283185f);
-            m_currentRotationRelativeToParentRad.Value = Random.Range(0, 6.283185f);
+            m_currentBopValue.Value = Random.Range(0, PI_MULT_2);
+            m_currentRotationRelativeToParentRad.Value = Random.Range(0, PI_MULT_2);
         }
     }
 
     // Update is called once per frame
     void LateUpdate()
     {
-        int length = m_list.Count;
-
-        if (length > 0)
+        int odamaCount = m_odamaList.Count;
+        if (odamaCount > 0 && m_parentMovement)
         {
+            float dstCoef = 1;
+            float rotationCoef = 1;
+            float desiredBopCoef = 1;
             float deltaTime = Time.deltaTime;
             Vector3 upVec = m_parentMovement.GetUpvecRotation();
 
-            float rotationCoef = 1;
-            float dstCoef = 1;
-            float desiredBopCoef = 1;
             if (m_weaponFiring && m_weaponFiring.IsFiring)
             {
-                rotationCoef = m_rotationSpeedCoefOnFire;
-                dstCoef = m_dstFromParentCoefOnFire;
                 desiredBopCoef = m_bopCoefOnFire;
+                dstCoef = m_dstFromParentCoefOnFire;
+                rotationCoef = m_rotationSpeedCoefOnFire;
             }
 
             m_bopCoef = Mathf.SmoothDamp(m_bopCoef, desiredBopCoef, ref m_bopSmoothRef, m_bopValueSmoothTime);
@@ -92,32 +96,29 @@ public class OdamaManager : LoadoutManager
 
             if (IsOwner)
             {
-                m_currentRotationRelativeToParentRad.Value += deltaTime * m_currentRotationSpeed;
                 m_currentBopValue.Value += deltaTime * m_bopSpeed;
+                m_currentRotationRelativeToParentRad.Value += deltaTime * m_currentRotationSpeed;
             }
 
             OdamaBehaviour odama;
-            float angleBetweenOdamas = 360.0f / length;
+            float angleOffset, angle, height;
+            Vector3 dirFromPlayer = Vector3.zero;
+            float angleBetweenOdamas = 360.0f / odamaCount;
+            float heightCoef = m_bopRange * m_bopCoef * 0.5f;
 
-            //Debug.Log("The current rotation is: ")
-
-            for (int i = 0; i < length; ++i)
+            for (int i = 0; i < odamaCount; ++i)
             {
-                odama = m_list[i];
+                odama = m_odamaList[i];
+                angleOffset = angleBetweenOdamas * i;
+                angle = m_currentRotationRelativeToParentRad.Value + angleOffset;
+                height = System.MathF.Sin(m_currentBopValue.Value + angleOffset * DEG_2_RAD_MULT_2) * heightCoef;
 
-                if (m_parentMovement)
-                {
-                    float angleOffset = angleBetweenOdamas * i;
-                    float angle = m_currentRotationRelativeToParentRad.Value + angleOffset;
-                    float height = System.MathF.Sin(m_currentBopValue.Value + angleOffset * Mathf.Deg2Rad * 2.0f) * m_bopRange * m_bopCoef * 0.5f;
+                dirFromPlayer = m_parentMovement.GetCurrentRotation() * RIGHT3;
+                GfTools.Mult3(ref dirFromPlayer, odama.GetDesiredDst());
+                GfTools.Add3(ref dirFromPlayer, height * upVec);
+                dirFromPlayer = Quaternion.AngleAxis(angle, upVec) * dirFromPlayer;
 
-                    Vector3 dirFromPlayer = m_parentMovement.GetCurrentRotation() * Vector3.right;
-                    GfTools.Mult3(ref dirFromPlayer, odama.GetDesiredDst());
-                    GfTools.Add3(ref dirFromPlayer, height * upVec);
-                    dirFromPlayer = Quaternion.AngleAxis(angle, upVec) * dirFromPlayer;
-
-                    odama.UpdateMovement(deltaTime, dirFromPlayer, transform.position, dstCoef, m_parentMovement);
-                }
+                odama.UpdateMovement(deltaTime, dirFromPlayer, transform.position, dstCoef, m_parentMovement);
             }
         }
 

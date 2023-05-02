@@ -72,20 +72,22 @@ public class LoadoutManager : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        InternalStart();  
+        InternalStart();
 
         SetCurrentLoadout(m_currentLoadOutIndex);
 
-        if(IsServer)
+        if (IsServer)
         {
             Debug.Log("I am the server yess");
             Test();
         }
 
-        if (IsOwner) {
+        if (IsOwner)
+        {
             m_hudManager = GameManager.GetHudManager();
-            
-        } else if(IsClient)
+
+        }
+        else if (IsClient)
         {
             Debug.Log("Requesting data");
             RequestLoadoutDataServerRpc();
@@ -118,17 +120,18 @@ public class LoadoutManager : NetworkBehaviour
         Debug.Log("Received weapons request from id: " + clientId);
         int effectiveCapacity = (int)System.Math.Round(m_weaponCapacity * m_weaponCapacityMultiplier);
         WeaponData[] weaponsData = new WeaponData[m_loadouts.Count * effectiveCapacity];
-        for(int  i = 0; i < m_loadouts.Count; ++i)
+        for (int i = 0; i < m_loadouts.Count; ++i)
         {
             List<WeaponData> loadout = m_loadouts[i];
-            for(int j = 0; j < effectiveCapacity; ++j)
+            for (int j = 0; j < effectiveCapacity; ++j)
             {
                 bool hasWeapon = null != loadout && j < loadout.Count;
                 int index = i * effectiveCapacity + j;
                 if (hasWeapon)
                 {
                     weaponsData[index] = loadout[j];
-                } else
+                }
+                else
                 {
                     weaponsData[index] = new(-1);
                 }
@@ -150,7 +153,7 @@ public class LoadoutManager : NetworkBehaviour
         if (null == m_loadouts) m_loadouts = new(rows);
         while (m_loadouts.Count > rows) m_loadouts.RemoveAt(m_loadouts.Count);
         while (m_loadouts.Count < rows) m_loadouts.Add(new(columns));
-        
+
         for (int i = 0; i < rows; ++i)
         {
             if (m_loadouts[i] == null) m_loadouts[i] = new(columns);
@@ -158,7 +161,7 @@ public class LoadoutManager : NetworkBehaviour
             loadout.Clear();
             int j = 0;
             WeaponData weaponData = weaponsData[i * columns];
-            
+
             while (-1 != weaponData.Weapon) //while it has a weapon
             {
                 j++;
@@ -232,10 +235,11 @@ public class LoadoutManager : NetworkBehaviour
     public bool SetLoadoutWeapon(int indexLoadout, int indexWeapon, int newWeapon)
     {
         bool changedWeapon = false;
-        if(IsServer)
+        if (IsServer)
         {
             SetLoadoutWeaponClientRpc(indexLoadout, indexWeapon, newWeapon);
-        } else if(IsOwner)
+        }
+        else if (IsOwner)
         {
             SetLoadoutWeaponServerRpc(indexLoadout, indexWeapon, newWeapon);
         }
@@ -377,7 +381,6 @@ public class LoadoutManager : NetworkBehaviour
         if (null != m_loadouts && 0 < m_loadouts.Count)
         {
             m_currentLoadOutIndex = GfTools.Mod(indexLoadout, m_loadouts.Count);
-            Debug.Log("The querried index is: " + indexLoadout + " the loadout count is: " + m_loadouts.Count + " the final index is: " + m_currentLoadOutIndex);
 
             int i = m_weapons.Count;
             while (--i >= 0) // destroy all current weapons
@@ -403,6 +406,7 @@ public class LoadoutManager : NetworkBehaviour
                 weapon.SetDamageMultiplier(m_damageMultiplier, 0, true);
                 weapon.SetLoadoutCount(weaponsCount);
                 weapon.SetLoadoutWeaponIndex(i);
+                weapon.SetLoadoutIndex(m_currentLoadOutIndex);
                 weapon.SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
                 weapon.WasSwitchedOn();
                 weapon.DisableWhenDone = false;
@@ -421,7 +425,7 @@ public class LoadoutManager : NetworkBehaviour
     #endregion //SET_LOADOUT_REGION
 
     #region SET_WEAPON_CAPACITY
-    
+
     [ClientRpc]
     protected void SetWeaponCapacityClientRpc(int newCapacity, bool repeatWeapons = true, bool keepSamePoints = true)
     {
@@ -538,18 +542,52 @@ public class LoadoutManager : NetworkBehaviour
 
     public void AddPointsAll(WeaponPointsTypes type, float points)
     {
+        if (IsServer || IsOwner) AddPointAllServerRpc(type, points);
+    }
+
+    [ServerRpc]
+    private void AddPointAllServerRpc(WeaponPointsTypes type, float points)
+    {
+        AddPointAllClientRpc(type, points);
+    }
+
+    [ClientRpc]
+    private void AddPointAllClientRpc(WeaponPointsTypes type, float points)
+    {
+        InternalAddPointsAll(type, points);
+    }
+
+    protected void InternalAddPointsAll(WeaponPointsTypes type, float points)
+    {
         int numLoadouts = m_loadouts.Count;
         while (--numLoadouts >= 0)
         {
-            AddPoints(type, points, numLoadouts);
+            InternalAddPoints(type, points, numLoadouts);
         }
+    }
+
+    public void AddPoints(WeaponPointsTypes type, float points, int loadoutIndex = -1)
+    {
+        if (IsServer || IsOwner) AddPointsServerRpc(type, points, loadoutIndex);
+    }
+
+    [ServerRpc]
+    private void AddPointsServerRpc(WeaponPointsTypes type, float points, int loadoutIndex)
+    {
+        AddPointsClientRpc(type, points, loadoutIndex);
+    }
+
+    [ClientRpc]
+    private void AddPointsClientRpc(WeaponPointsTypes type, float points, int loadoutIndex)
+    {
+        InternalAddPoints(type, points, loadoutIndex);
     }
 
     /**
     *   Adds exp points to the weapons equipped in this moment
     *   @param points The ammount of points to be added
-*/
-    public void AddPoints(WeaponPointsTypes type, float points, int loadoutIndex = -1)
+    */
+    private void InternalAddPoints(WeaponPointsTypes type, float points, int loadoutIndex)
     {
         if (loadoutIndex < 0) loadoutIndex = m_currentLoadOutIndex;
 
@@ -582,11 +620,12 @@ public class LoadoutManager : NetworkBehaviour
 
     public void AddLoadout(int count = 1)
     {
-        if(IsServer)
+        if (IsServer)
         {
             Debug.Log("I am the server, will call client to set loadout!");
             AddLoadoutClientRpc(count);
-        } else if(IsOwner)
+        }
+        else if (IsOwner)
         {
             AddLoadoutServerRpc(count);
         }
@@ -814,7 +853,7 @@ public class LoadoutManager : NetworkBehaviour
     #endregion //WEAPON_CAPACITY_MULTIPLIER
 
     [System.Serializable]
-    
+
     public struct WeaponData : INetworkSerializable
     {
         public int Weapon;

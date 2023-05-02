@@ -89,41 +89,56 @@ public class StatsPlayer : StatsCharacter
         HostilityManager.AddCharacter(this);
     }
 
-    public override void Damage(float damage, float damageMultiplier = 1, StatsCharacter enemy = null, DamageSource weaponUsed = null)
+    protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
         if (!IsDead.Value || true)
         {
+            StatsCharacter enemy = null;
+            if (hasEnemyNetworkId)
+            {
+                enemy = GameManager.GetComponentFromNetworkObject<StatsCharacter>(enemyNetworkId);
+                if (enemy) enemy.OnDamageDealt(damage, NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+            }
+
             m_damageSound.Play(m_audioObjectDamageReceived);
             //m_damageSound.Play(m_audioSource);
 
-            if (!IsClient)
+
+            damage *= m_receivedDamageMultiplier.Value;
+            m_loadoutManager.AddPoints(WeaponPointsTypes.EXPERIENCE, -damage);
+
+            m_currentHealth.Value -= damage;
+            m_currentHealth.Value = Mathf.Max(0, m_currentHealth.Value);
+
+            if (m_healthUI) m_healthUI.SetHealthPoints(m_currentHealth.Value);
+
+            if (m_currentHealth.Value == 0)
             {
-                if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
-                if (null != weaponUsed) weaponUsed.OnDamageDealt(damage, this);
-
-                damage *= damageMultiplier * m_receivedDamageMultiplier.Value;
-                m_loadoutManager.AddPoints(WeaponPointsTypes.EXPERIENCE, -damage);
-
-                m_currentHealth.Value -= damage;
-                m_currentHealth.Value = Mathf.Max(0, m_currentHealth.Value);
-
-                if (m_healthUI) m_healthUI.SetHealthPoints(m_currentHealth.Value);
-
-                if (m_currentHealth.Value == 0)
-                {
-                    IsDead.Value = true;
-                    Kill(enemy, weaponUsed);
-                }
+                IsDead.Value = true;
+                Kill(enemyNetworkId, weaponLoadoutIndex, weaponIndex);
             }
+
         }
     }
 
-    public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
+    public override DamageSource GetWeaponDamageSource(int weaponLoadoutIndex, int weaponIndex)
+    {
+        DamageSource ret = null;
+        if (m_loadoutManager && weaponLoadoutIndex != -1 && weaponIndex != -1 && weaponLoadoutIndex == m_loadoutManager.GetCurrentLoadoutIndex())
+        {
+            ret = m_loadoutManager.GetWeapons()[weaponIndex];
+        }
+
+        return ret;
+    }
+
+    protected override void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
         if (!IsClient)
         {
-            if (killer) killer.OnCharacterKilled(this);
-            if (null != weaponUsed) weaponUsed.OnCharacterKilled(this);
+            StatsCharacter killerStats = GameManager.GetComponentFromNetworkObject<StatsCharacter>(killerNetworkId);
+            //killerStats.Getwea
+            if (killerStats) killerStats.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
 
             IsDead.Value = true;
         }
@@ -173,8 +188,11 @@ public class StatsPlayer : StatsCharacter
         Debug.Log("TYrigger on playyer was called huuuh");
     }
 
-    public override void OnDamageDealt(float damage, StatsCharacter damagedCharacter, DamageSource weaponUsed = null)
+    public override void OnDamageDealt(float damage, ulong damagedCharacterNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
     {
+        StatsCharacter damagedCharacter = GameManager.GetComponentFromNetworkObject<StatsCharacter>(damagedCharacterNetworkId);
+        if (damagedCharacter) damagedCharacter.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+
         bool lowHp = damagedCharacter.GetCurrentHealth() <= damagedCharacter.GetMaxHealthRaw() * 0.25f;
 
         float volume = 1, pitch = 1;

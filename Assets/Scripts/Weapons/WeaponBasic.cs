@@ -25,6 +25,8 @@ public abstract class WeaponBasic : DamageSource
     //the index of the weapon in the loadout it is part of
     protected int m_loadoutWeaponIndex = 0;
 
+    protected int m_loadoutIndex = 0;
+
     //number of weapons in the loadout it is part of
     protected int m_loadoutCount = 1;
 
@@ -55,6 +57,9 @@ public abstract class WeaponBasic : DamageSource
 
     public virtual float GetFireRateMultiplier() { return m_fireRateMultiplier; }
     public virtual bool SetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false) { return m_fireRateMultiplier.SetValue(multiplier, priority, overridePriority); }
+
+    public virtual int GetLoadoutIndex() { return m_loadoutIndex; }
+    public virtual void SetLoadoutIndex(int index) { m_loadoutIndex = index; }
 
     public virtual int GetLoadoutWeaponIndex() { return m_loadoutWeaponIndex; }
     public virtual void SetLoadoutWeaponIndex(int index) { m_loadoutWeaponIndex = index; }

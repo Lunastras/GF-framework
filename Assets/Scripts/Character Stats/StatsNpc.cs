@@ -82,7 +82,7 @@ public class StatsNpc : StatsCharacter
 
         m_transform = transform;
 
-        if (!IsClient)
+        if (IsServer)
             m_currentHealth.Value = GetMaxHealthEffective();
 
         m_initialised = true;
@@ -104,7 +104,7 @@ public class StatsNpc : StatsCharacter
         }
     }
 
-    public override void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null)
+    protected override void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
         Vector3 currentPos = m_transform.position;
         GameParticles.PlayDeathDust(currentPos);
@@ -127,13 +127,18 @@ public class StatsNpc : StatsCharacter
 
         AudioManager.PlayAudio(m_deathSound, m_transform.position);
 
-        if (IsClient) // needs more work
+        if (hasKillerNetworkId)
         {
-            if (killer) killer.OnCharacterKilled(this);
-            if (weaponUsed) weaponUsed.OnCharacterKilled(this);
+            StatsCharacter statsKiller = GameManager.GetComponentFromNetworkObject<StatsCharacter>(killerNetworkId);
+            if (statsKiller) statsKiller.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+        }
+
+        if (IsServer) // needs more work
+        {
 
             IsDead.Value = true;
         }
+
 
         if (null != m_graphics)
             m_graphics.SetActive(false);
@@ -150,16 +155,30 @@ public class StatsNpc : StatsCharacter
             m_turret.DestroyWhenDone(gameObject);
     }
 
-    public override void Damage(float damage, float damageMultiplier = 1, StatsCharacter enemy = null, DamageSource weaponUsed = null)
+    public override DamageSource GetWeaponDamageSource(int weaponLoadoutIndex, int weaponIndex)
+    {
+        DamageSource ret = null;
+        if (m_turret && weaponLoadoutIndex != -1 && weaponIndex != -1)
+        {
+            ret = m_turret.GetWeapon(weaponLoadoutIndex, weaponIndex);
+        }
+        return ret;
+    }
+
+    protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
         if (!IsDead.Value)
         {
-            if (enemy) enemy.OnDamageDealt(damage, this, weaponUsed);
-            if (weaponUsed) weaponUsed.OnDamageDealt(damage, this);
+            StatsCharacter enemy = null;
+            if (hasEnemyNetworkId)
+            {
+                enemy = GameManager.GetComponentFromNetworkObject<StatsCharacter>(enemyNetworkId);
+                if (enemy) enemy.OnDamageDealt(damage, NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+            }
 
             if (!IsClient)
             {
-                damage *= damageMultiplier * m_receivedDamageMultiplier.Value;
+                damage *= m_receivedDamageMultiplier.Value;
                 GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.GetUpVecRaw());
 
                 m_currentHealth.Value -= damage;
@@ -171,9 +190,9 @@ public class StatsNpc : StatsCharacter
 
                 if (m_currentHealth.Value <= 0)
                 {
-                    Kill(enemy, weaponUsed);
+                    Kill(enemyNetworkId, weaponLoadoutIndex, weaponIndex);
                 }
-                else if (m_npcController && enemy && damage > 0)
+                else if (null != m_npcController && enemy && damage > 0)
                 {
                     if (m_lastEnemy != enemy)
                     {

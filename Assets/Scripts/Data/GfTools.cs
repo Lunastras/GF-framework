@@ -105,6 +105,24 @@ public class GfTools
     public static void Mult3(ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
 
     public static void Div3(ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }
+
+    public static void Div3Safe(ref Vector3 leftHand, float rightHand)
+    {
+        if (rightHand > 0.000001f)
+        {
+            float inv = 1.0F / rightHand;
+            leftHand.x *= inv;
+            leftHand.y *= inv;
+            leftHand.z *= inv;
+        }
+        else
+        {
+            leftHand.x = 0F;
+            leftHand.y = 0F;
+            leftHand.z = 0F;
+        }
+    }
+
     public static Vector3 Div3(Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; return leftHand; }
 
     public static int Mod(int x, int m)
@@ -167,9 +185,9 @@ public class GfTools
         }
         else
         {
-            vector.x = 0;
-            vector.y = 0;
-            vector.z = 0;
+            vector.x = 0F;
+            vector.y = 0F;
+            vector.z = 0F;
         }
     }
 

@@ -1028,7 +1028,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 20
+      scalar: 10
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -5099,7 +5099,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_collisionRadius: 0.25
   m_weaponBasic: {fileID: 0}
-  m_parentMovement: {fileID: 0}
   m_shadowProjector: {fileID: 0}
   m_followCameraScript: {fileID: 0}
   m_movementSmoothTime: 0.02

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Unity.Netcode;
 
 public class GameManager : MonoBehaviour
 {
@@ -32,6 +33,8 @@ public class GameManager : MonoBehaviour
 
     private bool m_pauseButtonReleased = true;
 
+    private NetworkSpawnManager m_spawnManager;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -50,6 +53,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        m_spawnManager = NetworkManager.Singleton.SpawnManager;
     }
 
     private void Update()
@@ -76,6 +80,21 @@ public class GameManager : MonoBehaviour
     public void QuitGame()
     {
 
+    }
+
+    public static NetworkObject GetNetworkObject(ulong objectNetworkId)
+    {
+        Instance.m_spawnManager.SpawnedObjects.TryGetValue(objectNetworkId, out NetworkObject obj);
+        return obj;
+    }
+
+    public static T GetComponentFromNetworkObject<T>(ulong objectNetworkId) where T : Component
+    {
+        T component = null;
+        if (Instance.m_spawnManager.SpawnedObjects.TryGetValue(objectNetworkId, out NetworkObject obj))
+            component = obj.GetComponent<T>();
+
+        return component;
     }
 
     public static HudManager GetHudManager() { return Instance.m_hudManager; }

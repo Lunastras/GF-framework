@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 
 [System.Serializable]
 public struct PriorityValueSetter<T>
@@ -25,7 +26,7 @@ public struct PriorityValueSetter<T>
 }
 
 [System.Serializable]
-public struct PriorityValue<T>
+public struct PriorityValue<T> : INetworkSerializeByMemcpy
 {
     private T m_value;
     private uint m_priority;

@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Burst;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.Netcode;
 
 using GfPathFindingNamespace;
 

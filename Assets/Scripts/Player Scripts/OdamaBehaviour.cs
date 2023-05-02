@@ -69,9 +69,9 @@ public class OdamaBehaviour : MonoBehaviour
 
         if (parentMovement)
         {
-            if (m_followCameraScript) m_followCameraScript.m_defaultUpvec = parentMovement.GetUpvecRotation();
-            if (m_shadowProjector) m_shadowProjector.m_parentMovement = parentMovement;
             m_transform.rotation = parentMovement.GetCurrentRotation();
+            if (m_shadowProjector) m_shadowProjector.m_parentMovement = parentMovement;
+            if (m_followCameraScript) m_followCameraScript.m_defaultUpvec = parentMovement.GetUpvecRotation();
         }
 
         if (m_timeUntilPhysCheck <= 0)
@@ -79,10 +79,11 @@ public class OdamaBehaviour : MonoBehaviour
             m_desiredTargetDst = m_dstFromParent;
             m_timeUntilPhysCheck = m_physCheckInterval;
 
-            int layermask = GfPhysics.NonCharacterCollisions();
-            RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
             Vector3 dirNormalised = dirFromPlayer;
             GfTools.Normalize(ref dirNormalised);
+
+            int layermask = GfPhysics.NonCharacterCollisions();
+            RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
 
             m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(parentPosition, m_collisionRadius, dirNormalised, raycastHits, m_desiredTargetDst, layermask, QueryTriggerInteraction.Ignore);
 

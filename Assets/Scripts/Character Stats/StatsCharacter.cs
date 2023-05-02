@@ -9,14 +9,14 @@ public abstract class StatsCharacter : NetworkBehaviour
     protected NetworkVariable<float> m_maxHealth = new(100);
 
     [SerializeField]
-    private NetworkVariable<CharacterTypes> m_characterType = null;
+    private NetworkVariable<CharacterTypes> m_characterType = new(default);
 
     protected NetworkVariable<PriorityValue<float>> m_maxHealthMultiplier = new(new(1));
 
     protected NetworkVariable<PriorityValue<float>> m_receivedDamageMultiplier = new(new(1));
 
     public NetworkVariable<bool> IsDead { get; protected set; } = new(false);
-   
+
     protected NetworkVariable<float> m_currentHealth = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     private int m_characterIndex = -1;
@@ -32,9 +32,29 @@ public abstract class StatsCharacter : NetworkBehaviour
         m_initialised = true;
     }
 
-    public abstract void Damage(float damage, float damageMultiplier = 1, StatsCharacter enemy = null, DamageSource weaponUsed = null);
+    public virtual void Damage(float damage, ulong enemyNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
+    {
+        InternalDamage(damage, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex);
+    }
 
-    public abstract void Kill(StatsCharacter killer = null, DamageSource weaponUsed = null);
+    public virtual void Damage(float damage, int weaponLoadoutIndex = -1, int weaponIndex = -1)
+    {
+        InternalDamage(damage, 0, false, weaponLoadoutIndex, weaponIndex);
+    }
+
+    protected abstract void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex);
+
+    public virtual void Kill(ulong killerNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
+    {
+        InternalKill(killerNetworkId, true, weaponLoadoutIndex, weaponIndex);
+    }
+
+    public virtual void Kill()
+    {
+        InternalKill(0, false, -1, -1);
+    }
+
+    protected abstract void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex);
 
     public CharacterTypes GetCharacterType()
     {
@@ -43,7 +63,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public void SetCharacterType(CharacterTypes type)
     {
-        if (m_characterType.Value != type && !IsClient)
+        if (m_characterType.Value != type && IsServer)
         {
             HostilityManager.RemoveCharacter(this);
             m_characterType.Value = type;
@@ -67,8 +87,13 @@ public abstract class StatsCharacter : NetworkBehaviour
             HostilityManager.AddCharacter(this);
     }
 
-    public virtual void OnDamageDealt(float damage, StatsCharacter damagedCharacter, DamageSource weaponUsed = null) { }
-    public virtual void OnCharacterKilled(StatsCharacter damagedCharacter, DamageSource weaponUsed = null) { }
+    public virtual DamageSource GetWeaponDamageSource(int weaponLoadoutIndex, int weaponIndex)
+    {
+        return null;
+    }
+
+    public virtual void OnDamageDealt(float damage, ulong damagedCharacterNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1) { }
+    public virtual void OnCharacterKilled(ulong damagedCharacter, int weaponLoadoutIndex = -1, int weaponIndex = -1) { }
 
     public int GetCharacterIndex()
     {
@@ -89,7 +114,7 @@ public abstract class StatsCharacter : NetworkBehaviour
     public virtual float GetCurrentHealth() { return m_currentHealth.Value; }
     public virtual void SetMaxHealthRaw(float maxHealth)
     {
-        if (!IsClient)
+        if (IsServer)
             m_maxHealth.Value = maxHealth;
     }
 
@@ -97,7 +122,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public virtual void SetMaxHealthMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
     {
-        if (!IsClient)
+        if (IsServer)
             m_maxHealthMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority);
     }
 
@@ -105,7 +130,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public virtual void SetReceivedDamageMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
     {
-        if (!IsClient)
+        if (IsServer)
             m_receivedDamageMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority);
     }
 }
