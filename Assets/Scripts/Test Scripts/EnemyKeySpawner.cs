@@ -25,7 +25,6 @@ public class EnemyKeySpawner : NetworkBehaviour
             {
                 Transform enemyTransform = Instantiate(m_enemy).transform;
                 enemyTransform.position = transform.position;
-                enemyTransform.GetComponent<NetworkObject>().Spawn();
             }
         }
         else

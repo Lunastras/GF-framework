@@ -78,7 +78,7 @@ public class ParticleSingleHit : WeaponParticle
         //  Debug.Log("GONNA DAMAJE IT " + target.name);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
         AudioManager.PlayAudio(m_damageSound, collisionEvent.intersection);
-        target.Damage(m_damage, damageMultiplier, self, this);
+        target.Damage(m_damage * damageMultiplier, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex);
 
         return true;
     }

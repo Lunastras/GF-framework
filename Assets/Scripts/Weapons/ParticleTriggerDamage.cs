@@ -122,7 +122,7 @@ public class ParticleTriggerDamage : WeaponParticle
     {
         m_damageSound.Play(particle.position);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
-        target.Damage(GetDamage(), damageMultiplier, self, damageSource);
+        target.Damage(GetDamage() * damageMultiplier, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex);
         particle.remainingLifetime = 0;
     }
 

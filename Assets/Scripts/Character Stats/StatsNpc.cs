@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
 public class StatsNpc : StatsCharacter
 {
@@ -102,6 +103,9 @@ public class StatsNpc : StatsCharacter
             if (null != m_objectCollider)
                 m_objectCollider.enabled = true;
         }
+
+        m_networkObject = GetComponent<NetworkObject>();
+        if (m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
     }
 
     protected override void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex)
@@ -136,7 +140,7 @@ public class StatsNpc : StatsCharacter
         if (IsServer) // needs more work
         {
 
-            IsDead.Value = true;
+            m_isDead.Value = true;
         }
 
 
@@ -167,7 +171,8 @@ public class StatsNpc : StatsCharacter
 
     protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
-        if (!IsDead.Value)
+        Debug.Log("I am being damaged apparently!");
+        if (!m_isDead.Value)
         {
             StatsCharacter enemy = null;
             if (hasEnemyNetworkId)
@@ -176,17 +181,18 @@ public class StatsNpc : StatsCharacter
                 if (enemy) enemy.OnDamageDealt(damage, NetworkObjectId, weaponLoadoutIndex, weaponIndex);
             }
 
-            if (!IsClient)
+            damage *= m_receivedDamageMultiplier.Value;
+            GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.GetUpVecRaw());
+            float simulatedHealth = m_currentHealth.Value - damage;
+
+            if (simulatedHealth <= GetMaxHealthEffective() * m_lowHealthThreshold)
+                m_damageSound.Play(m_audioSource, 1.5f, 2);
+            else
+                m_damageSound.Play(m_audioSource);
+
+            if (IsServer)
             {
-                damage *= m_receivedDamageMultiplier.Value;
-                GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.GetUpVecRaw());
-
-                m_currentHealth.Value -= damage;
-
-                if (m_currentHealth.Value <= GetMaxHealthEffective() * m_lowHealthThreshold)
-                    m_damageSound.Play(m_audioSource, 1.5f, 2);
-                else
-                    m_damageSound.Play(m_audioSource);
+                m_currentHealth.Value = simulatedHealth;
 
                 if (m_currentHealth.Value <= 0)
                 {

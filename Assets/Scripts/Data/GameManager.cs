@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject m_loadFadeScreen = null;
 
-    public static bool IsMultiplayer = false;
+    public static bool IsMultiplayer { get; private set; } = false;
 
     private bool m_isPaused = false;
 
@@ -72,14 +72,29 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+    public static void MultiplayerStart()
+    {
+        IsMultiplayer = true;
+        Instance.m_spawnManager = NetworkManager.Singleton.SpawnManager;
+    }
+
+    public static void MultiplayerStop(bool discardMessageQueue = false)
+    {
+        IsMultiplayer = false;
+        Instance.m_spawnManager = null;
+        NetworkManager.Singleton.Shutdown(discardMessageQueue);
+    }
+
     public void QuitToMenu()
     {
+        MultiplayerStop();
         SceneManager.LoadScene(0);
     }
 
     public void QuitGame()
     {
-
+        MultiplayerStop(true);
     }
 
     public static NetworkObject GetNetworkObject(ulong objectNetworkId)

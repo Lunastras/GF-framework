@@ -91,7 +91,7 @@ public class StatsPlayer : StatsCharacter
 
     protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
-        if (!IsDead.Value || true)
+        if (!m_isDead.Value || true)
         {
             StatsCharacter enemy = null;
             if (hasEnemyNetworkId)
@@ -114,7 +114,7 @@ public class StatsPlayer : StatsCharacter
 
             if (m_currentHealth.Value == 0)
             {
-                IsDead.Value = true;
+                m_isDead.Value = true;
                 Kill(enemyNetworkId, weaponLoadoutIndex, weaponIndex);
             }
 
@@ -140,7 +140,7 @@ public class StatsPlayer : StatsCharacter
             //killerStats.Getwea
             if (killerStats) killerStats.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
 
-            IsDead.Value = true;
+            m_isDead.Value = true;
         }
     }
 

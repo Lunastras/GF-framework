@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using Unity.Netcode;
 
 
 public class LoadingScreenManager : MonoBehaviour
@@ -89,10 +90,19 @@ public class LoadingScreenManager : MonoBehaviour
         m_fadeOverlay.CrossFadeAlpha(1, 0, true);
         m_fadeOverlay.CrossFadeAlpha(0, m_fadeDuration, true);
 
-        Debug.Log("loading start");
+        Debug.Log("Loading start");
 
         ShowLoadingVisuals();
         FadeOut();
+
+        NetworkManager networkManager = NetworkManager.Singleton;
+
+        if (networkManager && networkManager.ShutdownInProgress)
+        {
+            Debug.Log("Waiting for server to shutdown...");
+            while (networkManager.ShutdownInProgress) yield return null;
+            Debug.Log("Server shutdown successfully.");
+        }
 
         float lastProgress = 0f;
         yield return new WaitForSeconds(m_fadeDuration);

@@ -15,9 +15,9 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected NetworkVariable<PriorityValue<float>> m_receivedDamageMultiplier = new(new(1));
 
-    public NetworkVariable<bool> IsDead { get; protected set; } = new(false);
+    protected NetworkVariable<bool> m_isDead = new(false);
 
-    protected NetworkVariable<float> m_currentHealth = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    protected NetworkVariable<float> m_currentHealth = new(0);
 
     private int m_characterIndex = -1;
 
@@ -25,9 +25,12 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected bool m_initialised = false;
 
+    protected NetworkObject m_networkObject;
+
     // Start is called before the first frame update
     void Start()
     {
+        m_networkObject = GetComponent<NetworkObject>();
         HostilityManager.AddCharacter(this);
         m_initialised = true;
     }
@@ -54,6 +57,11 @@ public abstract class StatsCharacter : NetworkBehaviour
         InternalKill(0, false, -1, -1);
     }
 
+    public virtual bool IsDead()
+    {
+        return m_isDead.Value;
+    }
+
     protected abstract void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex);
 
     public CharacterTypes GetCharacterType()
@@ -71,14 +79,22 @@ public abstract class StatsCharacter : NetworkBehaviour
         }
     }
 
+    public NetworkObject GetNetworkObject() { return m_networkObject; }
+
+    protected void Deinit()
+    {
+        if (m_networkObject && m_networkObject.IsSpawned) m_networkObject.Despawn();
+        HostilityManager.RemoveCharacter(this);
+    }
+
     public override void OnDestroy()
     {
-        HostilityManager.RemoveCharacter(this);
+        Deinit();
     }
 
     private void OnDisable()
     {
-        HostilityManager.RemoveCharacter(this);
+        Deinit();
     }
 
     private void OnEnable()

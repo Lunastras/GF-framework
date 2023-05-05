@@ -78,7 +78,6 @@ public class LoadoutManager : NetworkBehaviour
 
         if (IsServer)
         {
-            Debug.Log("I am the server yess");
             Test();
         }
 
@@ -87,7 +86,7 @@ public class LoadoutManager : NetworkBehaviour
             m_hudManager = GameManager.GetHudManager();
 
         }
-        else if (IsClient)
+        else if (IsClient && !IsServer)
         {
             Debug.Log("Requesting data");
             RequestLoadoutDataServerRpc();
@@ -530,7 +529,6 @@ public class LoadoutManager : NetworkBehaviour
             int count = (int)WeaponPointsTypes.NUMBER_OF_TYPES;
             for (int i = 0; i < count; ++i)
             {
-                Debug.Log("loadout is null: " + (null == loadOut));
                 m_weapons[numWeapon].AddPoints((WeaponPointsTypes)i, float.MinValue); //set exp to be 0
                 float currentExp = m_weapons[numWeapon].AddPoints((WeaponPointsTypes)i, loadOut[numWeapon].GetPoints(i));
                 loadOut[numWeapon].SetPoints(i, currentExp);
@@ -608,7 +606,6 @@ public class LoadoutManager : NetworkBehaviour
     [ClientRpc]
     protected void AddLoadoutClientRpc(int count)
     {
-        Debug.Log("I a client apparently!");
         InternalAddLoadout(count);
     }
 
@@ -622,7 +619,6 @@ public class LoadoutManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            Debug.Log("I am the server, will call client to set loadout!");
             AddLoadoutClientRpc(count);
         }
         else if (IsOwner)
@@ -633,7 +629,6 @@ public class LoadoutManager : NetworkBehaviour
 
     protected void InternalAddLoadout(int count = 1)
     {
-        Debug.Log("The add loadout function has been called");
         while (--count >= 0 && m_loadouts.Count < MAX_LOADOUTS)
             m_loadouts.Add(new(m_weaponCapacity)); //todo
     }
@@ -883,7 +878,6 @@ public class LoadoutManager : NetworkBehaviour
 
         public float GetPoints(int type)
         {
-            Debug.Log("Points were querried for type: " + type);
             return WeaponPoints[type];
         }
 
