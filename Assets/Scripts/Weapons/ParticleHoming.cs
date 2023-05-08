@@ -99,7 +99,7 @@ public class ParticleHoming : JobChild
     }
 
 
-    public override bool ScheduleJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512)
+    public override bool GetJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512)
     {
         m_hasAJob = false;
         handle = default;

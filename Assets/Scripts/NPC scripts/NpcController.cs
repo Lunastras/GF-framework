@@ -9,7 +9,7 @@ using Unity.Netcode;
 
 using GfPathFindingNamespace;
 
-public class NpcController : JobChild
+public class NpcController : NetworkBehaviour
 {
 
     [SerializeField]
@@ -89,7 +89,6 @@ public class NpcController : JobChild
         m_pathToDestination = new(32, Allocator.Persistent);
         m_transform = transform;
         m_destination = new();
-        InitJobChild();
 
         if (m_movement == null)
         {
@@ -102,16 +101,14 @@ public class NpcController : JobChild
         SetDestination(null);
         m_currentState = NpcState.NO_DESTINATION;
         //if m_transform is null, that means Initialize() was not called. If so, do not initialize the job
-        if (m_transform) InitJobChild();
     }
 
     private void OnDisable()
     {
-        DeinitJobChild();
         if (m_pathToDestination.IsCreated) m_pathToDestination.Dispose();
     }
 
-    public override bool ScheduleJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512)
+    public virtual bool GetPathFindingJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512)
     {
         bool scheduleJob = m_pathFindingManager
                         && (m_currentState == NpcState.SEARCHING_TARGET || m_currentState == NpcState.ENGAGING_TARGET)
@@ -132,16 +129,13 @@ public class NpcController : JobChild
         return scheduleJob;
     }
 
-    public override void OnJobFinished(float deltaTime, UpdateTypes updateType)
-    {
-    }
+    public virtual void OnPathFindingJobFinished(float deltaTime, UpdateTypes updateType) { }
 
     void Update()
     {
-        float deltaTime = Time.deltaTime;
-
-        if (!m_usesFixedUpdate)
+        if (!m_usesFixedUpdate && IsServer)
         {
+            float deltaTime = Time.deltaTime;
             m_timeUntilNextStateUpdate -= deltaTime;
 
             if (0 >= m_timeUntilNextStateUpdate)
@@ -159,7 +153,7 @@ public class NpcController : JobChild
 
     void FixedUpdate()
     {
-        if (m_usesFixedUpdate)
+        if (m_usesFixedUpdate && IsServer)
         {
             float deltaTime = Time.deltaTime;
             StateUpdate(deltaTime, deltaTime);
@@ -168,7 +162,7 @@ public class NpcController : JobChild
 
     void LateUpdate()
     {
-        if (!m_usesRigidBody)
+        if (!m_usesRigidBody && IsServer)
             m_movement.Move(Time.deltaTime);
     }
 

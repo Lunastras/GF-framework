@@ -1,7 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Netcode.Components;
+
 
 public abstract class StatsCharacter : NetworkBehaviour
 {
@@ -15,9 +16,11 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected NetworkVariable<PriorityValue<float>> m_receivedDamageMultiplier = new(new(1));
 
-    protected NetworkVariable<bool> m_isDead = new(false);
+    protected bool m_isDead = false;
 
     protected NetworkVariable<float> m_currentHealth = new(0);
+
+    protected NetworkTransform m_networkTransform;
 
     private int m_characterIndex = -1;
 
@@ -27,6 +30,16 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected NetworkObject m_networkObject;
 
+    protected bool HasAuthority
+    {
+        get
+        {
+            bool ret = false;
+            if (NetworkManager.Singleton) ret = NetworkManager.Singleton.IsServer;
+            return ret;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -35,34 +48,76 @@ public abstract class StatsCharacter : NetworkBehaviour
         m_initialised = true;
     }
 
+    [ClientRpc]
+    protected virtual void DamageClientRpc(float damage, ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    {
+        InternalDamage(damage, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
+    }
+
+    [ClientRpc]
+    protected virtual void DamageClientRpc(float damage)
+    {
+        if (!IsServer) InternalDamage(damage, 0, false, -1, -1, true);
+    }
+
     public virtual void Damage(float damage, ulong enemyNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
     {
-        InternalDamage(damage, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex);
+        /*We call InternalDamage() before calling the DamageClientRpc() because InternalDamage() can call the Kill rpc function.
+        The problem with this is that Unity has a bug where clientRpcs called from ClientRpcs are only called on the host.*/
+
+        InternalDamage(damage, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
+        if (HasAuthority)
+            DamageClientRpc(damage, enemyNetworkId, weaponLoadoutIndex, weaponIndex);
     }
 
-    public virtual void Damage(float damage, int weaponLoadoutIndex = -1, int weaponIndex = -1)
+    public virtual void Damage(float damage)
     {
-        InternalDamage(damage, 0, false, weaponLoadoutIndex, weaponIndex);
+        if (HasAuthority)
+            DamageClientRpc(damage);
+        else
+            InternalDamage(damage, 0, false, -1, -1, false);
     }
 
-    protected abstract void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex);
+    protected abstract void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall);
+
+
+    [ClientRpc]
+    protected virtual void KillClientRpc(ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    {
+        Debug.Log("The kill rpc was called!");
+        InternalKill(enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
+    }
+
+    [ClientRpc]
+    protected virtual void KillClientRpc()
+    {
+        Debug.Log("The kill rpc was called!");
+        InternalKill(0, false, -1, -1, true);
+
+    }
 
     public virtual void Kill(ulong killerNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
     {
-        InternalKill(killerNetworkId, true, weaponLoadoutIndex, weaponIndex);
+        if (HasAuthority)
+            KillClientRpc(killerNetworkId, weaponLoadoutIndex, weaponIndex);
+        else
+            InternalKill(killerNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
     }
 
     public virtual void Kill()
     {
-        InternalKill(0, false, -1, -1);
+        if (HasAuthority)
+            KillClientRpc();
+        else
+            InternalKill(0, false, -1, -1, false);
     }
 
     public virtual bool IsDead()
     {
-        return m_isDead.Value;
+        return m_isDead;
     }
 
-    protected abstract void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex);
+    protected abstract void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall);
 
     public CharacterTypes GetCharacterType()
     {
@@ -71,7 +126,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public void SetCharacterType(CharacterTypes type)
     {
-        if (m_characterType.Value != type && IsServer)
+        if (m_characterType.Value != type && HasAuthority)
         {
             HostilityManager.RemoveCharacter(this);
             m_characterType.Value = type;
@@ -83,16 +138,16 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected void Deinit()
     {
-        if (m_networkObject && m_networkObject.IsSpawned) m_networkObject.Despawn();
         HostilityManager.RemoveCharacter(this);
+        if (HasAuthority && m_networkObject && m_networkObject.IsSpawned) m_networkObject.Despawn();
     }
 
-    public override void OnDestroy()
+    private void OnDisable()
     {
         Deinit();
     }
 
-    private void OnDisable()
+    public override void OnDestroy()
     {
         Deinit();
     }
@@ -108,8 +163,8 @@ public abstract class StatsCharacter : NetworkBehaviour
         return null;
     }
 
-    public virtual void OnDamageDealt(float damage, ulong damagedCharacterNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1) { }
-    public virtual void OnCharacterKilled(ulong damagedCharacter, int weaponLoadoutIndex = -1, int weaponIndex = -1) { }
+    public virtual void OnDamageDealt(float damage, ulong damagedCharacterNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall) { }
+    public virtual void OnCharacterKilled(ulong damagedCharacter, int weaponLoadoutIndex = -1, int weaponIndex = -1, bool isServerCall = false) { }
 
     public int GetCharacterIndex()
     {
@@ -130,7 +185,7 @@ public abstract class StatsCharacter : NetworkBehaviour
     public virtual float GetCurrentHealth() { return m_currentHealth.Value; }
     public virtual void SetMaxHealthRaw(float maxHealth)
     {
-        if (IsServer)
+        if (HasAuthority)
             m_maxHealth.Value = maxHealth;
     }
 
@@ -138,7 +193,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public virtual void SetMaxHealthMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
     {
-        if (IsServer)
+        if (HasAuthority)
             m_maxHealthMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority);
     }
 
@@ -146,7 +201,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public virtual void SetReceivedDamageMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
     {
-        if (IsServer)
+        if (HasAuthority)
             m_receivedDamageMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority);
     }
 }

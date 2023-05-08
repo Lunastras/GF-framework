@@ -540,7 +540,10 @@ public class LoadoutManager : NetworkBehaviour
 
     public void AddPointsAll(WeaponPointsTypes type, float points)
     {
-        if (IsServer || IsOwner) AddPointAllServerRpc(type, points);
+        if (IsServer)
+            AddPointAllClientRpc(type, points);
+        else if (IsOwner)
+            AddPointAllServerRpc(type, points);
     }
 
     [ServerRpc]
@@ -566,7 +569,10 @@ public class LoadoutManager : NetworkBehaviour
 
     public void AddPoints(WeaponPointsTypes type, float points, int loadoutIndex = -1)
     {
-        if (IsServer || IsOwner) AddPointsServerRpc(type, points, loadoutIndex);
+        if (IsServer)
+            AddPointsClientRpc(type, points, loadoutIndex);
+        else if (IsOwner)
+            AddPointsServerRpc(type, points, loadoutIndex);
     }
 
     [ServerRpc]

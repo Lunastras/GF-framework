@@ -98,7 +98,7 @@ public abstract class JobChild : MonoBehaviour
             JobParent.RemoveInstance(m_jobParentIndexes.lateUpdateIndex, type, UpdateTypes.LATE_UPDATE);
     }
 
-    public abstract bool ScheduleJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512);
+    public abstract bool GetJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512);
 
     public abstract void OnJobFinished(float deltaTime, UpdateTypes updateType);
 }

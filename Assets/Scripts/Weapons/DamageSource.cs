@@ -23,6 +23,6 @@ public abstract class DamageSource : MonoBehaviour
             return m_statsCharacter;
     }
 
-    public virtual void OnDamageDealt(float damage, StatsCharacter damagedCharacter) { }
-    public virtual void OnCharacterKilled(StatsCharacter damagedCharacter) { }
+    public virtual void OnDamageDealt(float damage, StatsCharacter damagedCharacter, bool isServerCall) { }
+    public virtual void OnCharacterKilled(StatsCharacter damagedCharacter, bool isServerCall) { }
 }

@@ -12,6 +12,9 @@ public class StatsPlayer : StatsCharacter
     private LoadoutManager m_loadoutManager = null;
 
     [SerializeField]
+    private GfMovementGeneric m_movement = null;
+
+    [SerializeField]
     private AudioSource m_audioSource = null;
 
     public static StatsPlayer instance = null;
@@ -71,6 +74,8 @@ public class StatsPlayer : StatsCharacter
             }
         }
 
+        if (null == m_movement) m_movement = GetComponent<GfMovementGeneric>();
+
         if (IsOwner)
         {
             m_healthUI = GameManager.GetHudManager().GetHealthUI();
@@ -89,42 +94,51 @@ public class StatsPlayer : StatsCharacter
         HostilityManager.AddCharacter(this);
     }
 
-    protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
-        if (!m_isDead.Value || true)
+        if (!m_isDead || true)
         {
+            damage *= m_receivedDamageMultiplier.Value;
+
             StatsCharacter enemy = null;
             if (hasEnemyNetworkId)
             {
                 enemy = GameManager.GetComponentFromNetworkObject<StatsCharacter>(enemyNetworkId);
-                if (enemy) enemy.OnDamageDealt(damage, NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+                if (enemy)
+                {
+                    DamageSource damageSource = enemy.GetWeaponDamageSource(weaponLoadoutIndex, weaponIndex);
+                    if (damageSource) damageSource.OnDamageDealt(damage, this, isServerCall);
+                    enemy.OnDamageDealt(damage, NetworkObjectId, weaponLoadoutIndex, weaponIndex, isServerCall);
+                }
             }
 
-            m_damageSound.Play(m_audioObjectDamageReceived);
-            //m_damageSound.Play(m_audioSource);
-
-
-            damage *= m_receivedDamageMultiplier.Value;
-            m_loadoutManager.AddPoints(WeaponPointsTypes.EXPERIENCE, -damage);
-
-            m_currentHealth.Value -= damage;
-            m_currentHealth.Value = Mathf.Max(0, m_currentHealth.Value);
-
-            if (m_healthUI) m_healthUI.SetHealthPoints(m_currentHealth.Value);
-
-            if (m_currentHealth.Value == 0)
+            if (!isServerCall || HasAuthority) //only play sound and damage numbers locally. This will be called once for the server, and twice for clients
             {
-                m_isDead.Value = true;
-                Kill(enemyNetworkId, weaponLoadoutIndex, weaponIndex);
+                GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.GetUpVecRaw());
+                m_damageSound.Play(m_audioObjectDamageReceived);
+                m_loadoutManager.AddPoints(WeaponPointsTypes.EXPERIENCE, -damage);
             }
 
+            if (HasAuthority)
+            {
+                m_currentHealth.Value -= damage;
+                m_currentHealth.Value = Mathf.Max(0, m_currentHealth.Value);
+
+                if (m_healthUI) m_healthUI.SetHealthPoints(m_currentHealth.Value);
+
+                if (m_currentHealth.Value == 0)
+                {
+                    m_isDead = true;
+                    Kill(enemyNetworkId, weaponLoadoutIndex, weaponIndex);
+                }
+            }
         }
     }
 
     public override DamageSource GetWeaponDamageSource(int weaponLoadoutIndex, int weaponIndex)
     {
         DamageSource ret = null;
-        if (m_loadoutManager && weaponLoadoutIndex != -1 && weaponIndex != -1 && weaponLoadoutIndex == m_loadoutManager.GetCurrentLoadoutIndex())
+        if (m_loadoutManager && weaponLoadoutIndex > -1 && weaponIndex > -1 && weaponLoadoutIndex == m_loadoutManager.GetCurrentLoadoutIndex())
         {
             ret = m_loadoutManager.GetWeapons()[weaponIndex];
         }
@@ -132,15 +146,21 @@ public class StatsPlayer : StatsCharacter
         return ret;
     }
 
-    protected override void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    protected override void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
-        if (!IsClient)
+        if (isServerCall)
         {
             StatsCharacter killerStats = GameManager.GetComponentFromNetworkObject<StatsCharacter>(killerNetworkId);
             //killerStats.Getwea
-            if (killerStats) killerStats.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+            if (killerStats)
+            {
+                DamageSource damageSource = killerStats.GetWeaponDamageSource(weaponLoadoutIndex, weaponIndex);
+                if (damageSource) damageSource.OnCharacterKilled(this, isServerCall);
+                killerStats.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+            }
 
-            m_isDead.Value = true;
+
+            m_isDead = true;
         }
     }
 
@@ -183,26 +203,29 @@ public class StatsPlayer : StatsCharacter
 
     }
 
-    void OnParticleTrigger()
+    public override void OnDamageDealt(float damage, ulong damagedCharacterNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
-        Debug.Log("TYrigger on playyer was called huuuh");
-    }
-
-    public override void OnDamageDealt(float damage, ulong damagedCharacterNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
-    {
-        StatsCharacter damagedCharacter = GameManager.GetComponentFromNetworkObject<StatsCharacter>(damagedCharacterNetworkId);
-        if (damagedCharacter) damagedCharacter.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
-
-        bool lowHp = damagedCharacter.GetCurrentHealth() <= damagedCharacter.GetMaxHealthRaw() * 0.25f;
-
-        float volume = 1, pitch = 1;
-        if (lowHp)
+        if (!isServerCall)
         {
-            volume = 1.5f;
-            pitch = 2;
+            StatsCharacter damagedCharacter = GameManager.GetComponentFromNetworkObject<StatsCharacter>(damagedCharacterNetworkId);
+            bool lowHp = false;
+            float volume = 1, pitch = 1;
+
+            if (damagedCharacter)
+            {
+                damagedCharacter.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+                lowHp = damagedCharacter.GetCurrentHealth() <= damagedCharacter.GetMaxHealthRaw() * 0.25f;
+            }
+
+            if (lowHp)
+            {
+                volume = 1.5f;
+                pitch = 2;
+            }
+
+            m_damageDealtSound.Play(m_audioObjectDamageDealt, 0, volume, pitch);
         }
 
-        m_damageDealtSound.Play(m_audioObjectDamageDealt, 0, volume, pitch);
     }
 }
 

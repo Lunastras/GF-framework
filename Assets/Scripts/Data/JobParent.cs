@@ -117,7 +117,7 @@ public class JobParent : MonoBehaviour
 
                 for (i = 0; i < count; ++i)
                 {
-                    if (list[i].ScheduleJob(out handle, deltaTime, updateType))
+                    if (list[i].GetJob(out handle, deltaTime, updateType))
                     {
                         m_jobHandles.Add(handle);
                         jobCount++;

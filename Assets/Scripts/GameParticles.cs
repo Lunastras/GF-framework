@@ -131,7 +131,7 @@ public class GameParticles : MonoBehaviour
         }
     }
 
-    public static void PlayPowerItems(Vector3 position, int numberToEmit, GfMovementGeneric movement = null)
+    public static void SpawnPowerItems(Vector3 position, int numberToEmit, GfMovementGeneric movement = null)
     {
         EmitHomingParticleSystem(m_instance.m_powerItemsPrefab, position, numberToEmit, movement);
     }

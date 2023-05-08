@@ -24,15 +24,12 @@ public class ParticlePlayerCollectible : ParticleTrigger
         if (null == m_particleHoming) m_particleHoming = GetComponent<ParticleHoming>();
     }
 
-    protected void Start()
-    {
-        OnEnable();
-    }
-
     private void FixedUpdate()
     {
         if (m_particleHoming && GameManager.Instance && m_player != GameManager.GetPlayer())
         {
+            if (m_player) m_particleSystem.trigger.RemoveCollider(m_player);
+
             m_player = GameManager.GetPlayer();
             m_particleHoming.SetTarget(m_player);
             m_particleSystem.trigger.AddCollider(m_player);
@@ -42,16 +39,6 @@ public class ParticlePlayerCollectible : ParticleTrigger
     private void OnParticleSystemStopped()
     {
         gameObject.SetActive(false);
-    }
-
-    private void OnEnable()
-    {
-        if (m_particleHoming && GameManager.Instance && m_player != GameManager.GetPlayer())
-        {
-            m_player = GameManager.GetPlayer();
-            m_particleHoming.SetTarget(m_player);
-            m_particleSystem.trigger.AddCollider(m_player);
-        }
     }
 
     public ParticleHoming GetParticleHoming() { return m_particleHoming; }

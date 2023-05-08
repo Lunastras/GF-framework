@@ -40,9 +40,9 @@ public class LevelManager : MonoBehaviour
         {
             m_levelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(m_levelDataPath));
 
-            for (int i = 0; i < Manager.m_pathfindingSystems.Length; ++i)
+            for (int i = 0; i < m_pathfindingSystems.Length; ++i)
             {
-                Manager.m_pathfindingSystems[i].SetNodePathData(m_levelData.paths[i]);
+                m_pathfindingSystems[i].SetNodePathData(m_levelData.paths[i]);
             }
         }
         else

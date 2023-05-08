@@ -87,7 +87,7 @@ public class GfMovementSimple : GfMovementGeneric
 
     protected void CalculateEffectiveValues()
     {
-        m_isExtendingJump &= 0 < Vector3.Dot(m_velocity, m_upVec); //if falling, stop jump extending
+        m_isExtendingJump &= 0 < Vector3.Dot(m_velocity, m_rotationUpVec); //if falling, stop jump extending
 
         if (m_isGrounded || CanFly)
         {
@@ -215,7 +215,7 @@ public class GfMovementSimple : GfMovementGeneric
             m_currentJumpsCount++;
             m_isExtendingJump = m_currentJumpsCount == 1;
 
-            GfTools.RemoveAxis(ref m_velocity, m_upVec);
+            GfTools.RemoveAxis(ref m_velocity, m_rotationUpVec); //we use the rotation upVec because it feels more natural when the player's rotation is still changing
             GfTools.Add3(ref m_velocity, m_upVec * m_jumpForce);
             m_isGrounded = false;
 

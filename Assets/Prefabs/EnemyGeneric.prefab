@@ -5282,14 +5282,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4759944753111975126}
-  - component: {fileID: 6910084372030936651}
   - component: {fileID: 1372938329087745302}
-  - component: {fileID: 1184494187360147066}
   - component: {fileID: 7866579364068057338}
+  - component: {fileID: 1184494187360147066}
   - component: {fileID: 432613321654859549}
-  - component: {fileID: 1810723438}
   - component: {fileID: 1422192360}
   - component: {fileID: 6956267960600933848}
+  - component: {fileID: 1837604981037889726}
+  - component: {fileID: 1810723438}
+  - component: {fileID: 6910084372030936651}
   m_Layer: 12
   m_Name: EnemyGeneric
   m_TagString: Untagged
@@ -5315,19 +5316,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &6910084372030936651
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4759944753111975130}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &1372938329087745302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5340,10 +5328,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1650e1ef77aadd74bb3eab0891bd102b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
   m_movement: {fileID: 0}
   m_targetCheckCooldown: 0.1
   m_pathFindingCooldown: 0.3
@@ -5368,26 +5352,6 @@ MonoBehaviour:
   m_varianceRate: 0.2
   m_walkSpeedMultiplyer: 0.5
   m_maxDstFromSpawnWalk: 10
---- !u!114 &1184494187360147066
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4759944753111975130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 608644a682216bf4eaec6b2595f21fc3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 7866579364068057338}
-  m_parentDamageSource: {fileID: 0}
-  m_turretPhases:
-  - weapons:
-    - {fileID: 8334912748930156530}
-  m_autoPlay: 0
-  m_destoryWhenDone: 0
-  m_objectToDestroy: {fileID: 0}
 --- !u!114 &7866579364068057338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5442,6 +5406,24 @@ MonoBehaviour:
     m_maxDistance: 500
     m_spatialBlend: 0
   m_biggestDamageReceived: 0
+--- !u!114 &1184494187360147066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 608644a682216bf4eaec6b2595f21fc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 7866579364068057338}
+  m_parentDamageSource: {fileID: 0}
+  m_turretPhases: []
+  m_autoPlay: 0
+  m_destoryWhenDone: 0
+  m_objectToDestroy: {fileID: 0}
 --- !u!114 &432613321654859549
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5480,6 +5462,64 @@ MonoBehaviour:
   m_requireJumpRelease: 1
   m_maxJumps: 1
   m_breakWhenUnparent: 0
+--- !u!114 &1422192360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &6956267960600933848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  InLocalSpace: 0
+  Interpolate: 1
+--- !u!114 &1837604981037889726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3159d669840c64d47a297f77c3f94e8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 1
 --- !u!82 &1810723438
 AudioSource:
   m_ObjectHideFlags: 0
@@ -5576,45 +5616,16 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &1422192360
-MonoBehaviour:
+--- !u!135 &6910084372030936651
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4759944753111975130}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
---- !u!114 &6956267960600933848
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4759944753111975130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
-  ScaleThreshold: 0.01
-  InLocalSpace: 0
-  Interpolate: 1
+  serializedVersion: 2
+  m_Radius: 1
+  m_Center: {x: 0, y: 0, z: 0}

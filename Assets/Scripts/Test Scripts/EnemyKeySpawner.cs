@@ -13,7 +13,7 @@ public class EnemyKeySpawner : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        NetworkManager.AddNetworkPrefab(m_enemy);
+        //NetworkManager.AddNetworkPrefab(m_enemy);
     }
 
     // Update is called once per frame
