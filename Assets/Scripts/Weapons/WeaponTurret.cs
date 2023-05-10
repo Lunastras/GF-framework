@@ -1,14 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
-public class WeaponTurret : DamageSource
+public class WeaponTurret : NetworkBehaviour
 {
     [SerializeField]
     private WeaponTurretPhase[] m_turretPhases = null;
 
     [SerializeField]
     private bool m_autoPlay = false;
+
+    [SerializeField]
+    private StatsCharacter m_statsCharacter = null;
 
     private static readonly float[] DEFAULT_WAIT_TIME = { 0 };
 
@@ -34,8 +38,7 @@ public class WeaponTurret : DamageSource
     // Start is called before the first frame update
     void Start()
     {
-        if (GetStatsCharacter() == null)
-            SetStatsCharacter(GetComponent<StatsCharacter>());
+        if (m_statsCharacter == null) m_statsCharacter = GetComponent<StatsCharacter>();
 
         for (int i = 0; i < m_turretPhases.Length; ++i)
         {
@@ -44,7 +47,7 @@ public class WeaponTurret : DamageSource
 
             for (int j = 0; j < weaponsLength; ++j)
             {
-                weapons[j].m_parentDamageSource = this;
+                //weapons[j].m_parentDamageSource = this;
                 weapons[j].SetLoadoutWeaponIndex(j);
                 weapons[j].SetLoadoutCount(weaponsLength);
                 weapons[j].SetLoadoutIndex(i);
@@ -164,6 +167,8 @@ public class WeaponTurret : DamageSource
     {
         return m_turretPhases[phaseIndex].weapons.Length;
     }
+
+    public StatsCharacter GetStatsCharacter() { return m_statsCharacter; }
 
     /*
 

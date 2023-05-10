@@ -262,7 +262,7 @@ MonoBehaviour:
   ShowConsole: 0
   ShowStackTrace: 1
   ShowTitle: 1
-  KeyCode: 92
+  ConsoleKeyCode: 92
   KeyString: 
   GUIAnchor: 1
   GUIHeightDiv: 2

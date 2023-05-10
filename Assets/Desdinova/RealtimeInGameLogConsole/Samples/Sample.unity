@@ -524,17 +524,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 959ddacec3437154f9744d55a707c55c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShowConsole: 1
+  ShowConsole: 0
   ShowStackTrace: 1
   ShowTitle: 1
-  KeyCode: 92
+  ScrollDownOnCommand: 1
+  ScrollDownOnShowConsole: 1
+  ConsoleKeyCode: 92
   KeyString: 
-  GUIAnchor: 2
+  GUIAnchor: 1
   GUIHeightDiv: 2
   GUIFontSize: 15
   LogCharacterCapacity: 0
   HorizontalPaddingConsole: 0
-  VerticalPaddingConsole: 10
+  VerticalPaddingConsole: 0
   HorizontalPaddingText: 10
   VerticalPaddingText: 10
   ScrollbarWidth: 20

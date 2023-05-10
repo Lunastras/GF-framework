@@ -78,8 +78,8 @@ public class NpcBehaviour : NpcController
         if (null == m_turret)
             m_turret = GetComponent<WeaponTurret>();
 
-        if (m_turret)
-            m_turret.SetStatsCharacter(m_statsNpc);
+        //if (m_turret)
+            //m_turret.SetStatsCharacter(m_statsNpc);
     }
 
     protected override void BeforeStateUpdate(float deltaTime)

@@ -158,9 +158,9 @@ public class LoadoutManager : NetworkBehaviour
             if (m_loadouts[i] == null) m_loadouts[i] = new(columns);
             List<WeaponData> loadout = m_loadouts[i];
             loadout.Clear();
+
             int j = 0;
             WeaponData weaponData = weaponsData[i * columns];
-
             while (-1 != weaponData.Weapon) //while it has a weapon
             {
                 j++;
@@ -854,7 +854,6 @@ public class LoadoutManager : NetworkBehaviour
     #endregion //WEAPON_CAPACITY_MULTIPLIER
 
     [System.Serializable]
-
     public struct WeaponData : INetworkSerializable
     {
         public int Weapon;
