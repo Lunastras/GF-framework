@@ -143,6 +143,31 @@ namespace Desdinova
             m_hasToRedoLog = true;
         }
 
+        void Update()
+        {
+            //this line is weird because only using "Input.GetKeyDown(ConsoleKeyCode)" didn't work properly, and 
+            //and "Input.GetKeyUp(ConsoleKeyCode) || Input.GetKeyDown(ConsoleKeyCode)" worked for a bit then bugged out as well
+            //could be a unity bug, but adding "!ShowConsole && " to the second part seemed to fix it
+            if (Input.GetKeyUp(ConsoleKeyCode) || (!ShowConsole && Input.GetKeyDown(ConsoleKeyCode)))
+            {
+                Debug.Log("back slash was hit");
+                ShowConsole = !ShowConsole;
+                m_consoleJustOpened = ShowConsole;
+            }
+            else if (KeyString.Length > 0)
+            {
+                if (Input.GetButtonDown(this.KeyString))
+                {
+                    ShowConsole = !ShowConsole;
+                }
+            }
+        }
+
+        public void ProcessCommand(string command)
+        {
+            print("Command: " + command);
+        }
+
         private void UpdateConsoleText()
         {
             if (m_hasToRedoLog)
@@ -172,31 +197,6 @@ namespace Desdinova
 
                 m_guiContent.text = m_logStringBuilder.ToString();
             }
-        }
-
-        void Update()
-        {
-            //this line is weird because only using "Input.GetKeyDown(ConsoleKeyCode)" didn't work properly, and 
-            //and "Input.GetKeyUp(ConsoleKeyCode) || Input.GetKeyDown(ConsoleKeyCode)" worked for a bit then bugged out as well
-            //could be a unity bug, but adding "!ShowConsole && " to the second part seemed to fix it
-            if (Input.GetKeyUp(ConsoleKeyCode) || (!ShowConsole && Input.GetKeyDown(ConsoleKeyCode)))
-            {
-                Debug.Log("back slash was hit");
-                ShowConsole = !ShowConsole;
-                m_consoleJustOpened = ShowConsole;
-            }
-            else if (KeyString.Length > 0)
-            {
-                if (Input.GetButtonDown(this.KeyString))
-                {
-                    ShowConsole = !ShowConsole;
-                }
-            }
-        }
-
-        public void ProcessCommand(string command)
-        {
-            print("Command: " + command);
         }
 
         public void Log(string logString, string stackTrace, LogType type)
