@@ -24,11 +24,11 @@ namespace Desdinova
 
         private List<string> m_logsList;
         private Vector2 m_scrollPosition;
-        private Texture2D m_backgroundTexture;
-
-        private Texture2D m_commandLineTexture;
+        private Texture2D m_whiteTexture;
 
         private string m_currentCommand = "";
+
+        private const string COMMAND_LINE_FOCUS_GROUP = "Command line focus group";
 
         private int m_currentCharacterCount = 0;
 
@@ -77,9 +77,18 @@ namespace Desdinova
 
         public int CommandLineVerticalPadding = 4;
 
-        public Color GUIColor = Color.black;
+        public Color ColorConsoleBackground = new Color(0, 0, 0, 0.6f);
 
-        public Color GUICommandLineColor = Color.black;
+
+
+        public Color ColorSlider = new Color(1, 1, 1, 0.6f);
+
+        public Color ColorText = new Color(1, 1, 1, 1);
+
+        public Color ColorCommandLineUnfocused = new Color(0, 0, 0, 0.75f);
+        public Color ColorCommandTextUnfocused = new Color(1, 1, 1, 0.6f);
+        public Color ColorCommandLineFocused = new Color(0, 0, 0, 0.95f);
+        public Color ColorCommandTextFocused = new Color(1, 1, 1, 1);
 
         [Header("Behaviours Properties")]
         public bool DoNotDestroyOnLoad = false;
@@ -129,10 +138,8 @@ namespace Desdinova
             {
                 DontDestroyOnLoad(gameObject);
             }
-
             //Set static backgorund color (do not do it in the OnGUI method)
-            m_backgroundTexture = MakeTex(2, 2, GUIColor);
-            m_commandLineTexture = MakeTex(2, 2, GUICommandLineColor);
+            m_whiteTexture = MakeTex(2, 2, Color.white);
             m_hasToRedoLog = true;
         }
 
@@ -147,9 +154,11 @@ namespace Desdinova
 
                 m_logStringBuilder.Clear();
 
+                /*
                 m_logStringBuilder.Append("<color=");
                 m_logStringBuilder.Append("#FFFFFF");
-                m_logStringBuilder.Append('>');
+                m_logStringBuilder.Append('>');*/
+
                 m_logStringBuilder.Append("<size=");
                 m_logStringBuilder.Append(GUIFontSize);
                 m_logStringBuilder.Append('>');
@@ -159,7 +168,7 @@ namespace Desdinova
                     m_logStringBuilder.Append(m_logsList[i]);
 
                 m_logStringBuilder.Append("</size>");
-                m_logStringBuilder.Append(COLOR_CLOSE_TAG);
+                //  m_logStringBuilder.Append(COLOR_CLOSE_TAG);
 
                 m_guiContent.text = m_logStringBuilder.ToString();
             }
@@ -167,7 +176,10 @@ namespace Desdinova
 
         void Update()
         {
-            if (Input.GetKeyUp(ConsoleKeyCode) || Input.GetKeyDown(ConsoleKeyCode))
+            //this line is weird because only using "Input.GetKeyDown(ConsoleKeyCode)" didn't work properly, and 
+            //and "Input.GetKeyUp(ConsoleKeyCode) || Input.GetKeyDown(ConsoleKeyCode)" worked for a bit then bugged out as well
+            //could be a unity bug, but adding "!ShowConsole && " to the second part seemed to fix it
+            if (Input.GetKeyUp(ConsoleKeyCode) || (!ShowConsole && Input.GetKeyDown(ConsoleKeyCode)))
             {
                 Debug.Log("back slash was hit");
                 ShowConsole = !ShowConsole;
@@ -184,7 +196,7 @@ namespace Desdinova
 
         public void ProcessCommand(string command)
         {
-            Debug.Log("Command: " + command);
+            print("Command: " + command);
         }
 
         public void Log(string logString, string stackTrace, LogType type)
@@ -256,10 +268,12 @@ namespace Desdinova
                 if (null == m_guiStyle)
                     m_guiStyle = new GUIStyle(GUI.skin.box);
 
+
                 m_guiStyle = GUI.skin.box;
+                GUI.backgroundColor = ColorConsoleBackground;
                 m_guiStyle.alignment = TextAnchor.UpperLeft;
                 m_guiStyle.richText = true;
-                m_guiStyle.normal.background = m_backgroundTexture;
+                m_guiStyle.normal.background = m_whiteTexture;
                 m_guiStyle.wordWrap = true;
 
                 m_guiStyle.padding = new(HorizontalPaddingText, 4 * HorizontalPaddingText, VerticalPaddingText, VerticalPaddingText);
@@ -275,15 +289,34 @@ namespace Desdinova
                     startY = Screen.height - height - VerticalPaddingConsole;
 
 
-                float commandLineHeight = CommandLineVerticalPadding * 2 + GUIFontSize;
+                float commandLineHeight = CommandLineVerticalPadding * 3 + GUIFontSize;
                 Rect consoleLogRect = new Rect(startX, startY, width, height - commandLineHeight);
 
                 //Final height
                 float dynamicHeight = Mathf.Max(height - commandLineHeight, m_guiStyle.CalcHeight(m_guiContent, width));
                 bool heightChanged = m_lastDynamicHeight != dynamicHeight;
                 if (heightChanged && ((m_consoleJustOpened && ScrollDownOnShowConsole) || m_isAtBottomOfTheList)) m_scrollPosition.y = dynamicHeight;
+
+                GUIStyle verticalScrollbarStyle = GUI.skin.verticalScrollbar;
+
+                verticalScrollbarStyle.normal.background = m_whiteTexture;
+                verticalScrollbarStyle.margin = new(0, 0, 0, 0);
+                verticalScrollbarStyle.fixedWidth = ScrollbarWidth;
+                // verticalScrollbarStyle.imagePosition
+                // verticalScrollbarStyle.
+
+                GUIStyle sliderStyle = GUI.skin.verticalScrollbarThumb;
+                GUI.backgroundColor = ColorSlider;
+                sliderStyle.normal.background = m_whiteTexture;
+
+                //GUI.backgroundColor = ColorConsoleBackground;
+
                 //Begin scroll
-                m_scrollPosition = GUI.BeginScrollView(consoleLogRect, m_scrollPosition, new Rect(0, 0, 0, dynamicHeight), false, true);
+                m_scrollPosition = GUI.BeginScrollView(consoleLogRect, m_scrollPosition, new Rect(0, 0, 0, dynamicHeight), false, true
+                                                , GUIStyle.none, verticalScrollbarStyle);
+
+                GUI.contentColor = ColorText;
+                GUI.backgroundColor = ColorConsoleBackground;
 
                 //Draw box
                 GUI.Box(new Rect(0, 0, width, dynamicHeight), m_guiContent, m_guiStyle);
@@ -291,7 +324,7 @@ namespace Desdinova
                 GUI.EndScrollView();
 
                 float textWidth = width;
-                Rect textRect = new Rect(startX, consoleLogRect.y + consoleLogRect.height, textWidth, commandLineHeight);
+                Rect commandLineRect = new Rect(startX, consoleLogRect.y + consoleLogRect.height, textWidth, commandLineHeight);
 
                 //thanks to Charles-Van-Norman from the unity forums
                 if (m_currentCommand.Length > 0 && Event.current.keyCode == KeyCode.Return)
@@ -302,14 +335,26 @@ namespace Desdinova
                 }
 
                 m_guiStyle = GUI.skin.box;
-                m_guiStyle.normal.background = m_commandLineTexture;
+
+                m_guiStyle.normal.background = m_whiteTexture;
                 m_guiStyle.fontSize = GUIFontSize;
                 m_guiStyle.padding = new(HorizontalPaddingText, 0, CommandLineVerticalPadding, CommandLineVerticalPadding);
 
+
+                if (GUI.GetNameOfFocusedControl().Equals(COMMAND_LINE_FOCUS_GROUP))
+                {
+                    GUI.contentColor = ColorCommandTextFocused;
+                    GUI.backgroundColor = ColorCommandLineFocused;
+                }
+                else
+                {
+                    GUI.contentColor = ColorCommandTextUnfocused;
+                    GUI.backgroundColor = ColorCommandLineUnfocused;
+                }
                 //thanks col000r from the unity forums
-                if (m_consoleJustOpened) GUI.SetNextControlName("Input");
-                m_currentCommand = GUI.TextField(textRect, m_currentCommand, MaxCommandLength, m_guiStyle);
-                if (m_consoleJustOpened) GUI.FocusControl("Input");
+                if (m_consoleJustOpened) GUI.SetNextControlName(COMMAND_LINE_FOCUS_GROUP);
+                m_currentCommand = GUI.TextField(commandLineRect, m_currentCommand, MaxCommandLength, m_guiStyle);
+                if (m_consoleJustOpened) GUI.FocusControl(COMMAND_LINE_FOCUS_GROUP);
 
                 m_consoleJustOpened = false;
 

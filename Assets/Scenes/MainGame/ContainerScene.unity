@@ -261,20 +261,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowConsole: 0
   ShowStackTrace: 1
-  ShowTitle: 1
+  ScrollDownOnCommand: 1
+  ScrollDownOnShowConsole: 1
   ConsoleKeyCode: 92
   KeyString: 
   GUIAnchor: 1
   GUIHeightDiv: 2
   GUIFontSize: 15
   LogCharacterCapacity: 0
+  MaxCommandLength: 256
   HorizontalPaddingConsole: 0
   VerticalPaddingConsole: 0
   HorizontalPaddingText: 10
   VerticalPaddingText: 10
   ScrollbarWidth: 20
-  CommandLineHeight: 20
-  GUIColor: {r: 0, g: 0, b: 0, a: 0.5176471}
+  CommandLineVerticalPadding: 4
+  ColorConsoleBackground: {r: 0, g: 0, b: 0, a: 0.49019608}
+  ColorSlider: {r: 1, g: 1, b: 1, a: 0.6}
+  ColorText: {r: 1, g: 1, b: 1, a: 1}
+  ColorCommandLineUnfocused: {r: 0, g: 0, b: 0, a: 0.75}
+  ColorCommandTextUnfocused: {r: 1, g: 1, b: 1, a: 0.6}
+  ColorCommandLineFocused: {r: 0, g: 0, b: 0, a: 0.95}
+  ColorCommandTextFocused: {r: 1, g: 1, b: 1, a: 1}
   DoNotDestroyOnLoad: 1
 --- !u!4 &1180619810
 Transform:
