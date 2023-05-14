@@ -8,6 +8,8 @@ using TMPro;
 
 public class GfCommandConsole : MonoBehaviour
 {
+    public static GfCommandConsole Instance { get; private set; } = null;
+
     [SerializeField]
     private TMP_InputField m_consoleText = null;
 
@@ -16,42 +18,70 @@ public class GfCommandConsole : MonoBehaviour
 
     private Scrollbar m_scrollbar = null;
 
-    [SerializeField] private int m_logCharacterCapacity = 4096;
+    private static int LogCharacterCapacity = 4096;
 
     [SerializeField] private int m_guiFontSize = 15;
 
+    [SerializeField] private bool m_showTime = true;
     [SerializeField] private bool m_showStackTrace = true;
     [SerializeField] private bool m_scrollDownOnCommand = true;
-    [SerializeField] private bool m_scrollDownOnShowConsole = true;
 
-    [SerializeField] private bool m_showLogs = true;
-    [SerializeField] private bool m_showErrors = true;
-    [SerializeField] private bool m_showCommands = true;
-    [SerializeField] private bool m_showWarnings = true;
+    [SerializeField] private LogTypeToggle m_toggleLog = default;
+    [SerializeField] private LogTypeToggle m_toggleWarn = default;
+    [SerializeField] private LogTypeToggle m_toggleError = default;
+    [SerializeField] private LogTypeToggle m_toggleCommand = default;
 
-    private bool m_mustScrollDown = false;
+    private static bool ShowLogs = true;
+    private static bool ShowErrors = true;
+    private static bool ShowCommands = true;
+    private static bool ShowWarnings = true;
 
-    private bool m_mustRedoText = true;
+    private static bool MustScrollDown = false;
 
-    private List<ConsoleLog> m_logsList;
+    private static bool MustRedoText = true;
 
-    private StringBuilder m_logStringBuilder = null;
+    //Last console to receive the updated string
+    private static GfCommandConsole LastUpdatedConsole;
 
-    private int m_currentCharacterCount = 0;
+    private static List<ConsoleLog> LogsList;
 
-    private bool m_initialised = false;
+    private static string LogString = "";
 
-    private int m_countError = 0;
-    private int m_countWarn = 0;
-    private int m_countLog = 0;
-    private int m_countCommand = 0;
+    private static StringBuilder LogStringBuilder = null;
 
-    private char COMMAND_PREFIX = '!';
+    private static int CurrentCharacterCount = 0;
+    private static int CountError = 0;
+    private static int CountWarn = 0;
+    private static int CountLog = 0;
+    private static int CountCommand = 0;
 
-    const string ERROR_OPEN_TAG = "<color=#FF534A>";
-    const string WARN_OPEN_TAG = "<color=#FFC107>";
-    const string COMMAND_OPEN_TAG = "<color=#9affd2>";
-    const string COLOR_CLOSE_TAG = "</color>";
+    private const char COMMAND_PREFIX = '!';
+
+    private const string ERROR_OPEN_TAG = "<color=#FF534A>";
+    private const string WARN_OPEN_TAG = "<color=#FFC107>";
+    private const string COMMAND_OPEN_TAG = "<color=#9affd2>";
+    private const string COLOR_CLOSE_TAG = "</color>";
+
+    private static int LastGuiFontSize = 15;
+
+    private static bool LastShowStack = true;
+
+    private static bool LastShowTime = true;
+
+    private bool m_focusOnCommandLine = false;
+
+    [System.Serializable]
+    private struct LogTypeToggle
+    {
+        public LogTypeToggle(Toggle toggle = null, TMP_Text text = null)
+        {
+            Toggle = toggle;
+            Text = text;
+        }
+
+        public Toggle Toggle;
+        public TMP_Text Text;
+    }
 
     private enum GfLogType
     {
@@ -85,38 +115,52 @@ public class GfCommandConsole : MonoBehaviour
         }
     }
 
+    public static void InitializeLog()
+    {
+        LogString = "";
+
+        CountCommand = 0;
+        CountError = 0;
+        CountLog = 0;
+        CountWarn = 0;
+
+        MustScrollDown = true;
+        LastUpdatedConsole = null;
+        UnityEngine.Application.logMessageReceived += Log;
+        LogStringBuilder = new System.Text.StringBuilder(LogCharacterCapacity);
+
+        LogsList = new(256);
+        LogsList.Add(new(UnityEngine.Application.productName + " " + UnityEngine.Application.version + " LOG CONSOLE: \n"));
+        CurrentCharacterCount += LogsList[0].Length;
+    }
+
+
+    public static void DeinitLog()
+    {
+        if (Instance) Destroy(Instance);
+        Instance = null;
+        UnityEngine.Application.logMessageReceived -= Log;
+    }
+
     void OnEnable()
     {
-        if (!m_initialised)
+        if (this != Instance)
         {
-            m_initialised = true;
-            m_scrollbar = m_consoleText.verticalScrollbar;
-            m_logStringBuilder = new System.Text.StringBuilder(m_logCharacterCapacity);
-
-            m_logsList = new(256);
-            m_logsList.Add(new(UnityEngine.Application.productName + " " + UnityEngine.Application.version + " LOG CONSOLE: \n"));
-            m_currentCharacterCount += m_logsList[0].Length;
-
-            UnityEngine.Application.logMessageReceived += Log;
+            Destroy(Instance);
+            Instance = this;
+            UpdateShowErrors();
+            UpdateShowLogs();
+            UpdateShowWarnings();
+            UpdateShowCommands();
         }
 
-        if (gameObject.activeSelf) //this function can be called by the log function without the gameobject being active
-        {
-            m_commandText.Select();
-            m_commandText.ActivateInputField();
-        }
-
-        UpdateConsoleText();
+        m_scrollbar = m_consoleText.verticalScrollbar;
+        m_focusOnCommandLine = true;
     }
 
     void OnDisable()
     {
-        if (0.99f <= m_scrollbar.value) m_mustScrollDown = true;
-    }
-
-    void OnDestroy()
-    {
-        if (m_initialised) UnityEngine.Application.logMessageReceived -= Log;
+        MustScrollDown |= 0.95f <= m_scrollbar.value || 0.99f < m_scrollbar.size; //currently at the bottom, scroll to bottom after writing new log
     }
 
     // Start is called before the first frame update
@@ -125,101 +169,97 @@ public class GfCommandConsole : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Return) && m_commandText.text.Length > 0)
-        {
-            CommandEntered(m_commandText.text);
-            m_commandText.text = "";
-            m_commandText.Select();
-            m_commandText.ActivateInputField();
-        }
-    }
-
     public void CommandEntered(string command)
     {
-        m_mustScrollDown = true;
         print(COMMAND_PREFIX + command);
-
     }
 
-    public void Log(string logString, string stackTrace, LogType type)
+    public static void Log(string logString, string stackTrace, LogType type)
     {
-        if (null == m_logStringBuilder || null == m_logsList)
-            OnEnable(); //initialize the string builder and logs list
-
-        m_logStringBuilder.Clear();
-        m_logStringBuilder.Append('\n');
+        LogStringBuilder.Clear();
+        LogStringBuilder.Append('\n');
 
         GfLogType gfLogType = GfLogType.LOG;
-        bool showStack = m_showStackTrace;
+        if (Instance) LastShowStack = Instance.m_showStackTrace;
+        bool showStack = LastShowStack;
 
         switch (type)
         {
             case (LogType.Error):
-                ++m_countError;
+                ++CountError;
                 gfLogType = GfLogType.ERROR;
-                m_logStringBuilder.Append(ERROR_OPEN_TAG);
+                LogStringBuilder.Append(ERROR_OPEN_TAG);
                 break;
 
             case (LogType.Exception):
-                ++m_countError;
+                ++CountError;
                 gfLogType = GfLogType.ERROR;
-                m_logStringBuilder.Append(ERROR_OPEN_TAG);
+                LogStringBuilder.Append(ERROR_OPEN_TAG);
                 break;
 
             case (LogType.Assert):
-                ++m_countError;
+                ++CountError;
                 gfLogType = GfLogType.ERROR;
-                m_logStringBuilder.Append(ERROR_OPEN_TAG);
+                LogStringBuilder.Append(ERROR_OPEN_TAG);
                 break;
 
             case (LogType.Warning):
-                ++m_countWarn;
+                ++CountWarn;
                 gfLogType = GfLogType.WARNING;
-                m_logStringBuilder.Append(WARN_OPEN_TAG);
+                LogStringBuilder.Append(WARN_OPEN_TAG);
                 break;
 
             case (LogType.Log):
-                ++m_countCommand;
                 gfLogType = GfLogType.LOG;
                 if (logString[0] == COMMAND_PREFIX)
                 {
+                    ++CountCommand;
                     showStack = false;
                     gfLogType = GfLogType.COMMAND;
-                    m_logStringBuilder.Append(COMMAND_OPEN_TAG);
+                    LogStringBuilder.Append(COMMAND_OPEN_TAG);
                 }
+                else
+                {
+                    ++CountLog;
+                }
+
                 break;
         }
 
-        //Time appends
-        m_logStringBuilder.Append('[');
-        m_logStringBuilder.Append(DateTime.Now.ToLongTimeString());
-        m_logStringBuilder.Append(']');
-        m_logStringBuilder.Append(' ');
+        if (Instance) LastShowTime = Instance.m_showTime;
+        if (LastShowTime)
+        {
+            //Time appends
+            LogStringBuilder.Append('[');
+            LogStringBuilder.Append(DateTime.Now.ToLongTimeString());
+            LogStringBuilder.Append(']');
+            LogStringBuilder.Append(' ');
+        }
+        else
+        {
+            LogStringBuilder.Append('>');
+        }
 
-        m_logStringBuilder.Append(logString);
+        LogStringBuilder.Append(logString);
 
         if (showStack && null != stackTrace && stackTrace.Length > 0)
         {
-            m_logStringBuilder.Append("\n<size=");
-            m_logStringBuilder.Append(this.m_guiFontSize / 1.25f);
-            m_logStringBuilder.Append('>');
-            m_logStringBuilder.Append(stackTrace);
-            m_logStringBuilder.Append("</size>");
+            if (Instance) LastGuiFontSize = Instance.m_guiFontSize;
+            LogStringBuilder.Append("\n<size=");
+            LogStringBuilder.Append(LastGuiFontSize / 1.25f);
+            LogStringBuilder.Append('>');
+            LogStringBuilder.Append(stackTrace);
+            LogStringBuilder.Append("</size>");
         }
 
         //all logs besides Log have a colour, place the colour tag at the end if it isn't a normal log
         if (GfLogType.LOG != gfLogType)
-            m_logStringBuilder.Append(COLOR_CLOSE_TAG);
-        // else
-        //  m_logStringBuilder.Append('\n');
+            LogStringBuilder.Append(COLOR_CLOSE_TAG);
 
-        m_logsList.Add(new(m_logStringBuilder.ToString(), gfLogType));
+        LogsList.Add(new(LogStringBuilder.ToString(), gfLogType));
 
-        int listCount = m_logsList.Count;
-        m_currentCharacterCount += m_logsList[listCount - 1].Length;
+        int listCount = LogsList.Count;
+        CurrentCharacterCount += LogsList[listCount - 1].Length;
 
         /*
         int elementsToRemove = 0;
@@ -236,52 +276,129 @@ public class GfCommandConsole : MonoBehaviour
                 m_logsList.RemoveAt(--listCount);
         }*/
 
-        m_mustRedoText = true;
 
-        if (gameObject.activeSelf)
+        MustRedoText = true;
+        MustScrollDown |= Instance && (0.95f <= Instance.m_scrollbar.value || 0.99f < Instance.m_scrollbar.size); //currently at the bottom, scroll to bottom after writing new log
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Return) && m_commandText.text.Length > 0)
         {
-            bool scrollToBottom = m_mustScrollDown || 0.99f > m_scrollbar.value || 0.99f < m_scrollbar.size; //currently at the bottom, scroll to bottom after writing new log
-            UpdateConsoleText();
-            //Don't scroll if the size is still 1
-            if (scrollToBottom && 0.99f > m_scrollbar.size)
+            MustScrollDown |= m_scrollDownOnCommand;
+            CommandEntered(m_commandText.text);
+            m_commandText.text = "";
+            m_commandText.Select();
+            m_commandText.ActivateInputField();
+        }
+
+        UpdateConsoleText();
+    }
+
+    private const string PLUS_99_STRING = "+99";
+
+    private void UpdateConsoleText(bool forceUpdate = false)
+    {
+        if (!CanvasUpdateRegistry.IsRebuildingLayout() || forceUpdate)
+        {
+            UpdateLogString();
+
+            if (this != LastUpdatedConsole)
             {
-                m_scrollbar.value = 1;
-                m_mustScrollDown = false;
+                m_toggleCommand.Text.text = CountCommand > 99 ? PLUS_99_STRING : CountCommand.ToString();
+                m_toggleWarn.Text.text = CountWarn > 99 ? PLUS_99_STRING : CountWarn.ToString();
+                m_toggleError.Text.text = CountError > 99 ? PLUS_99_STRING : CountError.ToString();
+                m_toggleLog.Text.text = CountLog > 99 ? PLUS_99_STRING : CountLog.ToString();
+
+                m_consoleText.text = LogString;
+                LastUpdatedConsole = this;
+
+                if (MustScrollDown && 0.99f > m_scrollbar.size) //Don't scroll if the size is still 1
+                {
+                    m_scrollbar.value = 1;
+                    MustScrollDown = false;
+                }
+
+                m_scrollbar.value = System.MathF.Min(1.0f, m_scrollbar.value);
             }
+
+            if (m_focusOnCommandLine)
+            {
+                m_focusOnCommandLine = false;
+
+                m_commandText.Select();
+                m_commandText.ActivateInputField();
+            }
+
+
         }
     }
 
-    public void ToggleShowWarnings()
+    private static void UpdateLogString()
     {
-        m_showWarnings = !m_showWarnings;
-        m_mustRedoText = true;
-        UpdateConsoleText();
+        if (MustRedoText)
+        {
+            MustRedoText = false;
+            LogStringBuilder.Clear();
+
+            if (Instance) LastGuiFontSize = Instance.m_guiFontSize;
+
+            LogStringBuilder.Append("<size=");
+            LogStringBuilder.Append(LastGuiFontSize);
+            LogStringBuilder.Append('>');
+            ConsoleLog log;
+            GfLogType type;
+            bool writeLog;
+
+            int listCount = LogsList.Count;
+            for (int i = 0; i < listCount; ++i)
+            {
+                log = LogsList[i];
+                type = log.Type;
+
+                writeLog =
+                   (ShowLogs && GfLogType.LOG == type)
+                || (ShowWarnings && GfLogType.WARNING == type)
+                || (ShowErrors && GfLogType.ERROR == type)
+                || (ShowCommands && GfLogType.COMMAND == type); //if it isn't a log or a warning, it's an error/exception/assert
+
+                if (writeLog) LogStringBuilder.Append(log);
+            }
+
+            LogStringBuilder.Append("</size>");
+            LogString = LogStringBuilder.ToString();
+            LastUpdatedConsole = null; //need to update the console text
+        }
     }
 
-    public void ToggleShowErrors()
+    public void UpdateShowWarnings()
     {
-        m_showErrors = !m_showErrors;
-        m_mustRedoText = true;
-        UpdateConsoleText();
+        ShowWarnings = m_toggleWarn.Toggle.isOn;
+        MustRedoText = true;
     }
 
-    public void ToggleShowLogs()
+    public void UpdateShowErrors()
     {
-        m_showLogs = !m_showLogs;
-        m_mustRedoText = true;
-        UpdateConsoleText();
+        ShowErrors = m_toggleError.Toggle.isOn;
+        MustRedoText = true;
     }
 
-    public void ToggleShowCommands()
+    public void UpdateShowLogs()
     {
-        m_showCommands = !m_showCommands;
-        m_mustRedoText = true;
-        UpdateConsoleText();
+        ShowLogs = m_toggleLog.Toggle.isOn;
+        MustRedoText = true;
+    }
+
+    public void UpdateShowCommands()
+    {
+        ShowCommands = m_toggleCommand.Toggle.isOn;
+        MustRedoText = true;
     }
 
     public void ScrollToBottom()
     {
-        m_mustScrollDown = true;
+        MustScrollDown = true;
     }
 
     public void ScrollToTop()
@@ -289,38 +406,11 @@ public class GfCommandConsole : MonoBehaviour
         m_scrollbar.value = 0;
     }
 
-    private void UpdateConsoleText()
+    public string GetLog()
     {
-        if (gameObject.activeSelf && m_mustRedoText)
-        {
-            m_mustRedoText = false;
-            m_logStringBuilder.Clear();
-
-            m_logStringBuilder.Append("<size=");
-            m_logStringBuilder.Append(m_guiFontSize);
-            m_logStringBuilder.Append('>');
-            ConsoleLog log;
-            GfLogType type;
-            bool writeLog;
-
-            int listCount = m_logsList.Count;
-            for (int i = 0; i < listCount; ++i)
-            {
-                log = m_logsList[i];
-                type = log.Type;
-
-                writeLog =
-                   (m_showLogs && GfLogType.LOG == type)
-                || (m_showWarnings && GfLogType.WARNING == type)
-                || (m_showErrors && GfLogType.ERROR == type)
-                || (m_showCommands && GfLogType.COMMAND == type); //if it isn't a log or a warning, it's an error/exception/assert
-
-                if (writeLog) m_logStringBuilder.Append(log);
-            }
-
-
-            m_logStringBuilder.Append("</size>");
-            m_consoleText.text = m_logStringBuilder.ToString();
-        }
+        if (MustRedoText) UpdateLogString();
+        return LogString;
     }
+
+
 }
