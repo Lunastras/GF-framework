@@ -35,6 +35,13 @@ public class GfConsoleManager : MonoBehaviour
         if (Input.GetKeyDown(m_consoleKeycode))
         {
             m_console.SetActive(!m_console.activeSelf);
+
+            if (m_console.activeSelf)
+            {
+                RectTransform trans = m_console.GetComponent<RectTransform>();
+                trans.sizeDelta = new Vector2(900, 600);
+                trans.position = new Vector3(450, 300, 0);
+            }
         }
     }
 }
