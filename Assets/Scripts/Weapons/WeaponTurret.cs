@@ -35,6 +35,16 @@ public class WeaponTurret : NetworkBehaviour
 
     private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
 
+    protected bool HasAuthority
+    {
+        get
+        {
+            bool ret = false;
+            if (NetworkManager.Singleton) ret = NetworkManager.Singleton.IsServer;
+            return ret;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -57,33 +67,36 @@ public class WeaponTurret : NetworkBehaviour
 
     private void Update()
     {
-        if (m_destoryWhenDone && !IsAlive())
+        if (HasAuthority)
         {
-            GfPooling.Destroy(m_objectToDestroy);
-        }
-        else
-        {
-            if (m_autoPlay && m_firing)
+            if (m_destoryWhenDone && !IsAlive())
             {
-                if (!IsFiring(true))
-                { //phase ended
-                    ++m_currentPhaseIndex;
-
-                    bool playNext = m_currentPhaseIndex < m_turretPhases.Length;
-
-                    if (m_currentPhaseIndex >= m_turretPhases.Length)
-                        m_currentPhaseIndex = 0;
-                    else
-                        playNext = false;
-
-                    if (playNext) Play();
-                }
+                GfPooling.Destroy(m_objectToDestroy);
             }
-
-            if (m_timeUntilPlay > 0)
+            else
             {
-                m_timeUntilPlay -= Time.deltaTime;
-                if (m_timeUntilPlay <= 0) Play(m_delayForcePlay, m_requestedPhase);
+                if (m_autoPlay && m_firing)
+                {
+                    if (!IsFiring(true))
+                    { //phase ended
+                        ++m_currentPhaseIndex;
+
+                        bool playNext = m_currentPhaseIndex < m_turretPhases.Length;
+
+                        if (m_currentPhaseIndex >= m_turretPhases.Length)
+                            m_currentPhaseIndex = 0;
+                        else
+                            playNext = false;
+
+                        if (playNext) Play();
+                    }
+                }
+
+                if (m_timeUntilPlay > 0)
+                {
+                    m_timeUntilPlay -= Time.deltaTime;
+                    if (m_timeUntilPlay <= 0) Play(m_delayForcePlay, m_requestedPhase);
+                }
             }
         }
     }
@@ -203,18 +216,34 @@ public class WeaponTurret : NetworkBehaviour
         }
     }*/
 
+    /*
     public void Play(bool forcePlay, float delay, int phase)
     {
         m_currentPhaseIndex = phase;
         m_timeUntilPlay = delay;
         m_requestedPhase = phase;
         m_delayForcePlay = forcePlay;
-    }
+    }*/
 
     public void Play(bool forcePlay = false, int phase = -1)
     {
+        if (HasAuthority)
+        {
+            phase = System.Math.Max(0, System.Math.Max(phase, m_currentPhaseIndex));
+            InternalPlay(forcePlay, phase);
+            PlayClientRpc(true, phase);
+        }
+    }
+
+    [ClientRpc]
+    public void PlayClientRpc(bool forcePlay, int phase)
+    {
+        if (!HasAuthority) InternalPlay(forcePlay, phase);
+    }
+
+    public void InternalPlay(bool forcePlay, int phase)
+    {
         // Debug.Log("I AM FIRING " + gameObject.name);
-        phase = System.Math.Max(0, System.Math.Max(phase, m_currentPhaseIndex));
 
         bool phaseChanged = phase != m_currentPhaseIndex;
         m_firing &= !forcePlay;
@@ -252,7 +281,6 @@ public class WeaponTurret : NetworkBehaviour
             for (int i = 0; i < systemsLength; ++i)
                 systems[i].transform.rotation = rotation;
         }
-
     }
 
     public void SetTarget(Transform target)
@@ -264,7 +292,6 @@ public class WeaponTurret : NetworkBehaviour
             for (int i = 0; i < systemsLength; ++i)
                 systems[i].SetTarget(target);
         }
-
     }
 
     public void DestroyWhenDone(bool stopParticles = false)
@@ -282,6 +309,7 @@ public class WeaponTurret : NetworkBehaviour
     }
 
     public virtual PriorityValue<float> GetSpeedMultiplier() { return m_speedMultiplier; }
+
     public virtual bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
         bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);

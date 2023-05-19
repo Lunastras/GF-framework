@@ -174,7 +174,6 @@ public class StatsNpc : StatsCharacter
 
     protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
-        Debug.Log("Internal Damage called, is ServerCall: " + isServerCall);
         if (!m_isDead)
         {
             damage *= m_receivedDamageMultiplier.Value;

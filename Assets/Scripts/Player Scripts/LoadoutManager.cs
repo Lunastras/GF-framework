@@ -44,6 +44,16 @@ public class LoadoutManager : NetworkBehaviour
 
     protected static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
 
+    protected bool HasAuthority
+    {
+        get
+        {
+            bool ret = false;
+            if (NetworkManager.Singleton) ret = NetworkManager.Singleton.IsServer;
+            return ret;
+        }
+    }
+
     protected virtual void InternalStart() { }
 
     public override void OnNetworkSpawn()
@@ -64,9 +74,6 @@ public class LoadoutManager : NetworkBehaviour
         }
 
         m_weaponsInInventory = new int[WeaponMaster.NumWeapons()];
-
-        if (WeaponMaster.NumWeapons() > 0 && m_weaponsInInventory[0] == 0)
-            AddWeaponToInventory(0);
     }
 
     // Start is called before the first frame update
@@ -76,7 +83,7 @@ public class LoadoutManager : NetworkBehaviour
 
         SetCurrentLoadout(m_currentLoadOutIndex);
 
-        if (IsServer)
+        if (HasAuthority)
         {
             Test();
         }
@@ -86,7 +93,7 @@ public class LoadoutManager : NetworkBehaviour
             m_hudManager = GameManager.GetHudManager();
 
         }
-        else if (IsClient && !IsServer)
+        else if (IsClient && !HasAuthority)
         {
             Debug.Log("Requesting data");
             RequestLoadoutDataServerRpc();
@@ -186,7 +193,7 @@ public class LoadoutManager : NetworkBehaviour
 
     public void SetLoadoutAllWeapons(int indexLoadout, int newWeapon, bool fillToCapacity)
     {
-        if (IsServer)
+        if (HasAuthority)
         {
             SetLoadoutAllWeaponsClientRpc(indexLoadout, newWeapon, fillToCapacity);
         }
@@ -234,7 +241,7 @@ public class LoadoutManager : NetworkBehaviour
     public bool SetLoadoutWeapon(int indexLoadout, int indexWeapon, int newWeapon)
     {
         bool changedWeapon = false;
-        if (IsServer)
+        if (HasAuthority)
         {
             SetLoadoutWeaponClientRpc(indexLoadout, indexWeapon, newWeapon);
         }
@@ -365,7 +372,7 @@ public class LoadoutManager : NetworkBehaviour
 
     public void SetCurrentLoadout(int index)
     {
-        if (IsServer)
+        if (HasAuthority)
         {
             SetCurrentLoadoutClientRpc(index);
         }
@@ -435,7 +442,7 @@ public class LoadoutManager : NetworkBehaviour
 
     public void SetWeaponCapacity(int newCapacity, bool repeatWeapons = true, bool keepSamePoints = true)
     {
-        if (IsServer)
+        if (HasAuthority)
         {
             if (newCapacity != m_weaponCapacity)
             {
@@ -509,13 +516,14 @@ public class LoadoutManager : NetworkBehaviour
         return m_weaponCapacity;
     }
 
+    /* TODO has to work with network behaviour
     public void AddWeaponToInventory(int weapon, int count = 1)
     {
         if (weapon >= 0 && m_weaponsInInventory != null && null != WeaponMaster.GetWeapon(weapon))
         {
             m_weaponsInInventory[weapon] = count + m_weaponsInInventory[weapon];
         }
-    }
+    }*/
 
     private void RefreshExpForWeapons()
     {
@@ -540,7 +548,7 @@ public class LoadoutManager : NetworkBehaviour
 
     public void AddPointsAll(WeaponPointsTypes type, float points)
     {
-        if (IsServer)
+        if (HasAuthority)
             AddPointAllClientRpc(type, points);
         else if (IsOwner)
             AddPointAllServerRpc(type, points);
@@ -569,7 +577,7 @@ public class LoadoutManager : NetworkBehaviour
 
     public void AddPoints(WeaponPointsTypes type, float points, int loadoutIndex = -1)
     {
-        if (IsServer)
+        if (HasAuthority)
             AddPointsClientRpc(type, points, loadoutIndex);
         else if (IsOwner)
             AddPointsServerRpc(type, points, loadoutIndex);
@@ -623,7 +631,7 @@ public class LoadoutManager : NetworkBehaviour
 
     public void AddLoadout(int count = 1)
     {
-        if (IsServer)
+        if (HasAuthority)
         {
             AddLoadoutClientRpc(count);
         }
@@ -722,7 +730,7 @@ public class LoadoutManager : NetworkBehaviour
     public virtual bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
         bool changedValue = false;
-        if (IsServer)
+        if (HasAuthority)
         {
             changedValue = InternalSetSpeedMultiplier(multiplier, priority, overridePriority);
             if (changedValue) SetSpeedMultiplierClientRpc(multiplier, priority);
@@ -762,7 +770,7 @@ public class LoadoutManager : NetworkBehaviour
     public virtual bool SetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
         bool changedValue = false;
-        if (IsServer)
+        if (HasAuthority)
         {
             changedValue = InternalSetFireRateMultiplier(multiplier, priority, overridePriority);
             if (changedValue) SetFireRateMultiplierClientRpc(multiplier, priority);
@@ -801,7 +809,7 @@ public class LoadoutManager : NetworkBehaviour
     public virtual bool SetDamageMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
         bool changedValue = false;
-        if (IsServer)
+        if (HasAuthority)
         {
             changedValue = InternalSetDamageMultiplier(multiplier, priority, overridePriority);
             if (changedValue) SetDamageMultiplierClientRpc(multiplier, priority);
@@ -836,7 +844,7 @@ public class LoadoutManager : NetworkBehaviour
     public virtual bool SetWeaponCapacityMultiplier(float multiplier, uint priority = 0, bool overridePriority = false, bool repeatWeapons = true, bool keepSameExp = true)
     {
         bool changedValue = false;
-        if (IsServer)
+        if (HasAuthority)
         {
             changedValue = InternalSetWeaponCapacityMultiplier(multiplier, priority, overridePriority);
             if (changedValue) SetWeaponCapacityMultiplierClientRpc(multiplier, priority);

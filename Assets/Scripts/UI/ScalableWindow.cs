@@ -6,18 +6,24 @@ using System.Collections.Generic;
 public class ScalableWindow : MonoBehaviour
 {
     [SerializeField]
-    private float m_borderSelectionSize = 8f;
+    private float m_borderSelectionSize = 16f;
 
     [SerializeField]
-    private float m_minimumWidth = 20;
+    private float m_screenBorderOffset = 8f;
+
     [SerializeField]
-    private float m_minimumHeight = 20;
+    private float m_minimumWidth = 200;
+    [SerializeField]
+    private float m_minimumHeight = 200;
 
     [SerializeField]
     private bool m_canChangeSize = true;
 
     [SerializeField]
     private bool m_canMove = true;
+
+    [SerializeField]
+    private bool m_screenIsBorder = true;
 
 
     private RectTransform m_rectTransform;
@@ -28,6 +34,12 @@ public class ScalableWindow : MonoBehaviour
     private bool m_isDraggingLeft = false;
     private bool m_isDraggingBot = false;
     private bool m_isDraggingTop = false;
+
+    private float m_boundOffsetVertical = 0;
+    private float m_boundOffsetHorizontal = 0;
+
+    private Vector2 m_screenResolution = Vector3.zero;
+
 
     private bool m_wasDraggingWhenPressed = false;
 
@@ -44,6 +56,8 @@ public class ScalableWindow : MonoBehaviour
         DRAG_DIAGONAL_TOP_NORTH_WEST
     }
 
+    private CursorType m_cursorType = CursorType.NORMAL;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -54,21 +68,47 @@ public class ScalableWindow : MonoBehaviour
         m_rectTransform.sizeDelta = size;
 
         m_pointerEventData = new PointerEventData(EventSystem.current);
+
+        m_screenResolution.x = Screen.width;
+        m_screenResolution.y = Screen.height;
     }
 
-
-
     private Vector3 m_lastMousePos = Vector3.zero;
+    private Vector3 m_initialPosition = Vector3.zero;
+
+    private static void CalculateLength(float newBound, float oldBound, float oppositeBound, float minimumLength, float offset, float sign, float maxValue, ref float position, out float length)
+    {
+        newBound += offset * sign;
+        newBound = System.MathF.Min(newBound * sign, maxValue * sign) * sign; //this weird line actually works to clamp the border, unbelievable
+
+        length = newBound - oppositeBound;
+        length *= sign;
+        float lengthCorrection = System.MathF.Min(0, length - minimumLength);
+        length -= lengthCorrection;
+        newBound -= lengthCorrection * sign;
+        position += 0.5f * (newBound - oldBound);
+    }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
+        if (Screen.width != m_screenResolution.x || Screen.height != m_screenResolution.y)
+            OnResolutionChanged();
+
         if (Cursor.visible && (IsMouseOverUI() || m_isDragging) && (m_canMove || m_canChangeSize))
         {
             bool mouseIsPressed = Input.GetMouseButton(0);
 
             Vector3 mousePos = Input.mousePosition;
-            Vector3 position = m_rectTransform.position;
+
+            if (m_screenIsBorder && false)
+            {
+                float halfScreenBorderOffset = m_screenBorderOffset;
+                mousePos.x = System.MathF.Max(halfScreenBorderOffset, System.MathF.Min(Screen.width - halfScreenBorderOffset, mousePos.x + m_boundOffsetHorizontal));
+                mousePos.y = System.MathF.Max(halfScreenBorderOffset, System.MathF.Min(Screen.height - halfScreenBorderOffset, mousePos.y + m_boundOffsetVertical));
+            }
+
+            Vector3 position = (m_isDragging && !m_isChangingSize) ? m_initialPosition : m_rectTransform.position;
             Rect rect = m_rectTransform.rect;
 
             float left = position.x + rect.x;
@@ -84,61 +124,41 @@ public class ScalableWindow : MonoBehaviour
                 Vector2 currentSize = m_rectTransform.sizeDelta;
                 Vector2 mouseMovement = mousePos - m_lastMousePos;
 
-                if (m_isDraggingRight || m_isDraggingLeft)
-                {
-                    if (m_isDraggingLeft) mouseMovement.x *= -1;
-                    float desiredWidth = currentSize.x + mouseMovement.x;
+                if (m_isDraggingRight)
+                    CalculateLength(mousePos.x, right, left, m_minimumWidth, m_boundOffsetHorizontal, 1, m_screenResolution.x + m_screenBorderOffset, ref position.x, out currentSize.x);
+                else if (m_isDraggingLeft)
+                    CalculateLength(mousePos.x, left, right, m_minimumWidth, m_boundOffsetHorizontal, -1, -m_screenBorderOffset, ref position.x, out currentSize.x);
 
-                    //if width is too small
-                    if (desiredWidth < m_minimumWidth)
-                    {
-                        mouseMovement.x = m_minimumWidth - currentSize.x;
-                        desiredWidth = m_minimumWidth;
-                    }
-
-                    currentSize.x = desiredWidth;
-                    mouseMovement.x *= 0.5f;
-                    if (m_isDraggingRight)
-                        position.x += mouseMovement.x;
-                    else //m_isDraggingLeft
-                        position.x -= mouseMovement.x;
-                }
-
-                if (m_isDraggingTop || m_isDraggingBot)
-                {
-                    if (m_isDraggingBot) mouseMovement.y *= -1;
-                    float desiredHeight = currentSize.y + mouseMovement.y;
-
-                    //if width is too small
-                    if (desiredHeight < m_minimumHeight)
-                    {
-                        mouseMovement.y = m_minimumHeight - currentSize.y;
-                        desiredHeight = m_minimumHeight;
-                    }
-
-                    currentSize.y = desiredHeight;
-                    mouseMovement.y *= 0.5f;
-                    if (m_isDraggingTop)
-                        position.y += mouseMovement.y;
-                    else //m_isDraggingLeft
-                        position.y -= mouseMovement.y;
-                }
+                if (m_isDraggingBot)
+                    CalculateLength(mousePos.y, bottom, top, m_minimumHeight, m_boundOffsetVertical, -1, -m_screenBorderOffset, ref position.y, out currentSize.y);
+                else if (m_isDraggingTop)
+                    CalculateLength(mousePos.y, top, bottom, m_minimumHeight, m_boundOffsetVertical, 1, m_screenResolution.y + m_screenBorderOffset, ref position.y, out currentSize.y);
 
                 if (m_isChangingSize)
                 {
                     m_rectTransform.sizeDelta = currentSize;
+                    m_lastMousePos = mousePos;
                 }
                 else
                 {
-                    position.x += mouseMovement.x;
-                    position.y += mouseMovement.y;
+                    if (m_screenIsBorder)
+                    {
+                        mouseMovement.x -= System.MathF.Max(0, right + mouseMovement.x - (m_screenBorderOffset + m_screenResolution.x));
+                        mouseMovement.x -= System.MathF.Min(0, left + mouseMovement.x + m_screenBorderOffset);
+
+                        mouseMovement.y -= System.MathF.Max(0, top + mouseMovement.y - (m_screenBorderOffset + m_screenResolution.y));
+                        mouseMovement.y -= System.MathF.Min(0, bottom + mouseMovement.y + m_screenBorderOffset);
+                    }
+
+                    position.x = mouseMovement.x + m_initialPosition.x;
+                    position.y = mouseMovement.y + m_initialPosition.y;
                 }
 
                 m_rectTransform.position = position;
-                m_lastMousePos = mousePos;
             }
             else
             {
+                m_cursorType = CursorType.NORMAL;
                 m_isDraggingRight = m_borderSelectionSize > System.MathF.Abs(mousePos.x - right);
                 //we make sure m_isDraggingRight is false to avoid having both values be true. Same is applied to m_isDraggingTop
                 m_isDraggingLeft = !m_isDraggingRight && m_borderSelectionSize > System.MathF.Abs(mousePos.x - left);
@@ -151,11 +171,77 @@ public class ScalableWindow : MonoBehaviour
 
                 m_lastMousePos = mousePos;
                 m_isDragging = m_isChangingSize || (m_canMove && !dragValid && Input.GetMouseButtonDown(0) && MouseOverUICollision(mousePos));
-            }
+                m_initialPosition = position;
 
+                if (m_isChangingSize)
+                {
+                    if (m_isDraggingRight)
+                        m_boundOffsetHorizontal = right - mousePos.x;
+                    else
+                        m_boundOffsetHorizontal = mousePos.x - left;
+
+                    if (m_isDraggingBot)
+                        m_boundOffsetVertical = mousePos.y - bottom;
+                    else
+                        m_boundOffsetVertical = top - mousePos.y;
+
+                    bool verticleDrag = m_isDraggingBot || m_isDraggingTop;
+                    bool horizontalDrag = m_isDraggingRight || m_isDraggingLeft;
+
+                    if (horizontalDrag && !verticleDrag)
+                        m_cursorType = CursorType.DRAG_HORIZONTAL;
+                    else if (verticleDrag && !horizontalDrag)
+                        m_cursorType = CursorType.DRAG_VERTICAL;
+                    else if ((m_isDraggingLeft && m_isDraggingBot) || (m_isDraggingRight && m_isDraggingTop))
+                        m_cursorType = CursorType.DRAG_DIAGONAL_TOP_NORTH_EAST;
+                    else // if ((m_isDraggingLeft && m_isDraggingTop) || (m_isDraggingRight && m_isDraggingBot)) 
+                        m_cursorType = CursorType.DRAG_DIAGONAL_TOP_NORTH_WEST;
+                }
+
+                /*
+                switch (m_cursorType)
+                {
+                    case (CursorType.NORMAL):
+                        break;
+
+                    case (CursorType.DRAG_HORIZONTAL):
+                        break;
+
+                    case (CursorType.DRAG_VERTICAL):
+                        break;
+
+                    case (CursorType.DRAG_DIAGONAL_TOP_NORTH_EAST):
+                        break;
+
+                    case (CursorType.DRAG_DIAGONAL_TOP_NORTH_WEST):
+                        break;
+                }
+                */
+            }
         }
     }
 
+    private void OnResolutionChanged()
+    {
+        //resize window
+        m_screenResolution.x = Screen.width;
+        m_screenResolution.y = Screen.height;
+
+        Vector3 position = (m_isDragging && !m_isChangingSize) ? m_initialPosition : m_rectTransform.position;
+        Rect rect = m_rectTransform.rect;
+
+        float left = System.MathF.Max(-m_screenBorderOffset, position.x + rect.x);
+        float right = System.MathF.Min(m_screenResolution.x + m_screenBorderOffset, left + rect.width);
+
+        float bottom = System.MathF.Max(-m_screenBorderOffset, position.y + rect.y);
+        float top = System.MathF.Min(m_screenResolution.y + m_screenBorderOffset, bottom + rect.height);
+
+        float width = right - left;
+        float height = top - bottom;
+
+        m_rectTransform.sizeDelta = new Vector2(width, height);
+        m_rectTransform.position = new Vector3(left + width * 0.5f, bottom + height * 0.5f, 0);
+    }
 
     private bool MouseOverUICollision(Vector3 mousePosition)
     {

@@ -84,16 +84,13 @@ public abstract class StatsCharacter : NetworkBehaviour
     [ClientRpc]
     protected virtual void KillClientRpc(ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
-        Debug.Log("The kill rpc was called!");
         InternalKill(enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
     }
 
     [ClientRpc]
     protected virtual void KillClientRpc()
     {
-        Debug.Log("The kill rpc was called!");
         InternalKill(0, false, -1, -1, true);
-
     }
 
     public virtual void Kill(ulong killerNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
