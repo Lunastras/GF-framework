@@ -2071,7 +2071,6 @@ GameObject:
   - component: {fileID: 7444928342819954043}
   - component: {fileID: 7444928342819954042}
   - component: {fileID: 3481488750175315478}
-  - component: {fileID: 8637111902956884379}
   m_Layer: 5
   m_Name: Text Area
   m_TagString: Untagged
@@ -2122,36 +2121,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7444928342819954040}
   m_CullTransparentMesh: 1
---- !u!114 &8637111902956884379
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7444928342819954040}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.77254903}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &7444928342835753402
 GameObject:
   m_ObjectHideFlags: 0
@@ -2440,8 +2409,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
-  m_fontSizeBase: 14
+  m_fontSize: 25
+  m_fontSizeBase: 25
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2846,7 +2815,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 405.04477, y: 298.17572}
+  m_AnchoredPosition: {x: 439, y: 332}
   m_SizeDelta: {x: 810.0897, y: 494.7834}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7444928344126232902
@@ -2902,8 +2871,9 @@ MonoBehaviour:
   m_consoleText: {fileID: 7444928344348301159}
   m_commandText: {fileID: 7444928344673611965}
   m_scrollbar: {fileID: 7444928342835753396}
-  m_textViewport: {fileID: 7444928343751220078}
-  m_scrollSensitivity: 1000
+  m_visibleViewport: {fileID: 5034616986499092272}
+  m_scrollSensitivity: -500
+  m_shownLogExtraHeight: 1000
   m_guiFontSize: 15
   m_showTime: 0
   m_showStackTrace: 0
@@ -3216,7 +3186,7 @@ MonoBehaviour:
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 0
   m_RegexValue: 
-  m_GlobalPointSize: 15
+  m_GlobalPointSize: 25
   m_CharacterLimit: 0
   m_OnEndEdit:
     m_PersistentCalls:
