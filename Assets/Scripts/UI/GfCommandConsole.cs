@@ -374,11 +374,11 @@ public class GfCommandConsole : MonoBehaviour
 
     void WriteFromBottom()
     {
+        float consoleHeight = m_visibleViewport.rect.height;
         int logIndex = m_logsList.Count - 1;
         m_shownLogsHeight = 0;
-        m_currentYScroll = m_fullHeight;
 
-        float consoleHeight = m_visibleViewport.rect.height;
+        m_currentYScroll = System.MathF.Max(m_fullHeight, consoleHeight);
 
         int count = 0;
         while (logIndex > -1 && m_shownLogsHeight < m_writtenLogHeight)
@@ -400,12 +400,13 @@ public class GfCommandConsole : MonoBehaviour
                 m_logStringBuilder.Append('\n');
         }
 
-        var currentPos = m_textViewport.localPosition;
-        currentPos.y = m_shownLogsHeight - consoleHeight * 0.5f;
-        m_textViewport.localPosition = currentPos;
-
         m_shownLogEndY = m_fullHeight;
         m_shownLogStartY = System.MathF.Max(0, m_shownLogEndY - m_shownLogsHeight);
+
+        var currentPos = m_textViewport.localPosition;
+        currentPos.y = m_shownLogsHeight - consoleHeight * 0.5f;
+        currentPos.y -= m_shownLogEndY - m_currentYScroll;
+        m_textViewport.localPosition = currentPos;
 
         m_consoleText.text = m_logStringBuilder.ToString();
         // Debug.Log("The estimated height is: " + m_shownLogsHeight + " the real height is " + m_consoleText.preferredHeight + " full height of the console is: " + consoleHeight + " full log height " + consoleHeight + " written log count is: " + acount + " estimated count is: " + count);
