@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using System;
 
 public class ScalableWindow : MonoBehaviour
 {
@@ -32,7 +33,7 @@ public class ScalableWindow : MonoBehaviour
     private bool m_isDragging = false;
     private bool m_isDraggingRight = false;
     private bool m_isDraggingLeft = false;
-    private bool m_isDraggingBot = false;
+    private bool m_isDraggingDown = false;
     private bool m_isDraggingTop = false;
 
     private float m_boundOffsetVertical = 0;
@@ -47,6 +48,7 @@ public class ScalableWindow : MonoBehaviour
 
     private List<RaycastResult> m_raycastResults = new(1);
 
+    public Action<bool> OnDragCallback;
     internal enum CursorType
     {
         NORMAL,
@@ -58,13 +60,14 @@ public class ScalableWindow : MonoBehaviour
 
     private CursorType m_cursorType = CursorType.NORMAL;
 
+
     // Start is called before the first frame update
     void Start()
     {
         m_rectTransform = GetComponent<RectTransform>();
         Vector2 size = m_rectTransform.sizeDelta;
-        size.x = System.MathF.Max(size.x, m_minimumWidth);
-        size.y = System.MathF.Max(size.y, m_minimumHeight);
+        size.x = System.MathF.Max(size.x, System.MathF.Min(m_minimumWidth, Screen.width));
+        size.y = System.MathF.Max(size.y, System.MathF.Min(m_minimumHeight, Screen.height));
         m_rectTransform.sizeDelta = size;
 
         m_pointerEventData = new PointerEventData(EventSystem.current);
@@ -90,7 +93,7 @@ public class ScalableWindow : MonoBehaviour
     }
 
     // Update is called once per frame
-    void LateUpdate()
+    void Update()
     {
         if (Screen.width != m_screenResolution.x || Screen.height != m_screenResolution.y)
             OnResolutionChanged();
@@ -124,15 +127,18 @@ public class ScalableWindow : MonoBehaviour
                 Vector2 currentSize = m_rectTransform.sizeDelta;
                 Vector2 mouseMovement = mousePos - m_lastMousePos;
 
-                if (m_isDraggingRight)
-                    CalculateLength(mousePos.x, right, left, m_minimumWidth, m_boundOffsetHorizontal, 1, m_screenResolution.x + m_screenBorderOffset, ref position.x, out currentSize.x);
-                else if (m_isDraggingLeft)
-                    CalculateLength(mousePos.x, left, right, m_minimumWidth, m_boundOffsetHorizontal, -1, -m_screenBorderOffset, ref position.x, out currentSize.x);
+                float effectiveMinWidth = System.MathF.Min(m_minimumWidth, m_screenResolution.x);
+                float effectiveMinHeight = System.MathF.Min(m_minimumHeight, m_screenResolution.y);
 
-                if (m_isDraggingBot)
-                    CalculateLength(mousePos.y, bottom, top, m_minimumHeight, m_boundOffsetVertical, -1, -m_screenBorderOffset, ref position.y, out currentSize.y);
+                if (m_isDraggingRight)
+                    CalculateLength(mousePos.x, right, left, effectiveMinWidth, m_boundOffsetHorizontal, 1, m_screenResolution.x + m_screenBorderOffset, ref position.x, out currentSize.x);
+                else if (m_isDraggingLeft)
+                    CalculateLength(mousePos.x, left, right, effectiveMinWidth, m_boundOffsetHorizontal, -1, -m_screenBorderOffset, ref position.x, out currentSize.x);
+
+                if (m_isDraggingDown)
+                    CalculateLength(mousePos.y, bottom, top, effectiveMinHeight, m_boundOffsetVertical, -1, -m_screenBorderOffset, ref position.y, out currentSize.y);
                 else if (m_isDraggingTop)
-                    CalculateLength(mousePos.y, top, bottom, m_minimumHeight, m_boundOffsetVertical, 1, m_screenResolution.y + m_screenBorderOffset, ref position.y, out currentSize.y);
+                    CalculateLength(mousePos.y, top, bottom, effectiveMinHeight, m_boundOffsetVertical, 1, m_screenResolution.y + m_screenBorderOffset, ref position.y, out currentSize.y);
 
                 if (m_isChangingSize)
                 {
@@ -155,6 +161,7 @@ public class ScalableWindow : MonoBehaviour
                 }
 
                 m_rectTransform.position = position;
+                if (OnDragCallback != null) OnDragCallback(m_isChangingSize);
             }
             else
             {
@@ -162,10 +169,10 @@ public class ScalableWindow : MonoBehaviour
                 m_isDraggingRight = m_borderSelectionSize > System.MathF.Abs(mousePos.x - right);
                 //we make sure m_isDraggingRight is false to avoid having both values be true. Same is applied to m_isDraggingTop
                 m_isDraggingLeft = !m_isDraggingRight && m_borderSelectionSize > System.MathF.Abs(mousePos.x - left);
-                m_isDraggingBot = m_borderSelectionSize > System.MathF.Abs(mousePos.y - bottom);
-                m_isDraggingTop = !m_isDraggingBot && m_borderSelectionSize > System.MathF.Abs(mousePos.y - top);
+                m_isDraggingDown = m_borderSelectionSize > System.MathF.Abs(mousePos.y - bottom);
+                m_isDraggingTop = !m_isDraggingDown && m_borderSelectionSize > System.MathF.Abs(mousePos.y - top);
 
-                bool dragValid = m_isDraggingRight || m_isDraggingLeft || m_isDraggingBot || m_isDraggingTop;
+                bool dragValid = m_isDraggingRight || m_isDraggingLeft || m_isDraggingDown || m_isDraggingTop;
                 bool canSizeDrag = m_canChangeSize && dragValid && MouseOverUICollision(mousePos);
                 m_isChangingSize = canSizeDrag && Input.GetMouseButtonDown(0);
 
@@ -176,23 +183,31 @@ public class ScalableWindow : MonoBehaviour
                 if (m_isChangingSize)
                 {
                     if (m_isDraggingRight)
+                    {
                         m_boundOffsetHorizontal = right - mousePos.x;
-                    else
+                    }
+                    else if (m_isDraggingLeft)
+                    {
                         m_boundOffsetHorizontal = mousePos.x - left;
+                    }
 
-                    if (m_isDraggingBot)
+                    if (m_isDraggingDown)
+                    {
                         m_boundOffsetVertical = mousePos.y - bottom;
-                    else
+                    }
+                    else if (m_isDraggingTop)
+                    {
                         m_boundOffsetVertical = top - mousePos.y;
+                    }
 
-                    bool verticleDrag = m_isDraggingBot || m_isDraggingTop;
+                    bool verticleDrag = m_isDraggingDown || m_isDraggingTop;
                     bool horizontalDrag = m_isDraggingRight || m_isDraggingLeft;
 
                     if (horizontalDrag && !verticleDrag)
                         m_cursorType = CursorType.DRAG_HORIZONTAL;
                     else if (verticleDrag && !horizontalDrag)
                         m_cursorType = CursorType.DRAG_VERTICAL;
-                    else if ((m_isDraggingLeft && m_isDraggingBot) || (m_isDraggingRight && m_isDraggingTop))
+                    else if ((m_isDraggingLeft && m_isDraggingDown) || (m_isDraggingRight && m_isDraggingTop))
                         m_cursorType = CursorType.DRAG_DIAGONAL_TOP_NORTH_EAST;
                     else // if ((m_isDraggingLeft && m_isDraggingTop) || (m_isDraggingRight && m_isDraggingBot)) 
                         m_cursorType = CursorType.DRAG_DIAGONAL_TOP_NORTH_WEST;
@@ -269,4 +284,15 @@ public class ScalableWindow : MonoBehaviour
     {
         return EventSystem.current.IsPointerOverGameObject();
     }
+
+    public bool IsDraggingRight() { return m_isDraggingRight; }
+
+    public bool IsDraggingLeft() { return m_isDraggingLeft; }
+
+    public bool IsDraggingTop() { return m_isDraggingTop; }
+
+    public bool IsDraggingDown() { return m_isDraggingDown; }
+
+
 }
+
