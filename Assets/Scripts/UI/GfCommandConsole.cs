@@ -199,6 +199,7 @@ public class GfCommandConsole : MonoBehaviour
         string initLog = "\n\n" + UnityEngine.Application.productName + " " + UnityEngine.Application.version + " LOG CONSOLE: \n";
         m_consoleText.text = initLog;
 
+        m_logsList.Add(new(initLog, 0, m_consoleText.preferredHeight, GfLogType.LOG));
         Debug.Log("The height of the initial log is: " + m_consoleText.preferredHeight);
 
         //m_fullHeight = m_consoleText.preferredHeight;
@@ -507,24 +508,13 @@ public class GfCommandConsole : MonoBehaviour
     void WriteFromBottom()
     {
         float consoleHeight = m_visibleViewport.rect.height;
-        m_shownLogsHeight = 0;
-
-        m_currentYScroll = System.MathF.Max(m_fullHeight, consoleHeight);
-
-        int count = 0;
-        while (logIndex > -1 && m_shownLogsHeight < m_writtenLogHeight)
         if (m_logsList.Count > 0)
         {
-            count++;
-            m_shownLogsHeight += m_logsList[logIndex].Height;
-            logIndex--;
-        }
+            m_shownLogsHeight = 0;
             m_logStringBuilder.Clear();
+            int logIndex = m_logsList.Count - 1;
             m_currentYScroll = System.MathF.Max(m_fullHeight, consoleHeight);
 
-        m_logStringBuilder.Clear();
-        int acount = 0;
-        while (++logIndex < m_logsList.Count)
             while (logIndex > -1 && m_shownLogsHeight < m_desiredLogHeight)
             {
                 m_shownLogsHeight += m_logsList[logIndex].Height;
