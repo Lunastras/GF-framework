@@ -286,6 +286,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7669414761986027255}
+  - component: {fileID: 6377447946678387383}
   - component: {fileID: 3626822765685253527}
   - component: {fileID: 5305416706901954530}
   - component: {fileID: 8334912748930156530}
@@ -313,6 +314,32 @@ Transform:
   m_Father: {fileID: 4759944753111975126}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6377447946678387383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4547767586303620511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncPositionX: 0
+  SyncPositionY: 0
+  SyncPositionZ: 0
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  InLocalSpace: 0
+  Interpolate: 1
 --- !u!199 &3626822765685253527
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -435,10 +462,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aeddf7feb6beb6c4c9f43a47cc59442a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 1184494187360147066}
+  m_statsCharacter: {fileID: 7866579364068057338}
+  m_parentDamageSource: {fileID: 0}
   m_damage: 10
-  m_movementParent: {fileID: 0}
+  m_movementParent: {fileID: 432613321654859549}
   m_target: {fileID: 0}
   m_damageSound:
     m_clip: {fileID: 0}
@@ -467,7 +494,7 @@ MonoBehaviour:
     m_maxDistance: 500
     m_spatialBlend: 0
   m_canDamageSelf: 0
-  m_canAim: 1
+  m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
 --- !u!198 &1608161839850249133
 ParticleSystem:
@@ -5418,10 +5445,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 608644a682216bf4eaec6b2595f21fc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 7866579364068057338}
-  m_parentDamageSource: {fileID: 0}
-  m_turretPhases: []
+  m_turretPhases:
+  - weapons:
+    - {fileID: 8334912748930156530}
   m_autoPlay: 0
+  m_statsCharacter: {fileID: 7866579364068057338}
   m_destoryWhenDone: 0
   m_objectToDestroy: {fileID: 0}
 --- !u!114 &432613321654859549

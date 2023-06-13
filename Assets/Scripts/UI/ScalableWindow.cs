@@ -28,7 +28,7 @@ public class ScalableWindow : MonoBehaviour
 
 
     private RectTransform m_rectTransform;
-    PointerEventData m_pointerEventData;
+
 
     private bool m_isDragging = false;
     private bool m_isDraggingRight = false;
@@ -70,7 +70,7 @@ public class ScalableWindow : MonoBehaviour
         size.y = System.MathF.Max(size.y, System.MathF.Min(m_minimumHeight, Screen.height));
         m_rectTransform.sizeDelta = size;
 
-        m_pointerEventData = new PointerEventData(EventSystem.current);
+
 
         m_screenResolution.x = Screen.width;
         m_screenResolution.y = Screen.height;
@@ -98,7 +98,7 @@ public class ScalableWindow : MonoBehaviour
         if (Screen.width != m_screenResolution.x || Screen.height != m_screenResolution.y)
             OnResolutionChanged();
 
-        if (Cursor.visible && (IsMouseOverUI() || m_isDragging) && (m_canMove || m_canChangeSize))
+        if (Cursor.visible && (GfUITools.IsMouseOverUI() || m_isDragging) && (m_canMove || m_canChangeSize))
         {
             bool mouseIsPressed = Input.GetMouseButton(0);
 
@@ -173,11 +173,11 @@ public class ScalableWindow : MonoBehaviour
                 m_isDraggingTop = !m_isDraggingDown && m_borderSelectionSize > System.MathF.Abs(mousePos.y - top);
 
                 bool dragValid = m_isDraggingRight || m_isDraggingLeft || m_isDraggingDown || m_isDraggingTop;
-                bool canSizeDrag = m_canChangeSize && dragValid && MouseOverUICollision(mousePos);
+                bool canSizeDrag = m_canChangeSize && dragValid && GfUITools.IsMouseOverUICollision(mousePos, gameObject);
                 m_isChangingSize = canSizeDrag && Input.GetMouseButtonDown(0);
 
                 m_lastMousePos = mousePos;
-                m_isDragging = m_isChangingSize || (m_canMove && !dragValid && Input.GetMouseButtonDown(0) && MouseOverUICollision(mousePos));
+                m_isDragging = m_isChangingSize || (m_canMove && !dragValid && Input.GetMouseButtonDown(0) && GfUITools.IsMouseOverUICollision(mousePos, gameObject));
                 m_initialPosition = position;
 
                 if (m_isChangingSize)
@@ -258,32 +258,7 @@ public class ScalableWindow : MonoBehaviour
         m_rectTransform.position = new Vector3(left + width * 0.5f, bottom + height * 0.5f, 0);
     }
 
-    private bool MouseOverUICollision(Vector3 mousePosition)
-    {
-        m_pointerEventData.position = mousePosition;
-        EventSystem.current.RaycastAll(m_pointerEventData, m_raycastResults);
 
-        int count = m_raycastResults.Count;
-        int lowestIndex = -1;
-        float lowestDepth = int.MaxValue;
-
-        for (int i = 0; i < count; ++i)
-        {
-            float depth = m_raycastResults[i].distance;
-            if (depth < lowestDepth)
-            {
-                lowestDepth = depth;
-                lowestIndex = i;
-            }
-        }
-
-        return m_raycastResults.Count > 0 && m_raycastResults[lowestIndex].gameObject == gameObject;
-    }
-
-    private bool IsMouseOverUI()
-    {
-        return EventSystem.current.IsPointerOverGameObject();
-    }
 
     public bool IsDraggingRight() { return m_isDraggingRight; }
 

@@ -12,7 +12,7 @@ public class ParticleTriggerDamage : WeaponParticle
     protected bool m_canDamageSelf;
 
     [SerializeField]
-    protected bool m_canAim = true;
+    protected bool m_aimsAtTarget = true;
 
     protected Transform m_transform;
 
@@ -44,7 +44,7 @@ public class ParticleTriggerDamage : WeaponParticle
 
     private void Update()
     {
-        if (m_canAim && m_target)
+        if (m_aimsAtTarget && m_target)
         {
             if (m_movementParent)
                 m_transform.LookAt(m_target, m_movementParent.GetUpvecRotation());
@@ -103,7 +103,7 @@ public class ParticleTriggerDamage : WeaponParticle
             {
                 bool hitSelf = selfStats == collisionStats;
                 if ((null == selfStats))
-                    Debug.Log("Self stats are null and my name is " + damageSource.name + " and my collision was: " + collisionStats.name);
+                    Debug.LogWarning("ParticleTriggerDamageSelf: stats of self are null");
 
                 float damageMultiplier = HostilityManager.DamageMultiplier(selfStats, collisionStats);
 

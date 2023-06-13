@@ -40,7 +40,7 @@ public class WeaponTurret : NetworkBehaviour
         get
         {
             bool ret = false;
-            if (NetworkManager.Singleton) ret = NetworkManager.Singleton.IsServer;
+            if (NetworkManager.Singleton) ret = HasNetworkObject && NetworkManager.Singleton.IsServer; //if there is no network object, it will have authority locally because the object isn't on the server
             return ret;
         }
     }
@@ -67,7 +67,7 @@ public class WeaponTurret : NetworkBehaviour
 
     private void Update()
     {
-        if (HasAuthority)
+        if (HasAuthority || !HasNetworkObject)
         {
             if (m_destoryWhenDone && !IsAlive())
             {
@@ -227,21 +227,26 @@ public class WeaponTurret : NetworkBehaviour
 
     public void Play(bool forcePlay = false, int phase = -1)
     {
+        //Debug.Log("Has network object is: " + HasNetworkObject);
+        phase = System.Math.Max(0, System.Math.Max(phase, m_currentPhaseIndex));
         if (HasAuthority)
         {
-            phase = System.Math.Max(0, System.Math.Max(phase, m_currentPhaseIndex));
             InternalPlay(forcePlay, phase);
-            PlayClientRpc(true, phase);
+            PlayClientRpc(forcePlay, phase);
+        }
+        else if (!HasNetworkObject)
+        {
+            InternalPlay(forcePlay, phase);
         }
     }
 
     [ClientRpc]
-    public void PlayClientRpc(bool forcePlay, int phase)
+    protected void PlayClientRpc(bool forcePlay, int phase)
     {
         if (!HasAuthority) InternalPlay(forcePlay, phase);
     }
 
-    public void InternalPlay(bool forcePlay, int phase)
+    protected void InternalPlay(bool forcePlay, int phase)
     {
         // Debug.Log("I AM FIRING " + gameObject.name);
 
