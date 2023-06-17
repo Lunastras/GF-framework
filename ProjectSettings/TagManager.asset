@@ -10,21 +10,21 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - Graves
-  - 
-  - Player
-  - Ground
-  - Player_Wallrun
-  - Ground_No_Wallrun
   - Enemy
   - Bullet
-  - ItemPickable
   - ItemCollision
-  - CameraLayer
+  - ItemPickable
+  - Ground
+  - Ground_No_Wallrun
+  - Ground_No_Parenting
   - Collision_NonGround
+  - 
+  - 
+  - 
+  - 
   - 
   - 
   - 

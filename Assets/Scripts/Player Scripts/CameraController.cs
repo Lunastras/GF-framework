@@ -12,7 +12,7 @@ public class CameraController : MonoBehaviour
     private float m_targetFov = 90;
 
     [SerializeField]
-    private Vector3 m_offset = Vector3.zero;
+    private Vector3 m_positionOffset = Vector3.zero;
 
     [SerializeField]
     private float m_physCheckInterval = 0.2f;
@@ -132,7 +132,7 @@ public class CameraController : MonoBehaviour
     {
         Quaternion upvecCorrection = Quaternion.FromToRotation(UPDIR, m_upvec);
 
-        Vector3 desiredTargetPos = m_mainTarget.position + upvecCorrection * m_offset;
+        Vector3 desiredTargetPos = m_mainTarget.position + upvecCorrection * m_positionOffset;
         m_currentTargetPos = Vector3.SmoothDamp(m_currentTargetPos, desiredTargetPos, ref m_refTargetPosVelocity, m_movementSmoothTime);
 
         m_timeUntilPhysCheck -= deltaTime;
@@ -149,12 +149,15 @@ public class CameraController : MonoBehaviour
             m_desiredDst = m_dstFromtarget;
 
             RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
+            float minDistanceOffset = m_minDstFromtarget;
+            GfTools.Add3(ref desiredTargetPos, forward * -minDistanceOffset);
+
             m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, m_collisionRadius, -forward, raycastHits, m_dstFromtarget, layermask, QueryTriggerInteraction.Ignore);
 
             if (m_collidingWithSmth)
             {
                 m_raycastHit = raycastHits[0];
-                m_desiredDst = Mathf.Max(m_raycastHit.distance, m_minDstFromtarget);
+                m_desiredDst = System.MathF.Min(m_dstFromtarget, m_raycastHit.distance + minDistanceOffset);
             }
 
             if (System.MathF.Abs(previousDesiredDistance - m_desiredDst) > 0.1f)

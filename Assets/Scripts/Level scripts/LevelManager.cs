@@ -36,18 +36,29 @@ public class LevelManager : MonoBehaviour
 
         m_levelDataPath = Application.persistentDataPath + "/" + gameObject.scene.name + ".dat";
 
+        bool loadedTheNodes = false;
         if (File.Exists(m_levelDataPath))
         {
-            m_levelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(m_levelDataPath));
-
-            for (int i = 0; i < m_pathfindingSystems.Length; ++i)
+            try
             {
-                m_pathfindingSystems[i].SetNodePathData(m_levelData.paths[i]);
+                m_levelData = JsonUtility.FromJson<LevelData>(File.ReadAllText(m_levelDataPath));
+
+                for (int i = 0; i < m_pathfindingSystems.Length; ++i)
+                {
+                    m_pathfindingSystems[i].SetNodePathData(m_levelData.paths[i]);
+                }
+
+                loadedTheNodes = true;
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogWarning("There was an error while parsing the level data file '" + m_levelDataPath + "'\nException was: " + exception.ToString());
             }
         }
-        else
+
+        //generate nodepaths if the level data file couldn't be read
+        if (!loadedTheNodes)
         {
-            Debug.Log("Node path data not found, generating it...");
             m_levelData.paths = new GfPathfinding.NodePathSaveData[m_pathfindingSystems.Length];
             GenerateAllNodePaths();
         }
@@ -55,7 +66,7 @@ public class LevelManager : MonoBehaviour
 
     public void GenerateAllNodePaths()
     {
-        Debug.Log("Generating every path, might take a few seconds.");
+        Debug.Log("Generating nodepaths, might take a few seconds...");
         m_levelData.paths = new GfPathfinding.NodePathSaveData[m_pathfindingSystems.Length];
         for (int i = 0; i < m_pathfindingSystems.Length; ++i)
         {
@@ -64,9 +75,15 @@ public class LevelManager : MonoBehaviour
             m_levelData.paths[i] = pathData;
         }
 
-        SaveLevelData();
-
-        Debug.Log("Generated every node path!");
+        try
+        {
+            SaveLevelData();
+            Debug.Log("Generated every node path!");
+        }
+        catch (System.Exception exception)
+        {
+            Debug.LogWarning("An error has occured while trying to save the level data, the exception message is: " + exception.ToString());
+        }
     }
 
     public static void SetNodePathData(GfPathfinding system, GfPathfinding.NodePathSaveData data)

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3676997061914269407}
   - component: {fileID: 3676997061914269400}
   - component: {fileID: 3676997061914269402}
-  m_Layer: 16
+  m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_mainTarget: {fileID: 0}
-  m_sensitivity: 1.5
+  m_sensitivity: 0.7
   m_targetFov: 90
   m_offset: {x: 0, y: 2, z: 0}
   m_physCheckInterval: 0.02

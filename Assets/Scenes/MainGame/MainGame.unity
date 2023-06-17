@@ -14594,13 +14594,8 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
-      propertyPath: m_sensitivity
-      value: 0.7
-      objectReference: {fileID: 0}
-    - target: {fileID: 3676997061914269400, guid: 239bd930e80146d49937810266bc593c,
-        type: 3}
-      propertyPath: m_collisionRadius
-      value: 1.5
+      propertyPath: m_positionOffset.y
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3676997061914269401, guid: 239bd930e80146d49937810266bc593c,
         type: 3}
@@ -14815,24 +14810,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e88eb34ad123a488b6f8bcb64bec39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  collisionsNonGroundLayerMask:
+  m_collisionsNonGroundLayerMask:
     serializedVersion: 2
-    m_Bits: 131072
-  groundLayerMask:
+    m_Bits: 8656
+  m_groundLayerMask:
     serializedVersion: 2
-    m_Bits: 2561
-  wallrunLayerMask:
+    m_Bits: 7169
+  m_wallrunLayerMask:
     serializedVersion: 2
-    m_Bits: 513
-  nonCharacterCollisions:
+    m_Bits: 1025
+  m_nonCharacterCollisions:
     serializedVersion: 2
-    m_Bits: 133649
-  characterCollisions:
+    m_Bits: 15761
+  m_characterCollisions:
     serializedVersion: 2
-    m_Bits: 4352
-  physicsIgnoreLayerMask:
+    m_Bits: 72
+  m_physicsIgnoreLayerMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 544
 --- !u!114 &1273476798
 MonoBehaviour:
   m_ObjectHideFlags: 0

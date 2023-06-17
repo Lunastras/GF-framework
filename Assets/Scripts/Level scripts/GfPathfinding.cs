@@ -187,7 +187,7 @@ namespace GfPathFindingNamespace
 
         public NodePathSaveData GenerateNodePathData()
         {
-            Debug.Log("Generating node path, might take a few seconds");
+            Debug.Log("Generating nodepath, might take a few seconds...");
 
             Vector3 scale = transform.localScale;
             int3 gridSize = new((int)(scale.x / m_distanceBetweenNodes.x) + 1

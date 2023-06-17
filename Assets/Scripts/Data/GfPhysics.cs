@@ -7,45 +7,45 @@ public class GfPhysics : MonoBehaviour
     public const int MAX_RAYCASTHITS = 12;
     public const int MAX_COLLIDERS = 12;
 
-    private static Collider[] colliders = null;
-    private static RaycastHit[] raycastHits = null;
+    private static Collider[] m_colliders = null;
+    private static RaycastHit[] m_raycastHits = null;
 
-    private static GfPhysics instance;
+    private static GfPhysics Instance;
 
-    private int[] layerMasks;
-
-    //layer mask of objects that can be considered ground
-    [SerializeField]
-    public LayerMask collisionsNonGroundLayerMask;
+    private int[] m_layerMasks;
 
     //layer mask of objects that can be considered ground
     [SerializeField]
-    public LayerMask groundLayerMask;
+    public LayerMask m_collisionsNonGroundLayerMask;
+
+    //layer mask of objects that can be considered ground
+    [SerializeField]
+    public LayerMask m_groundLayerMask;
 
     //layer mask of wallrunnable objects
     [SerializeField]
-    public LayerMask wallrunLayerMask;
+    public LayerMask m_wallrunLayerMask;
 
     [SerializeField]
-    public LayerMask nonCharacterCollisions;
+    public LayerMask m_nonCharacterCollisions;
 
     [SerializeField]
-    public LayerMask characterCollisions;
+    public LayerMask m_characterCollisions;
 
     /** Layer mask of objects that have collisions
     * that should not affect physics.
     */
     [SerializeField]
-    public LayerMask physicsIgnoreLayerMask;
+    public LayerMask m_physicsIgnoreLayerMask;
 
     private void Awake()
     {
-        if (instance != null)
+        if (Instance != null)
         {
-            Destroy(instance);
+            Destroy(Instance);
         }
 
-        layerMasks = new int[32];
+        m_layerMasks = new int[32];
 
         for (int layer = 0; layer < 32; layer++)
         {
@@ -56,63 +56,63 @@ public class GfPhysics : MonoBehaviour
                 if (!Physics.GetIgnoreLayerCollision(layer, i)) mask |= 1 << i;
             }
 
-            layerMasks[layer] = mask;
+            m_layerMasks[layer] = mask;
         }
 
-        instance = this;
+        Instance = this;
     }
 
-    public static int GetLayerMask(int layer) => instance.layerMasks[layer];
+    public static int GetLayerMask(int layer) => Instance.m_layerMasks[layer];
 
     public static Collider[] GetCollidersArray()
     {
-        if (null == colliders)
+        if (null == m_colliders)
         {
-            colliders = new Collider[MAX_COLLIDERS];
+            m_colliders = new Collider[MAX_COLLIDERS];
         }
 
-        return colliders;
+        return m_colliders;
     }
 
     public static RaycastHit[] GetRaycastHits()
     {
-        if (null == raycastHits)
+        if (null == m_raycastHits)
         {
-            raycastHits = new RaycastHit[MAX_RAYCASTHITS];
+            m_raycastHits = new RaycastHit[MAX_RAYCASTHITS];
         }
 
-        return raycastHits;
+        return m_raycastHits;
     }
 
     /** Get the layer mask of objects that can be considered ground
     */
     public static int CollisionsNoGroundLayers()
     {
-        return instance.collisionsNonGroundLayerMask;
+        return Instance.m_collisionsNonGroundLayerMask;
     }
 
     public static int NonCharacterCollisions()
     {
-        return instance.nonCharacterCollisions;
+        return Instance.m_nonCharacterCollisions;
     }
 
     public static int CharacterCollisions()
     {
-        return instance.characterCollisions;
+        return Instance.m_characterCollisions;
     }
 
     /** Get the layer mask of objects that can be considered ground
     */
     public static int GroundLayers()
     {
-        return instance.groundLayerMask;
+        return Instance.m_groundLayerMask;
     }
 
     /** Get the layer mask of wallrunnable objects
     */
     public static int WallrunLayers()
     {
-        return instance.wallrunLayerMask;
+        return Instance.m_wallrunLayerMask;
     }
 
     /** Get the layer mask of objects that have collisions
@@ -120,7 +120,7 @@ public class GfPhysics : MonoBehaviour
     */
     public static int IgnoreLayers()
     {
-        return instance.physicsIgnoreLayerMask;
+        return Instance.m_physicsIgnoreLayerMask;
     }
 
     public static bool LayerIsInMask(int layer, int mask)

@@ -49,7 +49,7 @@ public class OdamaManager : LoadoutManager
 
     private List<OdamaBehaviour> m_odamaList = new(4);
 
-    protected override void InternalStart()
+    protected override void InternalAwake()
     {
         m_currentRotationSpeed = m_rotationSpeed;
     }

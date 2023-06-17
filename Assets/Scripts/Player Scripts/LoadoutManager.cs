@@ -54,7 +54,7 @@ public class LoadoutManager : NetworkBehaviour
         }
     }
 
-    protected virtual void InternalStart() { }
+    protected virtual void InternalAwake() { }
 
     public override void OnNetworkSpawn()
     {
@@ -79,7 +79,7 @@ public class LoadoutManager : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        InternalStart();
+        InternalAwake();
 
         SetCurrentLoadout(m_currentLoadOutIndex);
 
@@ -91,7 +91,6 @@ public class LoadoutManager : NetworkBehaviour
         if (IsOwner)
         {
             m_hudManager = GameManager.GetHudManager();
-
         }
         else if (IsClient && !HasAuthority)
         {
@@ -599,22 +598,25 @@ public class LoadoutManager : NetworkBehaviour
     *   Adds exp points to the weapons equipped in this moment
     *   @param points The ammount of points to be added
     */
-    private void InternalAddPoints(WeaponPointsTypes type, float points, int loadoutIndex)
+    private void InternalAddPoints(WeaponPointsTypes type, float points, int loadoutIndex = -1)
     {
         if (loadoutIndex < 0) loadoutIndex = m_currentLoadOutIndex;
 
-        List<WeaponData> loadOut = m_loadouts[m_currentLoadOutIndex];
-        int numWeapon = loadOut.Count;
-        //Debug.Log("Added exp to weapons, weapon count is " + numWeapon);
-
-        while (--numWeapon >= 0)
+        if (null != m_loadouts && 0 < m_loadouts.Count && m_loadouts.Count >= loadoutIndex)
         {
-            m_weapons[numWeapon].AddPoints(type, float.MinValue); //set exp to be the lowest value possible
-            float currentExp = m_weapons[numWeapon].AddPoints(type, points + loadOut[numWeapon].GetPoints((int)type));
-            loadOut[numWeapon].SetPoints((int)type, currentExp);
-        }
+            List<WeaponData> loadOut = m_loadouts[m_currentLoadOutIndex];
+            int numWeapon = loadOut.Count;
+            //Debug.Log("Added exp to weapons, weapon count is " + numWeapon);
 
-        if (loadoutIndex == m_currentLoadOutIndex && m_hudManager) m_hudManager.UpdateSlidersValues(m_weapons);
+            while (--numWeapon >= 0)
+            {
+                m_weapons[numWeapon].AddPoints(type, float.MinValue); //set exp to be the lowest value possible
+                float currentExp = m_weapons[numWeapon].AddPoints(type, points + loadOut[numWeapon].GetPoints((int)type));
+                loadOut[numWeapon].SetPoints((int)type, currentExp);
+            }
+
+            if (loadoutIndex == m_currentLoadOutIndex && m_hudManager) m_hudManager.UpdateSlidersValues(m_weapons);
+        }
     }
 
     [ClientRpc]

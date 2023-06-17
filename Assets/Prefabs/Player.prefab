@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 148854929551912263}
   - component: {fileID: 148854929551912280}
   - component: {fileID: 148854929551912281}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: viewDir
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97,7 +97,7 @@ GameObject:
   - component: {fileID: 148854929583485729}
   - component: {fileID: 148854929583485730}
   - component: {fileID: 148854929583485731}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Doom64Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -285,7 +285,7 @@ GameObject:
   - component: {fileID: 148854930295164460}
   - component: {fileID: 148854930295164462}
   - component: {fileID: 148854930295164463}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -368,7 +368,7 @@ GameObject:
   - component: {fileID: 148854930600805463}
   - component: {fileID: 148854930600805462}
   - component: {fileID: 148854930600836009}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: ShadowDecal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -462,7 +462,7 @@ GameObject:
   - component: {fileID: -1934781534553659541}
   - component: {fileID: 5733648712073414754}
   - component: {fileID: 7947996244895237058}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -520,6 +520,7 @@ MonoBehaviour:
     m_InternalValue: 0
   m_playerGun: {fileID: 0}
   m_loadoutManager: {fileID: 0}
+  m_movement: {fileID: 0}
   m_audioSource: {fileID: 0}
   m_damageSound:
     m_clip: {fileID: 0}
