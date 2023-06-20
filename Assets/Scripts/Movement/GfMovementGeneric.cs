@@ -13,7 +13,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
     [SerializeField]
     protected float m_speed = 9;
     [SerializeField]
-    protected float m_mass = 45;
+    protected float m_mass = 50;
     [SerializeField]
     protected float m_stepOffset = 0.3f;
     [SerializeField]
@@ -118,7 +118,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
     static readonly protected Vector3 Zero3 = new Vector3(0, 0, 0);
     private readonly float TRACE_SKIN = 0.05F;
     private readonly float TRACEBIAS = 0.1F;
-    private readonly float DOWNPULL = 0.25F;
+    private readonly float DOWNPULL = 0.75F;
 
     protected const float OVERLAP_SKIN = 0.0f;
     private const float MIN_DISPLACEMENT = 0.00000001F; // min squared length of a displacement vector required for a Move() to proceed.
@@ -206,8 +206,10 @@ public abstract class GfMovementGeneric : NetworkBehaviour
             {
                 Quaternion deltaQuaternion = currentRot * Quaternion.Inverse(m_parentLastRot);
                 Vector3 vecFromParent = position - parentTransform.position;
+
                 Vector3 newVecFromParent = deltaQuaternion * vecFromParent;
-                m_parentRotMov = newVecFromParent - vecFromParent;
+                m_parentRotMov = newVecFromParent;
+                GfTools.Minus3(ref m_parentRotMov, vecFromParent);
 
                 if (MovementDirRaw == Zero3) //not working properly, gotta fix
                 {
@@ -577,10 +579,10 @@ public abstract class GfMovementGeneric : NetworkBehaviour
 
     private void UpdateSphericalOrientation(float deltaTime, bool rotateOrientation)
     {
-        if (m_parentSpherical.GetValue())
+        if (m_parentSpherical.Value)
         {
             m_upVec = transform.position;
-            GfTools.Minus3(ref m_upVec, m_parentSpherical.GetValue().position);
+            GfTools.Minus3(ref m_upVec, m_parentSpherical.Value.position);
             GfTools.Normalize(ref m_upVec);
         }
 
@@ -633,7 +635,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
         if (!collision.isGrounded)
         {
             float stepHeight = GetStepHeight(collision.GetPoint(), collision.selfPosition);
-            if (stepHeight <= m_stepOffset && stepHeight > 0.00001f)
+            if (stepHeight <= m_stepOffset && stepHeight > 0.0001f) //todo randomly walks up walls
             {
 
                 bool stairIsGrounded = CheckGround(ref collision, collision.GetHitUpVecAngle());
@@ -839,7 +841,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
 
     public void DetachFromParentTransform(bool addVelocity = true, uint priority = 0, bool overridePriority = false)
     {
-        if (m_parentTransform.GetValue() && m_parentTransform.SetValue(null, priority, overridePriority))
+        if (m_parentTransform.Value && m_parentTransform.SetValue(null, priority, overridePriority))
         {
             if (addVelocity)
             {
@@ -856,6 +858,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
                 GfTools.Add3(ref m_velocity, parentVelocity);
             }
 
+            m_currentGroundCollision.collider = null;
             m_parentPosMov = m_parentRotMov = Zero3;
         }
     }
@@ -969,8 +972,8 @@ public abstract class GfMovementGeneric : NetworkBehaviour
 
     public Vector3 UpVecEstimated()
     {
-        if (m_parentSpherical.GetValue())
-            return (transform.position - m_parentSpherical.GetValue().position).normalized;
+        if (m_parentSpherical.Value)
+            return (transform.position - m_parentSpherical.Value.position).normalized;
         else
             return m_upVec;
     }

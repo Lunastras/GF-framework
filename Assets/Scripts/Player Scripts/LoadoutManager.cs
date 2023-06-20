@@ -715,7 +715,7 @@ public class LoadoutManager : NetworkBehaviour
 
     protected virtual bool InternalSetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
-        float oldMultiplier = m_fireRateMultiplier.GetValue();
+        float oldMultiplier = m_fireRateMultiplier.Value;
         bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority) && multiplier != oldMultiplier;
         if (changedValue)
         {
@@ -755,7 +755,7 @@ public class LoadoutManager : NetworkBehaviour
 
     protected virtual bool InternalSetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
-        float oldMultiplier = m_fireRateMultiplier.GetValue();
+        float oldMultiplier = m_fireRateMultiplier.Value;
         bool changedValue = m_fireRateMultiplier.SetValue(multiplier, priority, overridePriority) && oldMultiplier != multiplier;
         if (changedValue)
         {
@@ -794,7 +794,7 @@ public class LoadoutManager : NetworkBehaviour
 
     protected virtual bool InternalSetDamageMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
-        float oldMultiplier = m_damageMultiplier.GetValue();
+        float oldMultiplier = m_damageMultiplier.Value;
         bool changedValue = m_damageMultiplier.SetValue(multiplier, priority, overridePriority) && oldMultiplier != multiplier;
         if (changedValue)
         {

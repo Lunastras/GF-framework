@@ -35,7 +35,7 @@ public abstract class StatsCharacter : NetworkBehaviour
         get
         {
             bool ret = false;
-            if (NetworkManager.Singleton) ret = NetworkManager.Singleton.IsServer;
+            if (NetworkManager.Singleton) ret = NetworkManager.Singleton && NetworkManager.Singleton.IsServer;
             return ret;
         }
     }

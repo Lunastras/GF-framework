@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using Unity.Netcode;
+using UnityEngine;
 
 [System.Serializable]
 public struct PriorityValueSetter<T>
@@ -28,8 +28,13 @@ public struct PriorityValueSetter<T>
 [System.Serializable]
 public struct PriorityValue<T> : INetworkSerializeByMemcpy
 {
+    [SerializeField]
     private T m_value;
+
+    [SerializeField]
     private uint m_priority;
+
+    public T Value { get { return m_value; } }
 
     public static implicit operator T(PriorityValue<T> d) => d.m_value;
 
@@ -69,8 +74,6 @@ public struct PriorityValue<T> : INetworkSerializeByMemcpy
     {
         return overridePriority || priority >= m_priority;
     }
-
-    public T GetValue() { return m_value; }
 
     public uint GetPriority() { return m_priority; }
 

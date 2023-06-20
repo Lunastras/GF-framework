@@ -9,7 +9,6 @@ public class ScalableWindow : MonoBehaviour
     [SerializeField]
     private float m_borderSelectionSize = 16f;
 
-    [SerializeField]
     private float m_screenBorderOffset = 8f;
 
     [SerializeField]
@@ -41,9 +40,6 @@ public class ScalableWindow : MonoBehaviour
 
     private Vector2 m_screenResolution = Vector3.zero;
 
-
-    private bool m_wasDraggingWhenPressed = false;
-
     private bool m_isChangingSize = false;
 
     private List<RaycastResult> m_raycastResults = new(1);
@@ -70,7 +66,7 @@ public class ScalableWindow : MonoBehaviour
         size.y = System.MathF.Max(size.y, System.MathF.Min(m_minimumHeight, Screen.height));
         m_rectTransform.sizeDelta = size;
 
-
+        m_screenBorderOffset = m_borderSelectionSize * 0.5f;
 
         m_screenResolution.x = Screen.width;
         m_screenResolution.y = Screen.height;
@@ -106,9 +102,8 @@ public class ScalableWindow : MonoBehaviour
 
             if (m_screenIsBorder && false)
             {
-                float halfScreenBorderOffset = m_screenBorderOffset;
-                mousePos.x = System.MathF.Max(halfScreenBorderOffset, System.MathF.Min(Screen.width - halfScreenBorderOffset, mousePos.x + m_boundOffsetHorizontal));
-                mousePos.y = System.MathF.Max(halfScreenBorderOffset, System.MathF.Min(Screen.height - halfScreenBorderOffset, mousePos.y + m_boundOffsetVertical));
+                mousePos.x = System.MathF.Max(m_screenBorderOffset, System.MathF.Min(Screen.width - m_screenBorderOffset, mousePos.x + m_boundOffsetHorizontal));
+                mousePos.y = System.MathF.Max(m_screenBorderOffset, System.MathF.Min(Screen.height - m_screenBorderOffset, mousePos.y + m_boundOffsetVertical));
             }
 
             Vector3 position = (m_isDragging && !m_isChangingSize) ? m_initialPosition : m_rectTransform.position;

@@ -58,7 +58,7 @@ public class PlayerController : NetworkBehaviour
             if (null == m_cameraController)
             {
                 m_playerCamera = Camera.main.transform;
-
+                m_cameraController = m_playerCamera.GetComponent<CameraController>();
             }
             else m_playerCamera = m_cameraController.transform;
 

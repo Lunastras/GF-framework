@@ -85,8 +85,13 @@ public class StatsNpc : StatsCharacter
 
         m_transform = transform;
 
+        m_networkObject = GetComponent<NetworkObject>();
+        if (m_networkTransform) m_networkTransform.enabled = true;
+        if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
+
         if (HasAuthority)
             m_currentHealth.Value = GetMaxHealthEffective();
+
 
         m_initialised = true;
         HostilityManager.AddCharacter(this);
@@ -104,11 +109,11 @@ public class StatsNpc : StatsCharacter
 
             if (null != m_objectCollider)
                 m_objectCollider.enabled = true;
-        }
 
-        m_networkObject = GetComponent<NetworkObject>();
-        if (m_networkTransform) m_networkTransform.enabled = true;
-        if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
+            m_networkObject = GetComponent<NetworkObject>();
+            if (m_networkTransform) m_networkTransform.enabled = true;
+            if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
+        }
     }
 
     protected override void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)

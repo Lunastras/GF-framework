@@ -15,8 +15,8 @@ EditorBuildSettings:
     path: Assets/Scenes/MainGame/MainGame.unity
     guid: 561ad31c315d60d4aae20d05164986b1
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Scenes/TestLevel1.unity
+    guid: 1b28193a2a049a14dbc87cfcd55c55fb
   - enabled: 1
     path: Assets/Scenes/MainGame/ContainerScene.unity
     guid: 27914b7d823475040993c03597a56e9c

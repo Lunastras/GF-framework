@@ -35,6 +35,8 @@ public class GameManager : MonoBehaviour
 
     private NetworkSpawnManager m_spawnManager;
 
+    private float m_currentTimeScale;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -54,6 +56,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         m_spawnManager = NetworkManager.Singleton.SpawnManager;
+        m_currentTimeScale = Time.timeScale;
     }
 
     private void Update()
@@ -75,6 +78,7 @@ public class GameManager : MonoBehaviour
 
     public static void MultiplayerStart()
     {
+        Time.timeScale = 1;
         IsMultiplayer = true;
         Instance.m_spawnManager = NetworkManager.Singleton.SpawnManager;
     }
@@ -141,4 +145,12 @@ public class GameManager : MonoBehaviour
     {
         Instance.m_player = player;
     }
+    public static float GetTimeScale() { return Instance.m_currentTimeScale; }
+
+    public static void SetTimeScale(float timeScale)
+    {
+        Instance.m_currentTimeScale = timeScale;
+        if (!Instance.m_isPaused || IsMultiplayer) Time.timeScale = timeScale;
+    }
+
 }

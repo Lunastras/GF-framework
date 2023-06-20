@@ -7,19 +7,19 @@ using static System.MathF;
 public class GfMovementSimple : GfMovementGeneric
 {
     [SerializeField]
-    protected float m_acceleration = 45;
+    protected float m_acceleration = 40;
     [SerializeField]
-    protected float m_deacceleration = 40;
+    protected float m_deacceleration = 35;
     [SerializeField]
     protected float m_midAirAcceleration = 20;
     [SerializeField]
-    protected float m_midAirDeacceleration = 15;
+    protected float m_midAirDeacceleration = 10;
     [SerializeField]
     protected float m_maxFallSpeed = 50;
     [SerializeField]
     protected float m_jumpForce = 20;
     [SerializeField]
-    protected float m_jumpExtensionMassCoef = 0.6f;
+    protected float m_jumpExtensionMassCoef = 0.7f;
 
     [SerializeField]
     protected float m_turnSpeed = 400;
@@ -29,7 +29,6 @@ public class GfMovementSimple : GfMovementGeneric
 
     [SerializeField]
     protected int m_maxJumps = 1;
-
 
     protected int m_currentJumpsCount = 0;
 
@@ -212,8 +211,8 @@ public class GfMovementSimple : GfMovementGeneric
     {
         if (m_maxJumps > m_currentJumpsCount)
         {
+            m_isExtendingJump = m_currentJumpsCount == 0;
             m_currentJumpsCount++;
-            m_isExtendingJump = m_currentJumpsCount == 1;
 
             GfTools.RemoveAxis(ref m_velocity, m_rotationUpVec); //we use the rotation upVec because it feels more natural when the player's rotation is still changing
             GfTools.Add3(ref m_velocity, m_upVec * m_jumpForce);

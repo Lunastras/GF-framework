@@ -33,7 +33,7 @@ public class WeaponTurret : NetworkBehaviour
     private PriorityValue<float> m_damageMultiplier = new(1);
     private PriorityValue<float> m_fireRateMultiplier = new(1);
 
-    private static readonly Vector3 DESTROY_POSITION = new Vector3(99999999, 99999999, 99999999);
+    private static readonly Vector3 DESTROY_POSITION = new Vector3(9999, 9999, 9999);
 
     protected bool HasAuthority
     {

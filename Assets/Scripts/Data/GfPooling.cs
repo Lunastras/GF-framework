@@ -17,7 +17,8 @@ public class GfPooling : MonoBehaviour
 
     //magic value for the destruction of objects, we really just assume an object cannot be in this position unless we set it here
     //looks like bad design, but it's nicer than using a component specific for keeping track of objects in the pool
-    private static readonly Vector3 DESTROY_POSITION = new Vector3(99999789, 99999879, 99999897);
+    //If these values are too high/low, the physics stop working
+    private static readonly Vector3 DESTROY_POSITION = new Vector3(9997, 9997, 9997);
 
     //a dictionary mapping a pooled object to its pool
 

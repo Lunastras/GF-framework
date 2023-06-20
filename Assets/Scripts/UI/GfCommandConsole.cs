@@ -41,7 +41,7 @@ public class GfCommandConsole : MonoBehaviour
 
     private static int LogCharacterCapacity = 4096;
 
-    private RectTransform m_consoleRectTransform = null;
+    private Image m_consoleImage = null;
 
     [SerializeField] private bool m_showTime = true;
     [SerializeField] private bool m_showStackTrace = true;
@@ -67,13 +67,11 @@ public class GfCommandConsole : MonoBehaviour
 
     private bool m_mustResize = false;
 
-    private TMP_Text m_tmpText;
-
     private bool m_mustScrollDown = false;
 
     private bool m_mustRedoText = true;
 
-    private List<ConsoleLog> m_logsList;
+    private List<GfConsoleLog> m_logsList;
 
     private string m_logString = "";
 
@@ -97,16 +95,26 @@ public class GfCommandConsole : MonoBehaviour
     private float m_currentVisibleHeight = 0;
 
     private float m_lastScrollValue;
-    private const char COMMAND_PREFIX = '!';
 
     private const string ERROR_OPEN_TAG = "<color=#FF534A>";
     private const string WARN_OPEN_TAG = "<color=#FFC107>";
     private const string COMMAND_OPEN_TAG = "<color=#9affd2>";
+
+    private const string STACK_ERROR_OPEN_TAG = "<color=#984541>";
+    private const string STACK_WARN_OPEN_TAG = "<color=#A59050>";
+    private const string STACK_LOG_OPEN_TAG = "<color=#A9A9A9>";
+
+
     private const string COLOR_CLOSE_TAG = "</color>";
+
+    private const string NO_PARSE_TAG = "<noparse>";
+    private const string NO_PARSE_CLOSE_TAG = "</noparse>";
 
     private bool m_focusOnCommandLine = false;
 
     private Vector2 m_currentViewportSize = new();
+
+    private bool m_currentLogIsCommand = false;
 
     [SerializeField]
     float consoleWindowStartY = 0;
@@ -129,21 +137,26 @@ public class GfCommandConsole : MonoBehaviour
         LOG, WARNING, ERROR, COMMAND
     }
 
-    private struct ConsoleLog
+    private struct GfConsoleLog
     {
         public string Text;
-        public GfLogType Type;
+
+        public string StackTrace;
+
+        public GfLogType LogType;
 
         public float StartPosY;
 
         public float Height;
 
-        public ConsoleLog(string text, float currentHeight, float height, GfLogType type = GfLogType.LOG)
+        public GfConsoleLog(string text, string stackTrace, float currentHeight, float height, GfLogType type = GfLogType.LOG)
         {
             Text = text;
-            Type = type;
+            LogType = type;
             StartPosY = currentHeight;
             Height = height;
+
+            StackTrace = stackTrace;
         }
 
         public int Length
@@ -177,6 +190,10 @@ public class GfCommandConsole : MonoBehaviour
         selfRectTransform.position = new Vector3(Screen.width * 0.225f, Screen.height * 0.225f, 0);
 
         m_scalableWindow = GetComponent<ScalableWindow>();
+
+        m_consoleImage = GetComponent<Image>();
+        m_consoleImage.raycastTarget = m_console.activeSelf;
+        m_consoleText.text = new string(' ', 512);
     }
 
     private void InitializeLog()
@@ -199,7 +216,7 @@ public class GfCommandConsole : MonoBehaviour
         string initLog = "\n\n" + UnityEngine.Application.productName + " " + UnityEngine.Application.version + " LOG CONSOLE: \n";
         m_consoleText.text = initLog;
 
-        m_logsList.Add(new(initLog, 0, m_consoleText.preferredHeight, GfLogType.LOG));
+        m_logsList.Add(new(initLog, null, 0, m_consoleText.preferredHeight, GfLogType.LOG));
         Debug.Log("The height of the initial log is: " + m_consoleText.preferredHeight);
 
         //m_fullHeight = m_consoleText.preferredHeight;
@@ -228,6 +245,7 @@ public class GfCommandConsole : MonoBehaviour
         if (Input.GetKeyDown(m_consoleKeycode))
         {
             m_console.SetActive(!m_console.activeSelf);
+            m_consoleImage.raycastTarget = m_console.activeSelf;
 
             m_scalableWindow.enabled = m_console.activeSelf;
             if (!m_console.activeSelf)//console just closed
@@ -383,10 +401,17 @@ public class GfCommandConsole : MonoBehaviour
         m_fullHeight = 0;
         for (int i = 0; i < length; ++i)
         {
-            ConsoleLog log = m_logsList[i];
+            GfConsoleLog log = m_logsList[i];
             m_consoleText.text = log.Text;
             log.StartPosY = m_fullHeight;
             log.Height = m_consoleText.preferredHeight;
+
+            if (null != log.StackTrace)
+            {
+                m_consoleText.text = log.StackTrace;
+                log.Height += m_consoleText.preferredHeight;
+            }
+
             m_fullHeight += log.Height;
             m_logsList[i] = log;
         }
@@ -396,7 +421,8 @@ public class GfCommandConsole : MonoBehaviour
 
     public void CommandEntered(string command)
     {
-        print(COMMAND_PREFIX + command);
+        m_currentLogIsCommand = true;
+        print(command);
         WriteFromBottom();
     }
 
@@ -412,35 +438,31 @@ public class GfCommandConsole : MonoBehaviour
             case (LogType.Error):
                 ++m_countError;
                 gfLogType = GfLogType.ERROR;
-                m_logStringBuilder.Append(ERROR_OPEN_TAG);
                 break;
 
             case (LogType.Exception):
                 ++m_countError;
                 gfLogType = GfLogType.ERROR;
-                m_logStringBuilder.Append(ERROR_OPEN_TAG);
                 break;
 
             case (LogType.Assert):
                 ++m_countError;
                 gfLogType = GfLogType.ERROR;
-                m_logStringBuilder.Append(ERROR_OPEN_TAG);
                 break;
 
             case (LogType.Warning):
                 ++m_countWarn;
                 gfLogType = GfLogType.WARNING;
-                m_logStringBuilder.Append(WARN_OPEN_TAG);
                 break;
 
             case (LogType.Log):
                 gfLogType = GfLogType.LOG;
-                if (logString[0] == COMMAND_PREFIX)
+                if (m_currentLogIsCommand)
                 {
                     ++m_countCommand;
+                    m_currentLogIsCommand = false;
                     showStack = false;
                     gfLogType = GfLogType.COMMAND;
-                    m_logStringBuilder.Append(COMMAND_OPEN_TAG);
                 }
                 else
                 {
@@ -450,7 +472,7 @@ public class GfCommandConsole : MonoBehaviour
                 break;
         }
 
-        if (m_showTime)
+        if (m_showTime && false) //todo
         {
             //Time appends
             m_logStringBuilder.Append('[');
@@ -458,31 +480,25 @@ public class GfCommandConsole : MonoBehaviour
             m_logStringBuilder.Append(']');
             m_logStringBuilder.Append(' ');
         }
-        else
-        {
-            m_logStringBuilder.Append('>');
-        }
 
-        m_logStringBuilder.Append(logString);
-
-        if (showStack && null != stackTrace && stackTrace.Length > 0)
-        {
-            m_logStringBuilder.Append("\n<size=0.7em>");
-            m_logStringBuilder.Append(stackTrace);
-            m_logStringBuilder.Append("</size>");
-        }
-
-        //all logs besides Log have a colour, place the colour tag at the end if it isn't a normal log
-        if (GfLogType.LOG != gfLogType)
-            m_logStringBuilder.Append(COLOR_CLOSE_TAG);
+        if (!showStack || null == stackTrace || stackTrace.Length == 0)
+            stackTrace = null;
 
         int listCount = m_logsList.Count;
-        string fullLog = m_logStringBuilder.ToString();
         string currentString = m_consoleText.text;
-        m_consoleText.text = fullLog;
-        float height = Instance.m_consoleText.preferredHeight;
+
+        m_consoleText.text = logString;
+        float height = m_consoleText.preferredHeight;
+
+        if (null != stackTrace)
+        {
+            m_consoleText.text = stackTrace;
+            height += m_consoleText.preferredHeight;
+        }
+
         m_consoleText.text = currentString;
-        m_logsList.Add(new(fullLog, m_fullHeight, height, gfLogType));
+
+        m_logsList.Add(new(logString, stackTrace, m_fullHeight, height, gfLogType));
 
         float newFullHeight = m_fullHeight + height;
         m_mustRedoText = true;
@@ -505,6 +521,75 @@ public class GfCommandConsole : MonoBehaviour
         m_fullHeight = newFullHeight;
     }
 
+    protected void WriteLogToStringBuilder(int logIndex)
+    {
+        bool mustCloseColorTag = false;
+        GfConsoleLog log = m_logsList[logIndex];
+
+
+        switch (log.LogType)
+        {
+            case (GfLogType.ERROR):
+                mustCloseColorTag = true;
+                m_logStringBuilder.Append(ERROR_OPEN_TAG);
+                break;
+
+            case (GfLogType.WARNING):
+                mustCloseColorTag = true;
+                m_logStringBuilder.Append(WARN_OPEN_TAG);
+                break;
+
+            case (GfLogType.COMMAND):
+                mustCloseColorTag = true;
+                m_logStringBuilder.Append(COMMAND_OPEN_TAG);
+
+                break;
+        }
+
+        //m_logStringBuilder.Append('>');
+        m_logStringBuilder.Append(NO_PARSE_TAG);
+        m_logStringBuilder.Append(log.Text);
+        m_logStringBuilder.Append(NO_PARSE_CLOSE_TAG);
+        if (mustCloseColorTag)
+            m_logStringBuilder.Append(COLOR_CLOSE_TAG);
+
+        if (null != log.StackTrace && log.StackTrace.Length > 0)
+        {
+            switch (log.LogType)
+            {
+                case (GfLogType.ERROR):
+                    m_logStringBuilder.Append(STACK_ERROR_OPEN_TAG);
+                    break;
+
+                case (GfLogType.WARNING):
+                    m_logStringBuilder.Append(STACK_WARN_OPEN_TAG);
+                    break;
+
+                case (GfLogType.LOG):
+                    m_logStringBuilder.Append(STACK_LOG_OPEN_TAG);
+                    break;
+            }
+
+            m_logStringBuilder.Append('\n');
+            m_logStringBuilder.Append(log.StackTrace);
+            m_logStringBuilder.Append(COLOR_CLOSE_TAG);
+        }
+
+
+
+
+
+        /////// unsafe pointers test
+
+        unsafe
+        {
+            fixed (char* p = m_consoleText.text)
+            {
+                // do some work
+            }
+        }
+    }
+
     void WriteFromBottom()
     {
         float consoleHeight = m_visibleViewport.rect.height;
@@ -523,7 +608,7 @@ public class GfCommandConsole : MonoBehaviour
 
             while (++logIndex < m_logsList.Count)
             {
-                m_logStringBuilder.Append(m_logsList[logIndex]);
+                WriteLogToStringBuilder(logIndex);
                 if (logIndex < m_logsList.Count)
                     m_logStringBuilder.Append('\n');
             }
@@ -536,7 +621,8 @@ public class GfCommandConsole : MonoBehaviour
             currentPos.y -= m_shownLogEndY - m_currentYScroll;
             m_textViewport.localPosition = currentPos;
 
-            m_consoleText.text = m_logStringBuilder.ToString();
+            // m_consoleText.text = m_logStringBuilder.ToString();
+
             UpdateScrollbar();
         }
         else
@@ -604,7 +690,7 @@ public class GfCommandConsole : MonoBehaviour
                 //do not add \n on the first log
                 if (initialIndex != logIndex) m_logStringBuilder.Append('\n');
                 m_shownLogsHeight += m_logsList[logIndex].Height;
-                m_logStringBuilder.Append(m_logsList[logIndex]);
+                WriteLogToStringBuilder(logIndex);
                 logIndex++;
             }
 
