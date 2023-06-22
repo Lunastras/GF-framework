@@ -39,7 +39,10 @@ public class GfCommandConsole : MonoBehaviour
     [SerializeField]
     private float m_desiredLogHeight = 4000; //the max height of the window used to display the section of the log
 
-    private static int LogCharacterCapacity = 4096;
+    [SerializeField]
+    private float m_scrollSmoothTime = 0.1f; //smoothing of the scroll
+
+    private float m_scrollSmoothRef = 0;
 
     private Image m_consoleImage = null;
 
@@ -54,6 +57,9 @@ public class GfCommandConsole : MonoBehaviour
 
     [SerializeField]
     private float m_currentYScroll = 0;
+
+    private float m_desiredYScroll = 0;
+
 
     [SerializeField]
     private float m_fullHeight = 0;
@@ -72,10 +78,6 @@ public class GfCommandConsole : MonoBehaviour
     private bool m_mustRedoText = true;
 
     private List<GfConsoleLog> m_logsList;
-
-    private string m_logString = "";
-
-    private StringBuilder m_logStringBuilder = null;
 
     private int m_countError = 0;
     private int m_countWarn = 0;
@@ -104,6 +106,7 @@ public class GfCommandConsole : MonoBehaviour
     private const string STACK_WARN_OPEN_TAG = "<color=#A59050>";
     private const string STACK_LOG_OPEN_TAG = "<color=#A9A9A9>";
 
+    private const string PLUS_99_STRING = "+99";
 
     private const string COLOR_CLOSE_TAG = "</color>";
 
@@ -198,8 +201,6 @@ public class GfCommandConsole : MonoBehaviour
 
     private void InitializeLog()
     {
-        m_logString = "";
-
         m_countCommand = 0;
         m_countError = 0;
         m_countLog = 0;
@@ -210,17 +211,15 @@ public class GfCommandConsole : MonoBehaviour
 
         m_mustScrollDown = true;
         UnityEngine.Application.logMessageReceived += Log;
-        m_logStringBuilder = new System.Text.StringBuilder(LogCharacterCapacity);
 
         m_logsList = new(256);
         string initLog = "\n\n" + UnityEngine.Application.productName + " " + UnityEngine.Application.version + " LOG CONSOLE: \n";
         m_consoleText.text = initLog;
 
         m_logsList.Add(new(initLog, null, 0, m_consoleText.preferredHeight, GfLogType.LOG));
-        Debug.Log("The height of the initial log is: " + m_consoleText.preferredHeight);
-
-        //m_fullHeight = m_consoleText.preferredHeight;
         m_fullHeight = m_consoleText.preferredHeight;
+
+        m_consoleText.text = new(' ', 16);
 
         WriteFromYPosition(0);
         UpdateScrollbar();
@@ -236,12 +235,6 @@ public class GfCommandConsole : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!m_first && false)
-        {
-            m_first = true;
-            WriteFromBottom();
-        }
-
         if (Input.GetKeyDown(m_consoleKeycode))
         {
             m_console.SetActive(!m_console.activeSelf);
@@ -262,6 +255,7 @@ public class GfCommandConsole : MonoBehaviour
                 }
 
                 ResizeWindow();
+                UpdateLogCounters();
                 m_focusOnCommandLine = true;
             }
         }
@@ -282,31 +276,45 @@ public class GfCommandConsole : MonoBehaviour
                 m_commandText.ActivateInputField();
             }
 
+            float scrollAmmount = 0;
             float wheelValue = Input.GetAxisRaw("Mouse ScrollWheel");
+            float visibleHeight = m_visibleViewport.rect.height;
             bool scrollValueChanged = m_lastScrollValue != m_scrollBar.value;
             if (scrollValueChanged || (0 != wheelValue))//&& GfUITools.IsMouseOverUICollision(gameObject)))
             {
-                float scrollAmmount = wheelValue * m_scrollSensitivity;
+                scrollAmmount = wheelValue * m_scrollSensitivity;
                 if (scrollValueChanged)
                     scrollAmmount += m_fullHeight * (m_scrollBar.value - m_lastScrollValue);
 
-                Scroll(scrollAmmount);
+                float desiredYScroll = System.MathF.Max(visibleHeight, System.MathF.Min(m_fullHeight, m_currentYScroll + scrollAmmount));
+
+                scrollAmmount = desiredYScroll - m_currentYScroll;
+                m_currentYScroll = desiredYScroll;
+
+                /* Planning on adding smooth scroll at some point
+                if (scrollValueChanged)
+                {
+                    m_currentYScroll = desiredYScroll;
+                }
+                else
+                {
+                    m_currentYScroll = desiredYScroll;
+                }*/
+                //Debug.Log("The REAL scroll input is: " + scrollValue);
+
+                UpdateScrollbar();
             }
 
-            UpdateConsoleText();
-        }
-    }
-
-    private void UpdateConsoleText(bool forceUpdate = false)
-    {
-        if (!CanvasUpdateRegistry.IsRebuildingLayout() || forceUpdate)
-        {
-            if (m_mustRedoText && m_mustScrollDown)
+            if (scrollAmmount != 0)
             {
-                m_toggleCommand.Text.text = m_countCommand > 99 ? PLUS_99_STRING : m_countCommand.ToString();
-                m_toggleWarn.Text.text = m_countWarn > 99 ? PLUS_99_STRING : m_countWarn.ToString();
-                m_toggleError.Text.text = m_countError > 99 ? PLUS_99_STRING : m_countError.ToString();
-                m_toggleLog.Text.text = m_countLog > 99 ? PLUS_99_STRING : m_countLog.ToString();
+                consoleWindowStartY = System.MathF.Max(0, m_currentYScroll - visibleHeight);
+
+                if (VerifyShownLogIntegrity()) //move the window only if the log is valid
+                {
+                    var currentPos = m_textViewport.position;
+                    currentPos.y += scrollAmmount;
+                    m_textViewport.position = currentPos;
+                }
             }
 
             if (m_focusOnCommandLine)
@@ -319,8 +327,13 @@ public class GfCommandConsole : MonoBehaviour
         }
     }
 
-    private bool m_first = false;
-
+    protected void UpdateLogCounters()
+    {
+        m_toggleCommand.Text.text = m_countCommand > 99 ? PLUS_99_STRING : m_countCommand.ToString();
+        m_toggleWarn.Text.text = m_countWarn > 99 ? PLUS_99_STRING : m_countWarn.ToString();
+        m_toggleError.Text.text = m_countError > 99 ? PLUS_99_STRING : m_countError.ToString();
+        m_toggleLog.Text.text = m_countLog > 99 ? PLUS_99_STRING : m_countLog.ToString();
+    }
 
     private void DeinitLog()
     {
@@ -399,6 +412,7 @@ public class GfCommandConsole : MonoBehaviour
     {
         int length = m_logsList.Count;
         m_fullHeight = 0;
+        string logString = m_consoleText.text;
         for (int i = 0; i < length; ++i)
         {
             GfConsoleLog log = m_logsList[i];
@@ -416,7 +430,7 @@ public class GfCommandConsole : MonoBehaviour
             m_logsList[i] = log;
         }
 
-        m_consoleText.text = m_logString;
+        m_consoleText.text = logString;
     }
 
     public void CommandEntered(string command)
@@ -428,8 +442,6 @@ public class GfCommandConsole : MonoBehaviour
 
     public void Log(string logString, string stackTrace, LogType type)
     {
-        m_logStringBuilder.Clear();
-
         GfLogType gfLogType = GfLogType.LOG;
         bool showStack = m_showStackTrace;
 
@@ -475,10 +487,10 @@ public class GfCommandConsole : MonoBehaviour
         if (m_showTime && false) //todo
         {
             //Time appends
-            m_logStringBuilder.Append('[');
-            m_logStringBuilder.Append(DateTime.Now.ToLongTimeString());
-            m_logStringBuilder.Append(']');
-            m_logStringBuilder.Append(' ');
+            //m_logStringBuilder.Append('[');
+            // m_logStringBuilder.Append(DateTime.Now.ToLongTimeString());
+            //m_logStringBuilder.Append(']');
+            //m_logStringBuilder.Append(' ');
         }
 
         if (!showStack || null == stackTrace || stackTrace.Length == 0)
@@ -500,11 +512,13 @@ public class GfCommandConsole : MonoBehaviour
 
         m_logsList.Add(new(logString, stackTrace, m_fullHeight, height, gfLogType));
 
+
         float newFullHeight = m_fullHeight + height;
         m_mustRedoText = true;
         m_mustScrollDown |= m_currentYScroll >= m_fullHeight;
         if (m_console.activeSelf)
         {
+            UpdateLogCounters();
             m_currentYScroll = System.MathF.Max(m_currentYScroll, m_visibleViewport.rect.height);
             if (m_currentYScroll >= m_fullHeight) //must scroll down if we can see the bottom
             {
@@ -521,8 +535,65 @@ public class GfCommandConsole : MonoBehaviour
         m_fullHeight = newFullHeight;
     }
 
-    protected void WriteLogToStringBuilder(int logIndex)
+    /**
+    Makes sure the string used by the console text has enough space to insert the 'str' string
+    */
+    protected unsafe void ValidateConsoleStringForInsert(ref string sourceString, int sourcePosition, int insertLength)
     {
+        int sourceLength = sourceString.Length;
+        if (insertLength + sourcePosition >= sourceLength)
+        {
+            // make sure the length isn't 0, otherwise it will be stuck on the following loop
+            if (sourceLength == 0)
+                sourceLength = 512;
+
+            while (insertLength + sourcePosition >= sourceLength)
+                sourceLength <<= 1; //multiply by two
+
+            sourcePosition = 0;
+            string newString = new(' ', sourceLength);
+            FastStringInsert(newString, sourceString, ref sourcePosition);
+
+            sourceString = newString;
+            m_consoleText.text = newString;
+        }
+    }
+
+    protected unsafe static void FastStringInsert(string sourceString, string insertString, ref int sourcePosition)
+    {
+        fixed (char* source = sourceString)
+        {
+            int strLen = insertString.Length;
+            for (int i = 0; i < strLen; ++i)
+                source[sourcePosition + i] = insertString[i];
+
+            sourcePosition += strLen;
+        }
+    }
+
+    protected unsafe static void FastStringInsert(string sourceString, char insertChar, ref int sourcePosition)
+    {
+        fixed (char* source = sourceString)
+        {
+            source[sourcePosition++] = insertChar;
+        }
+    }
+
+    protected unsafe void ConsoleStringInsert(ref string sourceString, ref int sourcePosition, string insertString)
+    {
+        ValidateConsoleStringForInsert(ref sourceString, sourcePosition, insertString.Length);
+        FastStringInsert(sourceString, insertString, ref sourcePosition);
+    }
+
+    protected unsafe void ConsoleStringInsert(ref string sourceString, ref int sourcePosition, char insertChar)
+    {
+        ValidateConsoleStringForInsert(ref sourceString, sourcePosition, 1);
+        FastStringInsert(sourceString, insertChar, ref sourcePosition);
+    }
+
+    protected unsafe void WriteLog(int logIndex, ref string consoleString, ref int currentStringIndex)
+    {
+        /*
         bool mustCloseColorTag = false;
         GfConsoleLog log = m_logsList[logIndex];
 
@@ -575,18 +646,59 @@ public class GfCommandConsole : MonoBehaviour
             m_logStringBuilder.Append(COLOR_CLOSE_TAG);
         }
 
-
-
-
-
+        int currentStringLength = m_consoleText.text.Length;
+        */
         /////// unsafe pointers test
 
-        unsafe
+
+        bool mustCloseColorTag = false;
+        GfConsoleLog log = m_logsList[logIndex];
+
+        switch (log.LogType)
         {
-            fixed (char* p = m_consoleText.text)
+            case (GfLogType.ERROR):
+                mustCloseColorTag = true;
+                ConsoleStringInsert(ref consoleString, ref currentStringIndex, ERROR_OPEN_TAG);
+                break;
+
+            case (GfLogType.WARNING):
+                mustCloseColorTag = true;
+                ConsoleStringInsert(ref consoleString, ref currentStringIndex, WARN_OPEN_TAG);
+                break;
+
+            case (GfLogType.COMMAND):
+                mustCloseColorTag = true;
+                ConsoleStringInsert(ref consoleString, ref currentStringIndex, COMMAND_OPEN_TAG);
+                break;
+        }
+
+        // ConsoleStringInsert(ref consoleString, ref currentStringIndex, NO_PARSE_TAG);
+        ConsoleStringInsert(ref consoleString, ref currentStringIndex, log.Text);
+        // ConsoleStringInsert(ref consoleString, ref currentStringIndex, NO_PARSE_CLOSE_TAG);
+
+        if (mustCloseColorTag)
+            ConsoleStringInsert(ref consoleString, ref currentStringIndex, COLOR_CLOSE_TAG);
+
+        if (null != log.StackTrace && log.StackTrace.Length > 0)
+        {
+            switch (log.LogType)
             {
-                // do some work
+                case (GfLogType.ERROR):
+                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, STACK_ERROR_OPEN_TAG);
+                    break;
+
+                case (GfLogType.WARNING):
+                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, STACK_WARN_OPEN_TAG);
+                    break;
+
+                case (GfLogType.LOG):
+                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, STACK_LOG_OPEN_TAG);
+                    break;
             }
+
+            ConsoleStringInsert(ref consoleString, ref currentStringIndex, '\n');
+            ConsoleStringInsert(ref consoleString, ref currentStringIndex, log.StackTrace);
+            ConsoleStringInsert(ref consoleString, ref currentStringIndex, COLOR_CLOSE_TAG);
         }
     }
 
@@ -596,7 +708,6 @@ public class GfCommandConsole : MonoBehaviour
         if (m_logsList.Count > 0)
         {
             m_shownLogsHeight = 0;
-            m_logStringBuilder.Clear();
             int logIndex = m_logsList.Count - 1;
             m_currentYScroll = System.MathF.Max(m_fullHeight, consoleHeight);
 
@@ -606,11 +717,13 @@ public class GfCommandConsole : MonoBehaviour
                 logIndex--;
             }
 
+            int currentStringIndex = 0;
+            string consoleString = m_consoleText.text;
             while (++logIndex < m_logsList.Count)
             {
-                WriteLogToStringBuilder(logIndex);
+                WriteLog(logIndex, ref consoleString, ref currentStringIndex);
                 if (logIndex < m_logsList.Count)
-                    m_logStringBuilder.Append('\n');
+                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, '\n');
             }
 
             m_shownLogEndY = m_fullHeight;
@@ -620,9 +733,18 @@ public class GfCommandConsole : MonoBehaviour
             currentPos.y = m_shownLogsHeight - consoleHeight * 0.5f;
             currentPos.y -= m_shownLogEndY - m_currentYScroll;
             m_textViewport.localPosition = currentPos;
+            m_textViewport.sizeDelta = new Vector2(m_textViewport.sizeDelta.x, m_shownLogsHeight);
 
-            // m_consoleText.text = m_logStringBuilder.ToString();
+            unsafe
+            {
+                int textLength = consoleString.Length;
+                fixed (char* p = consoleString)
+                    for (; currentStringIndex < textLength; ++currentStringIndex)
+                        p[currentStringIndex] = ' ';
+            }
 
+            // m_consoleText.text = consoleString;
+            m_consoleText.textComponent.text = consoleString;
             UpdateScrollbar();
         }
         else
@@ -639,8 +761,6 @@ public class GfCommandConsole : MonoBehaviour
         m_mustResize = true;
         ResizeWindow();
     }
-
-    private const string PLUS_99_STRING = "+99";
 
     void WriteFromYPosition(float shownLogStartY)
     {
@@ -681,16 +801,19 @@ public class GfCommandConsole : MonoBehaviour
         if (m_logsList.Count > 0)
         {
             m_shownLogsHeight = 0;
-            m_logStringBuilder.Clear();
             int initialIndex = logIndex;
             m_shownLogStartY = m_logsList[logIndex].StartPosY;
 
+            int currentStringIndex = 0;
+            string consoleString = m_consoleText.text;
             while (logIndex < m_logsList.Count && m_shownLogsHeight < m_desiredLogHeight)
             {
                 //do not add \n on the first log
-                if (initialIndex != logIndex) m_logStringBuilder.Append('\n');
+                if (initialIndex != logIndex)
+                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, '\n');
+
                 m_shownLogsHeight += m_logsList[logIndex].Height;
-                WriteLogToStringBuilder(logIndex);
+                WriteLog(logIndex, ref consoleString, ref currentStringIndex);
                 logIndex++;
             }
 
@@ -700,9 +823,18 @@ public class GfCommandConsole : MonoBehaviour
             currentPos.y = m_shownLogsHeight - consoleHeight * 0.5f; //set at bottom
             currentPos.y -= m_shownLogEndY - m_currentYScroll;
             m_textViewport.localPosition = currentPos;
+            m_textViewport.sizeDelta = new Vector2(m_textViewport.sizeDelta.x, m_shownLogsHeight);
 
-            m_consoleText.text = m_logStringBuilder.ToString();
+            unsafe
+            {
+                int textLength = consoleString.Length;
+                fixed (char* p = consoleString)
+                    for (; currentStringIndex < textLength; ++currentStringIndex)
+                        p[currentStringIndex] = ' ';
+            }
 
+            // m_consoleText.text = consoleString;
+            m_consoleText.textComponent.text = consoleString;
             UpdateScrollbar();
         }
         else
@@ -712,30 +844,6 @@ public class GfCommandConsole : MonoBehaviour
             m_shownLogStartY = 0;
             m_shownLogEndY = consoleHeight;
         }
-    }
-
-    private void Scroll(float scrollValue)
-    {
-        float visibleHeight = m_visibleViewport.rect.height;
-        float desiredYScroll = System.MathF.Max(visibleHeight, System.MathF.Min(m_fullHeight, m_currentYScroll + scrollValue));
-
-        scrollValue = desiredYScroll - m_currentYScroll;
-        m_currentYScroll = desiredYScroll;
-        //Debug.Log("The REAL scroll input is: " + scrollValue);
-
-        if (scrollValue != 0)
-        {
-            consoleWindowStartY = System.MathF.Max(0, m_currentYScroll - visibleHeight);
-
-            if (VerifyShownLogIntegrity()) //move the window only if the log is valid
-            {
-                var currentPos = m_textViewport.position;
-                currentPos.y += scrollValue;
-                m_textViewport.position = currentPos;
-            }
-        }
-
-        UpdateScrollbar();
     }
 
     /*
