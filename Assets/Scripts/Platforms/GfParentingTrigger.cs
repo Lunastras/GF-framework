@@ -11,7 +11,7 @@ public class GfParentingTrigger : GfMovementTriggerable
     protected PriorityValueSetter<Transform> m_parent = new();
 
 
-    public override void MgOnTrigger(MgCollisionStruct collision, GfMovementGeneric movement)
+    public override void MgOnTrigger(ref MgCollisionStruct collision, GfMovementGeneric movement)
     {
         if (!m_parent.m_ignore && (!m_onlyForPlayer || GameManager.GetPlayer() == movement.transform))
         {

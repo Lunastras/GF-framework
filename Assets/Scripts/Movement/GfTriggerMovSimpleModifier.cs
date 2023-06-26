@@ -9,7 +9,7 @@ public class GfTriggerMovSimpleModifier : GfTriggerMovGenericModifier
     [SerializeField]
     protected PriorityValueSetter<float> m_deaccelerationMultiplier = new(1);
 
-    public override void MgOnTrigger(MgCollisionStruct collision, GfMovementGeneric movement)
+    public override void MgOnTrigger(ref MgCollisionStruct collision, GfMovementGeneric movement)
     {
         if (!m_onlyForPlayer || GameManager.GetPlayer() == movement.transform)
         {

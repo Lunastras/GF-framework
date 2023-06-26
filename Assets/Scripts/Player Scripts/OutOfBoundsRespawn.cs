@@ -4,23 +4,30 @@ using UnityEngine;
 using Unity.Netcode;
 public class OutOfBoundsRespawn : MonoBehaviour
 {
-    public float respawnYCoord = -10;
-    public Transform respawnPoint;
-    private Vector3 respawnPosition;
-    private GfMovementGeneric movement;
-    // Start is called before the first frame update
-    void Start()
-    {
-        movement = GetComponent<GfMovementGeneric>();
+    [SerializeField] private GfMovementGeneric m_movement;
+    [SerializeField] private CheckpointManager m_checkpointManager;
 
-        if (null == respawnPoint) respawnPoint = GameObject.Find("Spawnpoint").transform;
-        if (respawnPoint)
+
+
+    public float m_respawnYCoord = -10;
+    public Transform m_respawnPoint;
+    private Vector3 m_respawnPosition;
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        if (null == m_movement) m_movement = GetComponent<GfMovementGeneric>();
+        if (null == m_checkpointManager) m_checkpointManager = GetComponent<CheckpointManager>();
+
+        if (null == m_respawnPoint) m_respawnPoint = GameObject.Find("Spawnpoint").transform;
+
+        if (m_respawnPoint)
         {
-            transform.position = respawnPoint.position;
+            transform.position = m_respawnPoint.position;
         }
         else
         {
-            respawnPosition = Vector3.zero;
+            m_respawnPosition = Vector3.zero;
         }
 
         if (!NetworkManager.Singleton.IsServer) Destroy(this);
@@ -30,18 +37,18 @@ public class OutOfBoundsRespawn : MonoBehaviour
     void FixedUpdate()
     {
 
-        if (transform.position.y < respawnYCoord)
+        if (transform.position.y < m_respawnYCoord)
         {
-            transform.position = respawnPoint.position;
-            if (movement != null)
+            m_checkpointManager.ResetToSoftCheckpoint();
+            if (m_movement != null)
             {
-                movement.SetVelocity(Vector3.zero);
+                m_movement.SetVelocity(Vector3.zero);
             }
         }
     }
 
     public void SetRespawn(Vector3 pos)
     {
-        respawnPosition = pos;
+        m_respawnPosition = pos;
     }
 }

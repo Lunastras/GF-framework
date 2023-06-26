@@ -27,6 +27,7 @@ void GetDither(float Intensity, float Scale, float2 ScreenPosition, out float Ou
 void GetDitherAlphaThreshold(float Distance, float FadeStartDistance, out float Threshold) {
     Threshold = 1.0f;
     #ifndef UNITY_PASS_SHADOWCASTER
+        Distance += FadeStartDistance * unity_OrthoParams.w; //disable distance dithering when projection is orthographic
         Threshold = Distance / FadeStartDistance;
         Threshold = 1.0f - Threshold;
         Threshold = max(0, Threshold);
@@ -36,6 +37,7 @@ void GetDitherAlphaThreshold(float Distance, float FadeStartDistance, out float 
 
 
 void ApplyDither_float(float Intensity, float Scale, float2 ScreenPosition, inout float AlphaClippingThreshold, inout float4 Color) {
+    AlphaClippingThreshold += 0.0001;
     float discardPixel = step(Color.a, AlphaClippingThreshold);
     float dither;
     Dither_float(Intensity, Scale, ScreenPosition, dither);
@@ -47,6 +49,7 @@ void ApplyDither_float(float Intensity, float Scale, float2 ScreenPosition, inou
 
 void ApplyDistanceDither_float(float Intensity, float Scale, float2 ScreenPosition, float Distance, float FadeStartDistance, inout float AlphaClippingThreshold, inout float4 Color) {
     #ifndef UNITY_PASS_SHADOWCASTER
+        AlphaClippingThreshold += 0.0001;
         float discardPixel = step(Color.a, AlphaClippingThreshold);
         float dither;
         GetDither(Intensity, Scale, ScreenPosition, dither);

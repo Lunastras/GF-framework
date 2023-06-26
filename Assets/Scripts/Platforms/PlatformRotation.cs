@@ -8,6 +8,8 @@ public class PlatformRotation : MonoBehaviour
     public Vector3 Rotation;
     public float SpeedMultiplier = 1;
 
+    public bool RotatesLocally = false;
+
     private Rigidbody m_rb;
     private Transform m_transform;
 
@@ -28,6 +30,10 @@ public class PlatformRotation : MonoBehaviour
         //auxRotation.x = rotation.z;
         //auxRotation.z = rotation.x;
 
-        m_rb.MoveRotation(Quaternion.Euler(Rotation * (SpeedMultiplier * Time.deltaTime)) * m_transform.rotation);
+        if (RotatesLocally)
+            m_rb.MoveRotation(m_transform.rotation * Quaternion.Euler(Rotation * (SpeedMultiplier * Time.deltaTime)));
+
+        else
+            m_rb.MoveRotation(Quaternion.Euler(Rotation * (SpeedMultiplier * Time.deltaTime)) * m_transform.rotation);
     }
 }

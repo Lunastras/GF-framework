@@ -4,5 +4,5 @@ using UnityEngine;
 
 public abstract class GfMovementTriggerable : MonoBehaviour
 {
-    public abstract void MgOnTrigger(MgCollisionStruct collision, GfMovementGeneric movement);
+    public abstract void MgOnTrigger(ref MgCollisionStruct collision, GfMovementGeneric movement);
 }

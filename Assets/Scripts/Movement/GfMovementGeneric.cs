@@ -421,7 +421,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
 
             m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, out numCollisions);
 
-            ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer); /* filter ourselves out of the collider buffer */
+            ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer, ref position); /* filter ourselves out of the collider buffer */
             for (int ci = numCollisions - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
             {
                 Collider otherc = colliderbuffer[ci];
@@ -488,7 +488,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
         while (numbumps++ < m_maxOverlaps && numCollisions != 0)
         {
             m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, out numCollisions);
-            ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer); /* filter ourselves out of the collider buffer */
+            ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer, ref position); /* filter ourselves out of the collider buffer */
             for (int ci = numCollisions - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
             {
                 Collider otherc = colliderbuffer[ci];
@@ -537,7 +537,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
                 GfTools.Mult3(ref traceDir, _traceLenInv);
 
                 m_archetypeCollision.Trace(position, traceDir, _tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, out numCollisions);/* prevent tunneling by using this skin length */
-                MgCollisionStruct collision = ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, position);
+                MgCollisionStruct collision = ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, ref position);
 
                 if (_i0 > -1 && collision.touched) /* we found something in our trace */
                 {
@@ -720,14 +720,21 @@ public abstract class GfMovementGeneric : NetworkBehaviour
     {
         collisionStruct.collider.GetComponents<GfMovementTriggerable>(m_triggerResults);
         int count = m_triggerResults.Count;
-        for (int j = 0; j < count; ++j)
+
+        if (count > 0)
         {
-            m_triggerResults[j].MgOnTrigger(collisionStruct, this);
+            m_transform.position = collisionStruct.selfPosition;
+            for (int j = 0; j < count; ++j)
+            {
+                m_triggerResults[j].MgOnTrigger(ref collisionStruct, this);
+            }
+
+            collisionStruct.selfPosition = m_transform.position;
         }
     }
 
     // Simply a copy of ArchetypeHeader.OverlapFilters.FilterSelf() with trigger checking
-    private void ActorOverlapFilter(ref int _overlapsfound, Collider _self, Collider[] _colliders)
+    private void ActorOverlapFilter(ref int _overlapsfound, Collider _self, Collider[] _colliders, ref Vector3 position)
     {
         for (int i = _overlapsfound - 1; i >= 0; i--)
         {
@@ -738,8 +745,9 @@ public abstract class GfMovementGeneric : NetworkBehaviour
             // may lead to unintended consequences for the end-user.
             if (!filterout && col.isTrigger)
             {
-                MgCollisionStruct ownCollision = new MgCollisionStruct(Zero3, m_upVec, col, Zero3, false, m_archetypeCollision, true, true, col.transform.position);
-                CallTriggerableEvents(ref ownCollision);
+                MgCollisionStruct collision = new MgCollisionStruct(Zero3, m_upVec, col, Zero3, false, m_archetypeCollision, true, true, position);
+                CallTriggerableEvents(ref collision);
+                position = collision.selfPosition;
                 filterout = true;
             }
 
@@ -754,7 +762,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
     }
 
     // Simply a copy of ArchetypeHeader.TraceFilters.FindClosestFilterInvalids() with added trigger functionality
-    private MgCollisionStruct ActorTraceFilter(ref int _tracesfound, out int _closestindex, float _bias, Collider _self, RaycastHit[] _hits, Vector3 position)
+    private MgCollisionStruct ActorTraceFilter(ref int _tracesfound, out int _closestindex, float _bias, Collider _self, RaycastHit[] _hits, ref Vector3 position)
     {
         float _closestdistance = Mathf.Infinity;
         _closestindex = -1;
@@ -774,6 +782,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
             if (!filterout && _hit.collider.isTrigger && MgOnTriggerHit(ref collision))
             {
                 CallTriggerableEvents(ref collision);
+                position = collision.selfPosition;
                 filterout = true;
             }
 
@@ -1061,7 +1070,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
 public unsafe struct MgCollisionStruct
 {
 
-    public MgCollisionStruct(Vector3 selfNormal, Vector3 upVec, Collider collider, Vector3 point, bool calculatedPoint, ArchetypeCollision archetypeCollision, bool touched, bool overlap, Vector3 positionSelf)
+    public MgCollisionStruct(Vector3 selfNormal, Vector3 upVec, Collider collider, Vector3 point, bool calculatedPoint, ArchetypeCollision archetypeCollision, bool touched, bool overlap, Vector3 selfPosition)
     {
         this.collider = collider;
         this.selfNormal = selfNormal;
@@ -1072,7 +1081,7 @@ public unsafe struct MgCollisionStruct
         this.calculatedPoint = calculatedPoint;
         this.touched = touched;
         this.overlap = overlap;
-        this.selfPosition = positionSelf;
+        this.selfPosition = selfPosition;
         selfVelocity = default;
         colliderHit = null;
         isStair = false;

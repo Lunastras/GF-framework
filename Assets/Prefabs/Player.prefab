@@ -458,6 +458,7 @@ GameObject:
   - component: {fileID: 6390946529941703449}
   - component: {fileID: 148854930636548526}
   - component: {fileID: 148854930636548514}
+  - component: {fileID: 5290595944128658304}
   - component: {fileID: 148854930636548515}
   - component: {fileID: 148854930636548537}
   - component: {fileID: 3072452865096101450}
@@ -488,7 +489,7 @@ Transform:
   - {fileID: 148854930295164460}
   - {fileID: 148854929551912263}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &148854930636548512
 CapsuleCollider:
@@ -621,6 +622,19 @@ MonoBehaviour:
   m_distanceUpdateInterval: 0
   m_distanceOffset: 5
   m_maxFireDistance: 100
+--- !u!114 &5290595944128658304
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2117cb80054a9ac43a969a90dcfaf219, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
 --- !u!114 &148854930636548515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -671,7 +685,7 @@ MonoBehaviour:
   m_jumpExtensionMassCoef: 0.7
   m_turnSpeed: 400
   m_requireJumpRelease: 1
-  m_maxJumps: 2
+  m_maxJumps: 8
   m_breakWhenUnparent: 0
   m_moveFwdSecondsAfterWallDetach: 0.22
   m_attachSecondsAfterWallDetach: 0.5
