@@ -42,7 +42,11 @@ public class StatsNpc : StatsCharacter
     protected Sound m_damageSound;
     [SerializeField]
     protected Sound m_deathSound;
+
     [SerializeField]
+    protected PrefabContainer m_prefabContainer;
+
+    public PrefabContainer GetPrefabContainer() { return m_prefabContainer; }
 
     //The damage values in total from the enemies
     protected float m_biggestDamageReceived = 0;
@@ -52,6 +56,8 @@ public class StatsNpc : StatsCharacter
 
     protected Transform m_transform;
 
+    public CheckpointStateNpc m_checkpointStateNpc = null;
+
 
     // Start is called before the first frame update
 
@@ -59,6 +65,9 @@ public class StatsNpc : StatsCharacter
     {
         if (null == m_objectCollider)
             m_objectCollider = GetComponent<Collider>();
+
+        if (null == m_prefabContainer)
+            m_prefabContainer = GetComponent<PrefabContainer>();
 
         if (null == m_movement)
             m_movement = GetComponent<GfMovementGeneric>();
@@ -95,6 +104,20 @@ public class StatsNpc : StatsCharacter
 
         m_initialised = true;
         HostilityManager.AddCharacter(this);
+
+        var prefab = m_prefabContainer.Prefab;
+
+        if (prefab)
+        {
+            if (!prefab.name.Equals(name))
+            {
+                Debug.LogWarning("The prefab reference in the StatsNpc script of the object '" + name + "' has a different name from the object it was spawned by. Name of the prefab is: '" + prefab.name + "'");
+            }
+        }
+        else
+        {
+            Debug.LogError("The prefab reference in the StatsNpc script of the object '" + name + "' is null.");
+        }
     }
 
     private void OnEnable()
@@ -113,6 +136,51 @@ public class StatsNpc : StatsCharacter
             m_networkObject = GetComponent<NetworkObject>();
             if (m_networkTransform) m_networkTransform.enabled = true;
             if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
+        }
+
+        CheckpointManager.OnHardCheckpoint += OnHardCheckpoint;
+    }
+
+    public override void SetCheckpointState(CheckpointState state)
+    {
+        if (IsCheckpointable())
+        {
+            CheckpointStateNpc checkpointState = state as CheckpointStateNpc;
+            if (null != checkpointState)
+            {
+                m_transform.SetPositionAndRotation(checkpointState.Position, checkpointState.Rotation);
+                m_transform.localScale = checkpointState.Scale;
+                m_currentHealth.Value = checkpointState.CurrentHp;
+                m_npcController.SetDestination(null);
+                m_turret.Stop(true);
+                m_turret.SetCurrentPhase(0);
+                m_isDead = false;
+            }
+            else
+            {
+                Debug.LogError("Checkpoint state passed through 'SetCheckpointState' is not of type 'CheckpointStateNpc' or is null.");
+            }
+        }
+    }
+
+    public override void OnHardCheckpoint()
+    {
+        if (gameObject && gameObject.activeSelf)
+        {
+            if (IsCheckpointable())
+            {
+                if (null == m_checkpointStateNpc) m_checkpointStateNpc = new();
+
+                m_checkpointStateNpc.Position = m_transform.position;
+                m_checkpointStateNpc.Rotation = m_transform.rotation;
+                m_checkpointStateNpc.Scale = m_transform.localScale;
+                m_checkpointStateNpc.CurrentHp = m_currentHealth.Value;
+                m_checkpointStateNpc.Prefab = m_prefabContainer.Prefab;
+                m_checkpointStateNpc.CheckpointType = CheckpointStateType.CheckpointStateNpc;
+
+                CheckpointState state = m_checkpointStateNpc;
+                CheckpointManager.AddCheckpointState(state);
+            }
         }
     }
 
@@ -150,6 +218,7 @@ public class StatsNpc : StatsCharacter
             }
 
             m_isDead = true;
+            CheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;
 
             if (null != m_graphics)
                 m_graphics.SetActive(false);

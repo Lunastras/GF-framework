@@ -25,10 +25,10 @@ public class WeaponLevels : WeaponBasic
 
     public float NextLevelProgress { get; private set; } = 0;
 
-    public override void StopFiring()
+    public override void StopFiring(bool killBullets)
     {
         m_isFiring = false;
-        m_turret.Stop();
+        m_turret.Stop(killBullets);
     }
 
     private void OnDisable()
@@ -102,7 +102,7 @@ public class WeaponLevels : WeaponBasic
         if (m_levelReleaseFireSounds.Length > 0)
             GetReleaseFireSound().Play(m_audioSource);
         m_isFiring = false;
-        m_turret.Stop();
+        m_turret.Stop(false);
     }
 
     /**

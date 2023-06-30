@@ -10,6 +10,8 @@ public class NetworkManagerUI : MonoBehaviour
     [SerializeField] private Button m_hostBtn = null;
     [SerializeField] private Button m_clientBtn = null;
 
+    [SerializeField] private Button m_singlePlayerButton = null;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -30,6 +32,12 @@ public class NetworkManagerUI : MonoBehaviour
             NetworkManager.Singleton.StartClient();
             GameManager.MultiplayerStart();
         });
+
+        m_singlePlayerButton.onClick.AddListener(() =>
+       {
+           NetworkManager.Singleton.StartHost();
+           GameManager.SingleplayerStart();
+       });
     }
 
     // Update is called once per frame

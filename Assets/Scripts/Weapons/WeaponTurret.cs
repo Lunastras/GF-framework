@@ -101,14 +101,14 @@ public class WeaponTurret : NetworkBehaviour
         }
     }
 
-    public void Stop()
+    public void Stop(bool killBullets)
     {
         if (m_firing && m_turretPhases.Length > 0)
         {
             WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
 
             for (int i = systems.Length - 1; i >= 0; --i)
-                systems[i].StopFiring();
+                systems[i].StopFiring(killBullets);
 
             m_firing = false;
         }
@@ -164,6 +164,18 @@ public class WeaponTurret : NetworkBehaviour
         }
 
         return isPlaying;
+    }
+
+
+    public void SetCurrentPhase(int phase)
+    {
+        m_currentPhaseIndex = phase;
+        if (m_firing) Play(false, phase);
+    }
+
+    public int GetCurrentPhase()
+    {
+        return m_currentPhaseIndex;
     }
 
     public WeaponBasic GetWeapon(int phaseIndex, int weaponIndex)
@@ -255,7 +267,7 @@ public class WeaponTurret : NetworkBehaviour
 
         if (phaseChanged)
         {
-            Stop();
+            Stop(false);
 
             m_currentPhaseIndex = phase;
             m_firing = false;
@@ -304,11 +316,11 @@ public class WeaponTurret : NetworkBehaviour
         DestroyWhenDone(gameObject);
     }
 
-    public void DestroyWhenDone(GameObject obj, bool stopParticles = false)
+    public void DestroyWhenDone(GameObject obj, bool killBullets = false)
     {
         m_destoryWhenDone = true;
         m_objectToDestroy = obj;
-        Stop();
+        Stop(killBullets);
         obj.transform.position = DESTROY_POSITION;
         obj.transform.parent = null;
     }

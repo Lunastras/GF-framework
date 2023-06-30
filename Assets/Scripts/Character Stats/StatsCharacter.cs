@@ -7,6 +7,9 @@ using Unity.Netcode.Components;
 public abstract class StatsCharacter : NetworkBehaviour
 {
     [SerializeField]
+    protected bool m_checkpointable = true;
+
+    [SerializeField]
     protected NetworkVariable<float> m_maxHealth = new(100);
 
     [SerializeField]
@@ -29,6 +32,7 @@ public abstract class StatsCharacter : NetworkBehaviour
     protected bool m_initialised = false;
 
     protected NetworkObject m_networkObject;
+
 
     protected bool HasAuthority
     {
@@ -78,6 +82,10 @@ public abstract class StatsCharacter : NetworkBehaviour
             InternalDamage(damage, 0, false, -1, -1, false);
     }
 
+    public virtual void SetCheckpointState(CheckpointState state) { }
+
+    public virtual void OnHardCheckpoint() { }
+
     protected abstract void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall);
 
 
@@ -120,6 +128,13 @@ public abstract class StatsCharacter : NetworkBehaviour
     {
         return m_characterType.Value;
     }
+
+    public bool IsCheckpointable()
+    {
+        return m_checkpointable && GameManager.IsMultiplayer; //disable checkpoint states if we are in multiplayer
+    }
+
+    public void SetCheckpointable(bool checkpointable) { m_checkpointable = checkpointable; }
 
     public void SetCharacterType(CharacterTypes type)
     {

@@ -34,7 +34,7 @@ public abstract class WeaponBasic : DamageSource
 
     public bool DisableWhenDone { get; set; } = false;
 
-    public abstract void StopFiring();
+    public abstract void StopFiring(bool killBullets);
 
     public abstract void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false);
 

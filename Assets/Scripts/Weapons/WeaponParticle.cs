@@ -26,10 +26,14 @@ public abstract class WeaponParticle : WeaponBasic
         return ps;
     }
 
-    public override void StopFiring()
+    public override void StopFiring(bool killBullets)
     {
         m_isFiring = false;
-        m_particleSystem.Stop(true);
+
+        ParticleSystemStopBehavior stopBehaviour = ParticleSystemStopBehavior.StopEmitting;
+        if (killBullets) stopBehaviour = ParticleSystemStopBehavior.StopEmittingAndClear;
+
+        m_particleSystem.Stop(true, stopBehaviour);
     }
 
     public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)

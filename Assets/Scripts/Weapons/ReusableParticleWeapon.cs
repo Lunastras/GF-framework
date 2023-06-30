@@ -109,7 +109,7 @@ public class ReusableParticleWeapon : WeaponBasic
 
     public override bool IsFiring() { return false; }
 
-    public override void StopFiring()
+    public override void StopFiring(bool killBullets)
     {
         m_firing = false;
         m_particlesFired = 0;

@@ -83,6 +83,11 @@ public class GameManager : MonoBehaviour
         Instance.m_spawnManager = NetworkManager.Singleton.SpawnManager;
     }
 
+    public static void SingleplayerStart()
+    {
+        Instance.m_spawnManager = NetworkManager.Singleton.SpawnManager;
+    }
+
     public static void MultiplayerStop(bool discardMessageQueue = false)
     {
         IsMultiplayer = false;

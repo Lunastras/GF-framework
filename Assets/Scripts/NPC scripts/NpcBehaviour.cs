@@ -79,7 +79,7 @@ public class NpcBehaviour : NpcController
             m_turret = GetComponent<WeaponTurret>();
 
         //if (m_turret)
-            //m_turret.SetStatsCharacter(m_statsNpc);
+        //m_turret.SetStatsCharacter(m_statsNpc);
     }
 
     protected override void BeforeStateUpdate(float deltaTime)
@@ -172,7 +172,7 @@ public class NpcBehaviour : NpcController
 
     protected override void NoDestinationsBehaviour(float deltaTime)
     {
-        if (m_turret) m_turret.Stop();
+        if (m_turret) m_turret.Stop(false);
 
         m_currentSpeedMultiplier = m_walkSpeedMultiplyer;
         if (0 >= m_timeUntilNextWalkChange)
@@ -215,7 +215,7 @@ public class NpcBehaviour : NpcController
     protected override void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
         //Debug.Log("i am searching for the bastard heeeehee");
-        m_turret.Stop();
+        m_turret.Stop(false);
         m_movement.SetMovementDir(GetPathDirection(dirToTarget));
     }
 
@@ -223,7 +223,7 @@ public class NpcBehaviour : NpcController
     {
         //   Debug.Log("i have low life");
         m_movement.SetMovementDir(-dirToTarget.normalized);
-        m_turret.Stop();
+        m_turret.Stop(false);
     }
 
 
@@ -234,7 +234,7 @@ public class NpcBehaviour : NpcController
         Debug.Log("i lost the target");
         PauseMovement(1);
         m_movement.SetMovementDir(Vector3.zero);
-        m_turret.Stop();
+        m_turret.Stop(false);
         m_currentState = NpcState.NO_DESTINATION;
         m_destination.RemoveDestination();
     }
@@ -243,7 +243,7 @@ public class NpcBehaviour : NpcController
     {
         Debug.Log("enemy was destroyed");
         m_movement.SetMovementDir(Vector3.zero);
-        m_turret.Stop();
+        m_turret.Stop(false);
         m_currentState = NpcState.NO_DESTINATION;
         m_destination.RemoveDestination();
     }

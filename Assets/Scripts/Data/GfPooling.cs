@@ -69,6 +69,9 @@ public class GfPooling : MonoBehaviour
         if (null == spawnedObject)
         {
             spawnedObject = GameObject.Instantiate(objectToSpawn);
+            var prefabContainer = spawnedObject.GetComponent<PrefabContainer>();
+            if (prefabContainer)
+                prefabContainer.Prefab = objectToSpawn;
             spawnedObject.name = objectToSpawn.name;
         }
 
@@ -256,6 +259,9 @@ public class GfPooling : MonoBehaviour
             obj.SetActive(false);
             obj.name = objectToPool.name;
             currentPool.Add(obj);
+            var prefabContainer = obj.GetComponent<PrefabContainer>();
+            if (prefabContainer)
+                prefabContainer.Prefab = objectToPool;
         }
     }
 

@@ -1,9 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+using Unity.Netcode;
 
 public class CheckpointManager : MonoBehaviour
 {
+    private static CheckpointManager Instance = null;
+
+    [SerializeField] private bool m_canTriggerHardCheckpoints = true;
+
     [SerializeField] private GfMovementGeneric m_movementGeneric = null;
 
     [SerializeField] private StatsCharacter m_statsCharacter = null;
@@ -14,8 +20,29 @@ public class CheckpointManager : MonoBehaviour
 
     private Transform m_transform = null;
 
+    public static Action OnHardCheckpoint;
+
+    private List<CheckpointState> m_checkpointStates = new(64);
+
+    public static void AddCheckpointState(CheckpointState checkpointState)
+    {
+        Instance.m_checkpointStates.Add(checkpointState);
+    }
+
     private void Start()
     {
+        if (Instance != null && !GameManager.IsMultiplayer && m_canTriggerHardCheckpoints)
+        {
+            Debug.LogWarning("Another CheckpointManager Instance that can trigger hard checkpoints was found (" + Instance.name + "), destroying it now...");
+            Destroy(Instance);
+        }
+
+        if (m_canTriggerHardCheckpoints)
+        {
+            Instance = this;
+            OnHardCheckpoint = null; //reset callbacks
+        }
+
         if (null == m_movementGeneric) m_movementGeneric = GetComponent<GfMovementGeneric>();
         if (null == m_statsCharacter) m_statsCharacter = GetComponent<StatsCharacter>();
         m_transform = m_statsCharacter.transform;
@@ -28,9 +55,14 @@ public class CheckpointManager : MonoBehaviour
         {
             m_currentSoftCheckpoint = checkpoint;
         }
-        else if (checkpoint != m_currentHardCheckpoint)//hard checkpoint
+        else if (checkpoint != m_currentHardCheckpoint && m_canTriggerHardCheckpoints)//hard checkpoint
         {
             m_currentHardCheckpoint = checkpoint;
+            if (null != OnHardCheckpoint && !GameManager.IsMultiplayer)
+            {
+                m_checkpointStates.Clear();
+                OnHardCheckpoint();
+            }
         }
     }
 
@@ -66,9 +98,23 @@ public class CheckpointManager : MonoBehaviour
 
     public void ResetToHardCheckpoint()
     {
-        if (m_currentSoftCheckpoint)
+        if (m_currentHardCheckpoint && m_canTriggerHardCheckpoints)
         {
-            m_transform.position = m_currentSoftCheckpoint.Checkpoint.position;
+            m_transform.position = m_currentHardCheckpoint.Checkpoint.position;
+            if (!GameManager.IsMultiplayer) //do not reset checkpoint states if we are playing multiplayer
+            {
+                CheckpointState state;
+                int stateCount = m_checkpointStates.Count;
+                for (int i = 0; i < stateCount; ++i)
+                {
+                    state = m_checkpointStates[i];
+                    switch (state.CheckpointType)
+                    {
+                        case (CheckpointStateType.CheckpointStateNpc):
+                            break;
+                    }
+                }
+            }
         }
         else
         {

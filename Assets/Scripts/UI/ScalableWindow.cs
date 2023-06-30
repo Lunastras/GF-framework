@@ -45,6 +45,7 @@ public class ScalableWindow : MonoBehaviour
     private List<RaycastResult> m_raycastResults = new(1);
 
     public Action<bool> OnDragCallback;
+
     internal enum CursorType
     {
         NORMAL,

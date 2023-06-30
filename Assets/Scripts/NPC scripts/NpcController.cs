@@ -54,7 +54,7 @@ public class NpcController : NetworkBehaviour
     protected float m_timeUntilPathFind = 0;
 
     //protected DestinationManager destinations;
-    protected Destination m_destination;
+    protected Destination m_destination = new();
 
     //public bool canSeeTarget { get; private set; } = false;
 
@@ -72,7 +72,6 @@ public class NpcController : NetworkBehaviour
     //the interval in seconds the npc will keep track
     //of the exact position of its target upon losing sight of it
 
-
     protected enum NpcState
     {
         ENGAGING_TARGET, //can see target
@@ -81,14 +80,11 @@ public class NpcController : NetworkBehaviour
         RUNNING_AWAY,
     }
 
-
     // Start is called before the first frame update
-
     protected virtual void Initialize()
     {
         m_pathToDestination = new(32, Allocator.Persistent);
         m_transform = transform;
-        m_destination = new();
 
         if (m_movement == null)
         {
@@ -112,7 +108,8 @@ public class NpcController : NetworkBehaviour
     {
         bool scheduleJob = m_pathFindingManager
                         && (m_currentState == NpcState.SEARCHING_TARGET || m_currentState == NpcState.ENGAGING_TARGET)
-                        && m_timeUntilPathFind <= 0;
+                        && m_timeUntilPathFind <= 0
+                        && m_destination.HasDestination;
 
         if (scheduleJob)
         {
@@ -185,7 +182,7 @@ public class NpcController : NetworkBehaviour
                 m_currentState = NpcState.NO_DESTINATION;
             }
 
-            if (null != m_destination && m_destination.HasDestination)
+            if (m_destination.HasDestination)
             {
                 MoveTowardsDestination(deltaTime, m_destination);
             }
@@ -392,15 +389,16 @@ public class NpcController : NetworkBehaviour
 
     public void SetDestination(Transform destinationTrans, bool isEnemy = false, bool canLoseTrackOfTarget = true)
     {
-        if (null != m_destination)
-            m_destination.SetDestination(destinationTrans, isEnemy, canLoseTrackOfTarget);
+        if (destinationTrans != m_destination.TransformDest)
+            m_pathToDestination.Clear();
+
+        m_destination.SetDestination(destinationTrans, isEnemy, canLoseTrackOfTarget);
         // Debug.Log("I am setting a destination! " + m_destination.HasDestination);
     }
 
     public void SetDestination(Vector3 destinationPos)
     {
-        if (null != m_destination)
-            m_destination.SetDestination(destinationPos);
+        m_destination.SetDestination(destinationPos);
     }
 
     public GfPathfinding GetPathfindingManager()

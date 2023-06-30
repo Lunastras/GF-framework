@@ -341,7 +341,7 @@ public class LoadoutManager : NetworkBehaviour
 
     private void DestroyWeapon(WeaponBasic weaponToDestroy)
     {
-        weaponToDestroy.StopFiring();
+        weaponToDestroy.StopFiring(false);
         weaponToDestroy.SetMovementParent(null);
         weaponToDestroy.WasSwitchedOff();
 
