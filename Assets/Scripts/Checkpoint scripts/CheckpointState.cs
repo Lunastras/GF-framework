@@ -1,10 +1,5 @@
 
-public class CheckpointState
+public abstract class CheckpointState
 {
-    public CheckpointStateType CheckpointType;
-}
-
-public enum CheckpointStateType
-{
-    CheckpointStateNpc
+    public abstract void ExecuteCheckpointState();
 }

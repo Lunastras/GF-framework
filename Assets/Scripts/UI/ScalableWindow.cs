@@ -207,27 +207,26 @@ public class ScalableWindow : MonoBehaviour
                         m_cursorType = CursorType.DRAG_DIAGONAL_TOP_NORTH_EAST;
                     else // if ((m_isDraggingLeft && m_isDraggingTop) || (m_isDraggingRight && m_isDraggingBot)) 
                         m_cursorType = CursorType.DRAG_DIAGONAL_TOP_NORTH_WEST;
+
+
+                    switch (m_cursorType)
+                    {
+                        case (CursorType.NORMAL):
+                            break;
+
+                        case (CursorType.DRAG_HORIZONTAL):
+                            break;
+
+                        case (CursorType.DRAG_VERTICAL):
+                            break;
+
+                        case (CursorType.DRAG_DIAGONAL_TOP_NORTH_EAST):
+                            break;
+
+                        case (CursorType.DRAG_DIAGONAL_TOP_NORTH_WEST):
+                            break;
+                    }
                 }
-
-                /*
-                switch (m_cursorType)
-                {
-                    case (CursorType.NORMAL):
-                        break;
-
-                    case (CursorType.DRAG_HORIZONTAL):
-                        break;
-
-                    case (CursorType.DRAG_VERTICAL):
-                        break;
-
-                    case (CursorType.DRAG_DIAGONAL_TOP_NORTH_EAST):
-                        break;
-
-                    case (CursorType.DRAG_DIAGONAL_TOP_NORTH_WEST):
-                        break;
-                }
-                */
             }
         }
     }

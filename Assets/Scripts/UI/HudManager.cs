@@ -6,6 +6,11 @@ using UnityEngine.UI;
 
 public class HudManager : MonoBehaviour
 {
+    public static HudManager Instance { get; private set; }
+
+    [SerializeField]
+    private GameObject m_deathScreen = null;
+
     [SerializeField]
     private bool m_onlyShowFirstWeapon = false;
 
@@ -30,13 +35,15 @@ public class HudManager : MonoBehaviour
     void Awake()
     {
         m_weaponSliders = new(1);
+        if (Instance) Destroy(Instance);
+        Instance = this;
         //levelSlidersParent = new GameObject("Level Sliders").transform;
     }
 
     /** Set the max number of sliders and stup the sliders
     *   should only be called once at the start of the game
     */
-    public void UpdateSliders(List<WeaponBasic> weapons)
+    public void UpdateWeaponLevelSlidersNumber(List<WeaponBasic> weapons)
     {
         int desiredWeaponCount = 1;
         int currentWeaponCount = weapons.Count;
@@ -65,7 +72,7 @@ public class HudManager : MonoBehaviour
             ++numSlidersNeeded;
         }
 
-        UpdateSlidersValues(weapons);
+        UpdateWeaponLevelSlidersValues(weapons);
     }
 
     public HealthUIBehaviour GetHealthUI()
@@ -73,7 +80,7 @@ public class HudManager : MonoBehaviour
         return m_healthUI;
     }
 
-    public void UpdateSlidersValues(List<WeaponBasic> weapons)
+    public void UpdateWeaponLevelSlidersValues(List<WeaponBasic> weapons)
     {
         int effectiveWeaponCount = 1;
         int realWeaponCount = m_weaponSliders.Count;
@@ -101,5 +108,29 @@ public class HudManager : MonoBehaviour
                 weaponSlider.SetProgress(0);
             }
         }
+    }
+    public static void ToggleDeathScreen(bool active)
+    {
+        Instance.m_deathScreen.SetActive(active);
+    }
+
+    public static void TriggerSoftCheckpointVisuals()
+    {
+        Debug.Log("Triggered soft checkpoint");
+    }
+
+    public static void ResetSoftCheckpointVisuals()
+    {
+        Debug.Log("Reset soft checkpoint");
+    }
+
+    public static void TriggerHardCheckpointVisuals()
+    {
+        Debug.Log("Triggered HARD checkpoint");
+    }
+
+    public static void ResetHardCheckpointVisuals()
+    {
+        Debug.Log("Reset HARD checkpoint");
     }
 }

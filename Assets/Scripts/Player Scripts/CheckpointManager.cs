@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using Unity.Netcode;
+using MEC;
 
 public class CheckpointManager : MonoBehaviour
 {
-    private static CheckpointManager Instance = null;
+    public static CheckpointManager Instance = null;
 
     [SerializeField] private bool m_canTriggerHardCheckpoints = true;
 
@@ -21,6 +22,8 @@ public class CheckpointManager : MonoBehaviour
     private Transform m_transform = null;
 
     public static Action OnHardCheckpoint;
+
+    private Vector3 m_respawnPoint;
 
     private List<CheckpointState> m_checkpointStates = new(64);
 
@@ -37,6 +40,8 @@ public class CheckpointManager : MonoBehaviour
             Destroy(Instance);
         }
 
+        m_respawnPoint = GameObject.Find("Spawnpoint").transform.position;
+
         if (m_canTriggerHardCheckpoints)
         {
             Instance = this;
@@ -46,17 +51,24 @@ public class CheckpointManager : MonoBehaviour
         if (null == m_movementGeneric) m_movementGeneric = GetComponent<GfMovementGeneric>();
         if (null == m_statsCharacter) m_statsCharacter = GetComponent<StatsCharacter>();
         m_transform = m_statsCharacter.transform;
-        m_initialPos = m_transform.position;
+        m_initialPos = m_respawnPoint;
+        m_transform.position = m_respawnPoint;
     }
 
     public void SetCheckpoint(GfTriggerCheckpoint checkpoint)
     {
         if (checkpoint.SoftCheckpoint && checkpoint != m_currentSoftCheckpoint)
         {
+            if (m_canTriggerHardCheckpoints)
+                HudManager.TriggerSoftCheckpointVisuals();
+
             m_currentSoftCheckpoint = checkpoint;
         }
         else if (checkpoint != m_currentHardCheckpoint && m_canTriggerHardCheckpoints)//hard checkpoint
         {
+            if (m_canTriggerHardCheckpoints)
+                HudManager.TriggerHardCheckpointVisuals();
+
             m_currentHardCheckpoint = checkpoint;
             if (null != OnHardCheckpoint && !GameManager.IsMultiplayer)
             {
@@ -73,6 +85,9 @@ public class CheckpointManager : MonoBehaviour
 
     public void ResetToSoftCheckpoint(float damage = 0, bool canKill = false)
     {
+        if (m_canTriggerHardCheckpoints)
+            HudManager.ResetSoftCheckpointVisuals();
+
         if (damage != 0)
         {
             float currentHp = m_statsCharacter.GetCurrentHealth();
@@ -96,30 +111,41 @@ public class CheckpointManager : MonoBehaviour
         m_movementGeneric.SetVelocity(Vector3.zero);
     }
 
+    protected void ExecuteCheckpointStates()
+    {
+        int stateCount = m_checkpointStates.Count;
+
+        for (int i = 0; i < stateCount; ++i)
+            m_checkpointStates[i].ExecuteCheckpointState();
+    }
+
     public void ResetToHardCheckpoint()
     {
+        if (m_canTriggerHardCheckpoints)
+            HudManager.ResetHardCheckpointVisuals();
+
         if (m_currentHardCheckpoint && m_canTriggerHardCheckpoints)
         {
             m_transform.position = m_currentHardCheckpoint.Checkpoint.position;
-            if (!GameManager.IsMultiplayer) //do not reset checkpoint states if we are playing multiplayer
+            HostilityManager.DestroyAllCharacters(false);
+            //do not reset checkpoint states if we are playing multiplayer
+            if (!GameManager.IsMultiplayer)
             {
-                CheckpointState state;
-                int stateCount = m_checkpointStates.Count;
-                for (int i = 0; i < stateCount; ++i)
-                {
-                    state = m_checkpointStates[i];
-                    switch (state.CheckpointType)
-                    {
-                        case (CheckpointStateType.CheckpointStateNpc):
-                            break;
-                    }
-                }
+                //start coroutine to execute checkpoint states in the next turn
+                Timing.RunCoroutine(_ExecuteCheckpointsInNextFrame());
             }
         }
         else
         {
             m_transform.position = m_initialPos;
         }
+    }
+
+
+    private IEnumerator<float> _ExecuteCheckpointsInNextFrame()
+    {
+        yield return Timing.WaitForOneFrame;
+        ExecuteCheckpointStates();
     }
 
     public GfTriggerCheckpoint GetSoftCheckpoint() { return m_currentSoftCheckpoint; }

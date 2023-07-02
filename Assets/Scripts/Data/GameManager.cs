@@ -29,6 +29,8 @@ public class GameManager : MonoBehaviour
 
     private bool m_isPaused = false;
 
+    private bool m_isShowingDeathScreen = false;
+
     public bool CanPause = true;
 
     private bool m_pauseButtonReleased = true;
@@ -73,8 +75,35 @@ public class GameManager : MonoBehaviour
         {
             m_pauseButtonReleased = true;
         }
+
+        if (m_isShowingDeathScreen && Input.GetKeyDown(KeyCode.Space))
+        {
+            m_isShowingDeathScreen = false;
+            HudManager.ToggleDeathScreen(false);
+            m_player.GetComponent<StatsPlayer>().Respawn();
+            CheckpointManager.Instance.ResetToHardCheckpoint();
+        }
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            m_player.GetComponent<StatsPlayer>().Kill();
+        }
     }
 
+    public static void SetEnemiesEngagingCount(int count)
+    {
+        if (count == 0)
+            LevelManager.StartCalmMusic();
+        else
+            LevelManager.StartActionMusic();
+    }
+
+    public static void PlayerDied()
+    {
+        HudManager.ToggleDeathScreen(true);
+        Instance.m_isShowingDeathScreen = true;
+        Instance.m_player.gameObject.SetActive(false);
+    }
 
     public static void MultiplayerStart()
     {

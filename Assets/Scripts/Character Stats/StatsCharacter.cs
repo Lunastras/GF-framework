@@ -33,6 +33,8 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected NetworkObject m_networkObject;
 
+    protected int m_enemiesEngagingCount = 0;
+
 
     protected bool HasAuthority
     {
@@ -109,6 +111,19 @@ public abstract class StatsCharacter : NetworkBehaviour
             InternalKill(killerNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
     }
 
+    //called when an enemy is approaching this character
+    public virtual void NotifyEnemyEngaging(StatsCharacter character)
+    {
+        ++m_enemiesEngagingCount;
+    }
+
+    //called when an enemy stop engaging
+    public virtual void NotifyEnemyDisengaged(StatsCharacter character)
+    {
+        --m_enemiesEngagingCount;
+        if (m_enemiesEngagingCount < 0) m_enemiesEngagingCount = 0;
+    }
+
     public virtual void Kill()
     {
         if (HasAuthority)
@@ -131,7 +146,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public bool IsCheckpointable()
     {
-        return m_checkpointable && GameManager.IsMultiplayer; //disable checkpoint states if we are in multiplayer
+        return m_checkpointable && !GameManager.IsMultiplayer; //disable checkpoint states if we are in multiplayer
     }
 
     public void SetCheckpointable(bool checkpointable) { m_checkpointable = checkpointable; }
@@ -151,7 +166,10 @@ public abstract class StatsCharacter : NetworkBehaviour
     protected void Deinit()
     {
         HostilityManager.RemoveCharacter(this);
-        if (HasAuthority && m_networkObject && m_networkObject.IsSpawned) m_networkObject.Despawn();
+        if (HasAuthority && m_networkObject && m_networkObject.IsSpawned)
+        {
+            m_networkObject.Despawn(false);
+        }
     }
 
     private void OnDisable()
@@ -215,5 +233,40 @@ public abstract class StatsCharacter : NetworkBehaviour
     {
         if (HasAuthority)
             m_receivedDamageMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority);
+    }
+
+    public virtual void AddHp(float hp, bool clampToMaxHealth = true)
+    {
+        m_currentHealth.Value += hp;
+        if (clampToMaxHealth)
+            m_currentHealth.Value = Mathf.Clamp(m_currentHealth.Value, 0, GetMaxHealthEffective());
+    }
+
+    public virtual void RefillHp()
+    {
+        m_currentHealth.Value = GetMaxHealthEffective();
+    }
+
+    public virtual void SetHp(float hp, bool clampToMaxHealth = true)
+    {
+        if (clampToMaxHealth)
+            hp = Mathf.Clamp(hp, 0, GetMaxHealthEffective());
+
+        m_currentHealth.Value = hp;
+    }
+
+    public virtual void Respawn()
+    {
+        gameObject.SetActive(true);
+        m_networkObject = GetComponent<NetworkObject>();
+        if (m_networkTransform) m_networkTransform.enabled = true;
+        if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
+
+        m_maxHealthMultiplier.Value.SetValue(1, 0, true);
+        m_receivedDamageMultiplier.Value.SetValue(1, 0, true);
+        RefillHp();
+        Debug.Log("Current hp is:  " + m_currentHealth.Value);
+        m_isDead = false;
+        m_enemiesEngagingCount = 0;
     }
 }

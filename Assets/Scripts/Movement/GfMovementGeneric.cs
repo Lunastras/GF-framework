@@ -884,13 +884,13 @@ public abstract class GfMovementGeneric : NetworkBehaviour
 
     public bool SetParentSpherical(Transform parent, uint priority = 0, bool overridePriority = false)
     {
-        bool changedGravityy = false;
+        bool changedGravity = false;
         if (parent)
         {
             Transform currentParent = m_parentSpherical;
             if (m_parentSpherical.SetValue(parent, priority, overridePriority) && m_parentSpherical != currentParent)
             {
-                changedGravityy = true;
+                changedGravity = true;
                 Vector3 newUpVec = m_transform.position - parent.position;
                 GfTools.Normalize(ref newUpVec);
                 BeginUpVecSmoothing(newUpVec);
@@ -898,11 +898,11 @@ public abstract class GfMovementGeneric : NetworkBehaviour
         }
         else
         {
-            changedGravityy = true;
+            changedGravity = true;
             DetachFromParentSpherical(priority, UPDIR, overridePriority);
         }
 
-        return changedGravityy;
+        return changedGravity;
     }
 
     public bool CopyGravityFrom(GfMovementGeneric movement, bool overridePriority = false)
@@ -930,6 +930,17 @@ public abstract class GfMovementGeneric : NetworkBehaviour
         }
 
         return changedParent;
+    }
+
+    public void ReturnToDefaultValues()
+    {
+        m_velocity = Vector3.zero;
+        SetParentTransform(null, 0, true);
+        DetachFromParentSpherical(0, UPDIR, true);
+        m_interpolateThisFrame = false;
+        m_interpolationMovement = Vector3.zero;
+        m_interpolationRotation = Quaternion.identity;
+        m_currentGroundCollision.collider = null;
     }
 
     public bool SetUpVec(Vector3 upVec, uint priority = 0, bool overridePriority = false)
@@ -1011,6 +1022,11 @@ public abstract class GfMovementGeneric : NetworkBehaviour
     public uint GetGravityPriority()
     {
         return m_parentSpherical.GetPriority();
+    }
+
+    public uint GetParentPriority()
+    {
+        return m_parentTransform.GetPriority();
     }
 
     public PriorityValue<float> GetSpeedMultiplier()

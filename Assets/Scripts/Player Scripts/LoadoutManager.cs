@@ -542,7 +542,7 @@ public class LoadoutManager : NetworkBehaviour
             }
         }
 
-        if (m_hudManager) m_hudManager.UpdateSliders(m_weapons);
+        if (m_hudManager) m_hudManager.UpdateWeaponLevelSlidersNumber(m_weapons);
     }
 
     public void AddPointsAll(WeaponPointsTypes type, float points)
@@ -615,7 +615,7 @@ public class LoadoutManager : NetworkBehaviour
                 loadOut[numWeapon].SetPoints((int)type, currentExp);
             }
 
-            if (loadoutIndex == m_currentLoadOutIndex && m_hudManager) m_hudManager.UpdateSlidersValues(m_weapons);
+            if (loadoutIndex == m_currentLoadOutIndex && m_hudManager) m_hudManager.UpdateWeaponLevelSlidersValues(m_weapons);
         }
     }
 

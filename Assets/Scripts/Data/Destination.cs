@@ -15,7 +15,11 @@ public class Destination
 
     public bool HasDestination { get; private set; }
 
-    public Destination(Transform destination = null, bool isEnemy = false, bool canLoseTrackOfTarget = false)
+    public StatsCharacter TargetStatsCharacter = null;
+
+    public StatsCharacter SelfStatsCharacter = null;
+
+    public Destination(StatsCharacter selfStats, Transform destination = null, bool isEnemy = false, bool canLoseTrackOfTarget = false)
     {
         //Debug.Log("new destination TRANSFORM set!");
 
@@ -25,6 +29,15 @@ public class Destination
         vector3Dest = destination != null ? destination.position : Vector3.zero;
         destinationIsTransform = true;
         HasDestination = destination != null;
+        SelfStatsCharacter = selfStats;
+
+        if (destination && isEnemy)
+        {
+            TargetStatsCharacter = destination.GetComponent<StatsCharacter>();
+
+            if (TargetStatsCharacter)
+                TargetStatsCharacter.NotifyEnemyEngaging(SelfStatsCharacter);
+        }
     }
 
     public Destination(Vector3 position)
@@ -35,31 +48,54 @@ public class Destination
         vector3Dest = position;
         destinationIsTransform = false;
         HasDestination = true;
+        TargetStatsCharacter = null;
     }
 
     public void SetDestination(Vector3 position)
     {
+        if (TargetStatsCharacter && IsEnemy)
+            TargetStatsCharacter.NotifyEnemyDisengaged(SelfStatsCharacter);
+
         TransformDest = null;
         IsEnemy = false;
         CanLoseTrackOfTarget = false;
         vector3Dest = position;
         destinationIsTransform = false;
         HasDestination = true;
+        TargetStatsCharacter = null;
     }
 
     public void SetDestination(Transform destination = null, bool isEnemy = false, bool canLoseTrackOfTarget = false)
     {
+        bool differentTarget = destination != TransformDest;
+
+        if (TargetStatsCharacter && differentTarget && IsEnemy)
+            TargetStatsCharacter.NotifyEnemyDisengaged(SelfStatsCharacter);
+
         TransformDest = destination;
         IsEnemy = isEnemy;
         CanLoseTrackOfTarget = canLoseTrackOfTarget;
         vector3Dest = destination != null ? destination.position : Vector3.zero;
         destinationIsTransform = true;
         HasDestination = destination != null;
+
+        if (destination && differentTarget && IsEnemy)
+        {
+            TargetStatsCharacter = destination.GetComponent<StatsCharacter>();
+
+            if (TargetStatsCharacter)
+                TargetStatsCharacter.NotifyEnemyEngaging(SelfStatsCharacter);
+        }
     }
 
     public void RemoveDestination()
     {
+        if (TargetStatsCharacter && IsEnemy)
+            TargetStatsCharacter.NotifyEnemyDisengaged(SelfStatsCharacter);
+
         HasDestination = false;
+        TargetStatsCharacter = null;
+        TransformDest = null;
     }
 
     public Vector3 LastKnownPosition()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.IO;
+using UnityEngine.Audio;
 using Unity.Collections;
 using Unity.Burst;
 using Unity.Jobs;
@@ -13,7 +14,15 @@ using GfPathFindingNamespace;
 //[ExecuteInEditMode]
 public class LevelManager : MonoBehaviour
 {
-    private static LevelManager Manager = null;
+    [SerializeField] private Sound m_calmMusic = null;
+
+    [SerializeField] private Sound m_actionMusic = null;
+
+    [SerializeField] private float m_actionCalmBlendTime = 2;
+
+    private bool m_isPlayingCalmMusic = true;
+
+    private static LevelManager Instance = null;
 
     private LevelData m_levelData = default;
 
@@ -26,13 +35,28 @@ public class LevelManager : MonoBehaviour
         public GfPathfinding.NodePathSaveData[] paths;
     }
 
-    private string m_levelDataPath;
+    private string m_levelDataPath = null;
+
+    private float m_calmSmoothRef = 0;
+
+    private float m_actionSmoothRef = 0;
+
+    private bool m_isBlendingCalmAction = false;
+
+    private float m_desiredActionVolume = 0;
+
+    private float m_desiredCalmVolume = 1;
+
+    private float m_currentActionVolume = 0;
+
+    private float m_currentCalmVolume = 1;
+
 
     // Start is called before the first frame update
     void Awake()
     {
-        if (Manager != this) Destroy(Manager);
-        Manager = this;
+        if (Instance != this) Destroy(Instance);
+        Instance = this;
 
         m_levelDataPath = Application.persistentDataPath + "/" + gameObject.scene.name + ".dat";
 
@@ -64,6 +88,74 @@ public class LevelManager : MonoBehaviour
         }
     }
 
+    public void Start()
+    {
+        if (null != m_calmMusic && null != m_calmMusic.m_clip)
+        {
+            m_calmMusic.Play(Vector3.zero);
+            // AudioManager.SetMixerVolume(m_calmMusic.m_mixerType, 0);
+            AudioManager.SetMixerVolume(m_calmMusic.m_mixerType, m_currentCalmVolume);
+        }
+
+        if (null != m_actionMusic && null != m_actionMusic.m_clip)
+        {
+            m_actionMusic.Play(Vector3.zero);
+            //AudioManager.SetMixerVolume(m_actionMusic.m_mixerType, 0);
+            AudioManager.SetMixerVolume(m_actionMusic.m_mixerType, m_currentActionVolume);
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (m_isBlendingCalmAction)
+        {
+            m_currentActionVolume = Mathf.SmoothDamp(m_currentActionVolume, m_desiredActionVolume, ref m_actionSmoothRef, m_actionCalmBlendTime);
+            m_currentCalmVolume = Mathf.SmoothDamp(m_currentCalmVolume, m_desiredCalmVolume, ref m_calmSmoothRef, m_actionCalmBlendTime);
+
+            AudioManager.SetMixerVolume(m_actionMusic.m_mixerType, m_currentActionVolume);
+            AudioManager.SetMixerVolume(m_calmMusic.m_mixerType, m_currentCalmVolume);
+
+            m_isBlendingCalmAction = m_currentActionVolume != m_desiredActionVolume
+                                    || m_currentCalmVolume != m_desiredCalmVolume;
+        }
+    }
+
+    public static void PauseMusic()
+    {
+
+    }
+
+    public static void PlayMusic()
+    {
+
+    }
+
+    public static void StartActionMusic()
+    {
+        if (Instance.m_isPlayingCalmMusic)
+        {
+            Instance.m_isPlayingCalmMusic = false;
+            Instance.m_actionSmoothRef = 0;
+            Instance.m_calmSmoothRef = 0;
+            Instance.m_isBlendingCalmAction = true;
+            Instance.m_desiredActionVolume = 1;
+            Instance.m_desiredCalmVolume = 0;
+        }
+    }
+
+    public static void StartCalmMusic()
+    {
+        if (!Instance.m_isPlayingCalmMusic)
+        {
+            Instance.m_isPlayingCalmMusic = true;
+            Instance.m_actionSmoothRef = 0;
+            Instance.m_calmSmoothRef = 0;
+            Instance.m_isBlendingCalmAction = true;
+            Instance.m_desiredActionVolume = 0;
+            Instance.m_desiredCalmVolume = 1;
+        }
+    }
+
     public void GenerateAllNodePaths()
     {
         Debug.Log("Generating nodepaths, might take a few seconds...");
@@ -88,12 +180,12 @@ public class LevelManager : MonoBehaviour
 
     public static void SetNodePathData(GfPathfinding system, GfPathfinding.NodePathSaveData data)
     {
-        if (Manager)
+        if (Instance)
         {
             int index = -1;
-            for (int i = 0; i < Manager.m_pathfindingSystems.Length; ++i)
+            for (int i = 0; i < Instance.m_pathfindingSystems.Length; ++i)
             {
-                if (Manager.m_pathfindingSystems[i] == system)
+                if (Instance.m_pathfindingSystems[i] == system)
                 {
                     index = i;
                     break;
@@ -102,7 +194,7 @@ public class LevelManager : MonoBehaviour
 
             if (-1 != index)
             {
-                Manager.m_levelData.paths[index] = data;
+                Instance.m_levelData.paths[index] = data;
                 SaveLevelData();
             }
             else
@@ -118,12 +210,6 @@ public class LevelManager : MonoBehaviour
 
     private static void SaveLevelData()
     {
-        File.WriteAllText(Manager.m_levelDataPath, JsonUtility.ToJson(Manager.m_levelData));
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        File.WriteAllText(Instance.m_levelDataPath, JsonUtility.ToJson(Instance.m_levelData));
     }
 }

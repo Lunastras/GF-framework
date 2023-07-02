@@ -145,15 +145,25 @@ public class StatsNpc : StatsCharacter
     {
         if (IsCheckpointable())
         {
-            CheckpointStateNpc checkpointState = state as CheckpointStateNpc;
-            if (null != checkpointState)
+            CheckpointStateNpc checkpointStateNpc = state as CheckpointStateNpc;
+            if (null != checkpointStateNpc)
             {
-                m_transform.SetPositionAndRotation(checkpointState.Position, checkpointState.Rotation);
-                m_transform.localScale = checkpointState.Scale;
-                m_currentHealth.Value = checkpointState.CurrentHp;
+                Respawn();
+                m_movement.ReturnToDefaultValues();
+                transform.SetPositionAndRotation(checkpointStateNpc.Position, checkpointStateNpc.Rotation);
+                transform.localScale = checkpointStateNpc.Scale;
+                m_currentHealth.Value = checkpointStateNpc.CurrentHp;
                 m_npcController.SetDestination(null);
                 m_turret.Stop(true);
                 m_turret.SetCurrentPhase(0);
+                m_movement.SetVelocity(checkpointStateNpc.Velocity);
+                m_movement.SetParentTransform(checkpointStateNpc.MovementParent, checkpointStateNpc.MovementParentPriority, true);
+
+                if (checkpointStateNpc.MovementParentSpherical)
+                    m_movement.SetParentSpherical(checkpointStateNpc.MovementParentSpherical, checkpointStateNpc.MovementGravityPriority, true);
+                else
+                    m_movement.SetUpVec(checkpointStateNpc.UpVec, checkpointStateNpc.MovementGravityPriority, true);
+
                 m_isDead = false;
             }
             else
@@ -176,7 +186,12 @@ public class StatsNpc : StatsCharacter
                 m_checkpointStateNpc.Scale = m_transform.localScale;
                 m_checkpointStateNpc.CurrentHp = m_currentHealth.Value;
                 m_checkpointStateNpc.Prefab = m_prefabContainer.Prefab;
-                m_checkpointStateNpc.CheckpointType = CheckpointStateType.CheckpointStateNpc;
+                m_checkpointStateNpc.Velocity = m_movement.GetVelocity();
+                m_checkpointStateNpc.MovementParent = m_movement.GetParentTransform();
+                m_checkpointStateNpc.MovementParentPriority = m_movement.GetParentPriority();
+                m_checkpointStateNpc.MovementParentSpherical = m_movement.GetParentSpherical();
+                m_checkpointStateNpc.MovementGravityPriority = m_movement.GetGravityPriority();
+                m_checkpointStateNpc.UpVec = m_movement.GetUpVecRaw();
 
                 CheckpointState state = m_checkpointStateNpc;
                 CheckpointManager.AddCheckpointState(state);
@@ -216,6 +231,8 @@ public class StatsNpc : StatsCharacter
                     statsKiller.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
                 }
             }
+
+            m_npcController.WasKilled();
 
             m_isDead = true;
             CheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;

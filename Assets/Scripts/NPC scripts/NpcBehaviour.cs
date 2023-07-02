@@ -241,7 +241,6 @@ public class NpcBehaviour : NpcController
 
     protected override void DestinationDestroyedBehaviour(float deltaTime)
     {
-        Debug.Log("enemy was destroyed");
         m_movement.SetMovementDir(Vector3.zero);
         m_turret.Stop(false);
         m_currentState = NpcState.NO_DESTINATION;

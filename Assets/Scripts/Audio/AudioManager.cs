@@ -5,63 +5,68 @@ using UnityEngine.UI;
 
 public class AudioManager : MonoBehaviour
 {
-    private static AudioManager m_instance = null;
+    private static AudioManager Instance = null;
+
     [SerializeField]
     private AudioMixerGroup[] m_mixerGroups = null;
 
     [SerializeField]
+    private string[] m_mixerGroupsExposedVolumeString = null;
+
+    [SerializeField]
     private GameObject m_audioObjectPrefab = null;
+
+    [SerializeField]
+    private float m_maxVolumeDecibels = 0;
+
+    [SerializeField]
+    private float m_minVolumeDecibels = -80;
 
     private static readonly Vector3 ZERO3 = Vector3.zero;
 
     void Awake()
     {
-        if (m_instance)
-            Destroy(m_instance);
+        if (Instance)
+            Destroy(Instance);
 
-        m_instance = this;
+        Instance = this;
     }
 
-    private void Start()
+    public static float ValueToVolume(float value)
     {
-
+        return Mathf.Log10(Mathf.Clamp(value, 0.00001f, 1f)) * ((Instance.m_maxVolumeDecibels - Instance.m_minVolumeDecibels) * 0.25f + Instance.m_maxVolumeDecibels);
     }
 
-    public void Play(string sound)
+    public static void SetMixerVolume(AudioMixerType type, float volume)
     {
-
+        int index = (int)type;
+        Instance.m_mixerGroups[index].audioMixer.SetFloat(Instance.m_mixerGroupsExposedVolumeString[index], ValueToVolume(volume));
     }
 
-
-
-    public void Stop(string sound)
+    public static void SetMixerVolumeRaw(AudioMixerType type, float volume)
     {
-
+        int index = (int)type;
+        bool worked = Instance.m_mixerGroups[index].audioMixer.SetFloat(Instance.m_mixerGroupsExposedVolumeString[index], volume);
     }
 
-    public void PlayAmbient(string sound)
+    public static float GetMixerVolumeRaw(AudioMixerType type)
     {
-
+        int index = (int)type;
+        Instance.m_mixerGroups[index].audioMixer.GetFloat(Instance.m_mixerGroupsExposedVolumeString[index], out float val);
+        return val;
     }
 
-    public void SetPitch(float pitch)
+    public static float GetMixerVolume(AudioMixerType type)
     {
-
+        int index = (int)type; //todo
+        Instance.m_mixerGroups[index].audioMixer.GetFloat(Instance.m_mixerGroupsExposedVolumeString[index], out float val);
+        return val;
     }
 
-    public void SetVolume(float vol)
-    {
-
-    }
-
-    public void SetDarkAmbientVolume(float vol)
-    {
-
-    }
 
     public static GfAudioSource GetAudioObject(Transform parent = null)
     {
-        var src = GfPooling.PoolInstantiate(m_instance.m_audioObjectPrefab).GetComponent<GfAudioSource>();
+        var src = GfPooling.PoolInstantiate(Instance.m_audioObjectPrefab).GetComponent<GfAudioSource>();
         src.SetParent(parent);
         return src;
     }
@@ -69,12 +74,12 @@ public class AudioManager : MonoBehaviour
     public static AudioMixerGroup GetMixerGroup(uint index)
     {
         AudioMixerGroup ret = null;
-        int length = m_instance.m_mixerGroups.Length;
+        int length = Instance.m_mixerGroups.Length;
         if (length > 0)
             if (length > index)
-                ret = m_instance.m_mixerGroups[index];
+                ret = Instance.m_mixerGroups[index];
             else
-                ret = m_instance.m_mixerGroups[0]; //if the type has no mixer group, give default mixer group
+                ret = Instance.m_mixerGroups[0]; //if the type has no mixer group, give default mixer group
 
         return ret;
     }
@@ -84,7 +89,7 @@ public class AudioManager : MonoBehaviour
         return GetMixerGroup((uint)index);
     }
 
-    public static void PlayAudio(AudioSource audio, float delay = 0, float volume = -1, float pitch = -1, bool loop = false, AudioMixerType mixerType = AudioMixerType.DEFAULT)
+    public static void PlayAudio(AudioSource audio, float delay = 0, float volume = -1, float pitch = -1, bool loop = false, AudioMixerType mixerType = AudioMixerType.FX_DEFAULT)
     {
         PlayAudio(audio, delay, volume, pitch, loop, GetMixerGroup(mixerType));
     }
@@ -104,7 +109,7 @@ public class AudioManager : MonoBehaviour
             audio.Play();
     }
 
-    public static GfAudioSource PlayAudio(AudioClip audio, Transform parent, float delay = 0, float volume = 1, float pitch = 1, bool loop = false, AudioMixerType mixerType = AudioMixerType.DEFAULT, float spatialBlend = 1, float minDst = 1, float maxDst = 500)
+    public static GfAudioSource PlayAudio(AudioClip audio, Transform parent, float delay = 0, float volume = 1, float pitch = 1, bool loop = false, AudioMixerType mixerType = AudioMixerType.FX_DEFAULT, float spatialBlend = 1, float minDst = 1, float maxDst = 500)
     {
         return InternalPlayAudio(audio, parent, ZERO3, delay, volume, pitch, loop, GetMixerGroup(mixerType), spatialBlend, minDst, maxDst);
     }
@@ -114,12 +119,12 @@ public class AudioManager : MonoBehaviour
         return InternalPlayAudio(audio, parent, ZERO3, delay, volume, pitch, loop, mixer, spatialBlend, minDst, maxDst);
     }
 
-    public static GfAudioSource PlayAudio(AudioClip audio, Vector3 position, float delay = 0, float volume = 1, float pitch = 1, bool loop = false, AudioMixerType mixerType = AudioMixerType.DEFAULT, float spatialBlend = 1, float minDst = 1, float maxDst = 500)
+    public static GfAudioSource PlayAudio(AudioClip audio, Vector3 position, float delay = 0, float volume = 1, float pitch = 1, bool loop = false, AudioMixerType mixerType = AudioMixerType.FX_DEFAULT, float spatialBlend = 1, float minDst = 1, float maxDst = 500)
     {
         return InternalPlayAudio(audio, null, position, delay, volume, pitch, loop, GetMixerGroup(mixerType), spatialBlend, minDst, maxDst);
     }
 
-    public static GfAudioSource PlayAudio(AudioClip audio, Vector3 position, ulong delay = 0, float volume = 1, float pitch = 1, bool loop = false, AudioMixerGroup mixer = null, float spatialBlend = 1, float minDst = 1, float maxDst = 500)
+    public static GfAudioSource PlayAudio(AudioClip audio, Vector3 position, float delay = 0, float volume = 1, float pitch = 1, bool loop = false, AudioMixerGroup mixer = null, float spatialBlend = 1, float minDst = 1, float maxDst = 500)
     {
         return InternalPlayAudio(audio, null, position, delay, volume, pitch, loop, mixer, spatialBlend, minDst, maxDst);
     }
@@ -136,13 +141,13 @@ public class AudioManager : MonoBehaviour
         return null;
     }
 
-    public static GfAudioSource PlayAudio(Sound audio, Transform parent, ulong delay = 0, float volume = 1, float pitch = 1, AudioMixerGroup mixer = null)
+    public static GfAudioSource PlayAudio(Sound audio, Transform parent, float delay = 0, float volume = 1, float pitch = 1)
     {
         double timeAsDouble = Time.timeAsDouble;
         if (audio.CanPlay(timeAsDouble))
         {
             audio.Played(timeAsDouble, delay);
-            return InternalPlayAudio(audio.m_clip, parent, ZERO3, delay, volume * audio.GetVolume(), pitch * audio.GetPitch(), audio.m_loop, mixer, audio.m_spatialBlend, audio.m_minDistance, audio.m_maxDistance);
+            return InternalPlayAudio(audio.m_clip, parent, ZERO3, delay, volume * audio.GetVolume(), pitch * audio.GetPitch(), audio.m_loop, audio.GetAudioMixerGroup(), audio.m_spatialBlend, audio.m_minDistance, audio.m_maxDistance);
         }
 
         return null;
@@ -165,6 +170,7 @@ public class AudioManager : MonoBehaviour
         source.spatialBlend = spatialBlend;
         source.maxDistance = minDst;
         source.minDistance = maxDst;
+        source.loop = loop;
 
         if (delay > 0)
             source.PlayDelayed(delay);
@@ -178,6 +184,8 @@ public class AudioManager : MonoBehaviour
 
 public enum AudioMixerType
 {
-    DEFAULT,
-    MUSIC
+    MASTER,
+    MUSIC_MASTER, MUSIC_MAIN, MUSIC_ACTION, MUSIC_AUX,
+    FX_MASTER, FX_DEFAULT, FX_UI, FX_AUX
+
 }

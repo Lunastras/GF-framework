@@ -54,6 +54,11 @@ public class Sound
         return AudioManager.PlayAudio(this, position, delay, volume, pitch);
     }
 
+    public GfAudioSource Play(Transform parent, float delay = 0, float volume = 1, float pitch = 1)
+    {
+        return AudioManager.PlayAudio(this, parent, delay, volume, pitch);
+    }
+
     public void Play(AudioSource source, float delay = 0, float volume = 1, float pitch = 1)
     {
         double currentTime;

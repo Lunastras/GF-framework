@@ -54,7 +54,7 @@ public class NpcController : NetworkBehaviour
     protected float m_timeUntilPathFind = 0;
 
     //protected DestinationManager destinations;
-    protected Destination m_destination = new();
+    protected Destination m_destination = new(null);
 
     //public bool canSeeTarget { get; private set; } = false;
 
@@ -85,6 +85,7 @@ public class NpcController : NetworkBehaviour
     {
         m_pathToDestination = new(32, Allocator.Persistent);
         m_transform = transform;
+        m_destination.SelfStatsCharacter = GetComponent<StatsCharacter>();
 
         if (m_movement == null)
         {
@@ -99,9 +100,20 @@ public class NpcController : NetworkBehaviour
         //if m_transform is null, that means Initialize() was not called. If so, do not initialize the job
     }
 
-    private void OnDisable()
+    public override void OnDestroy()
     {
         if (m_pathToDestination.IsCreated) m_pathToDestination.Dispose();
+        m_destination.RemoveDestination();
+    }
+
+    private void OnDisable()
+    {
+        m_destination.RemoveDestination();
+    }
+
+    public virtual void WasKilled()
+    {
+        m_destination.RemoveDestination();
     }
 
     public virtual bool GetPathFindingJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512)
@@ -389,7 +401,7 @@ public class NpcController : NetworkBehaviour
 
     public void SetDestination(Transform destinationTrans, bool isEnemy = false, bool canLoseTrackOfTarget = true)
     {
-        if (destinationTrans != m_destination.TransformDest)
+        if (destinationTrans != m_destination.TransformDest && m_pathToDestination.IsCreated)
             m_pathToDestination.Clear();
 
         m_destination.SetDestination(destinationTrans, isEnemy, canLoseTrackOfTarget);

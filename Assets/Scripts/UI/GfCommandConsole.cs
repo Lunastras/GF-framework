@@ -39,10 +39,9 @@ public class GfCommandConsole : MonoBehaviour
     [SerializeField]
     private float m_desiredLogHeight = 4000; //the max height of the window used to display the section of the log
 
-    [SerializeField]
-    private float m_scrollSmoothTime = 0.1f; //smoothing of the scroll
+    // [SerializeField] private float m_scrollSmoothTime = 0.1f; //smoothing of the scroll
 
-    private float m_scrollSmoothRef = 0;
+    //  private float m_scrollSmoothRef = 0;
 
     private Image m_consoleImage = null;
 
@@ -58,7 +57,7 @@ public class GfCommandConsole : MonoBehaviour
     [SerializeField]
     private float m_currentYScroll = 0;
 
-    private float m_desiredYScroll = 0;
+    //private float m_desiredYScroll = 0;
 
 
     [SerializeField]

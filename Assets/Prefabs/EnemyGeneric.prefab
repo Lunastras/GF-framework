@@ -5382,7 +5382,7 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
-  m_prefabContainer: {fileID: 0}
+  m_prefabContainer: {fileID: 401318792313859119}
 --- !u!114 &1184494187360147066
 MonoBehaviour:
   m_ObjectHideFlags: 0
