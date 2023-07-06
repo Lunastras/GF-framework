@@ -14737,6 +14737,18 @@ MonoBehaviour:
   m_hudManager: {fileID: 916576516492179070}
   m_pauseScreen: {fileID: 1638375645}
   m_loadFadeScreen: {fileID: 0}
+  m_deathScreenMusic:
+    m_clip: {fileID: 8300000, guid: 09400d18d83eabc469c84e73c5d07a26, type: 3}
+    m_mixerType: 4
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 1
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
   CanPause: 1
 --- !u!4 &1273476792
 Transform:
@@ -14925,6 +14937,16 @@ MonoBehaviour:
   - FxDefaultVol
   - FxUiVol
   - FxAuxVol
+  m_mixerGroupsExposedPitchString:
+  - MasterPitch
+  - MusicMasterPitch
+  - MusicMainPitch
+  - MusicActionPitch
+  - MusicAuxPitch
+  - FxMasterPitch
+  - FxDefaultPitch
+  - FxUiPitch
+  - FxAuxPitch
   m_audioObjectPrefab: {fileID: 6174363851702481666, guid: e35efe56c6d737641bf810cbd25201b2,
     type: 3}
   m_maxVolumeDecibels: 0
@@ -14985,7 +15007,6 @@ MonoBehaviour:
   m_calmMusic:
     m_clip: {fileID: 8300000, guid: 5240cda030e0aca448fbf979eeebb7db, type: 3}
     m_mixerType: 2
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.3
     m_volumeVariance: 0
     m_pitch: 1
@@ -14998,7 +15019,6 @@ MonoBehaviour:
   m_actionMusic:
     m_clip: {fileID: 8300000, guid: 72f10f44b88454340bf823d6ad861802, type: 3}
     m_mixerType: 3
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.3
     m_volumeVariance: 0
     m_pitch: 1

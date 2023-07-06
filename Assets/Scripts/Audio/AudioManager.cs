@@ -14,6 +14,9 @@ public class AudioManager : MonoBehaviour
     private string[] m_mixerGroupsExposedVolumeString = null;
 
     [SerializeField]
+    private string[] m_mixerGroupsExposedPitchString = null;
+
+    [SerializeField]
     private GameObject m_audioObjectPrefab = null;
 
     [SerializeField]
@@ -56,13 +59,18 @@ public class AudioManager : MonoBehaviour
         return val;
     }
 
-    public static float GetMixerVolume(AudioMixerType type)
+    public static void SetMixerPitch(AudioMixerType type, float volume)
     {
-        int index = (int)type; //todo
-        Instance.m_mixerGroups[index].audioMixer.GetFloat(Instance.m_mixerGroupsExposedVolumeString[index], out float val);
-        return val;
+        int index = (int)type;
+        bool worked = Instance.m_mixerGroups[index].audioMixer.SetFloat(Instance.m_mixerGroupsExposedPitchString[index], volume);
     }
 
+    public static float GetMixerPitch(AudioMixerType type)
+    {
+        int index = (int)type;
+        Instance.m_mixerGroups[index].audioMixer.GetFloat(Instance.m_mixerGroupsExposedPitchString[index], out float val);
+        return val;
+    }
 
     public static GfAudioSource GetAudioObject(Transform parent = null)
     {

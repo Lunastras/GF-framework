@@ -29,6 +29,9 @@ public class HudManager : MonoBehaviour
     [SerializeField]
     private HealthUIBehaviour m_healthUI = null;
 
+    [SerializeField]
+    private GameObject m_gameUiElements = null;
+
     private List<WeaponLevelSlider> m_weaponSliders = null;
 
     // Start is called before the first frame update
@@ -112,6 +115,12 @@ public class HudManager : MonoBehaviour
     public static void ToggleDeathScreen(bool active)
     {
         Instance.m_deathScreen.SetActive(active);
+        Instance.m_gameUiElements.SetActive(!active);
+    }
+
+    public static void ToggleGameUiElements(bool active)
+    {
+        Instance.m_gameUiElements.SetActive(active);
     }
 
     public static void TriggerSoftCheckpointVisuals()

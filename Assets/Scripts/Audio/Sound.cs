@@ -9,8 +9,6 @@ public class Sound
     public AudioClip m_clip;
     public AudioMixerType m_mixerType;
 
-    public AudioMixerGroup m_mixerGroupOverride;
-
     [Range(0f, 1f)]
     public float m_volume = .5f;
     [Range(0f, 1f)]
@@ -47,6 +45,11 @@ public class Sound
     public void Played(float delay)
     {
         Played(Time.timeAsDouble, delay);
+    }
+
+    public GfAudioSource Play(float delay = 0, float volume = 1, float pitch = 1)
+    {
+        return AudioManager.PlayAudio(this, Vector3.zero, delay, volume, pitch);
     }
 
     public GfAudioSource Play(Vector3 position, float delay = 0, float volume = 1, float pitch = 1)
@@ -101,6 +104,31 @@ public class Sound
 
     public AudioMixerGroup GetAudioMixerGroup()
     {
-        return m_mixerGroupOverride ? m_mixerGroupOverride : AudioManager.GetMixerGroup(m_mixerType);
+        return AudioManager.GetMixerGroup(m_mixerType);
+    }
+
+    public void SetMixerVolume(float volume)
+    {
+        AudioManager.SetMixerVolume(m_mixerType, volume);
+    }
+
+    public void SetMixerVolumeRaw(float volume)
+    {
+        AudioManager.SetMixerVolumeRaw(m_mixerType, volume);
+    }
+
+    public float GetMixerVolumeRaw()
+    {
+        return AudioManager.GetMixerVolumeRaw(m_mixerType);
+    }
+
+    public void SetMixerPitch(float pitch)
+    {
+        AudioManager.SetMixerPitch(m_mixerType, pitch);
+    }
+
+    public float GetMixerPitch()
+    {
+        return AudioManager.GetMixerPitch(m_mixerType);
     }
 }

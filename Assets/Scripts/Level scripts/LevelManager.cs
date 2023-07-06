@@ -18,7 +18,9 @@ public class LevelManager : MonoBehaviour
 
     [SerializeField] private Sound m_actionMusic = null;
 
-    [SerializeField] private float m_actionCalmBlendTime = 2;
+    [SerializeField] private float m_actionCalmBlendTime = 1;
+
+    private float m_pitchSmoothTime = 2;
 
     private bool m_isPlayingCalmMusic = true;
 
@@ -50,6 +52,12 @@ public class LevelManager : MonoBehaviour
     private float m_currentActionVolume = 0;
 
     private float m_currentCalmVolume = 1;
+
+    private bool m_isShiftingPitch = false;
+
+    private float m_desiredPitch = 1;
+
+    private float m_pitchSmoothRef = 0;
 
 
     // Start is called before the first frame update
@@ -92,16 +100,14 @@ public class LevelManager : MonoBehaviour
     {
         if (null != m_calmMusic && null != m_calmMusic.m_clip)
         {
-            m_calmMusic.Play(Vector3.zero);
-            // AudioManager.SetMixerVolume(m_calmMusic.m_mixerType, 0);
-            AudioManager.SetMixerVolume(m_calmMusic.m_mixerType, m_currentCalmVolume);
+            m_calmMusic.Play();
+            m_actionMusic.SetMixerVolume(m_currentCalmVolume);
         }
 
         if (null != m_actionMusic && null != m_actionMusic.m_clip)
         {
-            m_actionMusic.Play(Vector3.zero);
-            //AudioManager.SetMixerVolume(m_actionMusic.m_mixerType, 0);
-            AudioManager.SetMixerVolume(m_actionMusic.m_mixerType, m_currentActionVolume);
+            m_actionMusic.Play();
+            m_actionMusic.SetMixerVolume(m_currentActionVolume);
         }
     }
 
@@ -112,11 +118,22 @@ public class LevelManager : MonoBehaviour
             m_currentActionVolume = Mathf.SmoothDamp(m_currentActionVolume, m_desiredActionVolume, ref m_actionSmoothRef, m_actionCalmBlendTime);
             m_currentCalmVolume = Mathf.SmoothDamp(m_currentCalmVolume, m_desiredCalmVolume, ref m_calmSmoothRef, m_actionCalmBlendTime);
 
-            AudioManager.SetMixerVolume(m_actionMusic.m_mixerType, m_currentActionVolume);
-            AudioManager.SetMixerVolume(m_calmMusic.m_mixerType, m_currentCalmVolume);
+            m_actionMusic.SetMixerVolume(m_currentActionVolume);
+            m_calmMusic.SetMixerVolume(m_currentCalmVolume);
 
             m_isBlendingCalmAction = m_currentActionVolume != m_desiredActionVolume
                                     || m_currentCalmVolume != m_desiredCalmVolume;
+        }
+
+        if (m_isShiftingPitch)
+        {
+            float currentPitch = m_actionMusic.GetMixerPitch();
+            currentPitch = Mathf.SmoothDamp(currentPitch, m_desiredPitch, ref m_pitchSmoothRef, m_pitchSmoothTime);
+
+            m_actionMusic.SetMixerPitch(currentPitch);
+            m_calmMusic.SetMixerPitch(currentPitch);
+
+            m_isShiftingPitch = currentPitch != m_desiredPitch;
         }
     }
 
@@ -154,6 +171,14 @@ public class LevelManager : MonoBehaviour
             Instance.m_desiredActionVolume = 0;
             Instance.m_desiredCalmVolume = 1;
         }
+    }
+
+    public static void SetLevelMusicPitch(float desiredPitch, float smoothTime)
+    {
+        Instance.m_isShiftingPitch = true;
+        Instance.m_pitchSmoothRef = 0;
+        Instance.m_desiredPitch = desiredPitch;
+        Instance.m_pitchSmoothTime = smoothTime;
     }
 
     public void GenerateAllNodePaths()

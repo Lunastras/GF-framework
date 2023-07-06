@@ -76,9 +76,28 @@ public class LoadoutManager : NetworkBehaviour
         m_weaponsInInventory = new int[WeaponMaster.NumWeapons()];
     }
 
+    private void OnDisable()
+    {
+        for (int i = 0; i < m_weapons.Count; ++i)
+        {
+            DestroyWeapon(m_weapons[i]);
+        }
+    }
+
+
+    private void OnEnable()
+    {
+        SetCurrentLoadout(m_currentLoadOutIndex);
+    }
+
     // Start is called before the first frame update
     void Start()
     {
+        if (IsOwner)
+        {
+            m_hudManager = GameManager.GetHudManager();
+        }
+
         InternalAwake();
 
         SetCurrentLoadout(m_currentLoadOutIndex);
@@ -88,13 +107,8 @@ public class LoadoutManager : NetworkBehaviour
             Test();
         }
 
-        if (IsOwner)
+        if (!IsOwner && IsClient && !HasAuthority)
         {
-            m_hudManager = GameManager.GetHudManager();
-        }
-        else if (IsClient && !HasAuthority)
-        {
-            Debug.Log("Requesting data");
             RequestLoadoutDataServerRpc();
         }
     }
@@ -122,7 +136,7 @@ public class LoadoutManager : NetworkBehaviour
     public void RequestLoadoutDataServerRpc(ServerRpcParams serverRpcParams = default)
     {
         ulong clientId = serverRpcParams.Receive.SenderClientId;
-        Debug.Log("Received weapons request from id: " + clientId);
+
         int effectiveCapacity = (int)System.Math.Round(m_weaponCapacity * m_weaponCapacityMultiplier);
         WeaponData[] weaponsData = new WeaponData[m_loadouts.Count * effectiveCapacity];
         for (int i = 0; i < m_loadouts.Count; ++i)
@@ -306,6 +320,8 @@ public class LoadoutManager : NetworkBehaviour
 
         return changedWeapon;
     }
+
+
 
     private WeaponBasic GetWeapon(GameObject reference)
     {
@@ -501,14 +517,6 @@ public class LoadoutManager : NetworkBehaviour
         }
     }
     #endregion //SET_WEAPON_CAPACITY
-
-    private void OnDisable()
-    {
-        for (int i = 0; i < m_weapons.Count; ++i)
-        {
-            DestroyWeapon(m_weapons[i]);
-        }
-    }
 
     public int GetWeaponCapacity()
     {

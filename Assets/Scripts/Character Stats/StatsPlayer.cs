@@ -15,6 +15,9 @@ public class StatsPlayer : StatsCharacter
     private GfMovementGeneric m_movement = null;
 
     [SerializeField]
+    private OdamaManager m_odamaManager = null;
+
+    [SerializeField]
     private AudioSource m_audioSource = null;
 
     public static StatsPlayer instance = null;
@@ -74,6 +77,7 @@ public class StatsPlayer : StatsCharacter
             }
         }
 
+        if (null == m_odamaManager) m_odamaManager = GetComponent<OdamaManager>();
         if (null == m_movement) m_movement = GetComponent<GfMovementGeneric>();
 
         if (IsOwner)
@@ -96,8 +100,6 @@ public class StatsPlayer : StatsCharacter
 
     protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
-        Debug.Log("Damaged, max health is: " + m_maxHealth.Value);
-
         if (!m_isDead)
         {
             damage *= m_receivedDamageMultiplier.Value;
@@ -168,8 +170,6 @@ public class StatsPlayer : StatsCharacter
             AudioManager.PlayAudio(m_deathSound, m_transform.position);
 
             GameManager.PlayerDied();
-
-            Debug.Log("I died, max health is: " + m_maxHealth.Value);
         }
     }
 
@@ -240,7 +240,6 @@ public class StatsPlayer : StatsCharacter
     public override void RefillHp()
     {
         m_currentHealth.Value = GetMaxHealthEffective();
-        Debug.Log("max hp is " + m_maxHealth.Value + " multiplier is: " + m_maxHealthMultiplier.Value.Value);
         if (IsOwner) m_healthUI.SetHealthPoints(m_currentHealth.Value);
     }
 
@@ -248,6 +247,7 @@ public class StatsPlayer : StatsCharacter
     {
         base.Respawn();
         if (m_healthUI) m_healthUI.SetHealthPoints(m_currentHealth.Value);
+        m_odamaManager.SetCurrentLoadout(m_odamaManager.GetCurrentLoadoutIndex());
     }
 
     //called when an enemy is approaching this character

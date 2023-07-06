@@ -25,6 +25,9 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject m_loadFadeScreen = null;
 
+    [SerializeField] private Sound m_deathScreenMusic = null;
+
+
     public static bool IsMultiplayer { get; private set; } = false;
 
     private bool m_isPaused = false;
@@ -38,6 +41,14 @@ public class GameManager : MonoBehaviour
     private NetworkSpawnManager m_spawnManager;
 
     private float m_currentTimeScale;
+
+    private GfAudioSource m_deathMusicSource = null;
+
+    private float m_deathMusicVolumeSmoothRef = 0;
+
+    private float m_desiredDeathMusicVolume = 0;
+
+    private float m_currentDeathMusicVolume = 0;
 
     // Start is called before the first frame update
     void Awake()
@@ -82,11 +93,19 @@ public class GameManager : MonoBehaviour
             HudManager.ToggleDeathScreen(false);
             m_player.GetComponent<StatsPlayer>().Respawn();
             CheckpointManager.Instance.ResetToHardCheckpoint();
+            LevelManager.SetLevelMusicPitch(1, 0.2f);
+            m_deathMusicSource.GetAudioSource().Stop();
         }
 
         if (Input.GetKeyDown(KeyCode.M))
         {
             m_player.GetComponent<StatsPlayer>().Kill();
+        }
+
+        if (m_desiredDeathMusicVolume != m_currentDeathMusicVolume)
+        {
+            m_currentDeathMusicVolume = Mathf.SmoothDamp(m_currentDeathMusicVolume, m_desiredDeathMusicVolume, ref m_deathMusicVolumeSmoothRef, 3);
+            m_deathScreenMusic.SetMixerVolume(m_currentDeathMusicVolume);
         }
     }
 
@@ -103,6 +122,12 @@ public class GameManager : MonoBehaviour
         HudManager.ToggleDeathScreen(true);
         Instance.m_isShowingDeathScreen = true;
         Instance.m_player.gameObject.SetActive(false);
+        LevelManager.SetLevelMusicPitch(0, 2);
+        Instance.m_deathMusicSource = Instance.m_deathScreenMusic.Play(Vector3.zero);
+        Instance.m_deathScreenMusic.SetMixerVolume(0);
+        Instance.m_deathMusicVolumeSmoothRef = 0;
+        Instance.m_desiredDeathMusicVolume = 1;
+        Instance.m_currentDeathMusicVolume = 0;
     }
 
     public static void MultiplayerStart()

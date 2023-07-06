@@ -167,22 +167,40 @@ AudioMixerController:
   m_ExposedParameters:
   - guid: 8c019593b4845154599ed8d0cc9ac1e6
     name: FxAuxVol
+  - guid: 8fd17c91ab5df1346bd43a25a76c02e6
+    name: FxAuxPitch
+  - guid: bc50279ec2ac04c40b64842b69e22bb5
+    name: FxDefaultPitch
   - guid: 4d42eec3db378104c9584780d4640581
     name: FxDefaultVol
   - guid: 3bf62643be336be4c8708c57d314ebc5
     name: FxMasterVol
+  - guid: 236e1dc6c96cf78478cd59b56103b981
+    name: FxMasterPitch
   - guid: b3b2d5e0ed33ae341807d39db4059c14
     name: FxUiVol
+  - guid: bb6996e843cd5724ebcb7232f79171ab
+    name: FxUiPitch
+  - guid: 25ac0e7034b18b5408a54a32c66fc427
+    name: MasterPitch
   - guid: 1e8e65a06944d5f4d882f1c7e54ae32c
     name: MasterVol
   - guid: 58d6bc5fd46ac234a91eccacf8f3cf5d
     name: MusicActionVol
+  - guid: db76e20f6a320c74d90913c7481992b0
+    name: MusicActionPitch
   - guid: d5ca30159ffef254e8878e6c327c3498
     name: MusicAuxVol
+  - guid: be23e3b6176a3b943bc6dd3935a6ff13
+    name: MusicAuxPitch
   - guid: 42a7977ac720e644a8c379f61241421c
     name: MusicMainVol
+  - guid: 8998b761bcbd79d4190c8b61d886854c
+    name: MusicMainPitch
   - guid: 8d7f69a875e450e479786f70b5372f82
     name: MusicMasterVol
+  - guid: fb422a67a68e6484b91f84abf506316b
+    name: MusicMasterPitch
   m_AudioMixerGroupViews:
   - guids:
     - 958e1fa9d2313d746991f1e365a440b3
@@ -244,6 +262,8 @@ AudioMixerSnapshotController:
   m_FloatValues:
     1e8e65a06944d5f4d882f1c7e54ae32c: 0.13552584
     f658671296828e341acbbe9288dd1b3b: 1
+    fb422a67a68e6484b91f84abf506316b: 1
+    8d7f69a875e450e479786f70b5372f82: 0
     42a7977ac720e644a8c379f61241421c: 0
     58d6bc5fd46ac234a91eccacf8f3cf5d: 0
   m_TransitionOverrides: {}

@@ -265,7 +265,6 @@ public abstract class StatsCharacter : NetworkBehaviour
         m_maxHealthMultiplier.Value.SetValue(1, 0, true);
         m_receivedDamageMultiplier.Value.SetValue(1, 0, true);
         RefillHp();
-        Debug.Log("Current hp is:  " + m_currentHealth.Value);
         m_isDead = false;
         m_enemiesEngagingCount = 0;
     }
