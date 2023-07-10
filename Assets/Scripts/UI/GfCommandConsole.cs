@@ -229,6 +229,7 @@ public class GfCommandConsole : MonoBehaviour
     {
         Application.targetFrameRate = 165;
         m_console.SetActive(false);
+        m_consoleImage.raycastTarget = m_console.activeSelf;
     }
 
     // Update is called once per frame
@@ -743,7 +744,7 @@ public class GfCommandConsole : MonoBehaviour
             }
 
             // m_consoleText.text = consoleString;
-            m_consoleText.textComponent.text = consoleString;
+            m_consoleText.text = consoleString;
             UpdateScrollbar();
         }
         else
@@ -833,7 +834,7 @@ public class GfCommandConsole : MonoBehaviour
             }
 
             // m_consoleText.text = consoleString;
-            m_consoleText.textComponent.text = consoleString;
+            m_consoleText.text = consoleString;
             UpdateScrollbar();
         }
         else

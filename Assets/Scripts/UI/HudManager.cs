@@ -2,14 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using MEC;
 
 public class HudManager : MonoBehaviour
 {
     public static HudManager Instance { get; private set; }
 
     [SerializeField]
-    private GameObject m_deathScreen = null;
+    private CanvasGroup m_deathScreenGroup = null;
+
+    [SerializeField]
+    private float m_deathScreenFadeInTime = 2;
+
+    [SerializeField]
+    private Image m_auxFadeToBlackImage = null;
+
+    [SerializeField]
+    private float m_auxFadeToBlackImageFadeInTime = 0.25f;
+
+    [SerializeField]
+    private float m_auxFadeToBlackImageFadeOutTime = 0.1f;
 
     [SerializeField]
     private bool m_onlyShowFirstWeapon = false;
@@ -41,6 +53,14 @@ public class HudManager : MonoBehaviour
         if (Instance) Destroy(Instance);
         Instance = this;
         //levelSlidersParent = new GameObject("Level Sliders").transform;
+    }
+
+    void Start()
+    {
+        Color col = m_auxFadeToBlackImage.color;
+        col.a = 1;
+        m_auxFadeToBlackImage.color = col;
+        m_auxFadeToBlackImage.CrossFadeAlpha(0f, 0f, true);
     }
 
     /** Set the max number of sliders and stup the sliders
@@ -114,7 +134,18 @@ public class HudManager : MonoBehaviour
     }
     public static void ToggleDeathScreen(bool active)
     {
-        Instance.m_deathScreen.SetActive(active);
+        if (active) //enable deathscreen
+            GfUITools.CrossFadeAlphaGroup(Instance.m_deathScreenGroup, 1, Instance.m_deathScreenFadeInTime);
+        else //disable deathscreen
+        {
+            //GfUITools.CrossFadeAlphaGroup(Instance.m_deathScreenGroup, 0, Instance.m_deathScreenFadeOutTime);
+
+            Instance.m_auxFadeToBlackImage.CrossFadeAlpha(1, 0, true);
+            Instance.m_deathScreenGroup.alpha = 0;
+            Instance.m_auxFadeToBlackImage.CrossFadeAlpha(0, 0.4f, false);
+        }
+
+
         Instance.m_gameUiElements.SetActive(!active);
     }
 
@@ -123,14 +154,30 @@ public class HudManager : MonoBehaviour
         Instance.m_gameUiElements.SetActive(active);
     }
 
+
     public static void TriggerSoftCheckpointVisuals()
     {
         Debug.Log("Triggered soft checkpoint");
     }
 
-    public static void ResetSoftCheckpointVisuals()
+    public static void FadeGameBlackScreen(float fadeInTime, float fadeOutTime, float waitTime = 0)
+    {
+        Timing.RunCoroutine(Instance._FadeBlackScreenCoroutine(fadeInTime, fadeOutTime, waitTime));
+    }
+
+    private IEnumerator<float> _FadeBlackScreenCoroutine(float fadeInTime, float fadeOutTime, float waitTime)
+    {
+        m_auxFadeToBlackImage.CrossFadeAlpha(1, fadeInTime, false);
+        yield return Timing.WaitForSeconds(fadeInTime + waitTime);
+        m_auxFadeToBlackImage.CrossFadeAlpha(0, fadeOutTime, false);
+    }
+
+    //returns the trigger delay
+    public static float ResetSoftCheckpointVisuals()
     {
         Debug.Log("Reset soft checkpoint");
+        FadeGameBlackScreen(Instance.m_auxFadeToBlackImageFadeInTime, Instance.m_auxFadeToBlackImageFadeOutTime, 0.05f);
+        return Instance.m_auxFadeToBlackImageFadeInTime;
     }
 
     public static void TriggerHardCheckpointVisuals()
@@ -142,4 +189,6 @@ public class HudManager : MonoBehaviour
     {
         Debug.Log("Reset HARD checkpoint");
     }
+
+
 }

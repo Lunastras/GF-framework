@@ -47,6 +47,14 @@ public class Sound
         Played(Time.timeAsDouble, delay);
     }
 
+    //Plays the sound at volume 0 in order to load the sound in advance
+    //By default, unity does not load sounds until they are played, which produces stutters that can take up to 2 seconds
+    //we use this to produce the stutter while loading the level in order to avoid it during the level
+    public void LoadAudioClip()
+    {
+        AudioManager.LoadAudioClip(this);
+    }
+
     public GfAudioSource Play(float delay = 0, float volume = 1, float pitch = 1)
     {
         return AudioManager.PlayAudio(this, Vector3.zero, delay, volume, pitch);

@@ -164,23 +164,29 @@ public class GfMovementSimple : GfMovementGeneric
         float speedInDesiredDir = currentSpeed * Max(0, dotMovementVelDir);
 
         float minAux = Min(speedInDesiredDir, desiredSpeed);
-        Vector3 unwantedVelocity = effectiveVelocity;
-        unwantedVelocity.x -= movDir.x * minAux;
-        unwantedVelocity.y -= movDir.y * minAux;
-        unwantedVelocity.z -= movDir.z * minAux;
+        Vector3 deacceleration = effectiveVelocity;
 
-        float unwantedSpeed = unwantedVelocity.magnitude;
-        if (unwantedSpeed > 0.000001F) GfTools.Div3(ref unwantedVelocity, unwantedSpeed);
+        deacceleration = effectiveVelocity;
+        deacceleration.x -= movDir.x * minAux;
+        deacceleration.y -= movDir.y * minAux;
+        deacceleration.z -= movDir.z * minAux;
+
+        if (desiredSpeed > speedInDesiredDir) GfTools.RemoveAxis(ref deacceleration, movDir);
+
+        float unwantedSpeed = deacceleration.magnitude;
+        if (unwantedSpeed > 0.000001F) GfTools.Div3(ref deacceleration, unwantedSpeed);
 
         float accMagn = Min(Max(0, desiredSpeed - speedInDesiredDir), deltaTime * m_effectiveAcceleration);
         float deaccMagn = Min(unwantedSpeed, m_effectiveDeacceleration * deltaTime);
 
         //GfTools.Mult3(ref movDir, accMagn);
-        GfTools.Mult3(ref unwantedVelocity, deaccMagn);
+        GfTools.Mult3(ref deacceleration, deaccMagn);
         GfTools.Mult3(ref slope, fallMagn);
 
-        GfTools.Add3(ref m_velocity, movDir * accMagn); //add acceleration
-        GfTools.Minus3(ref m_velocity, unwantedVelocity);//add deacceleration
+        GfTools.Mult3(ref movDir, accMagn); //acceleration
+
+        GfTools.Add3(ref m_velocity, movDir); //add acceleration
+        GfTools.Minus3(ref m_velocity, deacceleration);//add deacceleration
         GfTools.Minus3(ref m_velocity, slope); //add vertical speed change  
     }
 

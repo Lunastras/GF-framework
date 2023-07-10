@@ -13,6 +13,13 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.2d.pixel-perfect": {
+      "version": "2.0.4",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 2,
@@ -27,6 +34,25 @@
         "com.unity.mathematics": "1.1.0",
         "com.unity.2d.common": "8.0.1",
         "com.unity.modules.physics2d": "1.0.0"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.2d.tilemap": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.modules.tilemap": "1.0.0",
+        "com.unity.modules.uielements": "1.0.0"
+      }
+    },
+    "com.unity.2d.tilemap.extras": {
+      "version": "1.5.0-preview",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.tilemap": "1.0.0",
+        "com.unity.2d.tilemap": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
@@ -67,7 +93,7 @@
     },
     "com.unity.editorcoroutines": {
       "version": "1.0.0",
-      "depth": 2,
+      "depth": 0,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -134,7 +160,7 @@
       "hash": "60c19dc6cafe555c1a38bb56d072c6e19605b9ae"
     },
     "com.unity.multiplayer.tools": {
-      "version": "2.0.0-pre.3",
+      "version": "1.1.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -142,21 +168,19 @@
         "com.unity.nuget.newtonsoft-json": "2.0.0",
         "com.unity.nuget.mono-cecil": "1.10.1",
         "com.unity.collections": "1.1.0",
-        "com.unity.modules.uielements": "1.0.0",
-        "com.unity.burst": "1.6.6",
-        "com.unity.mathematics": "1.2.6"
+        "com.unity.modules.uielements": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
     "com.unity.netcode.gameobjects": {
-      "version": "1.5.1",
+      "version": "https://github.com/Unity-Technologies/com.unity.netcode.gameobjects.git?path=com.unity.netcode.gameobjects#fix/ilpp-stripping-and-coreclr-compatibility",
       "depth": 0,
-      "source": "registry",
+      "source": "git",
       "dependencies": {
         "com.unity.nuget.mono-cecil": "1.10.1",
         "com.unity.transport": "1.3.4"
       },
-      "url": "https://packages.unity.com"
+      "hash": "6dbae466303676340615d7076044a0e6828c2e4a"
     },
     "com.unity.nuget.mono-cecil": {
       "version": "1.11.4",

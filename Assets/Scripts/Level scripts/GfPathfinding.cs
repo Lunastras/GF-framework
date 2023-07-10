@@ -200,7 +200,7 @@ namespace GfPathFindingNamespace
                 , scale.z % m_distanceBetweenNodes.z
             );
 
-            offset *= 0.5f;
+            offset *= 0.5f; //offset to align nodes to bounding box
 
             int length = gridSize.x * gridSize.y * gridSize.z;
             PathNode[] pathNodes = new PathNode[length];

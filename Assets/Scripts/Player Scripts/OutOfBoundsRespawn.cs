@@ -4,7 +4,6 @@ using UnityEngine;
 using Unity.Netcode;
 public class OutOfBoundsRespawn : MonoBehaviour
 {
-    [SerializeField] private GfMovementGeneric m_movement;
     [SerializeField] private CheckpointManager m_checkpointManager;
     [SerializeField] private float m_respawnYCoord = -10;
 
@@ -12,7 +11,6 @@ public class OutOfBoundsRespawn : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        if (null == m_movement) m_movement = GetComponent<GfMovementGeneric>();
         if (null == m_checkpointManager) m_checkpointManager = GetComponent<CheckpointManager>();
     }
 
@@ -22,10 +20,6 @@ public class OutOfBoundsRespawn : MonoBehaviour
         if (transform.position.y < m_respawnYCoord)
         {
             m_checkpointManager.ResetToSoftCheckpoint();
-            if (m_movement != null)
-            {
-                m_movement.SetVelocity(Vector3.zero);
-            }
         }
     }
 }

@@ -39,8 +39,6 @@ public class ShadowProjectorManipulator : MonoBehaviour
 
     public bool m_overrideZaxisRotation = true;
 
-    public LayerMask m_layerMask;
-
     private Vector2 m_sizeDesired;
 
     private float m_timeUntiObjCheck = 0;
@@ -98,7 +96,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
             Ray ray = new Ray(topPos, forward);
 
             RaycastHit[] hits = GfPhysics.GetRaycastHits();
-            int traceCount = Physics.RaycastNonAlloc(ray, hits, m_maxProjectionDistance, m_layerMask, QueryTriggerInteraction.Ignore);
+            int traceCount = Physics.RaycastNonAlloc(ray, hits, m_maxProjectionDistance, GfPhysics.NonCharacterCollisions(), QueryTriggerInteraction.Ignore);
             ActorTraceFilter(ref traceCount, out int closestIndex, hits);
 
             RaycastHit hitInfo = default;

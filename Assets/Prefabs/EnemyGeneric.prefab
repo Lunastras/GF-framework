@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7242947389415807975}
   - component: {fileID: 3271172313896487433}
   - component: {fileID: 2042058616149053171}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: ShadowDecal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -83,9 +83,6 @@ MonoBehaviour:
   m_smoothTimeOpacity: 0.1
   m_smoothTimeSize: 0.1
   m_overrideZaxisRotation: 1
-  m_layerMask:
-    serializedVersion: 2
-    m_Bits: 133633
   m_upDir: {x: 0, y: 1, z: 0}
 --- !u!1 &3538087118917617869
 GameObject:
@@ -100,7 +97,7 @@ GameObject:
   - component: {fileID: 3038054582063127416}
   - component: {fileID: 2682638476285149119}
   - component: {fileID: 4695830377315681204}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -220,7 +217,7 @@ GameObject:
   - component: {fileID: 8334912748930156530}
   - component: {fileID: 1608161839850249133}
   - component: {fileID: 4724734998477987241}
-  m_Layer: 12
+  m_Layer: 6
   m_Name: FiringSource
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -359,7 +356,6 @@ MonoBehaviour:
   m_spawnSound:
     m_clip: {fileID: 8300000, guid: b63b6d75342e5204c831294d284c52e1, type: 3}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.15
     m_volumeVariance: 0
     m_pitch: 1
@@ -372,7 +368,6 @@ MonoBehaviour:
   m_deathSound:
     m_clip: {fileID: 0}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.5
     m_volumeVariance: 0
     m_pitch: 1
@@ -402,7 +397,6 @@ MonoBehaviour:
   m_damageSound:
     m_clip: {fileID: 0}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.5
     m_volumeVariance: 0
     m_pitch: 1
@@ -415,7 +409,6 @@ MonoBehaviour:
   m_collisionSound:
     m_clip: {fileID: 0}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.5
     m_volumeVariance: 0
     m_pitch: 1
@@ -5267,7 +5260,7 @@ GameObject:
   - component: {fileID: 1810723438}
   - component: {fileID: 6910084372030936651}
   - component: {fileID: 401318792313859119}
-  m_Layer: 12
+  m_Layer: 6
   m_Name: EnemyGeneric
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5290,7 +5283,7 @@ Transform:
   - {fileID: 3126376338053538287}
   - {fileID: 7242947389415807975}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1372938329087745302
 MonoBehaviour:
@@ -5305,12 +5298,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_movement: {fileID: 0}
-  m_targetCheckCooldown: 0.1
+  m_targetCheckCooldown: 0.25
   m_pathFindingCooldown: 0.3
   m_updateInterval: 0.05
   m_usesRigidBody: 0
   m_usesFixedUpdate: 1
-  m_cosFieldOfView: -0.5
+  m_cosFieldOfView: -1
   m_lineOfSightLength: 100
   m_targetTrackingTimeWindow: 3
   m_updatePhysicsValuesAutomatically: 0
@@ -5345,6 +5338,7 @@ MonoBehaviour:
     m_InternalValue: 100
   m_characterType:
     m_InternalValue: 2
+  m_testPrefab: {fileID: 4759944753111975130}
   m_graphics: {fileID: 3538087118917617869}
   m_movement: {fileID: 432613321654859549}
   m_powerItemsToDrop: 10
@@ -5359,7 +5353,6 @@ MonoBehaviour:
   m_damageSound:
     m_clip: {fileID: 8300000, guid: 94d1cc8d45d5fb541afdd80639a8c3fd, type: 3}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.1
     m_volumeVariance: 0
     m_pitch: 1
@@ -5372,7 +5365,6 @@ MonoBehaviour:
   m_deathSound:
     m_clip: {fileID: 8300000, guid: 3de99b229ce91c545933bf05cd6c5530, type: 3}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.1
     m_volumeVariance: 0
     m_pitch: 1

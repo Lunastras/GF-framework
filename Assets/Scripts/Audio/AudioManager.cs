@@ -3,6 +3,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(AudioSource))]
 public class AudioManager : MonoBehaviour
 {
     private static AudioManager Instance = null;
@@ -27,12 +28,25 @@ public class AudioManager : MonoBehaviour
 
     private static readonly Vector3 ZERO3 = Vector3.zero;
 
+    [SerializeField]
+    private AudioSource m_audioLoadAudioSource = null;
+
     void Awake()
     {
+        m_audioLoadAudioSource = GetComponent<AudioSource>();
+
         if (Instance)
             Destroy(Instance);
 
         Instance = this;
+    }
+
+    public static void LoadAudioClip(Sound sound)
+    {
+        Instance.m_audioLoadAudioSource.Stop();
+        Instance.m_audioLoadAudioSource.volume = 0;
+        Instance.m_audioLoadAudioSource.clip = sound.m_clip;
+        Instance.m_audioLoadAudioSource.Play();
     }
 
     public static float ValueToVolume(float value)

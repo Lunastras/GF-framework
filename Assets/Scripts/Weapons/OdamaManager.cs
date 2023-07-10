@@ -49,9 +49,12 @@ public class OdamaManager : LoadoutManager
 
     private List<OdamaBehaviour> m_odamaList = new(4);
 
+    protected Transform m_transform = null;
+
     protected override void InternalAwake()
     {
         m_currentRotationSpeed = m_rotationSpeed;
+        m_transform = transform;
     }
 
     private static readonly Vector3 RIGHT3 = Vector3.right;
@@ -69,6 +72,16 @@ public class OdamaManager : LoadoutManager
         {
             m_currentBopValue.Value = Random.Range(0, PI_MULT_2);
             m_currentRotationRelativeToParentRad.Value = Random.Range(0, PI_MULT_2);
+        }
+    }
+
+    public override void Respawned()
+    {
+        base.Respawned();
+        Vector3 pos = m_transform.position;
+        for (int i = 0; i < m_odamaList.Count; ++i)
+        {
+            m_odamaList[i].transform.position = pos;
         }
     }
 

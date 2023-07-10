@@ -1,8 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System;
 using Unity.Netcode;
+using System.Collections.Generic;
 using MEC;
 
 public class CheckpointManager : MonoBehaviour
@@ -27,6 +27,8 @@ public class CheckpointManager : MonoBehaviour
 
     private List<CheckpointState> m_checkpointStates = new(64);
 
+    protected bool m_isSoftReseting = false;
+
     public static void AddCheckpointState(CheckpointState checkpointState)
     {
         Instance.m_checkpointStates.Add(checkpointState);
@@ -36,11 +38,12 @@ public class CheckpointManager : MonoBehaviour
     {
         if (Instance != null && !GameManager.IsMultiplayer && m_canTriggerHardCheckpoints)
         {
-            Debug.LogWarning("Another CheckpointManager Instance that can trigger hard checkpoints was found (" + Instance.name + "), destroying it now...");
+            Debug.LogError("Another CheckpointManager Instance that can trigger hard checkpoints was found (" + Instance.name + "), destroying it now...");
             Destroy(Instance);
         }
 
-        m_respawnPoint = GameObject.Find("Spawnpoint").transform.position;
+        GameObject respawnTransform = GameObject.Find("Spawnpoint");
+        if (respawnTransform) m_respawnPoint = respawnTransform.transform.position;
 
         if (m_canTriggerHardCheckpoints)
         {
@@ -59,7 +62,7 @@ public class CheckpointManager : MonoBehaviour
     {
         if (checkpoint.SoftCheckpoint && checkpoint != m_currentSoftCheckpoint)
         {
-            if (m_canTriggerHardCheckpoints)
+            if (m_canTriggerHardCheckpoints) //if main player
                 HudManager.TriggerSoftCheckpointVisuals();
 
             m_currentSoftCheckpoint = checkpoint;
@@ -85,9 +88,29 @@ public class CheckpointManager : MonoBehaviour
 
     public void ResetToSoftCheckpoint(float damage = 0, bool canKill = false)
     {
-        if (m_canTriggerHardCheckpoints)
-            HudManager.ResetSoftCheckpointVisuals();
+        if (!m_isSoftReseting)
+        {
+            m_isSoftReseting = true;
+            float delay = 0;
+            if (m_canTriggerHardCheckpoints)
+                delay = HudManager.ResetSoftCheckpointVisuals(); //returns the delay until the checkpoint is triggered
 
+            if (delay > 0)
+                Timing.RunCoroutine(_ResetToSoftCheckpoint(delay, damage, canKill));
+            else
+                InternalResetToSoftCheckpoint(damage, canKill);
+        }
+    }
+
+    protected IEnumerator<float> _ResetToSoftCheckpoint(float delay, float damage, bool canKill)
+    {
+        yield return Timing.WaitForOneFrame;
+        yield return Timing.WaitForSeconds(delay);
+        InternalResetToSoftCheckpoint(damage, canKill);
+    }
+
+    protected void InternalResetToSoftCheckpoint(float damage, bool canKill)
+    {
         if (damage != 0)
         {
             float currentHp = m_statsCharacter.GetCurrentHealth();
@@ -108,6 +131,9 @@ public class CheckpointManager : MonoBehaviour
             m_transform.position = m_initialPos;
         }
 
+        if (m_canTriggerHardCheckpoints) CameraController.SnapInstanceToTarget();
+
+        m_isSoftReseting = false;
         m_movementGeneric.SetVelocity(Vector3.zero);
     }
 

@@ -130,10 +130,10 @@ public class GfTools
         return (x % m + m) % m;
     }
 
-    public static void RemoveAxis(ref Vector3 vector, Vector3 axis)
+    public static void RemoveAxis(ref Vector3 vector, Vector3 axisNormalised)
     {
-        Mult3(ref axis, Vector3.Dot(vector, axis));
-        Minus3(ref vector, axis);
+        Mult3(ref axisNormalised, Vector3.Dot(vector, axisNormalised));
+        Minus3(ref vector, axisNormalised);
     }
 
     public static void RemoveAxisKeepMagnitude(ref Vector3 leftHand, Vector3 rightHand)
@@ -146,6 +146,19 @@ public class GfTools
     }
 
     public static void QuatMultLocal(ref Quaternion lhs, Quaternion rhs)
+    {
+        float lhsx = lhs.x;
+        float lhsy = lhs.y;
+        float lhsz = lhs.z;
+        float lhsw = lhs.w;
+
+        lhs.x = lhsw * rhs.x + lhsx * rhs.w + lhsy * rhs.z - lhsz * rhs.y;
+        lhs.y = lhsw * rhs.y + lhsy * rhs.w + lhsz * rhs.x - lhsx * rhs.z;
+        lhs.z = lhsw * rhs.z + lhsz * rhs.w + lhsx * rhs.y - lhsy * rhs.x;
+        lhs.w = lhsw * rhs.w - lhsx * rhs.x - lhsy * rhs.y - lhsz * rhs.z;
+    }
+
+    public static void QuatMultWorld(ref Quaternion rhs, Quaternion lhs)
     {
         float lhsx = lhs.x;
         float lhsy = lhs.y;

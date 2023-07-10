@@ -441,9 +441,6 @@ MonoBehaviour:
   m_smoothTimeOpacity: 0.08
   m_smoothTimeSize: 0.08
   m_overrideZaxisRotation: 1
-  m_layerMask:
-    serializedVersion: 2
-    m_Bits: 133633
   m_upDir: {x: 0, y: 1, z: 0}
 --- !u!1 &148854930636548520
 GameObject:
@@ -528,17 +525,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_checkpointable: 1
   m_maxHealth:
-    m_InternalValue: 100
+    m_InternalValue: 1000000
   m_characterType:
     m_InternalValue: 0
   m_playerGun: {fileID: 0}
   m_loadoutManager: {fileID: 0}
   m_movement: {fileID: 0}
+  m_odamaManager: {fileID: 0}
   m_audioSource: {fileID: 0}
   m_damageSound:
     m_clip: {fileID: 0}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.5
     m_volumeVariance: 0
     m_pitch: 1
@@ -551,7 +548,6 @@ MonoBehaviour:
   m_damageDealtSound:
     m_clip: {fileID: 8300000, guid: 0c5b647354c22304a9ae8c2cff48c266, type: 3}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.3
     m_volumeVariance: 0
     m_pitch: 1
@@ -564,7 +560,6 @@ MonoBehaviour:
   m_deathSound:
     m_clip: {fileID: 8300000, guid: 3de99b229ce91c545933bf05cd6c5530, type: 3}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.224
     m_volumeVariance: 0
     m_pitch: 1
@@ -577,7 +572,6 @@ MonoBehaviour:
   m_itemPickUpSound:
     m_clip: {fileID: 8300000, guid: 60f8fc80e7557ca408af257449f40834, type: 3}
     m_mixerType: 0
-    m_mixerGroupOverride: {fileID: 0}
     m_volume: 0.298
     m_volumeVariance: 0
     m_pitch: 1
@@ -653,7 +647,6 @@ MonoBehaviour:
   m_movement: {fileID: 0}
   m_checkpointManager: {fileID: 0}
   m_respawnYCoord: -10
-  m_respawnPoint: {fileID: 0}
 --- !u!114 &148854930636548537
 MonoBehaviour:
   m_ObjectHideFlags: 0

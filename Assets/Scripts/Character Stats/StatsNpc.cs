@@ -5,6 +5,9 @@ using Unity.Netcode.Components;
 public class StatsNpc : StatsCharacter
 {
     [SerializeField]
+    protected GameObject m_testPrefab;
+
+    [SerializeField]
     protected GameObject m_graphics;
 
     [SerializeField]
@@ -92,6 +95,9 @@ public class StatsNpc : StatsCharacter
             }
         }
 
+        m_damageSound.LoadAudioClip();
+        m_deathSound.LoadAudioClip();
+
         m_transform = transform;
 
         m_networkObject = GetComponent<NetworkObject>();
@@ -107,16 +113,19 @@ public class StatsNpc : StatsCharacter
 
         var prefab = m_prefabContainer.Prefab;
 
-        if (prefab)
+        if (!GameManager.IsMultiplayer)
         {
-            if (!prefab.name.Equals(name))
+            if (prefab)
             {
-                Debug.LogWarning("The prefab reference in the StatsNpc script of the object '" + name + "' has a different name from the object it was spawned by. Name of the prefab is: '" + prefab.name + "'");
+                if (!prefab.name.Equals(name))
+                {
+                    Debug.LogWarning("The prefab reference in the StatsNpc script of the object '" + name + "' has a different name from the object it was spawned by. Name of the prefab is: '" + prefab.name + "'");
+                }
             }
-        }
-        else
-        {
-            Debug.LogError("The prefab reference in the StatsNpc script of the object '" + name + "' is null.");
+            else
+            {
+                Debug.LogError("The prefab reference in the StatsNpc script of the object '" + name + "' is null.");
+            }
         }
     }
 

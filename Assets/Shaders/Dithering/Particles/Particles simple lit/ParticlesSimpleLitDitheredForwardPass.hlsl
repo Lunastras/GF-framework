@@ -154,10 +154,10 @@ half4 ParticlesLitFragment(DitheredV2f input) : SV_Target
     InputData inputData;
     InitializeInputData(input, normalTS, inputData);
 
-    half4 color = UniversalFragmentBlinnPhongCustom(inputData, diffuse, specularGloss, specularGloss.a, emission, alpha, normalTS, _LambertDotOverride);
-    //color = albedo;
-    
-    color.rgb = MixFog(color.rgb, inputData.fogCoord);
+    half4 color = UniversalFragmentBlinnPhongCustom(inputData, diffuse, specularGloss, specularGloss.a, emission, alpha, normalTS, _LambertDotOverride);    
+    #ifndef _FOG_DISABLED
+        color.rgb = MixFog(color.rgb, inputData.fogCoord);
+    #endif //_FOG_DISABLED 
     color.a = OutputAlpha(color.a, _Surface);
 
     return color;

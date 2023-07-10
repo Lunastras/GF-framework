@@ -98,6 +98,9 @@ public class LevelManager : MonoBehaviour
 
     public void Start()
     {
+        m_calmMusic.LoadAudioClip();
+        m_actionMusic.LoadAudioClip();
+
         if (null != m_calmMusic && null != m_calmMusic.m_clip)
         {
             m_calmMusic.Play();

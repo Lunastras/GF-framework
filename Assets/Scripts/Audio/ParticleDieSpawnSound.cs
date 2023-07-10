@@ -15,6 +15,8 @@ public class ParticleDieSpawnSound : ParticleDieSpawnAction
     void Start()
     {
         m_audioSource = GetComponent<AudioSource>();
+        m_deathSound.LoadAudioClip();
+        m_spawnSound.LoadAudioClip();
     }
 
     protected override void OnParticlesDie(int particleCount)

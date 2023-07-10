@@ -93,15 +93,29 @@ Shader "DistanceDither/Particles/Simple Lit"
             // Lightmode matches the ShaderPassName set in UniversalRenderPipeline.cs. SRPDefaultUnlit and passes with
             // no LightMode tag are also rendered by Universal Render Pipeline
             Name "ForwardLit"
-            Tags {"LightMode" = "UniversalForward"}
+            Tags
+            {
+                "LightMode" = "UniversalForward"
+            }
 
+            // -------------------------------------
+            // Render State Commands
             BlendOp[_BlendOp]
-            Blend[_SrcBlend][_DstBlend]
+            Blend[_SrcBlend][_DstBlend], [_SrcBlendAlpha][_DstBlendAlpha]
             ZWrite[_ZWrite]
             Cull[_Cull]
+            AlphaToMask[_AlphaToMask]
 
             HLSLPROGRAM
             #pragma target 2.0
+
+            // -------------------------------------
+            // Shader Stages
+            #pragma vertex ParticlesLitVertex
+            #pragma fragment ParticlesLitFragment
+
+            #pragma shader_feature _LAMBERT_DISABLED
+            #pragma shader_feature _FOG_DISABLED
 
             // -------------------------------------
             // Material Keywords
@@ -111,10 +125,6 @@ Shader "DistanceDither/Particles/Simple Lit"
             #pragma shader_feature_local_fragment _EMISSION
             #pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
             #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
-
-            // Dithering keywords
-            #pragma shader_feature _LAMBERT_DISABLED
-            #pragma shader_feature _FOG_DISABLED
 
             // -------------------------------------
             // Particle Keywords
@@ -134,17 +144,19 @@ Shader "DistanceDither/Particles/Simple Lit"
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile_fragment _ _LIGHT_COOKIES
-            #pragma multi_compile _ _CLUSTERED_RENDERING
+            #pragma multi_compile _ _FORWARD_PLUS
 
             // -------------------------------------
             // Unity defined keywords
+            #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
             #pragma multi_compile_fragment _ DEBUG_DISPLAY
             #pragma instancing_options procedural:ParticleInstancingSetup
+            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
-            #pragma vertex ParticlesLitVertex
-            #pragma fragment ParticlesLitFragment
+            // -------------------------------------
+            // Defines
             #define BUMP_SCALE_NOT_SUPPORTED 1
             
 
@@ -207,14 +219,27 @@ Shader "DistanceDither/Particles/Simple Lit"
             // Lightmode matches the ShaderPassName set in UniversalRenderPipeline.cs. SRPDefaultUnlit and passes with
             // no LightMode tag are also rendered by Universal Render Pipeline
             Name "GBuffer"
-            Tags{"LightMode" = "UniversalGBuffer"}
+            Tags
+            {
+                "LightMode" = "UniversalGBuffer"
+            }
 
+            // -------------------------------------
+            // Render State Commands
             ZWrite[_ZWrite]
             Cull[_Cull]
 
             HLSLPROGRAM
-            #pragma exclude_renderers gles
-            #pragma target 2.0
+            #pragma target 4.5
+
+            // Deferred Rendering Path does not support the OpenGL-based graphics API:
+            // Desktop OpenGL, OpenGL ES 3.0, WebGL 2.0.
+            #pragma exclude_renderers gles3 glcore
+
+            // -------------------------------------
+            // Shader Stages
+            #pragma vertex ParticlesLitGBufferVertex
+            #pragma fragment ParticlesLitGBufferFragment
 
             // -------------------------------------
             // Material Keywords
@@ -245,13 +270,17 @@ Shader "DistanceDither/Particles/Simple Lit"
 
             // -------------------------------------
             // Unity defined keywords
+            #pragma multi_compile _ LIGHTMAP_SHADOW_MIXING
             #pragma multi_compile_instancing
             #pragma instancing_options procedural:ParticleInstancingSetup
+            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
-            #pragma vertex ParticlesLitGBufferVertex
-            #pragma fragment ParticlesLitGBufferFragment
+            //--------------------------------------
+            // Defines
             #define BUMP_SCALE_NOT_SUPPORTED 1
 
+            // -------------------------------------
+            // Includes
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitGBufferPass.hlsl"
             ENDHLSL
@@ -262,14 +291,24 @@ Shader "DistanceDither/Particles/Simple Lit"
         Pass
         {
             Name "DepthOnly"
-            Tags{"LightMode" = "DepthOnly"}
+            Tags
+            {
+                "LightMode" = "DepthOnly"
+            }
 
+            // -------------------------------------
+            // Render State Commands
             ZWrite On
-            ColorMask 0
+            ColorMask R
             Cull[_Cull]
 
             HLSLPROGRAM
             #pragma target 2.0
+
+            // -------------------------------------
+            // Shader Stages
+            #pragma vertex DepthOnlyVertex
+            #pragma fragment DepthOnlyFragment
 
             // -------------------------------------
             // Material Keywords
@@ -281,10 +320,10 @@ Shader "DistanceDither/Particles/Simple Lit"
             // Unity defined keywords
             #pragma multi_compile_instancing
             #pragma instancing_options procedural:ParticleInstancingSetup
+            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
-            #pragma vertex DepthOnlyVertex
-            #pragma fragment DepthOnlyFragment
-
+            // -------------------------------------
+            // Includes
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesDepthOnlyPass.hlsl"
             ENDHLSL
@@ -293,13 +332,23 @@ Shader "DistanceDither/Particles/Simple Lit"
         Pass
         {
             Name "DepthNormals"
-            Tags{"LightMode" = "DepthNormals"}
+            Tags
+            {
+                "LightMode" = "DepthNormals"
+            }
 
+            // -------------------------------------
+            // Render State Commands
             ZWrite On
             Cull[_Cull]
 
             HLSLPROGRAM
             #pragma target 2.0
+
+            // -------------------------------------
+            // Shader Stages
+            #pragma vertex DepthNormalsVertex
+            #pragma fragment DepthNormalsFragment
 
             // -------------------------------------
             // Material Keywords
@@ -312,9 +361,7 @@ Shader "DistanceDither/Particles/Simple Lit"
             // Unity defined keywords
             #pragma multi_compile_instancing
             #pragma instancing_options procedural:ParticleInstancingSetup
-
-            #pragma vertex DepthNormalsVertex
-            #pragma fragment DepthNormalsFragment
+            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesSimpleLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesDepthNormalsPass.hlsl"

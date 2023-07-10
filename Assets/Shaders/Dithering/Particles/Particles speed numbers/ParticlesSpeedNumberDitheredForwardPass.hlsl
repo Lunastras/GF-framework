@@ -186,6 +186,8 @@ CustomV2f ParticlesLitVertex(CustomVertInput input)
         value = floor(value / 10.0);
     }
 
+    numDigits = max(numDigits, 1);
+
     float startUvXCoord = 0.5 - (DIGIT_OFFSET_HALF * (numDigits % TWO) + floor(numDigits * 0.5) * DIGIT_OFFSET);
     float2 finalTexCoords;
     GetParticleTexcoords(finalTexCoords, input.texcoords.xy);

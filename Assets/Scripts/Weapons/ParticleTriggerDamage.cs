@@ -34,6 +34,9 @@ public class ParticleTriggerDamage : WeaponParticle
 
         InitWeaponParticle();
 
+        m_damageSound.LoadAudioClip();
+        m_collisionSound.LoadAudioClip();
+
         var triggerModule = m_particleSystem.trigger;
         triggerModule.enabled = true;
     }

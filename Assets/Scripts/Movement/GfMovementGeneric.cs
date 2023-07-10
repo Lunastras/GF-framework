@@ -850,6 +850,8 @@ public abstract class GfMovementGeneric : NetworkBehaviour
 
     public void DetachFromParentTransform(bool addVelocity = true, uint priority = 0, bool overridePriority = false)
     {
+        Transform oldParent = m_parentTransform.Value;
+
         if (m_parentTransform.Value && m_parentTransform.SetValue(null, priority, overridePriority))
         {
             if (addVelocity)

@@ -60,7 +60,8 @@ public class StatsPlayer : StatsCharacter
         m_audioObjectDamageDealt = objDamageDealt.GetAudioSource();
         m_audioObjectDamageReceived = objDamageReceived.GetAudioSource();
 
-        m_currentHealth.Value = m_maxHealth.Value;
+        if (HasAuthority)
+            m_currentHealth.Value = m_maxHealth.Value;
 
         if (null == m_playerGun)
             m_playerGun = FindObjectOfType<WeaponFiring>();
@@ -76,6 +77,12 @@ public class StatsPlayer : StatsCharacter
                 m_audioSource = gameObject.AddComponent<AudioSource>();
             }
         }
+
+        m_damageSound.LoadAudioClip();
+        m_damageDealtSound.LoadAudioClip();
+        m_deathSound.LoadAudioClip();
+        m_itemPickUpSound.LoadAudioClip();
+        m_damageDealtSound.LoadAudioClip();
 
         if (null == m_odamaManager) m_odamaManager = GetComponent<OdamaManager>();
         if (null == m_movement) m_movement = GetComponent<GfMovementGeneric>();
@@ -248,6 +255,8 @@ public class StatsPlayer : StatsCharacter
         base.Respawn();
         if (m_healthUI) m_healthUI.SetHealthPoints(m_currentHealth.Value);
         m_odamaManager.SetCurrentLoadout(m_odamaManager.GetCurrentLoadoutIndex());
+        m_movement.SetVelocity(Vector3.zero);
+        m_loadoutManager.Respawned();
     }
 
     //called when an enemy is approaching this character

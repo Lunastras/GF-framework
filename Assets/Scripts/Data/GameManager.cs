@@ -70,6 +70,7 @@ public class GameManager : MonoBehaviour
     {
         m_spawnManager = NetworkManager.Singleton.SpawnManager;
         m_currentTimeScale = Time.timeScale;
+        m_deathScreenMusic.LoadAudioClip();
     }
 
     private void Update()
@@ -91,8 +92,9 @@ public class GameManager : MonoBehaviour
         {
             m_isShowingDeathScreen = false;
             HudManager.ToggleDeathScreen(false);
-            m_player.GetComponent<StatsPlayer>().Respawn();
             CheckpointManager.Instance.ResetToHardCheckpoint();
+            m_player.GetComponent<StatsPlayer>().Respawn();
+            CameraController.SnapInstanceToTarget();
             LevelManager.SetLevelMusicPitch(1, 0.2f);
             m_deathMusicSource.GetAudioSource().Stop();
         }
@@ -123,7 +125,7 @@ public class GameManager : MonoBehaviour
         Instance.m_isShowingDeathScreen = true;
         Instance.m_player.gameObject.SetActive(false);
         LevelManager.SetLevelMusicPitch(0, 2);
-        Instance.m_deathMusicSource = Instance.m_deathScreenMusic.Play(Vector3.zero);
+        Instance.m_deathMusicSource = Instance.m_deathScreenMusic.Play();
         Instance.m_deathScreenMusic.SetMixerVolume(0);
         Instance.m_deathMusicVolumeSmoothRef = 0;
         Instance.m_desiredDeathMusicVolume = 1;

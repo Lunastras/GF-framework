@@ -657,6 +657,13 @@ public class LoadoutManager : NetworkBehaviour
             m_loadouts.Add(new(m_weaponCapacity)); //todo
     }
 
+    public virtual void Respawned()
+    {
+        SetSpeedMultiplier(1, 0, true);
+        SetDamageMultiplier(1, 0, true);
+        SetFireRateMultiplier(1, 0, true);
+    }
+
     public void RemoveLoadout(int index)
     {
         m_loadouts.RemoveAt(index);

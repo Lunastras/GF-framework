@@ -3,6 +3,8 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System;
+using MEC;
+
 public class GfUITools : MonoBehaviour
 {
     private static GfUITools Instance;
@@ -64,4 +66,25 @@ public class GfUITools : MonoBehaviour
     {
         return EventSystem.current.IsPointerOverGameObject();
     }
+
+    public static void CrossFadeAlphaGroup(CanvasGroup group, float targetAlpha, float smoothTime)
+    {
+        Timing.RunCoroutine(_CrossFadeAlphaGroup(group, targetAlpha, smoothTime, group.alpha));
+    }
+
+    private static IEnumerator<float> _CrossFadeAlphaGroup(CanvasGroup group, float targetAlpha, float smoothTime, float currentAlpha)
+    {
+        float refSmooth = 0;
+        group.alpha = currentAlpha;
+        while (MathF.Abs(currentAlpha - targetAlpha) > 0.001f && group.alpha == currentAlpha) //stop coroutine if alpha is modified by somebody else
+        {
+            currentAlpha = Mathf.SmoothDamp(currentAlpha, targetAlpha, ref refSmooth, smoothTime);
+            group.alpha = currentAlpha;
+            yield return Timing.WaitForOneFrame;
+        }
+
+        if (group.alpha == currentAlpha)
+            group.alpha = targetAlpha;
+    }
+
 }

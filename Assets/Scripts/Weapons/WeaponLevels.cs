@@ -51,6 +51,16 @@ public class WeaponLevels : WeaponBasic
                 m_audioSource = gameObject.AddComponent<AudioSource>();
             }
         }
+
+        for (int i = 0; i < m_levelFireSounds.Length; ++i)
+        {
+            m_levelFireSounds[i].LoadAudioClip();
+        }
+
+        for (int i = 0; i < m_levelReleaseFireSounds.Length; ++i)
+        {
+            m_levelReleaseFireSounds[i].LoadAudioClip();
+        }
     }
 
     public override bool IsFiring() { return m_turret.IsFiring(); }

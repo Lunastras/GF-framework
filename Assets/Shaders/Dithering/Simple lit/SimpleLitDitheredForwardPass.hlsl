@@ -228,7 +228,9 @@ half4 LitPassFragmentSimple(Varyings input) : SV_Target
 #endif
 
     half4 color = UniversalFragmentBlinnPhongCustom(inputData, surfaceData, _LambertDotOverride);
-    color.rgb = MixFog(color.rgb, inputData.fogCoord);
+    #ifndef _FOG_DISABLED
+        color.rgb = MixFog(color.rgb, inputData.fogCoord);
+    #endif //_FOG_DISABLED 
     color.a = OutputAlpha(color.a, _Surface);
 
     return color;
