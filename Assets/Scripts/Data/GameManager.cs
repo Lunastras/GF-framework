@@ -27,6 +27,19 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private Sound m_deathScreenMusic = null;
 
+    [SerializeField] private bool m_overrideGameTypeMode = false;
+
+    [SerializeField] private GameMultiplayerType m_gameType = GameMultiplayerType.SINGLEPLAYER;
+
+
+    public enum GameMultiplayerType {
+        SINGLEPLAYER,
+        SERVER,
+        HOST,
+        CLIENT
+    }
+
+    public static GameMultiplayerType GameType = GameMultiplayerType.SINGLEPLAYER;
 
     public static bool IsMultiplayer { get; private set; } = false;
 
@@ -71,6 +84,32 @@ public class GameManager : MonoBehaviour
         m_spawnManager = NetworkManager.Singleton.SpawnManager;
         m_currentTimeScale = Time.timeScale;
         m_deathScreenMusic.LoadAudioClip();
+
+        if(m_overrideGameTypeMode) {
+            GameType = m_gameType;  
+        }
+
+         switch(GameType) {
+                case(GameMultiplayerType.SINGLEPLAYER):
+                    NetworkManager.Singleton.StartHost();
+                    GameManager.SingleplayerStart();
+                break;
+
+                case(GameMultiplayerType.SERVER):
+                    NetworkManager.Singleton.StartServer();
+                    GameManager.MultiplayerStart();
+                break;
+
+                case(GameMultiplayerType.HOST):
+                    NetworkManager.Singleton.StartHost();
+                    GameManager.MultiplayerStart();
+                break;
+
+                case(GameMultiplayerType.CLIENT):
+                    NetworkManager.Singleton.StartClient();
+                    GameManager.MultiplayerStart();
+                break;
+            }
     }
 
     private void Update()

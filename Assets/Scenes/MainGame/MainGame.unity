@@ -14750,6 +14750,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+  m_overrideGameTypeMode: 0
+  m_gameType: 0
   CanPause: 1
 --- !u!4 &1273476792
 Transform:
@@ -15302,7 +15304,8 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 916576516492179068, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
