@@ -15294,6 +15294,11 @@ PrefabInstance:
       propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6699583713587211385, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7803097290396653015, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -15306,7 +15311,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 916576516492179068, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca, type: 3}
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8678334763608286771, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca, type: 3}
+    - {fileID: 629821641, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca, type: 3}
+    - {fileID: 1144141018, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca, type: 3}
+    - {fileID: 1812666521, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 94ab33bb8a04efb4e8a8a09bbd5641ca, type: 3}

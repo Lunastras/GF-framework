@@ -10,7 +10,7 @@ public class GfMovementRbSimple : GfMovementSimple
     [SerializeField]
     protected Rigidbody m_rigidbody;
     // Start is called before the first frame update
-    protected override void InternalStart()
+    protected void Start()
     {
         m_rigidbody = GetComponent<Rigidbody>();
     }

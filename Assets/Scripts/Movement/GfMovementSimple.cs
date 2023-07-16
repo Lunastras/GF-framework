@@ -59,11 +59,6 @@ public class GfMovementSimple : GfMovementGeneric
     [SerializeField]
     protected bool m_breakWhenUnparent = false;
 
-    // Start is called before the first frame update
-    protected override void InternalStart()
-    {
-    }
-
     protected override void BeforePhysChecks(float deltaTime)
     {
         m_touchedParent = m_jumpedThisFrame = false;

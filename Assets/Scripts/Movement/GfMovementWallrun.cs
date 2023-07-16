@@ -70,7 +70,7 @@ public class GfMovementWallrun : GfMovementSimple
 
     private bool m_dashFlagReleased;
 
-    protected override void InternalStart()
+    protected void Start()
     {
         if (m_useSimpleCollision) Debug.LogWarning("GfMovementWallrun does not support simple collision checks.");
     }

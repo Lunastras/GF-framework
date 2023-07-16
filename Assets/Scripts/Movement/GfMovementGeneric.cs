@@ -135,18 +135,16 @@ public abstract class GfMovementGeneric : NetworkBehaviour
 
     #endregion
 
-    private void Start()
+    private void Awake()
     {
         m_triggerResults = new(2);
-        m_transform = transform;
         m_slopeNormal = m_upVec;
+        m_transform = transform;
         m_lastRotation = m_transform.rotation;
         ValidateCollisionArchetype();
         m_archetypeCollision.UpdateValues();
-        InternalStart();
     }
 
-    protected abstract void InternalStart();
     protected virtual void BeforePhysChecks(float deltaTime) { }
     protected virtual void AfterPhysChecks(float delteTime) { }
 
