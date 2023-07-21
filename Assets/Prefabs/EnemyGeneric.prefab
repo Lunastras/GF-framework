@@ -5259,7 +5259,6 @@ GameObject:
   - component: {fileID: 1837604981037889726}
   - component: {fileID: 1810723438}
   - component: {fileID: 6910084372030936651}
-  - component: {fileID: 401318792313859119}
   m_Layer: 6
   m_Name: EnemyGeneric
   m_TagString: Untagged
@@ -5374,7 +5373,6 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
-  m_prefabContainer: {fileID: 401318792313859119}
 --- !u!114 &1184494187360147066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5615,16 +5613,3 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &401318792313859119
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4759944753111975130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ccad1a725ef5e84492e96cd7e2ffcd2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Prefab: {fileID: 0}

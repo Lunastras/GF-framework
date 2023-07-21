@@ -275,7 +275,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
     }
 
 
-    public bool UpdatePhysics(float deltaTime, bool updateParentMovement = true, float timeUntilNextUpdate = -1, bool updatePhysicsValues = true, bool ignorePhysics = false)
+    public bool UpdatePhysics(float deltaTime, bool updateParentMovement = true, float timeUntilNextUpdate = -1, bool verifyCollisionArchetype = true, bool ignorePhysics = false)
     {
         if (m_interpolateThisFrame)
         {
@@ -319,7 +319,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
             Collider[] colliderbuffer = GfPhysics.GetCollidersArray();
             int layermask = GfPhysics.GetLayerMask(gameObject.layer);
 
-            if (updatePhysicsValues)
+            if (verifyCollisionArchetype)
             {
                 ValidateCollisionArchetype();
                 m_archetypeCollision.UpdateValues();
@@ -387,7 +387,8 @@ public abstract class GfMovementGeneric : NetworkBehaviour
                 m_currentGroundCollision.selfPosition = position;
                 m_currentGroundCollision.selfUpVecAngle = GfTools.AngleDeg(m_upVec, hitInfo.normal);
 
-                DetermineGeometryType(ref m_velocity, ref lastNormal, ref m_currentGroundCollision, ref collisions);
+                //DetermineGeometryType(ref m_velocity, ref lastNormal, ref m_currentGroundCollision, ref collisions);
+
                 if (MgOnTraceHit(ref m_currentGroundCollision))
                     MgOnCollision(ref m_currentGroundCollision);
             }
@@ -651,7 +652,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
             }
             else
             {
-                //Debug.Log("The bad step height was: " + stepHeight);
+                Debug.Log("The bad step height was: " + stepHeight);
             }
         }
 

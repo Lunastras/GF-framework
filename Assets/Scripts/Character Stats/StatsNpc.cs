@@ -46,11 +46,6 @@ public class StatsNpc : StatsCharacter
     [SerializeField]
     protected Sound m_deathSound;
 
-    [SerializeField]
-    protected PrefabContainer m_prefabContainer;
-
-    public PrefabContainer GetPrefabContainer() { return m_prefabContainer; }
-
     //The damage values in total from the enemies
     protected float m_biggestDamageReceived = 0;
 
@@ -68,9 +63,6 @@ public class StatsNpc : StatsCharacter
     {
         if (null == m_objectCollider)
             m_objectCollider = GetComponent<Collider>();
-
-        if (null == m_prefabContainer)
-            m_prefabContainer = GetComponent<PrefabContainer>();
 
         if (null == m_movement)
             m_movement = GetComponent<GfMovementGeneric>();
@@ -110,23 +102,6 @@ public class StatsNpc : StatsCharacter
 
         m_initialised = true;
         HostilityManager.AddCharacter(this);
-
-        var prefab = m_prefabContainer.Prefab;
-
-        if (!GameManager.IsMultiplayer)
-        {
-            if (prefab)
-            {
-                if (!prefab.name.Equals(name))
-                {
-                    Debug.LogWarning("The prefab reference in the StatsNpc script of the object '" + name + "' has a different name from the object it was spawned by. Name of the prefab is: '" + prefab.name + "'");
-                }
-            }
-            else
-            {
-                Debug.LogError("The prefab reference in the StatsNpc script of the object '" + name + "' is null.");
-            }
-        }
     }
 
     private void OnEnable()
@@ -194,7 +169,7 @@ public class StatsNpc : StatsCharacter
                 m_checkpointStateNpc.Rotation = m_transform.rotation;
                 m_checkpointStateNpc.Scale = m_transform.localScale;
                 m_checkpointStateNpc.CurrentHp = m_currentHealth.Value;
-                m_checkpointStateNpc.Prefab = m_prefabContainer.Prefab;
+                m_checkpointStateNpc.Prefab = GfPooling.GetPrefab(gameObject.name);
                 m_checkpointStateNpc.Velocity = m_movement.GetVelocity();
                 m_checkpointStateNpc.MovementParent = m_movement.GetParentTransform();
                 m_checkpointStateNpc.MovementParentPriority = m_movement.GetParentPriority();

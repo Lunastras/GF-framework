@@ -2,15 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using MEC;
 
 public class GfPooling : MonoBehaviour
 {
-    private static GfPooling instance;
+    private static GfPooling Instance;
 
     //pools with the objects
-    private Dictionary<string, List<GameObject>> pools { get; set; }
+    private Dictionary<string, PoolStruct> m_pools { get; set; } = new(16);
 
-    private Transform mainParent = null;
+    private struct PoolStruct
+    {
+
+        public PoolStruct(int poolSize = 4, GameObject prefab = null)
+        {
+            list = new(4);
+            this.prefab = prefab;
+        }
+
+        public List<GameObject> list;
+        public GameObject prefab;
+    }
 
     [SerializeField]
     private InitializationPool[] poolsToInstantiate;
@@ -24,13 +36,8 @@ public class GfPooling : MonoBehaviour
 
     private void Awake()
     {
-        instance = this;
+        Instance = this;
 
-        pools = new Dictionary<string, List<GameObject>>();
-
-        mainParent = new GameObject().transform;
-        mainParent.SetParent(transform);
-        mainParent.name = "Pools Parent";
         foreach (InitializationPool poolsToCreate in poolsToInstantiate)
         {
             if (null != poolsToCreate.gameObject)
@@ -40,14 +47,15 @@ public class GfPooling : MonoBehaviour
         poolsToInstantiate = null;
     }
 
-    private static GameObject InternalInstantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent, bool instantiateInWorldSpace = true, bool mustBeInactive = true)
+    private static GameObject InternalInstantiate(GameObject objectToSpawn, string objectName, Vector3 position, Quaternion rotation, Transform parent, bool instantiateInWorldSpace = true, bool mustBeInactive = true)
     {
         //Debug.Log("called to instantiate: " + objectToSpawn.name);
         GameObject spawnedObject = null;
 
-        List<GameObject> currentPool;
-        if (instance.pools.TryGetValue(objectToSpawn.name, out currentPool))
+        PoolStruct pool;
+        if (Instance.m_pools.TryGetValue(objectName, out pool))
         {
+            var currentPool = pool.list;
             int count = currentPool.Count;
             if (--count >= 0)
             {
@@ -64,42 +72,62 @@ public class GfPooling : MonoBehaviour
                     currentPool.RemoveAt(count);
                 }
             }
+
+            if (spawnedObject == null)
+            {
+                spawnedObject = GameObject.Instantiate(pool.prefab);
+                spawnedObject.name = objectName;
+            }
         }
 
-        if (null == spawnedObject)
+        if (null == spawnedObject && objectToSpawn)
         {
             spawnedObject = GameObject.Instantiate(objectToSpawn);
-            var prefabContainer = spawnedObject.GetComponent<PrefabContainer>();
-            if (prefabContainer)
-                prefabContainer.Prefab = objectToSpawn;
-            spawnedObject.name = objectToSpawn.name;
+            spawnedObject.name = objectName;
         }
 
-        spawnedObject.transform.SetParent(parent);
-
-        if (instantiateInWorldSpace)
+        if (spawnedObject)
         {
-            spawnedObject.transform.position = position;
-            spawnedObject.transform.rotation = rotation;
+            spawnedObject.transform.SetParent(parent);
+
+            if (instantiateInWorldSpace)
+            {
+                spawnedObject.transform.position = position;
+                spawnedObject.transform.rotation = rotation;
+            }
+            else
+            {
+                spawnedObject.transform.localPosition = position;
+                spawnedObject.transform.localRotation = rotation;
+            }
         }
         else
         {
-            spawnedObject.transform.localPosition = position;
-            spawnedObject.transform.localRotation = rotation;
+            Debug.LogError("GfPooling: Couldn't spawn an object of name '" + objectName + "', no pool exists of the object.");
         }
 
         return spawnedObject;
     }
 
+    public static GameObject Instantiate(string prefabName, Transform parent = null, bool instantiateInWorldSpace = false, bool mustBeInactive = true)
+    {
+        return InternalInstantiate(null, prefabName, Vector3.zero, Quaternion.identity, parent, instantiateInWorldSpace, mustBeInactive);
+    }
+
+    public static GameObject Instantiate(string prefabName, Vector3 position, Quaternion rotation, Transform parent = null, bool mustBeInactive = true)
+    {
+        return InternalInstantiate(null, prefabName, Vector3.zero, Quaternion.identity, parent, true, mustBeInactive);
+    }
+
 
     public static GameObject Instantiate(GameObject objectToSpawn, Transform parent = null, bool instantiateInWorldSpace = false, bool mustBeInactive = true)
     {
-        return InternalInstantiate(objectToSpawn, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace, mustBeInactive);
+        return InternalInstantiate(objectToSpawn, objectToSpawn.name, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace, mustBeInactive);
     }
 
     public static GameObject Instantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent = null, bool mustBeInactive = true)
     {
-        return InternalInstantiate(objectToSpawn, position, rotation, parent, true, mustBeInactive);
+        return InternalInstantiate(objectToSpawn, objectToSpawn.name, position, rotation, parent, true, mustBeInactive);
     }
 
     /**
@@ -110,7 +138,7 @@ public class GfPooling : MonoBehaviour
         if (PoolSizeAvailable(objectToSpawn) == 0)
             Pool(objectToSpawn, 1);
 
-        return InternalInstantiate(objectToSpawn, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace, mustBeInactive);
+        return InternalInstantiate(objectToSpawn, objectToSpawn.name, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace, mustBeInactive);
     }
 
     /**
@@ -121,14 +149,10 @@ public class GfPooling : MonoBehaviour
         if (PoolSizeAvailable(objectToSpawn) == 0)
             Pool(objectToSpawn, 1);
 
-        return InternalInstantiate(objectToSpawn, position, rotation, parent, true, mustBeInactive);
+        return InternalInstantiate(objectToSpawn, objectToSpawn.name, position, rotation, parent, true, mustBeInactive);
     }
 
-    //lmao good naming
-    public static void DestroyChildren(GameObject obj, bool deleteSelf = false)
-    {
-        DestroyChildren(obj.transform);
-    }
+
 
     public static void DestroyChildren(Transform obj, bool deleteSelf = false)
     {
@@ -136,33 +160,55 @@ public class GfPooling : MonoBehaviour
             GfPooling.Destroy(obj.GetChild(0).gameObject);
     }
 
-    public static void Destroy(GameObject objectToDestroy, bool goOverCapacity = true)
+    public static void Destroy(GameObject objectToDestroy, float delay = 0, bool goOverCapacity = true)
     {
         InternalDestroy(objectToDestroy, false, goOverCapacity);
+
+        if (delay > 0)
+            Timing.RunCoroutine(_WaitUntilDestroy(delay, objectToDestroy, false, goOverCapacity));
+        else
+            InternalDestroy(objectToDestroy, false, goOverCapacity);
     }
 
-    public static void DestroyInsert(GameObject objectToDestroy, bool keepActive = false, bool goOverCapacity = true)
+    public static void DestroyInsert(GameObject objectToDestroy, float delay = 0, bool keepActive = false, bool goOverCapacity = true)
     {
         if (PoolSizeAvailable(objectToDestroy) == 0)
             Pool(objectToDestroy, 1, false);
 
+        if (delay > 0)
+            Timing.RunCoroutine(_WaitUntilDestroy(delay, objectToDestroy, keepActive, goOverCapacity));
+        else
+            InternalDestroy(objectToDestroy, keepActive, goOverCapacity);
+    }
+
+    public static IEnumerator<float> _WaitUntilDestroy(float time, GameObject objectToDestroy, bool keepActive, bool goOverCapacity)
+    {
+        yield return Timing.WaitForSeconds(time);
         InternalDestroy(objectToDestroy, keepActive, goOverCapacity);
+    }
+
+    private static IEnumerator<float> _AddObjectToPool(GameObject objectToDestroy, List<GameObject> currentPool)
+    {
+        yield return Timing.WaitForOneFrame;
+        currentPool.Add(objectToDestroy); //we wait one frame before putting it in the pool because Unity doesn't like it when an object is enabled and disabled in the same frame
     }
 
     private static void InternalDestroy(GameObject objectToDestroy, bool keepActive, bool goOverCapacity)
     {
         bool destroyObject = true;
 
-        if (instance.pools.TryGetValue(objectToDestroy.name, out List<GameObject> currentPool))
+        PoolStruct pool;
+        if (Instance.m_pools.TryGetValue(objectToDestroy.name, out pool))
         {
+            var currentPool = pool.list;
             bool alreadyInPool = objectToDestroy.transform.position.Equals(DESTROY_POSITION);
             destroyObject = !alreadyInPool;
             goOverCapacity |= keepActive;
 
             if (!alreadyInPool && (goOverCapacity || currentPool.Count < currentPool.Capacity))
             {
+                Timing.RunCoroutine(_AddObjectToPool(objectToDestroy, currentPool));
                 objectToDestroy.transform.position = DESTROY_POSITION;
-                currentPool.Add(objectToDestroy);
                 destroyObject = false;
                 alreadyInPool = true;
             }
@@ -172,6 +218,8 @@ public class GfPooling : MonoBehaviour
 
         if (destroyObject) GameObject.Destroy(objectToDestroy);
     }
+
+
 
     private static void DestroyObjectsFromPool(List<GameObject> objects, int numInstances = -1)
     {
@@ -187,49 +235,51 @@ public class GfPooling : MonoBehaviour
 
     public static void ClearAll()
     {
-        foreach (string key in instance.pools.Keys)
+        foreach (string key in Instance.m_pools.Keys)
         {
-            DestroyObjectsFromPool(instance.pools[key], int.MaxValue);
-            instance.pools.Remove(key);
+            DestroyObjectsFromPool(Instance.m_pools[key].list, int.MaxValue);
+            Instance.m_pools.Remove(key);
         }
     }
 
     public static void TrimPool(GameObject obj)
     {
-        if (null != obj)
+        TrimPool(obj.name);
+    }
+
+    public static void TrimPool(string prefabName)
+    {
+        PoolStruct currentPool;
+        if (Instance.m_pools.TryGetValue(prefabName, out currentPool))
         {
-            List<GameObject> currentPool;
-            if (instance.pools.TryGetValue(obj.name, out currentPool))
-            {
-                currentPool.TrimExcess();
-            }
+            currentPool.list.TrimExcess();
         }
     }
 
     public static void TrimPools()
     {
-        var keysList = instance.pools.Keys;
+        var keysList = Instance.m_pools.Keys;
         foreach (var key in keysList)
         {
-            instance.pools[key].TrimExcess();
+            Instance.m_pools[key].list.TrimExcess();
         }
     }
 
     public static void ClearPool(GameObject objectToClear, int numInstances = int.MaxValue, bool keepPoolIfEmpty = false)
     {
-        if (numInstances <= 0)
-            return;
+        ClearPool(objectToClear.name, numInstances, keepPoolIfEmpty);
+    }
 
-        if (null != objectToClear)
+    public static void ClearPool(string prefabName, int numInstances = int.MaxValue, bool keepPoolIfEmpty = false)
+    {
+        PoolStruct pool;
+        if (Instance.m_pools.TryGetValue(prefabName, out pool))
         {
-            List<GameObject> currentPool;
-            if (instance.pools.TryGetValue(objectToClear.name, out currentPool))
-            {
-                DestroyObjectsFromPool(currentPool, numInstances);
+            var currentPool = pool.list;
+            DestroyObjectsFromPool(currentPool, numInstances);
 
-                if (!keepPoolIfEmpty && numInstances >= currentPool.Capacity)
-                    instance.pools.Remove(objectToClear.name);
-            }
+            if (!keepPoolIfEmpty && numInstances >= currentPool.Capacity)
+                Instance.m_pools.Remove(prefabName);
         }
     }
 
@@ -246,12 +296,14 @@ public class GfPooling : MonoBehaviour
             return;
         //Debug.Log("Pool request for " + numInstances + " " + objectToPool.name);
 
-        List<GameObject> currentPool;
-        if (!instance.pools.TryGetValue(objectToPool.name, out currentPool))
+        PoolStruct pool;
+        if (!Instance.m_pools.TryGetValue(objectToPool.name, out pool))
         {
-            currentPool = new List<GameObject>(numInstances);
-            instance.pools.Add(objectToPool.name, currentPool);
+            pool = new(numInstances, objectToPool);
+            Instance.m_pools.Add(objectToPool.name, pool);
         }
+
+        var currentPool = pool.list;
 
         while (instantiateObjects && 0 <= --numInstances && (goOverCapacity || currentPool.Count < currentPool.Capacity))
         {
@@ -259,52 +311,81 @@ public class GfPooling : MonoBehaviour
             obj.SetActive(false);
             obj.name = objectToPool.name;
             currentPool.Add(obj);
-            var prefabContainer = obj.GetComponent<PrefabContainer>();
-            if (prefabContainer)
-                prefabContainer.Prefab = objectToPool;
         }
     }
 
     public static bool HasPool(GameObject objectPooled)
     {
-        return instance.pools.ContainsKey(objectPooled.name);
+        return HasPool(objectPooled.name);
+    }
+
+    public static bool HasPool(string prefabName)
+    {
+        return Instance.m_pools.ContainsKey(prefabName);
     }
 
     public static int PoolSizeAvailable(GameObject objectPooled)
     {
+        return PoolSizeAvailable(objectPooled.name);
+    }
+
+    public static int PoolSizeAvailable(string prefabName)
+    {
         int ret = 0;
-        List<GameObject> pool;
-        if (instance.pools.TryGetValue(objectPooled.name, out pool))
-            ret = pool.Count;
+        if (Instance.m_pools.TryGetValue(prefabName, out var pool))
+            ret = pool.list.Count;
 
         return ret;
     }
 
     public static GameObject GetObjectInPool(GameObject objectPool, int index = 0)
     {
-        List<GameObject> pool;
+        return GetObjectInPool(objectPool.name, index);
+    }
+
+    public static GameObject GetObjectInPool(string prefabName, int index = 0)
+    {
         GameObject ret = null;
-        if (instance.pools.TryGetValue(objectPool.name, out pool) && pool.Count > index)
-            ret = pool[index];
+        if (Instance.m_pools.TryGetValue(prefabName, out var pool) && pool.list.Count > index)
+            ret = pool.list[index];
 
         return ret;
     }
 
     public static int GetPoolCapacity(GameObject objectPooled)
     {
-        List<GameObject> pool;
+        return GetPoolCapacity(objectPooled.name);
+    }
+
+    public static int GetPoolCapacity(string prefabNam)
+    {
         int ret = 0;
-        if (instance.pools.TryGetValue(objectPooled.name, out pool))
-            ret = pool.Capacity;
+        if (Instance.m_pools.TryGetValue(prefabNam, out var pool))
+            ret = pool.list.Capacity;
 
         return ret;
     }
 
     public static List<GameObject> GetPoolList(GameObject objectPooled)
     {
-        List<GameObject> pool;
-        instance.pools.TryGetValue(objectPooled.name, out pool);
-        return pool;
+        return GetPoolList(objectPooled.name);
+    }
+
+    public static List<GameObject> GetPoolList(string prefabName)
+    {
+        Instance.m_pools.TryGetValue(prefabName, out var pool);
+        return pool.list;
+    }
+
+    public static GameObject GetPrefab(GameObject objectPooled)
+    {
+        return GetPrefab(GetPrefab(objectPooled.name));
+    }
+
+    public static GameObject GetPrefab(string prefabName)
+    {
+        Instance.m_pools.TryGetValue(prefabName, out var pool);
+        return pool.prefab;
     }
 }
 

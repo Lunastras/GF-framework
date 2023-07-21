@@ -32,7 +32,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameMultiplayerType m_gameType = GameMultiplayerType.SINGLEPLAYER;
 
 
-    public enum GameMultiplayerType {
+    public enum GameMultiplayerType
+    {
         SINGLEPLAYER,
         SERVER,
         HOST,
@@ -79,37 +80,44 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (NetworkManager.Singleton && NetworkManager.Singleton.isActiveAndEnabled) NetworkManager.Singleton.Shutdown();
+    }
+
     private void Start()
     {
         m_spawnManager = NetworkManager.Singleton.SpawnManager;
         m_currentTimeScale = Time.timeScale;
         m_deathScreenMusic.LoadAudioClip();
 
-        if(m_overrideGameTypeMode) {
-            GameType = m_gameType;  
+        if (m_overrideGameTypeMode)
+        {
+            GameType = m_gameType;
         }
 
-         switch(GameType) {
-                case(GameMultiplayerType.SINGLEPLAYER):
-                    NetworkManager.Singleton.StartHost();
-                    GameManager.SingleplayerStart();
+        switch (GameType)
+        {
+            case (GameMultiplayerType.SINGLEPLAYER):
+                NetworkManager.Singleton.StartHost();
+                GameManager.SingleplayerStart();
                 break;
 
-                case(GameMultiplayerType.SERVER):
-                    NetworkManager.Singleton.StartServer();
-                    GameManager.MultiplayerStart();
+            case (GameMultiplayerType.SERVER):
+                NetworkManager.Singleton.StartServer();
+                GameManager.MultiplayerStart();
                 break;
 
-                case(GameMultiplayerType.HOST):
-                    NetworkManager.Singleton.StartHost();
-                    GameManager.MultiplayerStart();
+            case (GameMultiplayerType.HOST):
+                NetworkManager.Singleton.StartHost();
+                GameManager.MultiplayerStart();
                 break;
 
-                case(GameMultiplayerType.CLIENT):
-                    NetworkManager.Singleton.StartClient();
-                    GameManager.MultiplayerStart();
+            case (GameMultiplayerType.CLIENT):
+                NetworkManager.Singleton.StartClient();
+                GameManager.MultiplayerStart();
                 break;
-            }
+        }
     }
 
     private void Update()

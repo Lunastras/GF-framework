@@ -38,15 +38,22 @@ public class AudioManager : MonoBehaviour
         if (Instance)
             Destroy(Instance);
 
+        DontDestroyOnLoad(this);
+
         Instance = this;
     }
 
     public static void LoadAudioClip(Sound sound)
     {
-        Instance.m_audioLoadAudioSource.Stop();
-        Instance.m_audioLoadAudioSource.volume = 0;
-        Instance.m_audioLoadAudioSource.clip = sound.m_clip;
-        Instance.m_audioLoadAudioSource.Play();
+        if (Instance && Instance.m_audioLoadAudioSource)
+        {
+            Instance.m_audioLoadAudioSource.Stop();
+            Instance.m_audioLoadAudioSource.volume = 0;
+            Instance.m_audioLoadAudioSource.clip = sound.m_clip;
+            Instance.m_audioLoadAudioSource.Play();
+        }
+        else Debug.LogWarning("Clip cannot load before the audioManager initializes.");
+
     }
 
     public static float ValueToVolume(float value)

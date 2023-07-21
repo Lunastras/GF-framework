@@ -486,7 +486,7 @@ Transform:
   - {fileID: 148854930295164460}
   - {fileID: 148854929551912263}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &148854930636548512
 CapsuleCollider:
@@ -644,7 +644,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e274368ecf6b6a4bb0b70589a92119e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_movement: {fileID: 0}
   m_checkpointManager: {fileID: 0}
   m_respawnYCoord: -10
 --- !u!114 &148854930636548537
@@ -664,7 +663,7 @@ MonoBehaviour:
   m_speed: 9
   m_mass: 50
   m_stepOffset: 0
-  m_slopeLimit: 45
+  m_slopeLimit: 44
   m_upperSlopeLimit: 130
   m_queryTrigger: 2
   m_fullRotationSeconds: 1
@@ -679,8 +678,8 @@ MonoBehaviour:
   m_midAirAcceleration: 20
   m_midAirDeacceleration: 10
   m_maxFallSpeed: 50
-  m_jumpForce: 20
-  m_jumpExtensionMassCoef: 0.7
+  m_jumpForce: 14
+  m_jumpExtensionMassCoef: 0.6
   m_turnSpeed: 400
   m_requireJumpRelease: 1
   m_maxJumps: 8

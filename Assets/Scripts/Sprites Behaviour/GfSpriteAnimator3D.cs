@@ -184,7 +184,7 @@ public class GfSpriteAnimator3D : MonoBehaviour
     protected void NextFrame()
     {
         CurrentFrame++;
-        TimeUntilNextFrame += CurrentAnimation.timeUntilNextFrame[(int)Min(CurrentAnimation.timeUntilNextFrame.Length - 1, CurrentFrame)];
+        TimeUntilNextFrame = CurrentAnimation.timeUntilNextFrame[(int)Min(CurrentAnimation.timeUntilNextFrame.Length - 1, CurrentFrame)];
         // Debug.Log("The next frame is in " + timeUntilNextFrame);
 
         if (CurrentFrame >= CurrentAnimation.frames.Length)

@@ -1072,7 +1072,6 @@ GameObject:
   - component: {fileID: 916576515994448417}
   - component: {fileID: 916576515994448430}
   - component: {fileID: 916576515994448418}
-  - component: {fileID: 916576516492179068}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1099,7 +1098,7 @@ RectTransform:
   - {fileID: 122953866}
   - {fileID: 916576516595235587}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1183,7 +1182,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_deathScreenGroup: {fileID: 5265400037577919742}
   m_deathScreenFadeInTime: 2
-  m_deathScreenFadeOutTime: 0.1
   m_auxFadeToBlackImage: {fileID: 6398459242898047721}
   m_auxFadeToBlackImageFadeInTime: 0.25
   m_auxFadeToBlackImageFadeOutTime: 0.1
@@ -1194,22 +1192,6 @@ MonoBehaviour:
   m_levelSlidersParent: {fileID: 3084143954791865171}
   m_healthUI: {fileID: 533931818}
   m_gameUiElements: {fileID: 1210586025331562731}
---- !u!114 &916576516492179068
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 916576515994448431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 504e555eaf0a48b4c805d1749c5f9f94, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_serverBtn: {fileID: 1812666523}
-  m_hostBtn: {fileID: 1144141020}
-  m_clientBtn: {fileID: 629821643}
-  m_singlePlayerButton: {fileID: 5032431670424074682}
 --- !u!1 &916576516255717247
 GameObject:
   m_ObjectHideFlags: 0

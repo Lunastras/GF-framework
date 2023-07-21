@@ -20,6 +20,11 @@ public class LevelManager : MonoBehaviour
 
     [SerializeField] private float m_actionCalmBlendTime = 1;
 
+    [SerializeField] private int[] m_requiredScenesIndeces = null;
+
+    [SerializeField]
+    private GfPathfinding[] m_pathfindingSystems = null;
+
     private float m_pitchSmoothTime = 2;
 
     private bool m_isPlayingCalmMusic = true;
@@ -27,9 +32,6 @@ public class LevelManager : MonoBehaviour
     private static LevelManager Instance = null;
 
     private LevelData m_levelData = default;
-
-    [SerializeField]
-    private GfPathfinding[] m_pathfindingSystems = null;
 
     [System.Serializable]
     private struct LevelData
@@ -63,6 +65,9 @@ public class LevelManager : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+
+
+
         if (Instance != this) Destroy(Instance);
         Instance = this;
 
@@ -98,6 +103,14 @@ public class LevelManager : MonoBehaviour
 
     public void Start()
     {
+        for (int i = 0; i < m_requiredScenesIndeces.Length; ++i)
+        {
+            if (!SceneManager.GetSceneByBuildIndex(m_requiredScenesIndeces[i]).isLoaded)
+            {
+                SceneManager.LoadScene(m_requiredScenesIndeces[i], LoadSceneMode.Additive);
+            }
+        }
+
         m_calmMusic.LoadAudioClip();
         m_actionMusic.LoadAudioClip();
 

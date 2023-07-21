@@ -156,11 +156,43 @@ public class PlayerController : NetworkBehaviour
         if (IsOwner && m_fixedUpdatePhysics && !m_usesRigidBody)
         {
             float physDelta = Time.fixedDeltaTime;
-            m_movement.UpdatePhysics(physDelta, true, physDelta); //actually the current deltatime   
+            GetInputs(physDelta);
 
-            m_flagDash = false;
-            m_flagJump = false;
+            m_movement.UpdatePhysics(physDelta, true, physDelta); //actually the current deltatime   
+            m_flagDash = m_flagJump = false;
         }
+    }
+
+    void GetInputs(float deltaTime)
+    {
+        bool auxFlagFire = false;
+        bool auxFlagDash = false;
+        bool auxFlagJump = false;
+        Vector3 auxMovDir = Vector3.zero;
+
+        if (!GameManager.IsPaused()) //get inputs
+        {
+            Vector3 upVec = m_movement.GetUpvecRotation();
+            m_cameraController.m_upvec = m_movement.GetUpvecRotation();
+            m_cameraController.UpdateRotation(deltaTime);
+
+            auxFlagFire = Input.GetAxisRaw("Fire1") > 0.5f;
+            auxFlagDash = Input.GetAxisRaw("Dash") > 0.8f;
+            auxFlagJump = Input.GetAxisRaw("Jump") > 0.8f;
+            auxMovDir = GetMovementInput(upVec);
+
+            GetWeaponScrollInput();
+        }
+
+        m_flagFire.Value = auxFlagFire; //calculated every frame, we just need the raw input
+        m_flagDash |= auxFlagDash; // used the | operator to keep the flag true until the next phys update call
+        m_flagJump |= auxFlagJump;
+        m_movDir = auxMovDir;
+
+
+        m_movement.FlagDash |= m_flagDash;
+        m_movement.FlagJump |= m_flagJump;
+        m_movement.SetMovementDir(m_movDir);
     }
 
     void LateUpdate()
@@ -169,33 +201,8 @@ public class PlayerController : NetworkBehaviour
         {
             float deltaTime = Time.deltaTime;
 
-            bool auxFlagFire = false;
-            bool auxFlagDash = false;
-            bool auxFlagJump = false;
-            Vector3 auxMovDir = Vector3.zero;
+            GetInputs(deltaTime);
 
-            if (!GameManager.IsPaused()) //get inputs
-            {
-                Vector3 upVec = m_movement.GetUpvecRotation();
-                m_cameraController.m_upvec = m_movement.GetUpvecRotation();
-                m_cameraController.UpdateRotation(deltaTime);
-
-                auxFlagFire = Input.GetAxisRaw("Fire1") > 0.5f;
-                auxFlagDash = Input.GetAxisRaw("Dash") > 0.8f;
-                auxFlagJump = Input.GetAxisRaw("Jump") > 0.8f;
-                auxMovDir = GetMovementInput(upVec);
-
-                GetWeaponScrollInput();
-            }
-
-            m_flagFire.Value = auxFlagFire; //calculated every frame, we just need the raw input
-            m_flagDash |= auxFlagDash; // used the | operator to keep the flag true until the next phys update call
-            m_flagJump |= auxFlagJump;
-            m_movDir = auxMovDir;
-
-            m_movement.FlagDash = m_flagDash;
-            m_movement.FlagJump = m_flagJump;
-            m_movement.SetMovementDir(m_movDir);
             m_movement.Move(deltaTime);
 
             if (!m_usesRigidBody && !m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
@@ -205,8 +212,7 @@ public class PlayerController : NetworkBehaviour
                 float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
                 m_movement.UpdatePhysics(physDelta, false, timeUntilNextUpdate);
 
-                m_flagDash = false;
-                m_flagJump = false;
+                m_flagDash = m_flagJump = false;
             }
 
             m_cameraController.Move(deltaTime);

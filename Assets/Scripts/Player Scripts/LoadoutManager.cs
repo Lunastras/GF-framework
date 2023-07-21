@@ -364,7 +364,7 @@ public class LoadoutManager : NetworkBehaviour
         GameObject obj = weaponToDestroy.gameObject;
         weaponToDestroy.DisableWhenDone = true;
         bool isAlive = weaponToDestroy.IsAlive();
-        GfPooling.DestroyInsert(obj, isAlive);
+        GfPooling.DestroyInsert(obj, 0, isAlive);
     }
 
     protected virtual void OnWeaponSet(WeaponBasic weapon) { }

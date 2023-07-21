@@ -227,7 +227,6 @@ public class GfCommandConsole : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Application.targetFrameRate = 165;
         m_console.SetActive(false);
         m_consoleImage.raycastTarget = m_console.activeSelf;
     }
