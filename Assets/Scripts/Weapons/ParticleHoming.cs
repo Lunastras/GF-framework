@@ -59,6 +59,8 @@ public class ParticleHoming : JobChild
 
     protected float m_timeUntilPhysUpdate = 0;
 
+    public GfMovementGeneric MovementGravityReference = null;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -114,6 +116,13 @@ public class ParticleHoming : JobChild
             //Debug.Log("The num of particles i have is: " + m_numActiveParticles + " name is: " + gameObject.name);
             if (m_numActiveParticles > 0)
             {
+                if (MovementGravityReference)
+                {
+                    GfMovementGeneric auxMovement = MovementGravityReference;
+                    CopyGravity(MovementGravityReference);
+                    MovementGravityReference = auxMovement;
+                }
+
                 m_particleList = new(m_numActiveParticles, Allocator.TempJob);
                 m_particleSystem.GetParticles(m_particleList, m_numActiveParticles);
 
@@ -180,15 +189,14 @@ public class ParticleHoming : JobChild
 
     public void CopyGravity(GfMovementGeneric movement)
     {
-        if (movement)
-        {
-            Transform sphericalParent = movement.GetParentSpherical();
+        Transform sphericalParent = movement.GetParentSpherical();
 
-            if (sphericalParent)
-                SetSphericalParent(sphericalParent);
-            else
-                SetDefaultGravityDir(-movement.GetUpVecRaw());
-        }
+        if (sphericalParent)
+            SetSphericalParent(sphericalParent);
+        else
+            SetDefaultGravityDir(-movement.GetUpVecRaw());
+
+        MovementGravityReference = null;
     }
 
     public void CopyGravity(ParticleHoming pg)
@@ -200,20 +208,16 @@ public class ParticleHoming : JobChild
         else
             SetDefaultGravityDir(pg.GetDefaultGravityDir());
 
+        MovementGravityReference = null;
     }
 
     public bool HasSameGravity(GfMovementGeneric movement)
     {
-        if (movement)
-        {
-            Transform parentSphericalToCopy = movement.GetParentSpherical();
-            bool sameParent = parentSphericalToCopy == m_sphericalParent;
-            bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
+        Transform parentSphericalToCopy = movement.GetParentSpherical();
+        bool sameParent = parentSphericalToCopy == m_sphericalParent;
+        bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
 
-            return ((sameParent && !nullParents) || (nullParents && (-movement.GetUpVecRaw()) == m_defaultGravityDir));
-        }
-
-        return false;
+        return ((sameParent && !nullParents) || (nullParents && (-movement.GetUpVecRaw()) == m_defaultGravityDir));
     }
 
     public bool HasSameGravity(ParticleHoming pg)
@@ -228,10 +232,8 @@ public class ParticleHoming : JobChild
     public Vector3 GetDefaultGravityDir() { return m_defaultGravityDir; }
     public void SetDefaultGravityDir(Vector3 upVec)
     {
-        m_defaultGravityDir = upVec.normalized;
-        if (m_defaultGravityDir.sqrMagnitude < 0.000001f)
-            m_defaultGravityDir = DOWNDIR;
-
+        m_defaultGravityDir = upVec;
+        SetSphericalParent(null);
         UpdateDefaultGravityCustomData();
     }
 
@@ -305,14 +307,16 @@ public struct ParticleHomingJob : IJobParallelFor
                     + dirToTarget * followsTargetF
                     + dirToPlanet * Convert.ToSingle(usesParentGravity);
 
-        float acceleration = m_acceleration * followsTargetF + m_gravity * notFollowingTargetF;
+        float currentSpeed = length(velocity);
+        bool isMoving = currentSpeed >= 0.05f; //do not apply gravity if we are stationary, this is to prevent bouncing
+        float gravityCoef = (1.0f - Convert.ToSingle(!isMoving) * 0.999f);
+        float acceleration = m_acceleration * followsTargetF + m_gravity * notFollowingTargetF * gravityCoef;
         float deacceleration = m_deacceleration * followsTargetF + m_drag * notFollowingTargetF;
 
         float movDirLengthSq = lengthsq(movDir);
         if (movDirLengthSq > 0.00001F)
             movDir /= sqrt(movDirLengthSq);
 
-        float currentSpeed = length(velocity);
 
         float dotMovementVelDir = 0;
         if (currentSpeed > 0.00001F)
@@ -322,6 +326,7 @@ public struct ParticleHomingJob : IJobParallelFor
 
         float speedInDesiredDir = currentSpeed * max(0, dotMovementVelDir);
         float3 unwantedVelocity = velocity - movDir * min(speedInDesiredDir, maxSpeed);
+        //if (maxSpeed > speedInDesiredDir) unwantedVelocity -= movDir * dot(movDir, deacceleration);
 
         float unwantedSpeed = length(unwantedVelocity);
         if (unwantedSpeed > 0.00001F) unwantedVelocity /= unwantedSpeed;
@@ -331,8 +336,6 @@ public struct ParticleHomingJob : IJobParallelFor
 
         velocity += movDir * accMagn;
         velocity -= unwantedVelocity * deaccMagn;
-
-        if (length(velocity) < 0.00001f) velocity = float3(0, -1, 0);
 
         particle.velocity = velocity;
         m_particleList[i] = particle;

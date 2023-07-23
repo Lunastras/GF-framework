@@ -30,7 +30,7 @@ public class NpcBehaviour : NpcController
     protected HostileValues m_hostileValues;
 
     [SerializeField]
-    protected WeaponTurret m_turret = null;
+    protected TurretWeapons m_turret = null;
 
     [SerializeField]
     protected float m_intervalBetweenWalkPhases = 4.0f;
@@ -76,7 +76,7 @@ public class NpcBehaviour : NpcController
             m_statsNpc = GetComponent<StatsNpc>();
 
         if (null == m_turret)
-            m_turret = GetComponent<WeaponTurret>();
+            m_turret = GetComponent<TurretWeapons>();
 
         //if (m_turret)
         //m_turret.SetStatsCharacter(m_statsNpc);

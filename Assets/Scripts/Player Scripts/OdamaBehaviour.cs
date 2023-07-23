@@ -8,7 +8,7 @@ public class OdamaBehaviour : MonoBehaviour
     private float m_collisionRadius = 0.25f;
 
     [SerializeField]
-    private WeaponBasic m_weaponBasic = null;
+    private WeaponGeneric m_weaponBasic = null;
 
     [SerializeField]
     private ShadowProjectorManipulator m_shadowProjector = null;
@@ -52,7 +52,7 @@ public class OdamaBehaviour : MonoBehaviour
     void Awake()
     {
         m_transform = transform;
-        if (null == m_weaponBasic) m_weaponBasic = GetComponent<WeaponBasic>();
+        if (null == m_weaponBasic) m_weaponBasic = GetComponent<WeaponGeneric>();
         if (null == m_weaponBasic) Debug.LogWarning("OdamaBehaviour warning: gameobject '" + gameObject.name + "' does not have a WeaponBasic component. Please attach one.");
     }
 
@@ -101,6 +101,6 @@ public class OdamaBehaviour : MonoBehaviour
         return m_desiredTargetDst;
     }
 
-    public virtual WeaponBasic GetWeaponBasic() { return m_weaponBasic; }
-    public virtual void SetWeaponBasic(WeaponBasic parent) { m_weaponBasic = parent; }
+    public virtual WeaponGeneric GetWeaponBasic() { return m_weaponBasic; }
+    public virtual void SetWeaponBasic(WeaponGeneric parent) { m_weaponBasic = parent; }
 }

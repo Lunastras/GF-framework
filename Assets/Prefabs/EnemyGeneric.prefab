@@ -5251,8 +5251,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4759944753111975126}
   - component: {fileID: 1372938329087745302}
+  - component: {fileID: 7451016478086235369}
   - component: {fileID: 7866579364068057338}
-  - component: {fileID: 1184494187360147066}
   - component: {fileID: 432613321654859549}
   - component: {fileID: 1422192360}
   - component: {fileID: 6956267960600933848}
@@ -5320,6 +5320,25 @@ MonoBehaviour:
   m_varianceRate: 0.2
   m_walkSpeedMultiplyer: 0.5
   m_maxDstFromSpawnWalk: 10
+--- !u!114 &7451016478086235369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4759944753111975130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51b15f325cd30dc49a9bd5e13e0a3eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_turretPhases:
+  - weapons:
+    - {fileID: 8334912748930156530}
+  m_autoPlay: 0
+  m_statsCharacter: {fileID: 0}
+  m_destoryWhenDone: 0
+  m_objectToDestroy: {fileID: 0}
 --- !u!114 &7866579364068057338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5348,7 +5367,7 @@ MonoBehaviour:
   m_mainGameObject: {fileID: 3538087118917617869}
   m_npcController: {fileID: 1372938329087745302}
   m_objectCollider: {fileID: 6910084372030936651}
-  m_turret: {fileID: 1184494187360147066}
+  m_turret: {fileID: 0}
   m_damageSound:
     m_clip: {fileID: 8300000, guid: 94d1cc8d45d5fb541afdd80639a8c3fd, type: 3}
     m_mixerType: 0
@@ -5373,25 +5392,6 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
---- !u!114 &1184494187360147066
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4759944753111975130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 608644a682216bf4eaec6b2595f21fc3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_turretPhases:
-  - weapons:
-    - {fileID: 8334912748930156530}
-  m_autoPlay: 0
-  m_statsCharacter: {fileID: 7866579364068057338}
-  m_destoryWhenDone: 0
-  m_objectToDestroy: {fileID: 0}
 --- !u!114 &432613321654859549
 MonoBehaviour:
   m_ObjectHideFlags: 0

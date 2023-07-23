@@ -152,6 +152,7 @@ MonoBehaviour:
   m_EndAngleFade: 58.29181
   m_UVScale: {x: 1, y: 1}
   m_UVBias: {x: 0, y: 0}
+  m_DecalLayerMask: 1
   m_ScaleMode: 0
   m_Offset: {x: 0, y: 0, z: 0.60729694}
   m_Size: {x: 1.2860512, y: 1.2860512, z: 1.2145939}
@@ -182,9 +183,6 @@ MonoBehaviour:
   m_smoothTimeOpacity: 0.1
   m_smoothTimeSize: 0.1
   m_overrideZaxisRotation: 1
-  m_layerMask:
-    serializedVersion: 2
-    m_Bits: 133633
   m_upDir: {x: 0, y: 1, z: 0}
 --- !u!1 &5605963468813519049
 GameObject:
@@ -196,10 +194,10 @@ GameObject:
   m_Component:
   - component: {fileID: 5605963468813519050}
   - component: {fileID: 2530872436276734199}
-  - component: {fileID: 8540795760386272405}
   - component: {fileID: 5605963468813519046}
   - component: {fileID: 8402473212356980238}
   - component: {fileID: 1998565385933652919}
+  - component: {fileID: 7950612670326849366}
   m_Layer: 2
   m_Name: Odama error troll
   m_TagString: Untagged
@@ -246,27 +244,6 @@ MonoBehaviour:
   m_levelFireSounds: []
   m_levelReleaseFireSounds: []
   m_expRequiredForLevels: []
-  m_odama: {fileID: 0}
---- !u!114 &8540795760386272405
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5605963468813519049}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 608644a682216bf4eaec6b2595f21fc3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 2530872436276734199}
-  m_turretPhases:
-  - weapons:
-    - {fileID: 1998565385933652919}
-  m_autoPlay: 0
-  m_destoryWhenDone: 0
-  m_objectToDestroy: {fileID: 0}
 --- !u!114 &5605963468813519046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -279,23 +256,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53fefe2c2f768304f8fe7d18a14d771c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_collisionRadius: 0.25
   m_weaponBasic: {fileID: 0}
   m_shadowProjector: {fileID: 0}
   m_followCameraScript: {fileID: 0}
-  m_dstFromParent: 1
-  m_rotationSpeedCoefOnFire: 20
-  m_bopCoefOnFire: 0
-  m_dstFromParentCoefOnFire: 0.5
-  m_rotationSpeed: 1
-  m_bopSpeed: 1
-  m_bopRange: 0.5
-  m_parentMoveSmoothness: 0.02
-  m_rotationSpeedSmoothTime: 0.2
-  m_bopValueSmoothTime: 0.2
+  m_movementSmoothTime: 0.02
   m_distanceSmoothTime: 0.2
-  m_positionOffset: {x: 0, y: 0, z: 0}
+  m_dstFromParent: 1
   m_physCheckInterval: 1000
-  m_collisionRadius: 0.25
 --- !u!82 &8402473212356980238
 AudioSource:
   m_ObjectHideFlags: 0
@@ -414,3 +382,23 @@ MonoBehaviour:
   m_fireCoolDownSeconds: 0
   m_particlesToEmit: 1
   m_applyRotation: 0
+--- !u!114 &7950612670326849366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5605963468813519049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1

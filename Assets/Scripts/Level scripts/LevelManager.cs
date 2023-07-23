@@ -65,9 +65,6 @@ public class LevelManager : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-
-
-
         if (Instance != this) Destroy(Instance);
         Instance = this;
 
@@ -99,10 +96,7 @@ public class LevelManager : MonoBehaviour
             m_levelData.paths = new GfPathfinding.NodePathSaveData[m_pathfindingSystems.Length];
             GenerateAllNodePaths();
         }
-    }
 
-    public void Start()
-    {
         for (int i = 0; i < m_requiredScenesIndeces.Length; ++i)
         {
             if (!SceneManager.GetSceneByBuildIndex(m_requiredScenesIndeces[i]).isLoaded)
@@ -110,7 +104,10 @@ public class LevelManager : MonoBehaviour
                 SceneManager.LoadScene(m_requiredScenesIndeces[i], LoadSceneMode.Additive);
             }
         }
+    }
 
+    public void Start()
+    {
         m_calmMusic.LoadAudioClip();
         m_actionMusic.LoadAudioClip();
 

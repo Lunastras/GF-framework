@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-public class WeaponLevelSlider : MonoBehaviour
+public class ExperienceSliderWeapon : MonoBehaviour
 {
     [SerializeField]
     private Slider m_slider = null;

@@ -6,7 +6,7 @@ using Unity.Netcode;
 public class PlayerController : NetworkBehaviour
 {
     [SerializeField]
-    private WeaponFiring m_weaponFiring;
+    private FiringWeapons m_weaponFiring;
 
     [SerializeField]
     private GfMovementGeneric m_movement;
@@ -79,7 +79,7 @@ public class PlayerController : NetworkBehaviour
 
         if (null == m_weaponFiring)
         {
-            m_weaponFiring = GetComponent<WeaponFiring>();
+            m_weaponFiring = GetComponent<FiringWeapons>();
             if (null == m_weaponFiring)
                 Debug.LogError("ERROR: The gameobject does not have a WeaponFiring component! Please add on to the object");
         }

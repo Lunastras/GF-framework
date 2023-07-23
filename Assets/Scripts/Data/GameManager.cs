@@ -158,12 +158,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public static void SetEnemiesEngagingCount(int count)
+    //called when an enemy is approaching this character
+    public static void NotifyEnemyEngaging(int enemyCount, ulong enemyNetworkId)
     {
-        if (count == 0)
-            LevelManager.StartCalmMusic();
-        else
-            LevelManager.StartActionMusic();
+        if (enemyCount != 0) LevelManager.StartActionMusic();
+    }
+
+    //called when an enemy stop engaging
+    public static void NotifyEnemyDisengaging(int enemyCount, ulong enemyNetworkId)
+    {
+        if (enemyCount == 0) LevelManager.StartCalmMusic();
     }
 
     public static void PlayerDied()

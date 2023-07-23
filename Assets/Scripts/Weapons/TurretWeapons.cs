@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 
-public class WeaponTurret : NetworkBehaviour
+public class TurretWeapons : NetworkBehaviour
 {
     [SerializeField]
     private WeaponTurretPhase[] m_turretPhases = null;
@@ -28,6 +28,8 @@ public class WeaponTurret : NetworkBehaviour
     public bool m_destoryWhenDone = false;
 
     public GameObject m_objectToDestroy = null;
+
+    protected GfMovementGeneric m_movementParent = null;
 
     private PriorityValue<float> m_speedMultiplier = new(1);
     private PriorityValue<float> m_damageMultiplier = new(1);
@@ -105,7 +107,7 @@ public class WeaponTurret : NetworkBehaviour
     {
         if (m_firing && m_turretPhases.Length > 0)
         {
-            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
 
             for (int i = systems.Length - 1; i >= 0; --i)
                 systems[i].StopFiring(killBullets);
@@ -120,7 +122,7 @@ public class WeaponTurret : NetworkBehaviour
 
         if (onlyCurentPhase && m_turretPhases.Length > 0)
         {
-            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int length = systems.Length;
             for (int i = 0; i < length && !isPlaying; ++i)
                 isPlaying |= systems[i].IsFiring();
@@ -129,7 +131,7 @@ public class WeaponTurret : NetworkBehaviour
         {
             for (int i = 0; i < m_turretPhases.Length && !isPlaying; ++i)
             {
-                WeaponBasic[] systems = m_turretPhases[i].weapons;
+                WeaponGeneric[] systems = m_turretPhases[i].weapons;
                 int length = systems.Length;
 
                 for (int j = 0; j < length && !isPlaying; ++j)
@@ -146,7 +148,7 @@ public class WeaponTurret : NetworkBehaviour
 
         if (onlyCurentPhase && m_turretPhases.Length > 0)
         {
-            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int length = systems.Length;
             for (int i = 0; i < length && !isPlaying; ++i)
                 isPlaying |= systems[i].IsAlive();
@@ -155,7 +157,7 @@ public class WeaponTurret : NetworkBehaviour
         {
             for (int i = 0; i < m_turretPhases.Length && !isPlaying; ++i)
             {
-                WeaponBasic[] systems = m_turretPhases[i].weapons;
+                WeaponGeneric[] systems = m_turretPhases[i].weapons;
                 int length = systems.Length;
 
                 for (int j = 0; j < length && !isPlaying; ++j)
@@ -178,7 +180,7 @@ public class WeaponTurret : NetworkBehaviour
         return m_currentPhaseIndex;
     }
 
-    public WeaponBasic GetWeapon(int phaseIndex, int weaponIndex)
+    public WeaponGeneric GetWeapon(int phaseIndex, int weaponIndex)
     {
         return m_turretPhases[phaseIndex].weapons[weaponIndex];
     }
@@ -191,6 +193,24 @@ public class WeaponTurret : NetworkBehaviour
     public int GetNumWeapons(int phaseIndex)
     {
         return m_turretPhases[phaseIndex].weapons.Length;
+    }
+
+    public GfMovementGeneric GetMovementParent()
+    {
+        return m_movementParent;
+    }
+
+    public void SetMovementParent(GfMovementGeneric parent)
+    {
+
+        for (int i = 0; i < m_turretPhases.Length; ++i)
+        {
+            WeaponGeneric[] systems = m_turretPhases[i].weapons;
+            int length = systems.Length;
+
+            for (int j = 0; j < length; ++j)
+                systems[j].SetMovementParent(parent);
+        }
     }
 
     public StatsCharacter GetStatsCharacter() { return m_statsCharacter; }
@@ -276,7 +296,7 @@ public class WeaponTurret : NetworkBehaviour
         if (!m_firing && m_turretPhases.Length > 0)
         {
             m_firing = true;
-            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int length = systems.Length;
             for (int i = 0; i < length; ++i)
             {
@@ -293,7 +313,7 @@ public class WeaponTurret : NetworkBehaviour
     {
         if (m_turretPhases.Length > 0)
         {
-            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int systemsLength = systems.Length;
             for (int i = 0; i < systemsLength; ++i)
                 systems[i].transform.rotation = rotation;
@@ -304,7 +324,7 @@ public class WeaponTurret : NetworkBehaviour
     {
         if (m_turretPhases.Length > 0)
         {
-            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int systemsLength = systems.Length;
             for (int i = 0; i < systemsLength; ++i)
                 systems[i].SetTarget(target);
@@ -330,9 +350,9 @@ public class WeaponTurret : NetworkBehaviour
     public virtual bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
         bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
-        if (changedValue)
+        if (changedValue && m_turretPhases.Length > 0)
         {
-            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int weaponCount = systems.Length;
             for (int i = 0; i < weaponCount; ++i)
             {
@@ -347,9 +367,9 @@ public class WeaponTurret : NetworkBehaviour
     public virtual bool SetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
         bool changedValue = m_fireRateMultiplier.SetValue(multiplier, priority, overridePriority);
-        if (changedValue)
+        if (changedValue && m_turretPhases.Length > 0)
         {
-            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int weaponCount = systems.Length;
             for (int i = 0; i < weaponCount; ++i)
             {
@@ -364,9 +384,9 @@ public class WeaponTurret : NetworkBehaviour
     public virtual bool SetDamageMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
     {
         bool changedValue = m_damageMultiplier.SetValue(multiplier, priority, overridePriority);
-        if (changedValue)
+        if (changedValue && m_turretPhases.Length > 0)
         {
-            WeaponBasic[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
             int weaponCount = systems.Length;
             for (int i = 0; i < weaponCount; ++i)
             {
@@ -382,7 +402,7 @@ public class WeaponTurret : NetworkBehaviour
 public class WeaponTurretPhase
 {
     [SerializeReference]
-    public WeaponBasic[] weapons;
+    public WeaponGeneric[] weapons;
 
     // public float timeUntilNextPhase;
 }

@@ -14844,7 +14844,7 @@ MonoBehaviour:
   - {fileID: 5605963468813519049, guid: 04bf6d47387a93743b4a7b6f20d9502c, type: 3}
   - {fileID: 3395991133157087368, guid: 0aab2593a4d08cc45b7bae82a52d3f1f, type: 3}
   - {fileID: 3395991133157087368, guid: 6907cb91fffdd7a40bca5dfa7cb50761, type: 3}
-  - {fileID: 3395991133157087368, guid: cd98cce9bede3584997c304f62b05dd3, type: 3}
+  - {fileID: 3395991133157087368, guid: 42a583572d1b47b4595350e256c43eb9, type: 3}
 --- !u!114 &1273476797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14860,6 +14860,9 @@ MonoBehaviour:
   m_collisionsNonGroundLayerMask:
     serializedVersion: 2
     m_Bits: 8656
+  m_targetableCollisions:
+    serializedVersion: 2
+    m_Bits: 15561
   m_groundLayerMask:
     serializedVersion: 2
     m_Bits: 7169

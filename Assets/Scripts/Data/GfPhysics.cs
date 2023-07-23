@@ -20,6 +20,9 @@ public class GfPhysics : MonoBehaviour
 
     //layer mask of objects that can be considered ground
     [SerializeField]
+    public LayerMask m_targetableCollisions;
+
+    [SerializeField]
     public LayerMask m_groundLayerMask;
 
     //layer mask of wallrunnable objects
@@ -89,6 +92,11 @@ public class GfPhysics : MonoBehaviour
     public static int CollisionsNoGroundLayers()
     {
         return Instance.m_collisionsNonGroundLayerMask;
+    }
+
+    public static int TargetableCollisions()
+    {
+        return Instance.m_targetableCollisions;
     }
 
     public static int NonCharacterCollisions()

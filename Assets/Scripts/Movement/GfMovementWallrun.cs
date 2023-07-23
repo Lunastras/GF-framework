@@ -132,12 +132,16 @@ public class GfMovementWallrun : GfMovementSimple
     {
         if (m_isWallRunning && 0 > m_secondsUntilCanJump) //perform wall jump
         {
-            Vector3 axis = Vector3.Cross(m_transform.up, m_previousWallRunNormal);
-            GfTools.Normalize(ref axis);
+            Vector3 horizontalAxis = m_previousWallRunNormal;
+            GfTools.RemoveAxis(ref horizontalAxis, m_upVec);
+            GfTools.Normalize(ref horizontalAxis);
 
-            Vector3 jumpDir = Quaternion.AngleAxis(-m_wallrunJumpAngle, axis) * m_previousWallRunNormal;
+            Vector3 rotationAxis = Vector3.Cross(m_upVec, horizontalAxis);
+            GfTools.Normalize(ref rotationAxis);
+
+            Vector3 jumpDir = Quaternion.AngleAxis(-m_wallrunJumpAngle, rotationAxis) * horizontalAxis;
             GfTools.Mult3(ref jumpDir, m_wallRunJumpForce);
-            GfTools.Add3(ref m_velocity, jumpDir);
+            m_velocity = jumpDir;
 
             DetachFromWall(true);
 
@@ -234,26 +238,39 @@ public class GfMovementWallrun : GfMovementSimple
         Vector3 testVector = Zero3;
         Vector3 movDir = MovementDirComputed();
         float movDirMag = movDir.sqrMagnitude;
+        Vector3 horizontalNormal = collision.selfNormal;
+        GfTools.RemoveAxis(ref horizontalNormal, m_upVec);
+        GfTools.Normalize(ref horizontalNormal);
+        bool normalValid = false;
 
         if (movDirMag > 0.05f)
         {
             testVector = movDir;
             GfTools.Div3(ref testVector, Sqrt(movDirMag));
+            normalValid = m_wallrunNormalMinDot <= -Vector3.Dot(testVector, horizontalNormal);
         }
         else
         {
             Vector3 horizontalVelocity = collision.selfVelocity;
             GfTools.RemoveAxis(ref horizontalVelocity, m_upVec);
             float velSqrMag = horizontalVelocity.sqrMagnitude;
+            float sqrdSpeedRequired = m_wallrunSpeedRequired * m_wallrunSpeedRequired;
 
-            if (velSqrMag >= m_wallrunSpeedRequired * m_wallrunSpeedRequired)
+            if (velSqrMag >= sqrdSpeedRequired)
             {
                 testVector = horizontalVelocity;
-                GfTools.Div3(ref testVector, System.MathF.Sqrt(velSqrMag));
+                GfTools.Div3(ref testVector, Sqrt(velSqrMag));
+
+                Vector3 forwardDir = m_transform.forward;
+                GfTools.RemoveAxis(ref forwardDir, m_upVec);
+                GfTools.Normalize(ref forwardDir);
+
+                normalValid = m_wallrunNormalMinDot <= -Vector3.Dot(testVector, horizontalNormal)
+                            && m_wallrunNormalMinDot <= -Vector3.Dot(forwardDir, horizontalNormal);
             }
         }
 
-        return m_wallrunNormalMinDot <= -Vector3.Dot(testVector, collision.selfNormal);
+        return normalValid;
     }
 
     protected bool WallCollisionCheck(ref MgCollisionStruct collision)

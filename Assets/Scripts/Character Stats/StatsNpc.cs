@@ -38,7 +38,7 @@ public class StatsNpc : StatsCharacter
     protected Collider m_objectCollider;
 
     [SerializeField]
-    protected WeaponTurret m_turret;
+    protected TurretWeapons m_turret;
     protected AudioSource m_audioSource;
 
     [SerializeField]
@@ -71,7 +71,7 @@ public class StatsNpc : StatsCharacter
             m_npcController = GetComponent<NpcController>();
 
         if (null == m_turret)
-            m_turret = GetComponent<WeaponTurret>();
+            m_turret = GetComponent<TurretWeapons>();
 
         if (null == m_mainGameObject)
             m_mainGameObject = gameObject;

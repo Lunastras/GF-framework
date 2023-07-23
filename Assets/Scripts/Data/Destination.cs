@@ -36,7 +36,7 @@ public class Destination
             TargetStatsCharacter = destination.GetComponent<StatsCharacter>();
 
             if (TargetStatsCharacter)
-                TargetStatsCharacter.NotifyEnemyEngaging(SelfStatsCharacter);
+                TargetStatsCharacter.NotifyEnemyEngaging(TargetStatsCharacter.NetworkObjectId);
         }
     }
 
@@ -84,7 +84,7 @@ public class Destination
             TargetStatsCharacter = destination.GetComponent<StatsCharacter>();
 
             if (TargetStatsCharacter)
-                TargetStatsCharacter.NotifyEnemyEngaging(SelfStatsCharacter);
+                TargetStatsCharacter.NotifyEnemyEngaging(SelfStatsCharacter.NetworkObjectId);
         }
     }
 

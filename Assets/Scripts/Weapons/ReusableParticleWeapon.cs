@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ReusableParticleWeapon : WeaponBasic
+public class ReusableParticleWeapon : WeaponGeneric
 {
     [SerializeField]
     private GameObject m_particleSystemObj = null;

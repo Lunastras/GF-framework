@@ -136,6 +136,21 @@ public class GfTools
         Minus3(ref vector, axisNormalised);
     }
 
+    //removes any rotation from the given quaternion that is not on the 'mainAxis' axis.
+    public static void RemoveOtherAxisFromRotation(ref Quaternion rotation, Vector3 mainAxisNormalised)
+    {
+        Vector3 rotationAxis = new(rotation.x, rotation.y, rotation.z);
+        // same as 'float rotationAxisMagnitude = rotationAxis.magnitude', but faster
+        float rotationAxisMagnitude = System.MathF.Sqrt(rotationAxis.x * rotationAxis.x + rotationAxis.y * rotationAxis.y + rotationAxis.z * rotationAxis.z);
+        float rotationAngleRad = 2.0f * System.MathF.Atan(rotationAxisMagnitude / rotation.w);
+        GfTools.Div3(ref rotationAxis, rotationAxisMagnitude); //normalize rotation axis
+
+#pragma warning disable 0618
+        //marked as deprecated, but system.math returns radians, and Quaternion.AngleAxis converts the angle in degrees to radians anyway, so we don't care about the warning
+        rotation.SetAxisAngle(mainAxisNormalised, rotationAngleRad * Vector3.Dot(rotationAxis, mainAxisNormalised));
+#pragma warning restore 0618
+    }
+
     public static void RemoveAxisKeepMagnitude(ref Vector3 leftHand, Vector3 rightHand)
     {
         float mag = leftHand.magnitude;

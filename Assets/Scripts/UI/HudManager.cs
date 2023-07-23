@@ -44,7 +44,7 @@ public class HudManager : MonoBehaviour
     [SerializeField]
     private GameObject m_gameUiElements = null;
 
-    private List<WeaponLevelSlider> m_weaponSliders = null;
+    private List<ExperienceSliderWeapon> m_weaponSliders = null;
 
     // Start is called before the first frame update
     void Awake()
@@ -66,7 +66,7 @@ public class HudManager : MonoBehaviour
     /** Set the max number of sliders and stup the sliders
     *   should only be called once at the start of the game
     */
-    public void UpdateWeaponLevelSlidersNumber(List<WeaponBasic> weapons)
+    public void UpdateWeaponLevelSlidersNumber(List<WeaponGeneric> weapons)
     {
         int desiredWeaponCount = 1;
         int currentWeaponCount = weapons.Count;
@@ -77,7 +77,7 @@ public class HudManager : MonoBehaviour
         while (0 < numSlidersNeeded) //add sliders
         {
             index = m_weaponSliders.Count;
-            m_weaponSliders.Add(GfPooling.PoolInstantiate(m_levelSliderPrefab).GetComponent<WeaponLevelSlider>());
+            m_weaponSliders.Add(GfPooling.PoolInstantiate(m_levelSliderPrefab).GetComponent<ExperienceSliderWeapon>());
             RectTransform weaponTransform = m_weaponSliders[index].GetComponent<RectTransform>();
             weaponTransform.SetParent(m_levelSlidersParent);
 
@@ -103,7 +103,7 @@ public class HudManager : MonoBehaviour
         return m_healthUI;
     }
 
-    public void UpdateWeaponLevelSlidersValues(List<WeaponBasic> weapons)
+    public void UpdateWeaponLevelSlidersValues(List<WeaponGeneric> weapons)
     {
         int effectiveWeaponCount = 1;
         int realWeaponCount = m_weaponSliders.Count;

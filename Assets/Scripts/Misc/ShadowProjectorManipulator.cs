@@ -76,7 +76,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
     }
 
     // Update is called once per frame
-    void LateUpdate()
+    void FixedUpdate()
     {
         if (m_overrideZaxisRotation && m_parentMovement)
         {

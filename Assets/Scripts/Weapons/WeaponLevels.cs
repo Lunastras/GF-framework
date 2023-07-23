@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponLevels : WeaponBasic
+public class WeaponLevels : WeaponGeneric
 {
     [SerializeField]
     private AudioSource m_audioSource = null;
 
     [SerializeField]
-    protected WeaponTurret m_turret = null;
+    protected TurretWeapons m_turret = null;
 
     [SerializeField]
     public Sound[] m_levelFireSounds = null;
@@ -25,6 +25,45 @@ public class WeaponLevels : WeaponBasic
 
     public float NextLevelProgress { get; private set; } = 0;
 
+    protected bool m_initialised = false;
+
+    private void Awake()
+    {
+        Initialize();
+    }
+
+    public override void Initialize()
+    {
+        if (!m_initialised)
+        {
+            if (null == m_turret)
+            {
+                m_turret = GetComponent<TurretWeapons>();
+            }
+
+            if (null == m_audioSource)
+            {
+                m_audioSource = GetComponent<AudioSource>();
+                if (null == m_audioSource)
+                {
+                    m_audioSource = gameObject.AddComponent<AudioSource>();
+                }
+            }
+
+            for (int i = 0; i < m_levelFireSounds.Length; ++i)
+            {
+                m_levelFireSounds[i].LoadAudioClip();
+            }
+
+            for (int i = 0; i < m_levelReleaseFireSounds.Length; ++i)
+            {
+                m_levelReleaseFireSounds[i].LoadAudioClip();
+            }
+
+            m_initialised = true;
+        }
+    }
+
     public override void StopFiring(bool killBullets)
     {
         m_isFiring = false;
@@ -36,31 +75,9 @@ public class WeaponLevels : WeaponBasic
         DestroyWhenDone = DisableWhenDone = false;
     }
 
-    private void Awake()
+    public override void SetMovementParent(GfMovementGeneric parent)
     {
-        if (null == m_turret)
-        {
-            m_turret = GetComponent<WeaponTurret>();
-        }
-
-        if (null == m_audioSource)
-        {
-            m_audioSource = GetComponent<AudioSource>();
-            if (null == m_audioSource)
-            {
-                m_audioSource = gameObject.AddComponent<AudioSource>();
-            }
-        }
-
-        for (int i = 0; i < m_levelFireSounds.Length; ++i)
-        {
-            m_levelFireSounds[i].LoadAudioClip();
-        }
-
-        for (int i = 0; i < m_levelReleaseFireSounds.Length; ++i)
-        {
-            m_levelReleaseFireSounds[i].LoadAudioClip();
-        }
+        m_turret.SetMovementParent(parent);
     }
 
     public override bool IsFiring() { return m_turret.IsFiring(); }

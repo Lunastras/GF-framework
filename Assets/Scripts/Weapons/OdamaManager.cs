@@ -59,7 +59,7 @@ public class OdamaManager : LoadoutManager
 
     private static readonly Vector3 RIGHT3 = Vector3.right;
 
-    protected override void OnWeaponSet(WeaponBasic weapon)
+    protected override void OnWeaponSet(WeaponGeneric weapon)
     {
         OdamaBehaviour odama = weapon.GetComponent<OdamaBehaviour>();
         if (odama) m_odamaList.Add(odama);

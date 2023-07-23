@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class WeaponParticle : WeaponBasic
+public abstract class WeaponParticle : WeaponGeneric
 {
     private int m_particleTriggerDamageListIndex = -1;
     protected ParticleSystem m_particleSystem;
@@ -74,6 +74,14 @@ public abstract class WeaponParticle : WeaponBasic
         }
 
         return changedValue;
+    }
+
+    public override void SetMovementParent(GfMovementGeneric parent)
+    {
+        var particleHoming = GetComponent<ParticleHoming>();
+        if (particleHoming)
+            particleHoming.MovementGravityReference = parent;
+        m_movementParent = parent;
     }
 
     public virtual float GetInitialRateOverTimeMultiplier() { return m_initialRateOverTimeMultiplier; }

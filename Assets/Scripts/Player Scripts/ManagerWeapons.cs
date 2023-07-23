@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponMaster : MonoBehaviour
+public class ManagerWeapons : MonoBehaviour
 {
     [SerializeField]
     public GameObject[] m_weapons;
 
-    private static WeaponMaster m_instance = null;
+    private static ManagerWeapons m_instance = null;
 
     void Awake()
     {

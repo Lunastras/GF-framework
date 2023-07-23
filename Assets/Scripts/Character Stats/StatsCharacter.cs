@@ -92,18 +92,18 @@ public abstract class StatsCharacter : NetworkBehaviour
 
 
     [ClientRpc]
-    protected virtual void KillClientRpc(ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    protected void KillClientRpc(ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
         InternalKill(enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
     }
 
     [ClientRpc]
-    protected virtual void KillClientRpc()
+    protected void KillClientRpc()
     {
         InternalKill(0, false, -1, -1, true);
     }
 
-    public virtual void Kill(ulong killerNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
+    public void Kill(ulong killerNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
     {
         if (HasAuthority)
             KillClientRpc(killerNetworkId, weaponLoadoutIndex, weaponIndex);
@@ -111,8 +111,49 @@ public abstract class StatsCharacter : NetworkBehaviour
             InternalKill(killerNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
     }
 
+
+    [ClientRpc]
+    protected void NotifyEnemyEngagingClientRpc(ulong enemyNetworkId)
+    {
+        if (!IsServer) InternalNotifyEnemyEngaging(enemyNetworkId);
+    }
+
+    public void NotifyEnemyEngaging(ulong enemyNetworkId)
+    {
+        /*We call InternalDamage() before calling the DamageClientRpc() because InternalDamage() can call the Kill rpc function.
+        The problem with this is that Unity has a bug where clientRpcs called from ClientRpcs are only called on the host.*/
+
+        InternalNotifyEnemyEngaging(enemyNetworkId);
+        if (HasAuthority)
+            NotifyEnemyEngagingClientRpc(enemyNetworkId);
+    }
+
+
     //called when an enemy is approaching this character
-    public virtual void NotifyEnemyEngaging(StatsCharacter character)
+    protected virtual void InternalNotifyEnemyEngaging(ulong enemyNetworkId)
+    {
+        ++m_enemiesEngagingCount;
+    }
+
+    [ClientRpc]
+    protected void NotifyEnemyDisengagingClientRpc(ulong enemyNetworkId)
+    {
+        if (!IsServer) InternalNotifyEnemyDisengaging(enemyNetworkId);
+    }
+
+    public void NotifyEnemyDisengaging(ulong enemyNetworkId)
+    {
+        /*We call InternalDamage() before calling the DamageClientRpc() because InternalDamage() can call the Kill rpc function.
+        The problem with this is that Unity has a bug where clientRpcs called from ClientRpcs are only called on the host.*/
+
+        InternalNotifyEnemyDisengaging(enemyNetworkId);
+        if (HasAuthority)
+            NotifyEnemyDisengagingClientRpc(enemyNetworkId);
+    }
+
+
+    //called when an enemy is approaching this character
+    protected virtual void InternalNotifyEnemyDisengaging(ulong enemyNetworkId)
     {
         ++m_enemiesEngagingCount;
     }

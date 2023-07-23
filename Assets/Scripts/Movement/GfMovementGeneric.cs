@@ -204,17 +204,15 @@ public abstract class GfMovementGeneric : NetworkBehaviour
             {
                 Quaternion deltaQuaternion = currentRot * Quaternion.Inverse(m_parentLastRot);
                 Vector3 vecFromParent = position - parentTransform.position;
-
                 Vector3 newVecFromParent = deltaQuaternion * vecFromParent;
                 m_parentRotMov = newVecFromParent;
                 GfTools.Minus3(ref m_parentRotMov, vecFromParent);
 
-                if (MovementDirRaw == Zero3) //not working properly, gotta fix
+                //apply the rotation to the character if it isn't moving
+                if (MovementDirRaw == Zero3)
                 {
-                    GfTools.RemoveAxis(ref vecFromParent, m_rotationUpVec);
-                    GfTools.RemoveAxis(ref newVecFromParent, m_rotationUpVec);
-                    float rotationDegrees = GfTools.SignedAngleDeg(vecFromParent, newVecFromParent, m_rotationUpVec);
-                    m_transform.rotation = Quaternion.AngleAxis(rotationDegrees, m_rotationUpVec) * m_transform.rotation;
+                    GfTools.RemoveOtherAxisFromRotation(ref deltaQuaternion, m_rotationUpVec);
+                    m_transform.rotation = deltaQuaternion * m_transform.rotation;
                 }
 
                 m_parentDeltaTimeRot = (float)(currentTime - m_timeOfLastParentRotUpdate);
@@ -615,8 +613,6 @@ public abstract class GfMovementGeneric : NetworkBehaviour
         Debug.DrawRay(position, bottomPos, Color.red, 0.1f);
         Debug.DrawRay(position, point - position, Color.green, 0.1f);
 
-        //Debug.Break();
-
         return Vector3.Dot(m_upVec, localStepHitPos - bottomPos);
     }
 
@@ -649,10 +645,6 @@ public abstract class GfMovementGeneric : NetworkBehaviour
                     collision.isStair = true;
                     collision.isGrounded = true;
                 }
-            }
-            else
-            {
-                Debug.Log("The bad step height was: " + stepHeight);
             }
         }
 

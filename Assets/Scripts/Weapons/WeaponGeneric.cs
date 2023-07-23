@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public abstract class WeaponBasic : DamageSource
+public abstract class WeaponGeneric : DamageSource
 {
     [SerializeField]
     protected float m_damage;
@@ -76,6 +76,8 @@ public abstract class WeaponBasic : DamageSource
     //called when the loadout changes a weapon to this one
     public virtual void WasSwitchedOn() { }
 
+    public virtual void Initialize() { }
+
     public virtual bool IsFiring()
     {
         return m_isFiring;
@@ -89,12 +91,10 @@ public abstract class WeaponBasic : DamageSource
     public virtual float AddPoints(WeaponPointsTypes type, float points) { return 0; }
 }
 
-/*
-public enum WeanponType
+public enum WeaponPointsTypes
 {
     EXPERIENCE,
-    CHARGE,
-    AMMO,
-    PASSIVE
-}*/
+    NUMBER_OF_TYPES
+}
+
 

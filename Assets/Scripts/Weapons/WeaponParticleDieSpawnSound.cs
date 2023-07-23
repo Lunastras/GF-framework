@@ -9,7 +9,7 @@ using UnityEngine;
 public class WeaponParticleDieSpawnSound : ParticleDieSpawnSound
 {
     [SerializeField]
-    protected WeaponBasic m_weapon;
+    protected WeaponGeneric m_weapon;
 
     [SerializeField]
     protected int m_highestIndexAllowed = 8;
@@ -17,7 +17,7 @@ public class WeaponParticleDieSpawnSound : ParticleDieSpawnSound
     void Start()
     {
         m_audioSource = GetComponent<AudioSource>();
-        if (null == m_weapon) m_weapon = GetComponent<WeaponBasic>();
+        if (null == m_weapon) m_weapon = GetComponent<WeaponGeneric>();
     }
 
     protected override void OnParticlesDie(int particleCount)

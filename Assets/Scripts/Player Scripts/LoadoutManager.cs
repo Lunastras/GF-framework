@@ -16,7 +16,7 @@ public class LoadoutManager : NetworkBehaviour
     protected StatsCharacter m_statsCharacter;
 
     [SerializeField]
-    protected WeaponFiring m_weaponFiring;
+    protected FiringWeapons m_weaponFiring;
 
     protected int[] m_weaponsInInventory;
 
@@ -37,7 +37,7 @@ public class LoadoutManager : NetworkBehaviour
     protected PriorityValue<float> m_damageMultiplier = new(1);
     protected PriorityValue<float> m_fireRateMultiplier = new(1);
 
-    protected List<WeaponBasic> m_weapons = new(4);
+    protected List<WeaponGeneric> m_weapons = new(4);
 
     protected const int MAX_WEAPONS = 128;
     protected const int MAX_LOADOUTS = 16;
@@ -60,7 +60,7 @@ public class LoadoutManager : NetworkBehaviour
     {
         if (null == m_weaponFiring)
         {
-            m_weaponFiring = GetComponent<WeaponFiring>();
+            m_weaponFiring = GetComponent<FiringWeapons>();
         }
 
         if (null == m_parentMovement)
@@ -73,7 +73,7 @@ public class LoadoutManager : NetworkBehaviour
             m_statsCharacter = GetComponent<StatsCharacter>();
         }
 
-        m_weaponsInInventory = new int[WeaponMaster.NumWeapons()];
+        m_weaponsInInventory = new int[ManagerWeapons.NumWeapons()];
     }
 
     private void OnDisable()
@@ -276,7 +276,7 @@ public class LoadoutManager : NetworkBehaviour
                 currentWeapon = m_loadouts[indexLoadout][indexWeapon].Weapon;
 
             bool nullWeapon = newWeapon < 0;
-            bool hasWeapon = nullWeapon || (newWeapon < WeaponMaster.NumWeapons() && (m_infiniteInventory || 0 < m_weaponsInInventory[newWeapon]));
+            bool hasWeapon = nullWeapon || (newWeapon < ManagerWeapons.NumWeapons() && (m_infiniteInventory || 0 < m_weaponsInInventory[newWeapon]));
 
             if (hasWeapon && newWeapon != currentWeapon) //if negative, remove
             {
@@ -323,9 +323,9 @@ public class LoadoutManager : NetworkBehaviour
 
 
 
-    private WeaponBasic GetWeapon(GameObject reference)
+    private WeaponGeneric GetWeapon(GameObject reference)
     {
-        WeaponBasic objectToReturn = null;
+        WeaponGeneric objectToReturn = null;
 
         List<GameObject> objList = GfPooling.GetPoolList(reference);
         int listCount = 0, index = 0;
@@ -334,7 +334,7 @@ public class LoadoutManager : NetworkBehaviour
         while (0 <= --index)
         {
             GameObject obj = objList[index];
-            WeaponBasic wb = obj.GetComponent<WeaponBasic>();
+            WeaponGeneric wb = obj.GetComponent<WeaponGeneric>();
             if (!obj.activeSelf || wb.GetStatsCharacter() == m_statsCharacter) //check if it is inactive or if they have the same character stats
             {
                 obj.SetActive(true);
@@ -349,13 +349,13 @@ public class LoadoutManager : NetworkBehaviour
 
         if (null == objectToReturn)
         {
-            objectToReturn = GfPooling.PoolInstantiate(reference).GetComponent<WeaponBasic>();
+            objectToReturn = GfPooling.PoolInstantiate(reference).GetComponent<WeaponGeneric>();
         }
 
         return objectToReturn;
     }
 
-    private void DestroyWeapon(WeaponBasic weaponToDestroy)
+    private void DestroyWeapon(WeaponGeneric weaponToDestroy)
     {
         weaponToDestroy.StopFiring(false);
         weaponToDestroy.SetMovementParent(null);
@@ -367,7 +367,7 @@ public class LoadoutManager : NetworkBehaviour
         GfPooling.DestroyInsert(obj, 0, isAlive);
     }
 
-    protected virtual void OnWeaponSet(WeaponBasic weapon) { }
+    protected virtual void OnWeaponSet(WeaponGeneric weapon) { }
 
     protected virtual void OnWeaponsCleared() { }
 
@@ -417,10 +417,11 @@ public class LoadoutManager : NetworkBehaviour
 
             for (i = 0; i < weaponsCount; ++i)
             {
-                GameObject desiredWeapon = WeaponMaster.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].Weapon);
+                GameObject desiredWeapon = ManagerWeapons.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].Weapon);
                 m_weapons.Add(GetWeapon(desiredWeapon));
 
-                WeaponBasic weapon = m_weapons[i];
+                WeaponGeneric weapon = m_weapons[i];
+                weapon.Initialize();
                 weapon.SetMovementParent(m_parentMovement);
                 weapon.SetSpeedMultiplier(m_speedMultiplier, 0, true);
                 weapon.SetFireRateMultiplier(m_fireRateMultiplier, 0, true);
@@ -719,7 +720,7 @@ public class LoadoutManager : NetworkBehaviour
         SetCurrentLoadout(m_currentLoadOutIndex - 1);
     }
 
-    public List<WeaponBasic> GetWeapons()
+    public List<WeaponGeneric> GetWeapons()
     {
         return m_weapons;
     }

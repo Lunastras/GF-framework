@@ -6,7 +6,7 @@ using Unity.Netcode;
 public class StatsPlayer : StatsCharacter
 {
     [SerializeField]
-    private WeaponFiring m_playerGun = null;
+    private FiringWeapons m_playerGun = null;
 
     [SerializeField]
     private LoadoutManager m_loadoutManager = null;
@@ -64,7 +64,7 @@ public class StatsPlayer : StatsCharacter
             m_currentHealth.Value = m_maxHealth.Value;
 
         if (null == m_playerGun)
-            m_playerGun = FindObjectOfType<WeaponFiring>();
+            m_playerGun = FindObjectOfType<FiringWeapons>();
 
         if (null == m_loadoutManager)
             m_loadoutManager = GetComponent<LoadoutManager>();
@@ -260,18 +260,18 @@ public class StatsPlayer : StatsCharacter
     }
 
     //called when an enemy is approaching this character
-    public override void NotifyEnemyEngaging(StatsCharacter character)
+    protected override void InternalNotifyEnemyEngaging(ulong enemyNetworkId)
     {
         ++m_enemiesEngagingCount;
-        if (IsOwner) GameManager.SetEnemiesEngagingCount(m_enemiesEngagingCount);
+        if (IsOwner) GameManager.NotifyEnemyEngaging(m_enemiesEngagingCount, enemyNetworkId);
     }
 
     //called when an enemy stop engaging
-    public override void NotifyEnemyDisengaged(StatsCharacter character)
+    protected override void InternalNotifyEnemyDisengaging(ulong enemyNetworkId)
     {
         --m_enemiesEngagingCount;
         if (m_enemiesEngagingCount < 0) m_enemiesEngagingCount = 0;
-        if (IsOwner) GameManager.SetEnemiesEngagingCount(m_enemiesEngagingCount);
+        if (IsOwner) GameManager.NotifyEnemyDisengaging(m_enemiesEngagingCount, enemyNetworkId);
     }
 }
 
