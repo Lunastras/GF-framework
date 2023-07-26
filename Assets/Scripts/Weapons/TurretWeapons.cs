@@ -202,7 +202,6 @@ public class TurretWeapons : NetworkBehaviour
 
     public void SetMovementParent(GfMovementGeneric parent)
     {
-
         for (int i = 0; i < m_turretPhases.Length; ++i)
         {
             WeaponGeneric[] systems = m_turretPhases[i].weapons;

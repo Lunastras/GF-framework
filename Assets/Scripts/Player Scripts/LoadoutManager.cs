@@ -116,7 +116,7 @@ public class LoadoutManager : NetworkBehaviour
     private void Test()
     {
         SetWeaponCapacity(4);
-        AddLoadout(3);
+        AddLoadout(5);
 
         SetLoadoutWeapon(0, 0, 1);
         SetLoadoutWeapon(0, 1, 1);
@@ -128,6 +128,9 @@ public class LoadoutManager : NetworkBehaviour
 
         SetLoadoutWeapon(2, 0, 3);
         SetLoadoutWeapon(2, 1, 3);
+
+        SetLoadoutWeapon(3, 0, 4);
+        SetLoadoutWeapon(4, 0, 5);
 
         SetCurrentLoadout(0);
     }

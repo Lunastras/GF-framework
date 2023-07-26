@@ -308,8 +308,9 @@ public struct ParticleHomingJob : IJobParallelFor
                     + dirToPlanet * Convert.ToSingle(usesParentGravity);
 
         float currentSpeed = length(velocity);
-        bool isMoving = currentSpeed >= 0.05f; //do not apply gravity if we are stationary, this is to prevent bouncing
-        float gravityCoef = (1.0f - Convert.ToSingle(!isMoving) * 0.999f);
+        //float gravityCoef = 1;
+        bool isMoving = currentSpeed >= 0.02f; //do not apply gravity if we are stationary, this is to prevent bouncing
+        float gravityCoef = (1.0f - Convert.ToSingle(!isMoving) * 0.99f);
         float acceleration = m_acceleration * followsTargetF + m_gravity * notFollowingTargetF * gravityCoef;
         float deacceleration = m_deacceleration * followsTargetF + m_drag * notFollowingTargetF;
 

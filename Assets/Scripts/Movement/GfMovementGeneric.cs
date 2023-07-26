@@ -627,7 +627,7 @@ public abstract class GfMovementGeneric : NetworkBehaviour
         //Debug.Log("I am here");
         //not perfect TODO
         //Check for stair, if no stair is found, then perform normal velocity calculations
-        if (!collision.isGrounded)
+        if (!collision.isGrounded && false)
         {
             float stepHeight = GetStepHeight(collision.GetPoint(), collision.selfPosition);
             if (stepHeight <= m_stepOffset && stepHeight > 0.0001f) //todo randomly walks up walls

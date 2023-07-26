@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5481653673954920927}
+  - component: {fileID: 110439690657272210}
   - component: {fileID: 9840865696446420}
   - component: {fileID: 7744653069361825300}
-  - component: {fileID: 3282975596894537049}
   - component: {fileID: 6523449390834420665}
   - component: {fileID: 441820245106828894}
   m_Layer: 2
@@ -36,6 +36,50 @@ Transform:
   m_Father: {fileID: 3395991133157087371}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &110439690657272210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2489547340042857279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeddf7feb6beb6c4c9f43a47cc59442a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
+  m_parentDamageSource: {fileID: 4752404752914725046}
+  m_damage: 6
+  m_movementParent: {fileID: 0}
+  m_target: {fileID: 0}
+  m_damageSound:
+    m_clip: {fileID: 0}
+    m_mixerType: 0
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_collisionSound:
+    m_clip: {fileID: 0}
+    m_mixerType: 0
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_canDamageSelf: 0
+  m_aimsAtTarget: 1
+  m_getDamageSourceFromColor: 0
 --- !u!114 &9840865696446420
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,50 +190,6 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!114 &3282975596894537049
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2489547340042857279}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aeddf7feb6beb6c4c9f43a47cc59442a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 6
-  m_movementParent: {fileID: 0}
-  m_target: {fileID: 0}
-  m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
-  m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 1
-  m_canDamageSelf: 0
-  m_aimsAtTarget: 1
-  m_getDamageSourceFromColor: 0
 --- !u!198 &6523449390834420665
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -273,7 +273,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 3
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -326,7 +326,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 60
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -380,7 +380,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.14683412, g: 1, b: 0.11764705, a: 0.78431374}
+      maxColor: {r: 1, g: 0.97438425, b: 0.2971698, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -444,7 +444,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1.4
+      scalar: 2
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -1027,7 +1027,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 40
+      scalar: 6
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -3841,7 +3841,7 @@ ParticleSystem:
     m_Bounce:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -3894,7 +3894,7 @@ ParticleSystem:
     m_EnergyLossOnCollision:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: 1
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -3953,7 +3953,7 @@ ParticleSystem:
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
-    collisionMessages: 1
+    collisionMessages: 0
     collidesWithDynamic: 1
     interiorCollisions: 0
   TriggerModule:
@@ -3968,7 +3968,7 @@ ParticleSystem:
     primitives: []
   SubModule:
     serializedVersion: 2
-    enabled: 1
+    enabled: 0
     subEmitters:
     - serializedVersion: 3
       emitter: {fileID: 0}
@@ -5024,7 +5024,7 @@ GameObject:
   - component: {fileID: 1618777149106552399}
   - component: {fileID: -6589968540932027314}
   m_Layer: 2
-  m_Name: Odama Trigger test
+  m_Name: Odama 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5042,10 +5042,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8358657643374827093}
   - {fileID: 5481653673954920927}
   - {fileID: 4149920390991157168}
   - {fileID: 8637479884255890341}
+  - {fileID: 8358657643374827093}
   - {fileID: 6648590569678057886}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -5088,11 +5088,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_turretPhases:
   - weapons:
-    - {fileID: 3282975596894537049}
+    - {fileID: 110439690657272210}
   - weapons:
-    - {fileID: 6801777865621905195}
+    - {fileID: 6051242844124589065}
   - weapons:
-    - {fileID: 7197855145203777846}
+    - {fileID: 1009390363710829795}
   m_autoPlay: 0
   m_statsCharacter: {fileID: 0}
   m_destoryWhenDone: 0
@@ -5242,9 +5242,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8637479884255890341}
+  - component: {fileID: 1009390363710829795}
   - component: {fileID: 6986138399396653218}
   - component: {fileID: 1010220587024413334}
-  - component: {fileID: 7197855145203777846}
   - component: {fileID: 4151770627145505961}
   - component: {fileID: 1706637558653701475}
   m_Layer: 2
@@ -5269,6 +5269,50 @@ Transform:
   m_Father: {fileID: 3395991133157087371}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1009390363710829795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4510893054207063071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeddf7feb6beb6c4c9f43a47cc59442a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
+  m_parentDamageSource: {fileID: 4752404752914725046}
+  m_damage: 6
+  m_movementParent: {fileID: 0}
+  m_target: {fileID: 0}
+  m_damageSound:
+    m_clip: {fileID: 0}
+    m_mixerType: 0
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_collisionSound:
+    m_clip: {fileID: 0}
+    m_mixerType: 0
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_canDamageSelf: 0
+  m_aimsAtTarget: 1
+  m_getDamageSourceFromColor: 0
 --- !u!114 &6986138399396653218
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5379,50 +5423,6 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!114 &7197855145203777846
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4510893054207063071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aeddf7feb6beb6c4c9f43a47cc59442a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 6
-  m_movementParent: {fileID: 0}
-  m_target: {fileID: 0}
-  m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
-  m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 1
-  m_canDamageSelf: 0
-  m_aimsAtTarget: 1
-  m_getDamageSourceFromColor: 0
 --- !u!198 &4151770627145505961
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -5506,7 +5506,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 3
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -5559,7 +5559,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 120
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -5613,7 +5613,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 0.857177, b: 0.0990566, a: 0.78431374}
+      maxColor: {r: 1, g: 0.97438425, b: 0.2971698, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -5677,7 +5677,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1.4
+      scalar: 2
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -6260,7 +6260,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 400
+      scalar: 20
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -9074,7 +9074,7 @@ ParticleSystem:
     m_Bounce:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -9127,7 +9127,7 @@ ParticleSystem:
     m_EnergyLossOnCollision:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: 1
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -9186,7 +9186,7 @@ ParticleSystem:
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
-    collisionMessages: 1
+    collisionMessages: 0
     collidesWithDynamic: 1
     interiorCollisions: 0
   TriggerModule:
@@ -9201,7 +9201,7 @@ ParticleSystem:
     primitives: []
   SubModule:
     serializedVersion: 2
-    enabled: 1
+    enabled: 0
     subEmitters:
     - serializedVersion: 3
       emitter: {fileID: 0}
@@ -10335,9 +10335,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4149920390991157168}
+  - component: {fileID: 6051242844124589065}
   - component: {fileID: 4911674162977439462}
   - component: {fileID: 5926700302337153296}
-  - component: {fileID: 6801777865621905195}
   - component: {fileID: 5981351392966786959}
   - component: {fileID: 5091705340202023870}
   m_Layer: 2
@@ -10362,6 +10362,50 @@ Transform:
   m_Father: {fileID: 3395991133157087371}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6051242844124589065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7561739427792128579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeddf7feb6beb6c4c9f43a47cc59442a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
+  m_parentDamageSource: {fileID: 4752404752914725046}
+  m_damage: 6
+  m_movementParent: {fileID: 0}
+  m_target: {fileID: 0}
+  m_damageSound:
+    m_clip: {fileID: 0}
+    m_mixerType: 0
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_collisionSound:
+    m_clip: {fileID: 0}
+    m_mixerType: 0
+    m_volume: 0.5
+    m_volumeVariance: 0
+    m_pitch: 1
+    m_pitchVariance: 0
+    m_coolDownTime: 0.08
+    m_loop: 0
+    m_minDistance: 1
+    m_maxDistance: 500
+    m_spatialBlend: 0
+  m_canDamageSelf: 0
+  m_aimsAtTarget: 1
+  m_getDamageSourceFromColor: 0
 --- !u!114 &4911674162977439462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10472,50 +10516,6 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!114 &6801777865621905195
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7561739427792128579}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aeddf7feb6beb6c4c9f43a47cc59442a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 6
-  m_movementParent: {fileID: 0}
-  m_target: {fileID: 0}
-  m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
-  m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 1
-  m_canDamageSelf: 0
-  m_aimsAtTarget: 1
-  m_getDamageSourceFromColor: 0
 --- !u!198 &5981351392966786959
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -10599,7 +10599,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 3
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -10652,7 +10652,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 80
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -10706,7 +10706,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.88444424, g: 0, b: 1, a: 0.78431374}
+      maxColor: {r: 1, g: 0.97438425, b: 0.2971698, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -10770,7 +10770,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 3
+      scalar: 2
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -11353,7 +11353,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 40
+      scalar: 10
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -14167,7 +14167,7 @@ ParticleSystem:
     m_Bounce:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1
+      scalar: 0
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -14220,7 +14220,7 @@ ParticleSystem:
     m_EnergyLossOnCollision:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: 1
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -14279,7 +14279,7 @@ ParticleSystem:
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
-    collisionMessages: 1
+    collisionMessages: 0
     collidesWithDynamic: 1
     interiorCollisions: 0
   TriggerModule:
@@ -14294,7 +14294,7 @@ ParticleSystem:
     primitives: []
   SubModule:
     serializedVersion: 2
-    enabled: 1
+    enabled: 0
     subEmitters:
     - serializedVersion: 3
       emitter: {fileID: 0}
@@ -15382,10 +15382,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6231b7c7c932204d92ef8885f76e458, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_sprite: {fileID: 21300000, guid: 09b4bcfa7d3649a45bc7c94b46439ad4, type: 3}
+  m_sprite: {fileID: 21300000, guid: da821665ec7151446adda944732d1bb2, type: 3}
   m_color:
     serializedVersion: 2
-    rgba: 4278190335
+    rgba: 4294961940
   m_lengthMultiplier: 0.3
 --- !u!114 &8253857794517770388
 MonoBehaviour:

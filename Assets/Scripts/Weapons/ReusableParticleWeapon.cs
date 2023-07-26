@@ -30,7 +30,7 @@ public class ReusableParticleWeapon : WeaponGeneric
 
     private Quaternion m_desiredRotation = Quaternion.identity;
 
-    private ParticleTriggerDamage m_particleTriggerWeaponComponent = null;
+    private WeaponParticleTrigger m_particleTriggerWeaponComponent = null;
 
     private uint m_particlesFired;
 
@@ -47,7 +47,7 @@ public class ReusableParticleWeapon : WeaponGeneric
     private void Start()
     {
         m_effectiveParticleSystem = GetTemplateParticleSystem();
-        m_particleTriggerWeaponComponent = m_effectiveParticleSystem.GetComponent<ParticleTriggerDamage>();
+        m_particleTriggerWeaponComponent = m_effectiveParticleSystem.GetComponent<WeaponParticleTrigger>();
         if (m_particleTriggerWeaponComponent)
         {
             m_particleTriggerWeaponComponent.m_getDamageSourceFromColor = true;

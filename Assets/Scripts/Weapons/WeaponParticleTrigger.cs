@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ParticleTriggerDamage : WeaponParticle
+public class WeaponParticleTrigger : WeaponParticle
 {
     [SerializeField]
     protected Sound m_damageSound = null;
@@ -40,6 +40,7 @@ public class ParticleTriggerDamage : WeaponParticle
         var triggerModule = m_particleSystem.trigger;
         triggerModule.enabled = true;
     }
+    
     protected void Start()
     {
         ParticleTriggerDamageManager.AddParticleSystem(this);
