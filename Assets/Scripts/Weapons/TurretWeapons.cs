@@ -259,7 +259,6 @@ public class TurretWeapons : NetworkBehaviour
     public void Play(bool forcePlay = false, int phase = -1)
     {
         //Debug.Log("Has network object is: " + HasNetworkObject);
-        phase = System.Math.Max(0, System.Math.Max(phase, m_currentPhaseIndex));
         if (HasAuthority)
         {
             InternalPlay(forcePlay, phase);
@@ -279,32 +278,31 @@ public class TurretWeapons : NetworkBehaviour
 
     protected void InternalPlay(bool forcePlay, int phase)
     {
-        // Debug.Log("I AM FIRING " + gameObject.name);
-
         bool phaseChanged = phase != m_currentPhaseIndex;
+        if (m_turretPhases.Length > 0)
+            phase %= m_turretPhases.Length;
+
         m_firing &= !forcePlay;
 
         if (phaseChanged)
         {
             Stop(false);
-
-            m_currentPhaseIndex = phase;
             m_firing = false;
         }
 
+        m_currentPhaseIndex = phase;
         if (!m_firing && m_turretPhases.Length > 0)
         {
             m_firing = true;
             WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
-            int length = systems.Length;
-            for (int i = 0; i < length; ++i)
+
+            for (int i = 0; i < systems.Length; ++i)
             {
                 systems[i].SetDamageMultiplier(m_damageMultiplier);
                 systems[i].SetFireRateMultiplier(m_fireRateMultiplier);
                 systems[i].SetSpeedMultiplier(m_speedMultiplier);
                 systems[i].Fire();
             }
-
         }
     }
 

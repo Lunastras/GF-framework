@@ -31,7 +31,7 @@ public class JobParent : MonoBehaviour
 
     private NativeList<JobHandle> m_jobHandles;
 
-    public static void AddInstance(JobChild child, Type type, UpdateTypes updateType, bool checkExistence = false)
+    public static void AddChild(JobChild child, Type type, UpdateTypes updateType, bool checkExistence = false)
     {
         if (!Instance.m_inheritedMembers.ContainsKey(type))
         {
@@ -41,14 +41,17 @@ public class JobParent : MonoBehaviour
 
         int updateTypeIndex = (int)updateType;
         List<JobChild>[] lists = Instance.m_inheritedMembers[type];
-        if (null == lists[updateTypeIndex]) lists[updateTypeIndex] = new(4);
+
+        if (null == lists[updateTypeIndex])
+            lists[updateTypeIndex] = new(4);
 
         List<JobChild> list = lists[updateTypeIndex];
 
         if (child.GetJobParentIndex(updateType) < 0)
         {
             bool addToList = true;
-            if (checkExistence) addToList = !(list.Contains(child));
+            if (checkExistence)
+                addToList = !(list.Contains(child));
 
             if (addToList)
             {
@@ -58,27 +61,20 @@ public class JobParent : MonoBehaviour
         }
     }
 
-    public static void RemoveInstance(int index, Type type, UpdateTypes updateType)
+    public static void RemoveChild(JobChild child, Type type, UpdateTypes updateType)
     {
         List<JobChild>[] lists;
-        if (index >= 0 && Instance.m_inheritedMembers.TryGetValue(type, out lists))
+        int indexToRemove = child.GetJobParentIndex(updateType);
+        if (indexToRemove >= 0 && Instance.m_inheritedMembers.TryGetValue(type, out lists))
         {
-
             List<JobChild> list = lists[(int)updateType];
-            if (list.Count > index)
-            {
-                list[index].SetJobParentIndex(-1, updateType);
-                int count = list.Count - 1;
-                list[index] = list[count];
-                list[index].SetJobParentIndex(index, updateType);
-                list.RemoveAt(count);
-            }
-        }
-    }
+            int lastIndex = list.Count - 1;
 
-    public void RemoveInstance(JobChild child, Type type, UpdateTypes updateType)
-    {
-        RemoveInstance(child.GetJobParentIndex(updateType), type, updateType);
+            list[indexToRemove] = list[lastIndex];
+            list[indexToRemove].SetJobParentIndex(indexToRemove, updateType);
+            list.RemoveAt(lastIndex);
+            child.SetJobParentIndex(-1, updateType);
+        }
     }
 
     void Awake()
@@ -94,7 +90,7 @@ public class JobParent : MonoBehaviour
 
         m_inheritedMembers = new(countChildren);
         m_inheritedTypes = new(countChildren);
-        m_jobHandles = new(256, Allocator.Persistent);
+        m_jobHandles = new(128, Allocator.Persistent);
         InternalStart();
     }
 
@@ -102,7 +98,7 @@ public class JobParent : MonoBehaviour
 
     // Update is called once per frame
 
-    private void RunJobs(UpdateTypes updateType)
+    protected void RunJobs(UpdateTypes updateType)
     {
         float deltaTime = Time.deltaTime;
         foreach (Type type in m_inheritedTypes)
@@ -149,7 +145,8 @@ public class JobParent : MonoBehaviour
 
     private void OnDestroy()
     {
-        m_jobHandles.Dispose();
+        if (m_jobHandles.IsCreated)
+            m_jobHandles.Dispose();
     }
 }
 

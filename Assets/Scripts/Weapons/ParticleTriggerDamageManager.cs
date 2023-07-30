@@ -8,16 +8,14 @@ public class ParticleTriggerDamageManager : MonoBehaviour
 
     private static List<WeaponParticle> m_particleWeapons;
 
-    private static List<StatsCharacter> m_characters;
-
     // Start is called before the first frame update
     void Awake()
     {
         if (m_instance) Destroy(m_instance);
         m_instance = this;
-
         m_particleWeapons = new(8);
-        m_characters = new(8);
+        HostilityManager.OnCharacterAdded += AddCharacter;
+        HostilityManager.OnCharacterRemoved += RemoveCharacter;
     }
 
     public WeaponParticle GetWeaponParticle(int index)
@@ -28,81 +26,58 @@ public class ParticleTriggerDamageManager : MonoBehaviour
     public static void AddCharacter(StatsCharacter obj)
     {
         int numParticleWeapons = m_particleWeapons.Count;
-
-        if (-1 == obj.GetParticleTriggerDamageIndex()) // make sure they aren't in the list
+        for (int i = 0; i < numParticleWeapons; ++i)
         {
-            m_characters.Add(obj);
-            obj.SetParticleTriggerDamageIndex(m_characters.Count - 1);
-            for (int i = 0; i < numParticleWeapons; ++i)
-            {
-                m_particleWeapons[i].GetParticleSystem().trigger.AddCollider(obj);
-            }
+            m_particleWeapons[i].GetParticleSystem().trigger.AddCollider(obj);
         }
     }
 
-    public static void RemoveCharacter(StatsCharacter obj)
+    public static void RemoveCharacter(StatsCharacter characterToRemove)
     {
-        RemoveCharacter(obj.GetParticleTriggerDamageIndex());
-    }
-
-    public static void RemoveCharacter(int index)
-    {
+        int indexToRemove = characterToRemove.GetCharacterIndex(CharacterIndexType.CHARACTERS_ALL_LIST);
         int numParticleWeapons = m_particleWeapons.Count;
-        int numCharactersMinusOne = m_characters.Count - 1;
+        int lastIndex = HostilityManager.GetAllCharactersCount() - 1;
 
-        if (-1 != index)
+        ParticleSystem ps;
+        for (int i = 0; i < numParticleWeapons; ++i)
         {
-            m_characters[index].SetParticleTriggerDamageIndex(-1);
-            m_characters[index] = m_characters[numCharactersMinusOne];
-            m_characters.RemoveAt(numCharactersMinusOne);
-            if (index < numCharactersMinusOne) m_characters[index].SetParticleTriggerDamageIndex(index);
-
-            ParticleSystem ps;
-            for (int i = 0; i < numParticleWeapons; ++i)
-            {
-                ps = m_particleWeapons[i].GetParticleSystem();
-                if (ps)
-                {
-                    ps.trigger.SetCollider(index, ps.trigger.GetCollider(numCharactersMinusOne));
-                    ps.trigger.RemoveCollider(numCharactersMinusOne);
-                }
-            }
+            ps = m_particleWeapons[i].GetParticleSystem();
+            ps.trigger.SetCollider(indexToRemove, ps.trigger.GetCollider(lastIndex));
+            ps.trigger.RemoveCollider(lastIndex);
         }
     }
 
 
     public static int AddParticleSystem(WeaponParticle weapon)
     {
-        m_particleWeapons.Add(weapon);
         int index = m_particleWeapons.Count;
-        weapon.SetParticleTriggerDamageIndex(--index);
+        m_particleWeapons.Add(weapon);
+        weapon.SetParticleTriggerDamageIndex(index);
 
         ParticleSystem ps = weapon.GetParticleSystem();
-        int countCollider = ps.trigger.colliderCount;
-        while (0 <= --countCollider) ps.trigger.RemoveCollider(countCollider);
+        int countColliders = ps.trigger.colliderCount;
+        while (0 <= --countColliders) //remove previous colliders
+            ps.trigger.RemoveCollider(countColliders);
 
-        countCollider = m_characters.Count;
+        var characters = HostilityManager.GetAllCharacters();
+        countColliders = characters.Count;
 
-        for (int i = 0; i < countCollider; ++i)
-            ps.trigger.AddCollider(m_characters[i]);
+        for (int i = 0; i < countColliders; ++i)
+            ps.trigger.AddCollider(characters[i]);
 
         return index;
     }
 
-    public static void RemoveParticleSystem(WeaponParticle ps)
+    public static void RemoveParticleSystem(WeaponParticle psToRemove)
     {
-        RemoveParticleSystem(ps.GetParticleTriggerDamageIndex());
-    }
-
-    public static void RemoveParticleSystem(int index)
-    {
-        if (index != -1)
+        int indexToRemove = psToRemove.GetParticleTriggerDamageIndex();
+        if (0 <= indexToRemove)
         {
-            int count = m_particleWeapons.Count;
-            --count;
-            m_particleWeapons[index] = m_particleWeapons[count];
-            m_particleWeapons.RemoveAt(count);
-            if (index < count) m_particleWeapons[index].SetParticleTriggerDamageIndex(index);
+            int lastIndex = m_particleWeapons.Count - 1;
+            m_particleWeapons[indexToRemove] = m_particleWeapons[lastIndex];
+            m_particleWeapons[indexToRemove].SetParticleTriggerDamageIndex(indexToRemove);
+            m_particleWeapons.RemoveAt(lastIndex);
+            psToRemove.SetParticleTriggerDamageIndex(-1);
         }
     }
 }

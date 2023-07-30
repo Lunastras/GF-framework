@@ -21,6 +21,8 @@ public class CheckpointStateNpc : CheckpointState
 
     public Vector3 UpVec;
 
+    public bool WasFollowingPlayer = false;
+
     public override void ExecuteCheckpointState()
     {
         StatsNpc statsNpc = GfPooling.Instantiate(Prefab).GetComponent<StatsNpc>();

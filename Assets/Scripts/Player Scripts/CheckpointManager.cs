@@ -9,7 +9,7 @@ public class CheckpointManager : MonoBehaviour
 {
     public static CheckpointManager Instance = null;
 
-    [SerializeField] private bool m_canTriggerHardCheckpoints = true;
+    [SerializeField] private bool m_canTriggerHardCheckpoints = false;
 
     [SerializeField] private GfMovementGeneric m_movementGeneric = null;
 
@@ -62,16 +62,10 @@ public class CheckpointManager : MonoBehaviour
     {
         if (checkpoint.SoftCheckpoint && checkpoint != m_currentSoftCheckpoint)
         {
-            if (m_canTriggerHardCheckpoints) //if main player
-                HudManager.TriggerSoftCheckpointVisuals();
-
             m_currentSoftCheckpoint = checkpoint;
         }
         else if (checkpoint != m_currentHardCheckpoint && m_canTriggerHardCheckpoints)//hard checkpoint
         {
-            if (m_canTriggerHardCheckpoints)
-                HudManager.TriggerHardCheckpointVisuals();
-
             m_currentHardCheckpoint = checkpoint;
             if (null != OnHardCheckpoint && !GameManager.IsMultiplayer)
             {
@@ -79,6 +73,8 @@ public class CheckpointManager : MonoBehaviour
                 OnHardCheckpoint();
             }
         }
+
+        GameManager.OnCheckpointSet(this, !checkpoint.SoftCheckpoint);
     }
 
     public bool HasCheckpointRegistered(GfTriggerCheckpoint checkpoint)
@@ -91,9 +87,7 @@ public class CheckpointManager : MonoBehaviour
         if (!m_isSoftReseting)
         {
             m_isSoftReseting = true;
-            float delay = 0;
-            if (m_canTriggerHardCheckpoints)
-                delay = HudManager.ResetSoftCheckpointVisuals(); //returns the delay until the checkpoint is triggered
+            float delay = GameManager.OnCheckpointReset(this, false);
 
             if (delay > 0)
                 Timing.RunCoroutine(_ResetToSoftCheckpoint(delay, damage, canKill));
@@ -135,6 +129,7 @@ public class CheckpointManager : MonoBehaviour
 
         m_isSoftReseting = false;
         m_movementGeneric.SetVelocity(Vector3.zero);
+        GameManager.CheckpointStatesExecuted(this);
     }
 
     protected void ExecuteCheckpointStates()
@@ -148,11 +143,19 @@ public class CheckpointManager : MonoBehaviour
     public void ResetToHardCheckpoint()
     {
         if (m_canTriggerHardCheckpoints)
-            HudManager.ResetHardCheckpointVisuals();
-
-        if (m_currentHardCheckpoint && m_canTriggerHardCheckpoints)
         {
-            m_transform.position = m_currentHardCheckpoint.Checkpoint.position;
+            GameManager.OnCheckpointReset(this, true);
+
+            if (m_currentHardCheckpoint)
+            {
+                m_transform.position = m_currentHardCheckpoint.Checkpoint.position;
+
+            }
+            else
+            {
+                m_transform.position = m_initialPos;
+            }
+
             HostilityManager.DestroyAllCharacters(false);
             //do not reset checkpoint states if we are playing multiplayer
             if (!GameManager.IsMultiplayer)
@@ -160,10 +163,6 @@ public class CheckpointManager : MonoBehaviour
                 //start coroutine to execute checkpoint states in the next turn
                 Timing.RunCoroutine(_ExecuteCheckpointsInNextFrame());
             }
-        }
-        else
-        {
-            m_transform.position = m_initialPos;
         }
     }
 

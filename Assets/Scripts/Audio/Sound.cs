@@ -27,6 +27,11 @@ public class Sound
     [Range(0f, 1f)]
     public float m_spatialBlend = 0f;
 
+    [SerializeField]
+    public uint m_maxInstances = 12;
+
+    public int m_currentPlayingInstances = 0;
+
     private AudioSource m_lastAudioSource;
 
     public float Length()
@@ -35,6 +40,11 @@ public class Sound
             return m_clip.length;
         else
             return 0;
+    }
+
+    public void ClipFinished()
+    {
+        m_currentPlayingInstances--;
     }
 
     public void Played(double timeAsDouble, float delay)
@@ -57,17 +67,29 @@ public class Sound
 
     public GfAudioSource Play(float delay = 0, float volume = 1, float pitch = 1)
     {
-        return AudioManager.PlayAudio(this, Vector3.zero, delay, volume, pitch);
+        return Play(Vector3.zero, delay, volume, pitch);
     }
 
     public GfAudioSource Play(Vector3 position, float delay = 0, float volume = 1, float pitch = 1)
     {
-        return AudioManager.PlayAudio(this, position, delay, volume, pitch);
+        if (m_currentPlayingInstances < m_maxInstances)
+        {
+            m_currentPlayingInstances++;
+            return AudioManager.PlayAudio(this, position, delay, volume, pitch);
+        }
+        else
+            return null;
     }
 
     public GfAudioSource Play(Transform parent, float delay = 0, float volume = 1, float pitch = 1)
     {
-        return AudioManager.PlayAudio(this, parent, delay, volume, pitch);
+        if (m_currentPlayingInstances < m_maxInstances)
+        {
+            m_currentPlayingInstances++;
+            return AudioManager.PlayAudio(this, parent, delay, volume, pitch);
+        }
+        else
+            return null;
     }
 
     public void Play(AudioSource source, float delay = 0, float volume = 1, float pitch = 1)

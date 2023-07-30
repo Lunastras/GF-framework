@@ -13,6 +13,8 @@ public class GfAudioSource : MonoBehaviour
 
     public bool m_destroyWhenFinished = false;
 
+    public Sound m_originalSound = null;
+
     // Start is called before the first frame update
 
     void Awake()
@@ -44,5 +46,17 @@ public class GfAudioSource : MonoBehaviour
         if (parent)
             m_transform.position = m_parent.position;
 
+    }
+
+    public void OnDisable()
+    {
+        if (null != m_originalSound)
+            m_originalSound.ClipFinished();
+    }
+
+    public void OnDestroy()
+    {
+        if (null != m_originalSound)
+            m_originalSound.ClipFinished();
     }
 }

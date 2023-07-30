@@ -11,7 +11,7 @@ using Unity.Mathematics;
 
 public abstract class JobChild : MonoBehaviour
 {
-    public struct JobParentIndexes
+    public class JobParentIndexes
     {
         public JobParentIndexes(int updateIndex = -1, int lateUpdateIndex = -1, int fixedUpdateIndex = -1)
         {
@@ -20,9 +20,9 @@ public abstract class JobChild : MonoBehaviour
             this.fixedUpdateIndex = fixedUpdateIndex;
         }
 
-        public int updateIndex;
-        public int lateUpdateIndex;
-        public int fixedUpdateIndex;
+        public int updateIndex = -1;
+        public int lateUpdateIndex = -1;
+        public int fixedUpdateIndex = -1;
     }
 
     [System.Serializable]
@@ -60,6 +60,7 @@ public abstract class JobChild : MonoBehaviour
         {
             case (UpdateTypes.LATE_UPDATE):
                 m_jobParentIndexes.lateUpdateIndex = index;
+
                 break;
 
             case (UpdateTypes.FIXED_UPDATE):
@@ -76,26 +77,21 @@ public abstract class JobChild : MonoBehaviour
     {
         Type type = GetType();
         if (m_jobSubscriberType.fixedUpdate)
-            JobParent.AddInstance(this, type, UpdateTypes.FIXED_UPDATE);
+            JobParent.AddChild(this, type, UpdateTypes.FIXED_UPDATE);
 
         if (m_jobSubscriberType.update)
-            JobParent.AddInstance(this, type, UpdateTypes.UPDATE);
+            JobParent.AddChild(this, type, UpdateTypes.UPDATE);
 
         if (m_jobSubscriberType.lateUpdate)
-            JobParent.AddInstance(this, type, UpdateTypes.LATE_UPDATE);
+            JobParent.AddChild(this, type, UpdateTypes.LATE_UPDATE);
     }
 
     protected void DeinitJobChild()
     {
         Type type = GetType();
-        if (m_jobSubscriberType.fixedUpdate)
-            JobParent.RemoveInstance(m_jobParentIndexes.fixedUpdateIndex, type, UpdateTypes.FIXED_UPDATE);
-
-        if (m_jobSubscriberType.update)
-            JobParent.RemoveInstance(m_jobParentIndexes.updateIndex, type, UpdateTypes.UPDATE);
-
-        if (m_jobSubscriberType.lateUpdate)
-            JobParent.RemoveInstance(m_jobParentIndexes.lateUpdateIndex, type, UpdateTypes.LATE_UPDATE);
+        JobParent.RemoveChild(this, type, UpdateTypes.FIXED_UPDATE);
+        JobParent.RemoveChild(this, type, UpdateTypes.UPDATE);
+        JobParent.RemoveChild(this, type, UpdateTypes.LATE_UPDATE);
     }
 
     public abstract bool GetJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512);

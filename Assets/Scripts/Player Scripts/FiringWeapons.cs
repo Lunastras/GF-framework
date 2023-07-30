@@ -90,7 +90,7 @@ public class FiringWeapons : NetworkBehaviour
                 Ray ray = new(m_aimTransform.position, fireTargetDir);
                 int collisionMask = GfPhysics.TargetableCollisions();
 
-                int countHits = Physics.RaycastNonAlloc(ray, rayHits, m_maxFireDistance, collisionMask);
+                int countHits = Physics.RaycastNonAlloc(ray, rayHits, m_maxFireDistance, collisionMask, QueryTriggerInteraction.Ignore);
                 int closestIndex = -1;
 
                 for (int i = 0; i < countHits; ++i)//find the closest collision that isn't itself

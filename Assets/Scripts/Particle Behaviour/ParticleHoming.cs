@@ -6,7 +6,6 @@ using Unity.Burst;
 using Unity.Jobs;
 using Unity.Mathematics;
 using System;
-
 using static Unity.Mathematics.math;
 
 public class ParticleHoming : JobChild
@@ -47,7 +46,12 @@ public class ParticleHoming : JobChild
     [SerializeField]
     protected Vector3 m_defaultGravityDir = DOWNDIR;
 
-    private static readonly Vector3 DOWNDIR = Vector3.down;
+    [SerializeField]
+    protected bool m_defaultSettingsOnDisable = true;
+
+
+
+    protected static readonly Vector3 DOWNDIR = Vector3.down;
 
     protected NativeArray<ParticleSystem.Particle> m_particleList;
 
@@ -62,12 +66,12 @@ public class ParticleHoming : JobChild
     public GfMovementGeneric MovementGravityReference = null;
 
     // Start is called before the first frame update
-    void Awake()
+    protected void Awake()
     {
         if (null == m_particleSystem) m_particleSystem = GetComponent<ParticleSystem>();
     }
 
-    void Start()
+    protected void Start()
     {
         InitJobChild();
         m_initialised = true;
@@ -76,19 +80,20 @@ public class ParticleHoming : JobChild
         UpdateDefaultGravityCustomData();
     }
 
-    void OnEnable()
+    protected void OnEnable()
     {
         if (m_initialised)
             InitJobChild();
     }
 
-    void OnDisable()
+    protected void OnDisable()
     {
         DeinitJobChild();
-        ResetToDefault();
+        if (m_defaultSettingsOnDisable)
+            ResetToDefault();
     }
 
-    void OnDestroy()
+    protected void OnDestroy()
     {
         DeinitJobChild();
     }
@@ -96,6 +101,7 @@ public class ParticleHoming : JobChild
     public void ResetToDefault()
     {
         m_mainTarget = m_sphericalParent = null;
+        MovementGravityReference = null;
         m_defaultGravityDir = DOWNDIR;
         UpdateDefaultGravityCustomData();
     }
@@ -189,44 +195,41 @@ public class ParticleHoming : JobChild
 
     public void CopyGravity(GfMovementGeneric movement)
     {
-        Transform sphericalParent = movement.GetParentSpherical();
-
-        if (sphericalParent)
-            SetSphericalParent(sphericalParent);
-        else
-            SetDefaultGravityDir(-movement.GetUpVecRaw());
-
-        MovementGravityReference = null;
+        CopyGravity(movement.GetGravityReference());
     }
 
     public void CopyGravity(ParticleHoming pg)
     {
-        Transform sphericalParent = pg.GetParentSpherical();
+        CopyGravity(pg.GetGravityReference());
+    }
 
-        if (sphericalParent)
-            SetSphericalParent(sphericalParent);
+    public void CopyGravity(GravityReference gravityReference)
+    {
+        if (gravityReference.SphericalParent)
+            SetSphericalParent(gravityReference.SphericalParent);
         else
-            SetDefaultGravityDir(pg.GetDefaultGravityDir());
+            SetDefaultGravityDir(-gravityReference.UpVec);
 
         MovementGravityReference = null;
     }
 
-    public bool HasSameGravity(GfMovementGeneric movement)
+    public bool HasSameGravity(GravityReference gravityReference)
     {
-        Transform parentSphericalToCopy = movement.GetParentSpherical();
+        Transform parentSphericalToCopy = gravityReference.SphericalParent;
         bool sameParent = parentSphericalToCopy == m_sphericalParent;
         bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
 
-        return ((sameParent && !nullParents) || (nullParents && (-movement.GetUpVecRaw()) == m_defaultGravityDir));
+        return ((sameParent && !nullParents) || (nullParents && (-gravityReference.UpVec) == m_defaultGravityDir));
+    }
+
+    public bool HasSameGravity(GfMovementGeneric movement)
+    {
+        return HasSameGravity(movement.GetGravityReference());
     }
 
     public bool HasSameGravity(ParticleHoming pg)
     {
-        Transform parentSphericalToCopy = pg.GetParentSpherical();
-        bool sameParent = parentSphericalToCopy == m_sphericalParent;
-        bool nullParents = null == m_sphericalParent && null == parentSphericalToCopy;
-
-        return ((sameParent && !nullParents) || (nullParents && pg.GetDefaultGravityDir() == m_defaultGravityDir));
+        return HasSameGravity(pg.GetGravityReference());
     }
 
     public Vector3 GetDefaultGravityDir() { return m_defaultGravityDir; }
@@ -245,6 +248,11 @@ public class ParticleHoming : JobChild
         customData.SetVector(ParticleSystemCustomData.Custom1, 1, m_defaultGravityDir.y);
         customData.SetVector(ParticleSystemCustomData.Custom1, 2, m_defaultGravityDir.z);
         customData.SetVector(ParticleSystemCustomData.Custom1, 3, 0); //0, direction
+    }
+
+    public GravityReference GetGravityReference()
+    {
+        return new(-m_defaultGravityDir, m_sphericalParent);
     }
 }
 

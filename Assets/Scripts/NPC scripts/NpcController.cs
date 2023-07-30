@@ -408,6 +408,11 @@ public class NpcController : NetworkBehaviour
         // Debug.Log("I am setting a destination! " + m_destination.HasDestination);
     }
 
+    public Transform GetDestinationTransform()
+    {
+        return m_destination.TransformDest;
+    }
+
     public void SetDestination(Vector3 destinationPos)
     {
         m_destination.SetDestination(destinationPos);

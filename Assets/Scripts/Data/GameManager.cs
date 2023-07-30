@@ -120,6 +120,40 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public static float OnCheckpointReset(CheckpointManager checkpointManager, bool hardCheckpoint)
+    {
+        float delay = 0;
+        if (checkpointManager.transform == GetPlayer())
+        {
+            if (hardCheckpoint)
+            {
+                HudManager.ResetHardCheckpointVisuals();
+                GameParticles.ClearParticles();
+            }
+            else
+                delay = HudManager.ResetSoftCheckpointVisuals();
+        }
+
+        return delay;
+    }
+
+    public static void OnCheckpointSet(CheckpointManager checkpointManager, bool hardCheckpoint)
+    {
+        if (checkpointManager.transform == GetPlayer())
+        {
+            if (hardCheckpoint)
+                HudManager.TriggerHardCheckpointVisuals();
+            else
+                HudManager.TriggerSoftCheckpointVisuals();
+        }
+    }
+
+    public static void CheckpointStatesExecuted(CheckpointManager checkpointManager)
+    {
+        GameParticles.DisableNonEmittingGraves();
+    }
+
+
     private void Update()
     {
         if (Input.GetAxisRaw("Pause") > 0.1f)
@@ -143,7 +177,7 @@ public class GameManager : MonoBehaviour
             m_player.GetComponent<StatsPlayer>().Respawn();
             CameraController.SnapInstanceToTarget();
             LevelManager.SetLevelMusicPitch(1, 0.2f);
-            m_deathMusicSource.GetAudioSource().Stop();
+            m_deathMusicSource?.GetAudioSource()?.Stop();
         }
 
         if (Input.GetKeyDown(KeyCode.M))

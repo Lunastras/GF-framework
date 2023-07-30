@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using Unity.Netcode;
 
-public abstract class GfMovementGeneric : NetworkBehaviour
+public abstract class GfMovementGeneric : MonoBehaviour
 {
     #region Variables
     [SerializeField]
@@ -373,7 +373,6 @@ public abstract class GfMovementGeneric : NetworkBehaviour
         if (m_currentGroundCollision.collider)
         {
             Vector3 lastNormal = Zero3;
-            int collisions = 0;
             Ray ray = new(m_archetypeCollision.GetLocalBottomPoint() + position, -m_upVec);
             bool hitSomething = m_currentGroundCollision.collider.Raycast(ray, out RaycastHit hitInfo, DOWNPULL);
             if (hitSomething)
@@ -1044,8 +1043,12 @@ public abstract class GfMovementGeneric : NetworkBehaviour
 
     public void SetVelocity(Vector3 velocity)
     {
-        if (IsServer)
-            m_velocity = velocity;
+        m_velocity = velocity;
+    }
+
+    public GravityReference GetGravityReference()
+    {
+        return new(m_upVec, m_parentSpherical);
     }
 
     public bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)

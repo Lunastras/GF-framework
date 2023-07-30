@@ -120,7 +120,6 @@ public class WeaponLevels : WeaponGeneric
 
         // Debug.Log("I GOT HERE ehehe");
         m_turret.SetRotation(Quaternion.LookRotation(dirBullet));
-
         m_turret.Play(false, CurrentLevel);
     }
 
@@ -146,6 +145,33 @@ public class WeaponLevels : WeaponGeneric
                 if (m_expRequiredForLevels.Length > 0)
                 {
                     CurrentExp += points;
+                    CurrentExp = Mathf.Clamp(CurrentExp, 0, m_expRequiredForLevels[m_expRequiredForLevels.Length - 1]);
+
+                    UpdateFireLevel();
+
+                    retPoints = CurrentExp;
+                }
+                break;
+        }
+
+
+        return retPoints;
+    }
+
+    /**
+    *   Adds exp points to the weapon and sets the level accordingly
+    *   @param points The ammount of points to be added
+    *   @return The current number of points the weapon has
+    */
+    public override float SetPoints(WeaponPointsTypes type, float points)
+    {
+        float retPoints = 0;
+        switch (type)
+        {
+            case (WeaponPointsTypes.EXPERIENCE):
+                if (m_expRequiredForLevels.Length > 0)
+                {
+                    CurrentExp = points;
                     CurrentExp = Mathf.Clamp(CurrentExp, 0, m_expRequiredForLevels[m_expRequiredForLevels.Length - 1]);
 
                     UpdateFireLevel();

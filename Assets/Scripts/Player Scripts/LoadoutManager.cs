@@ -548,8 +548,7 @@ public class LoadoutManager : NetworkBehaviour
             int count = (int)WeaponPointsTypes.NUMBER_OF_TYPES;
             for (int i = 0; i < count; ++i)
             {
-                m_weapons[numWeapon].AddPoints((WeaponPointsTypes)i, float.MinValue); //set exp to be 0
-                float currentExp = m_weapons[numWeapon].AddPoints((WeaponPointsTypes)i, loadOut[numWeapon].GetPoints(i));
+                float currentExp = m_weapons[numWeapon].SetPoints((WeaponPointsTypes)i, loadOut[numWeapon].GetPoints(i));
                 loadOut[numWeapon].SetPoints(i, currentExp);
             }
         }
@@ -622,8 +621,7 @@ public class LoadoutManager : NetworkBehaviour
 
             while (--numWeapon >= 0)
             {
-                m_weapons[numWeapon].AddPoints(type, float.MinValue); //set exp to be the lowest value possible
-                float currentExp = m_weapons[numWeapon].AddPoints(type, points + loadOut[numWeapon].GetPoints((int)type));
+                float currentExp = m_weapons[numWeapon].SetPoints(type, points + loadOut[numWeapon].GetPoints((int)type));
                 loadOut[numWeapon].SetPoints((int)type, currentExp);
             }
 

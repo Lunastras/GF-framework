@@ -6,7 +6,7 @@ using System;
 public class HostilityManager : MonoBehaviour
 {
     protected List<StatsCharacter>[] m_instantiatedCharacters;
-    private static HostilityManager Instance = null;
+    protected static HostilityManager Instance = null;
     protected int m_numTypes = 0;
 
     [SerializeField]
@@ -14,8 +14,16 @@ public class HostilityManager : MonoBehaviour
     [SerializeField]
     protected StructArray<float>[] m_typesDamageMultiplier;
 
+    protected List<StatsCharacter> m_allCharacters = new(32);
+
+    public static Action<StatsCharacter> OnCharacterRemoved;
+    public static Action<StatsCharacter> OnCharacterAdded;
+
     private void Awake()
     {
+        if (Instance)
+            Destroy(Instance);
+
         Instance = this;
         m_numTypes = Enum.GetValues(typeof(CharacterTypes)).Length;
 
@@ -26,7 +34,7 @@ public class HostilityManager : MonoBehaviour
 
         for (int i = 0; i < m_numTypes; ++i)
         {
-            m_instantiatedCharacters[i] = new List<StatsCharacter>(1);
+            m_instantiatedCharacters[i] = new List<StatsCharacter>(4);
             Array.Resize<bool>(ref m_typesEnemiesWith[i].array, m_numTypes);
             Array.Resize<float>(ref m_typesDamageMultiplier[i].array, m_numTypes);
         }
@@ -113,35 +121,50 @@ public class HostilityManager : MonoBehaviour
             charactersList[0].Kill();
     }
 
+    public static List<StatsCharacter> GetAllCharacters() { return Instance.m_allCharacters; }
+
+    public static int GetAllCharactersCount() { return Instance.m_allCharacters.Count; }
+
     public static void AddCharacter(StatsCharacter character)
     {
-        int characterIndex = character.GetCharacterIndex();
-
-        if (character != null && characterIndex < 0)
+        if (character.GetCharacterIndex(CharacterIndexType.CHARACTERS_TYPE_LIST) < 0)
         {
-            ParticleTriggerDamageManager.AddCharacter(character);
+            List<StatsCharacter> typeList = Instance.m_instantiatedCharacters[(int)character.GetCharacterType()];
+            character.SetCharacterIndex(typeList.Count, CharacterIndexType.CHARACTERS_TYPE_LIST);
+            character.SetCharacterIndex(Instance.m_allCharacters.Count, CharacterIndexType.CHARACTERS_ALL_LIST);
 
-            List<StatsCharacter> list = Instance.m_instantiatedCharacters[(int)character.GetCharacterType()];
-            int index = list.Count;
-            list.Add(character);
-            character.SetCharacterIndex(index);
+            typeList.Add(character);
+            Instance.m_allCharacters.Add(character);
+
+            if (null != OnCharacterRemoved) OnCharacterAdded(character);
         }
     }
 
     public static void RemoveCharacter(StatsCharacter character)
     {
-        int characterIndex = character.GetCharacterIndex();
-        List<StatsCharacter> list = Instance.m_instantiatedCharacters[(int)character.GetCharacterType()];
-        int lastCharacterIndex = list.Count - 1;
+        int characterIndex = character.GetCharacterIndex(CharacterIndexType.CHARACTERS_TYPE_LIST);
 
-        if (-1 < characterIndex && characterIndex <= lastCharacterIndex)
+        if (0 <= characterIndex) //make sure it is in the list
         {
-            list[characterIndex] = list[lastCharacterIndex];
-            list[characterIndex].SetCharacterIndex(characterIndex);
-            list.RemoveAt(lastCharacterIndex);
-            character.SetCharacterIndex(-1);
+            List<StatsCharacter> typeList = Instance.m_instantiatedCharacters[(int)character.GetCharacterType()];
+            List<StatsCharacter> characterList = Instance.m_allCharacters;
 
-            ParticleTriggerDamageManager.RemoveCharacter(character);
+            if (null != OnCharacterRemoved) OnCharacterRemoved(character);
+
+            int lastCharacterIndex = typeList.Count - 1;
+
+            typeList[characterIndex] = typeList[lastCharacterIndex];
+            typeList[characterIndex].SetCharacterIndex(characterIndex, CharacterIndexType.CHARACTERS_TYPE_LIST);
+            typeList.RemoveAt(lastCharacterIndex);
+            character.SetCharacterIndex(-1, CharacterIndexType.CHARACTERS_TYPE_LIST);
+
+            lastCharacterIndex = characterList.Count - 1;
+            int allCharactersIndex = character.GetCharacterIndex(CharacterIndexType.CHARACTERS_ALL_LIST);
+
+            characterList[allCharactersIndex] = characterList[lastCharacterIndex];
+            characterList[allCharactersIndex].SetCharacterIndex(allCharactersIndex, CharacterIndexType.CHARACTERS_ALL_LIST);
+            characterList.RemoveAt(lastCharacterIndex);
+            character.SetCharacterIndex(-1, CharacterIndexType.CHARACTERS_ALL_LIST);
         }
     }
 

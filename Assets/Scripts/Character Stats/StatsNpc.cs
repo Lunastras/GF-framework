@@ -61,55 +61,58 @@ public class StatsNpc : StatsCharacter
 
     void Start()
     {
-        if (null == m_objectCollider)
-            m_objectCollider = GetComponent<Collider>();
-
-        if (null == m_movement)
-            m_movement = GetComponent<GfMovementGeneric>();
-
-        if (null == m_npcController)
-            m_npcController = GetComponent<NpcController>();
-
-        if (null == m_turret)
-            m_turret = GetComponent<TurretWeapons>();
-
-        if (null == m_mainGameObject)
-            m_mainGameObject = gameObject;
-
-        m_networkTransform = GetComponent<NetworkTransform>();
-
-        if (null == m_audioSource)
+        if (!m_initialised)
         {
-            m_audioSource = GetComponent<AudioSource>();
+            if (null == m_objectCollider)
+                m_objectCollider = GetComponent<Collider>();
+
+            if (null == m_movement)
+                m_movement = GetComponent<GfMovementGeneric>();
+
+            if (null == m_npcController)
+                m_npcController = GetComponent<NpcController>();
+
+            if (null == m_turret)
+                m_turret = GetComponent<TurretWeapons>();
+
+            if (null == m_mainGameObject)
+                m_mainGameObject = gameObject;
+
+            m_networkTransform = GetComponent<NetworkTransform>();
+
             if (null == m_audioSource)
             {
-                m_audioSource = gameObject.AddComponent<AudioSource>();
+                m_audioSource = GetComponent<AudioSource>();
+                if (null == m_audioSource)
+                {
+                    m_audioSource = gameObject.AddComponent<AudioSource>();
+                }
             }
+
+            m_damageSound.LoadAudioClip();
+            m_deathSound.LoadAudioClip();
+
+            m_transform = transform;
+
+            m_networkObject = GetComponent<NetworkObject>();
+            if (m_networkTransform) m_networkTransform.enabled = true;
+            if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
+
+            if (HasAuthority)
+                m_currentHealth.Value = GetMaxHealthEffective();
+
+
+            m_initialised = true;
+            HostilityManager.AddCharacter(this);
         }
-
-        m_damageSound.LoadAudioClip();
-        m_deathSound.LoadAudioClip();
-
-        m_transform = transform;
-
-        m_networkObject = GetComponent<NetworkObject>();
-        if (m_networkTransform) m_networkTransform.enabled = true;
-        if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
-
-        if (HasAuthority)
-            m_currentHealth.Value = GetMaxHealthEffective();
-
-
-        m_initialised = true;
-        HostilityManager.AddCharacter(this);
     }
 
-    private void OnEnable()
+    new protected void OnEnable()
     {
+        base.OnEnable();
         if (m_initialised)
         {
             m_currentHealth = m_maxHealth;
-            HostilityManager.AddCharacter(this);
 
             if (null != m_graphics)
                 m_graphics.SetActive(true);
@@ -125,61 +128,64 @@ public class StatsNpc : StatsCharacter
         CheckpointManager.OnHardCheckpoint += OnHardCheckpoint;
     }
 
+    new protected void OnDisable()
+    {
+        base.OnDisable();
+        CheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;
+    }
+
     public override void SetCheckpointState(CheckpointState state)
     {
         if (IsCheckpointable())
         {
             CheckpointStateNpc checkpointStateNpc = state as CheckpointStateNpc;
-            if (null != checkpointStateNpc)
-            {
-                Respawn();
-                m_movement.ReturnToDefaultValues();
-                transform.SetPositionAndRotation(checkpointStateNpc.Position, checkpointStateNpc.Rotation);
-                transform.localScale = checkpointStateNpc.Scale;
-                m_currentHealth.Value = checkpointStateNpc.CurrentHp;
-                m_npcController.SetDestination(null);
-                m_turret.Stop(true);
-                m_turret.SetCurrentPhase(0);
-                m_movement.SetVelocity(checkpointStateNpc.Velocity);
-                m_movement.SetParentTransform(checkpointStateNpc.MovementParent, checkpointStateNpc.MovementParentPriority, true);
+            Start();
+            Respawn();
+            m_movement.ReturnToDefaultValues();
+            transform.SetPositionAndRotation(checkpointStateNpc.Position, checkpointStateNpc.Rotation);
+            transform.localScale = checkpointStateNpc.Scale;
+            m_currentHealth.Value = checkpointStateNpc.CurrentHp;
+            m_npcController.SetDestination(null);
+            m_turret.Stop(true);
+            m_turret.SetCurrentPhase(0);
+            m_movement.SetVelocity(checkpointStateNpc.Velocity);
+            m_movement.SetParentTransform(checkpointStateNpc.MovementParent, checkpointStateNpc.MovementParentPriority, true);
 
-                if (checkpointStateNpc.MovementParentSpherical)
-                    m_movement.SetParentSpherical(checkpointStateNpc.MovementParentSpherical, checkpointStateNpc.MovementGravityPriority, true);
-                else
-                    m_movement.SetUpVec(checkpointStateNpc.UpVec, checkpointStateNpc.MovementGravityPriority, true);
+            if (checkpointStateNpc.WasFollowingPlayer)
+                m_npcController.SetDestination(GameManager.GetPlayer());
 
-                m_isDead = false;
-            }
+            if (checkpointStateNpc.MovementParentSpherical)
+                m_movement.SetParentSpherical(checkpointStateNpc.MovementParentSpherical, checkpointStateNpc.MovementGravityPriority, true);
             else
-            {
-                Debug.LogError("Checkpoint state passed through 'SetCheckpointState' is not of type 'CheckpointStateNpc' or is null.");
-            }
+                m_movement.SetUpVec(checkpointStateNpc.UpVec, checkpointStateNpc.MovementGravityPriority, true);
+
+            m_isDead = false;
+            m_checkpointStateNpc = checkpointStateNpc;
         }
     }
 
     public override void OnHardCheckpoint()
     {
-        if (gameObject && gameObject.activeSelf)
+        if (IsCheckpointable())
         {
-            if (IsCheckpointable())
-            {
-                if (null == m_checkpointStateNpc) m_checkpointStateNpc = new();
+            if (null == m_checkpointStateNpc) m_checkpointStateNpc = new();
 
-                m_checkpointStateNpc.Position = m_transform.position;
-                m_checkpointStateNpc.Rotation = m_transform.rotation;
-                m_checkpointStateNpc.Scale = m_transform.localScale;
-                m_checkpointStateNpc.CurrentHp = m_currentHealth.Value;
-                m_checkpointStateNpc.Prefab = GfPooling.GetPrefab(gameObject.name);
-                m_checkpointStateNpc.Velocity = m_movement.GetVelocity();
-                m_checkpointStateNpc.MovementParent = m_movement.GetParentTransform();
-                m_checkpointStateNpc.MovementParentPriority = m_movement.GetParentPriority();
-                m_checkpointStateNpc.MovementParentSpherical = m_movement.GetParentSpherical();
-                m_checkpointStateNpc.MovementGravityPriority = m_movement.GetGravityPriority();
-                m_checkpointStateNpc.UpVec = m_movement.GetUpVecRaw();
+            m_checkpointStateNpc.Position = m_transform.position;
+            m_checkpointStateNpc.Rotation = m_transform.rotation;
+            m_checkpointStateNpc.Scale = m_transform.localScale;
+            m_checkpointStateNpc.CurrentHp = m_currentHealth.Value;
+            m_checkpointStateNpc.Prefab = GfPooling.GetPrefab(gameObject.name);
+            m_checkpointStateNpc.Velocity = m_movement.GetVelocity();
+            m_checkpointStateNpc.MovementParent = m_movement.GetParentTransform();
+            m_checkpointStateNpc.MovementParentPriority = m_movement.GetParentPriority();
+            m_checkpointStateNpc.MovementParentSpherical = m_movement.GetParentSpherical();
+            m_checkpointStateNpc.MovementGravityPriority = m_movement.GetGravityPriority();
+            m_checkpointStateNpc.UpVec = m_movement.GetUpVecRaw();
+            m_checkpointStateNpc.WasFollowingPlayer = GameManager.GetPlayer() == m_npcController.GetDestinationTransform();
 
-                CheckpointState state = m_checkpointStateNpc;
-                CheckpointManager.AddCheckpointState(state);
-            }
+
+            CheckpointState state = m_checkpointStateNpc;
+            CheckpointManager.AddCheckpointState(state);
         }
     }
 
@@ -189,8 +195,8 @@ public class StatsNpc : StatsCharacter
         {
             Vector3 currentPos = m_transform.position;
             GameParticles.PlayDeathDust(currentPos);
-            GameParticles.SpawnPowerItems(currentPos, m_powerItemsToDrop, m_movement);
-            GameParticles.SpawnGrave(currentPos, m_movement);
+            GameParticles.SpawnPowerItems(currentPos, m_powerItemsToDrop, m_movement.GetGravityReference());
+            GameParticles.SpawnGrave(currentPos, m_movement.GetGravityReference());
 
             for (int i = 0; i < m_itemDropsAfterDeath.Length; i++)
             {

@@ -17,17 +17,17 @@ public class GameParticles : MonoBehaviour
     [SerializeField]
     protected GameObject m_gravesParticlesPrefab;
 
-    private static GameParticles m_instance;
+    protected static GameParticles Instance;
 
-    private static Transform m_transDeathDust;
-    private static Transform m_transParticleDust;
-    private static Transform m_transDmgNumbersInstance;
+    protected static Transform m_transDeathDust;
+    protected static Transform m_transParticleDust;
+    protected static Transform m_transDmgNumbersInstance;
 
     // Start is called before the first frame update
-    void Start()
+    protected void Start()
     {
-        if (m_instance) Destroy(m_instance);
-        m_instance = this;
+        if (Instance) Destroy(Instance);
+        Instance = this;
 
         if (null == m_deathDustInstance || null == m_powerItemsPrefab || null == m_deathDustInstance)
             Debug.LogError("One of the particle systems is null.");
@@ -39,29 +39,32 @@ public class GameParticles : MonoBehaviour
 
     public static void PlayDamageNumbers(Vector3 position, float value, Vector3 upVec)
     {
-        ParticleSystem.EmitParams emitParams = new();
-        emitParams.ResetStartLifetime();
-        emitParams.ResetAngularVelocity();
-        emitParams.ResetAxisOfRotation();
-        emitParams.ResetMeshIndex();
-        //emitParams.ResetPosition();
-        emitParams.ResetRandomSeed();
-        emitParams.ResetRotation();
-        emitParams.ResetStartColor();
-        emitParams.ResetStartSize();
-        //emitParams.ResetVelocity();
+        if (value > 0)
+        {
+            ParticleSystem.EmitParams emitParams = new();
+            emitParams.ResetStartLifetime();
+            emitParams.ResetAngularVelocity();
+            emitParams.ResetAxisOfRotation();
+            emitParams.ResetMeshIndex();
+            //emitParams.ResetPosition();
+            emitParams.ResetRandomSeed();
+            emitParams.ResetRotation();
+            emitParams.ResetStartColor();
+            emitParams.ResetStartSize();
+            //emitParams.ResetVelocity();
 
-        emitParams.velocity = Random.insideUnitSphere.normalized * value;
-        emitParams.position = position;
-        emitParams.axisOfRotation = upVec;
+            emitParams.velocity = Random.insideUnitSphere.normalized * value;
+            emitParams.position = position;
+            emitParams.axisOfRotation = upVec;
 
-        m_instance.m_particleDmgNumbersInstance.Emit(emitParams, 1);
+            Instance.m_particleDmgNumbersInstance.Emit(emitParams, 1);
+        }
     }
 
     public static void PlayDeathDust(Vector3 position)
     {
         m_transDeathDust.position = position;
-        m_instance.m_deathDustInstance.Play(true);
+        Instance.m_deathDustInstance.Play(true);
     }
 
     public static void PlayParticleDust(Vector3 position, Vector3 normal, int numParticles = 10)
@@ -83,10 +86,10 @@ public class GameParticles : MonoBehaviour
 
         m_transParticleDust.rotation = Quaternion.LookRotation(normal);
 
-        m_instance.m_particleDustInstance.Emit(emitParams, numParticles);
+        Instance.m_particleDustInstance.Emit(emitParams, numParticles);
     }
 
-    private static void EmitHomingParticleSystem(GameObject particleSystemPrefab, Vector3 position, int numberToEmit, GfMovementGeneric movement = null)
+    protected static void EmitHomingParticleSystem(GameObject particleSystemPrefab, Vector3 position, int numberToEmit, GravityReference gravityReference = default, List<Vector3> positions = null)
     {
         if (particleSystemPrefab)
         {
@@ -100,11 +103,11 @@ public class GameParticles : MonoBehaviour
                 {
                     ParticleHoming currentSystem = emitters[i].GetComponent<ParticleHoming>(); //if this is null, something is very wrong
 
-                    bool hasSameGravity = currentSystem.HasSameGravity(movement);
+                    bool hasSameGravity = currentSystem.HasSameGravity(gravityReference);
                     if (hasSameGravity || !emitters[i].activeSelf)
                     {
-                        if (movement && !hasSameGravity)
-                            currentSystem.CopyGravity(movement);
+                        if (!hasSameGravity)
+                            currentSystem.CopyGravity(gravityReference);
 
                         spawnedEmitter = currentSystem;
                         break;
@@ -117,7 +120,7 @@ public class GameParticles : MonoBehaviour
                 GfPooling.Pool(particleSystemPrefab, 1);
                 emitters = GfPooling.GetPoolList(particleSystemPrefab);
                 spawnedEmitter = emitters[emitters.Count - 1].GetComponent<ParticleHoming>();
-                spawnedEmitter.CopyGravity(movement);
+                spawnedEmitter.CopyGravity(gravityReference);
             }
 
             if (!spawnedEmitter.gameObject.activeSelf)
@@ -126,18 +129,78 @@ public class GameParticles : MonoBehaviour
 
             ParticleSystem.EmitParams emitParams = new();
             emitParams.applyShapeToPosition = true;
-            emitParams.position = position;
-            spawnedEmitter.GetParticleSystem().Emit(emitParams, numberToEmit);
+
+            if (null != positions)
+            {
+                int countPositions = positions.Count;
+                ParticleSystem ps = spawnedEmitter.GetParticleSystem();
+                for (int i = 0; i < countPositions; ++i)
+                {
+                    emitParams.position = positions[i];
+                    ps.Emit(emitParams, numberToEmit);
+                }
+            }
+            else
+            {
+                emitParams.position = position;
+                spawnedEmitter.GetParticleSystem().Emit(emitParams, numberToEmit);
+            }
+
         }
     }
 
-    public static void SpawnPowerItems(Vector3 position, int numberToEmit, GfMovementGeneric movement = null)
+    public static void SpawnPowerItems(Vector3 position, int numberToEmit, GravityReference gravityReference = default)
     {
-        EmitHomingParticleSystem(m_instance.m_powerItemsPrefab, position, numberToEmit, movement);
+        EmitHomingParticleSystem(Instance.m_powerItemsPrefab, position, numberToEmit, gravityReference);
     }
 
-    public static void SpawnGrave(Vector3 position, GfMovementGeneric movement = null)
+    protected static void ClearParticleSystems(GameObject ps)
     {
-        EmitHomingParticleSystem(m_instance.m_gravesParticlesPrefab, position, 1, movement);
+        List<GameObject> emitters = GfPooling.GetPoolList(ps);
+        int count = emitters.Count;
+        for (int i = 0; i < count; ++i)
+        {
+            emitters[i].GetComponent<ParticleSystem>().Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+    }
+
+    public static void ClearGraves()
+    {
+        ClearParticleSystems(Instance.m_gravesParticlesPrefab);
+    }
+
+    public static void ClearPowerItems()
+    {
+        ClearParticleSystems(Instance.m_powerItemsPrefab);
+    }
+
+    public static void ClearParticles()
+    {
+        ClearParticleSystems(Instance.m_gravesParticlesPrefab);
+        ClearParticleSystems(Instance.m_powerItemsPrefab);
+
+        Instance.m_deathDustInstance.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        Instance.m_particleDmgNumbersInstance.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        Instance.m_particleDmgNumbersInstance.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
+    public static void DisableNonEmittingGraves()
+    {
+        List<GameObject> emitters = GfPooling.GetPoolList(Instance.m_gravesParticlesPrefab);
+        int count = emitters.Count;
+        for (int i = 0; i < count; ++i)
+        {
+            emitters[i].SetActive(emitters[i].GetComponent<ParticleSystem>().IsAlive(true));
+        }
+    }
+
+    public static void SpawnGraves(List<Vector3> positions, GravityReference gravityReference = default)
+    {
+        EmitHomingParticleSystem(Instance.m_gravesParticlesPrefab, Vector3.zero, 1, gravityReference, positions);
+    }
+
+    public static void SpawnGrave(Vector3 position, GravityReference gravityReference = default)
+    {
+        EmitHomingParticleSystem(Instance.m_gravesParticlesPrefab, position, 1, gravityReference);
     }
 }

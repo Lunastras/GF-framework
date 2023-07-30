@@ -89,6 +89,8 @@ public abstract class WeaponGeneric : DamageSource
     *   @return The current number of points the weapon has
     */
     public virtual float AddPoints(WeaponPointsTypes type, float points) { return 0; }
+
+    public virtual float SetPoints(WeaponPointsTypes type, float points) { return 0; }
 }
 
 public enum WeaponPointsTypes

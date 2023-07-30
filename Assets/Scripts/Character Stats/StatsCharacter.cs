@@ -2,6 +2,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Components;
+using System.Linq;
 
 
 public abstract class StatsCharacter : NetworkBehaviour
@@ -25,9 +26,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected NetworkTransform m_networkTransform;
 
-    private int m_characterIndex = -1;
-
-    private int m_particleTriggerDamageListIndex = -1;
+    private int[] m_characterIndexes = Enumerable.Repeat(-1, (int)CharacterIndexType.COUNT_TYPES).ToArray();
 
     protected bool m_initialised = false;
 
@@ -213,17 +212,12 @@ public abstract class StatsCharacter : NetworkBehaviour
         }
     }
 
-    private void OnDisable()
+    protected void OnDisable()
     {
         Deinit();
     }
 
-    public override void OnDestroy()
-    {
-        Deinit();
-    }
-
-    private void OnEnable()
+    protected void OnEnable()
     {
         if (m_initialised)
             HostilityManager.AddCharacter(this);
@@ -237,19 +231,15 @@ public abstract class StatsCharacter : NetworkBehaviour
     public virtual void OnDamageDealt(float damage, ulong damagedCharacterNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall) { }
     public virtual void OnCharacterKilled(ulong damagedCharacter, int weaponLoadoutIndex = -1, int weaponIndex = -1, bool isServerCall = false) { }
 
-    public int GetCharacterIndex()
+    public int GetCharacterIndex(CharacterIndexType type)
     {
-        return m_characterIndex;
+        return m_characterIndexes[(int)type];
     }
 
-    public void SetCharacterIndex(int index)
+    public void SetCharacterIndex(int index, CharacterIndexType type)
     {
-        m_characterIndex = index;
+        m_characterIndexes[(int)type] = index;
     }
-
-    public void SetParticleTriggerDamageIndex(int index) { m_particleTriggerDamageListIndex = index; }
-
-    public int GetParticleTriggerDamageIndex() { return m_particleTriggerDamageListIndex; }
 
     public virtual float GetMaxHealthRaw() { return m_maxHealth.Value; }
     public virtual float GetMaxHealthEffective() { return m_maxHealth.Value * m_maxHealthMultiplier.Value; }
