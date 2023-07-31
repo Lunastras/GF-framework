@@ -41,7 +41,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
 
     private Vector2 m_sizeDesired;
 
-    private float m_timeUntiObjCheck = 0;
+    private float m_timeUntilObjCheck = 0;
     private float m_timeUntilDistanceCheck = 0;
 
     private Collider m_lastCollider;
@@ -59,6 +59,8 @@ public class ShadowProjectorManipulator : MonoBehaviour
 
     [SerializeField]
     private Vector3 m_upDir = new Vector3(0, 1, 0);
+
+    private static readonly Quaternion QUAT_90_DEG_RIGHT = Quaternion.AngleAxis(90, Vector3.right);
 
     // Start is called before the first frame update
     void Start()
@@ -80,16 +82,16 @@ public class ShadowProjectorManipulator : MonoBehaviour
     {
         if (m_overrideZaxisRotation && m_parentMovement)
         {
-            m_transform.rotation = (m_parentMovement.GetCurrentRotation() * Quaternion.AngleAxis(90, Vector3.right));
+            m_transform.rotation = m_parentMovement.GetCurrentRotation() * QUAT_90_DEG_RIGHT;
         }
 
         float deltaTime = Time.deltaTime;
-        m_timeUntiObjCheck -= deltaTime;
+        m_timeUntilObjCheck -= deltaTime;
         m_timeUntilDistanceCheck -= deltaTime;
 
-        if (0 >= m_timeUntiObjCheck)
+        if (0 >= m_timeUntilObjCheck)
         {
-            m_timeUntiObjCheck = m_intervalObjCheck * Random.Range(1.0f - m_updateVariance, 1.0f + m_updateVariance);
+            m_timeUntilObjCheck = m_intervalObjCheck * Random.Range(1.0f - m_updateVariance, 1.0f + m_updateVariance);
             m_timeUntilDistanceCheck = m_intervalDistanceCheck * Random.Range(1.0f - m_updateVariance, 1.0f + m_updateVariance);
 
             Vector3 topPos = m_transform.position, forward = m_transform.forward;
@@ -110,15 +112,24 @@ public class ShadowProjectorManipulator : MonoBehaviour
         {
             m_timeUntilDistanceCheck = m_intervalDistanceCheck * Random.Range(1.0f - m_updateVariance, 1.0f + m_updateVariance);
 
-            Vector3 topPos = m_transform.position, forward = m_transform.forward;
+            Vector3 topPos = m_transform.position, forward;
+            if (m_parentMovement)
+            {
+                forward = m_parentMovement.UpVecEstimated();
+                GfTools.Mult3(ref forward, -1);
+            }
+            else
+                forward = m_transform.forward;
+
             Ray ray = new Ray(topPos, forward);
 
             bool hitSomething = m_lastCollider.Raycast(ray, out RaycastHit hitInfo, m_maxProjectionDistance);
             UpdateValues(hitSomething, hitInfo, m_lastCollisionDistance);
         }
 
-
         m_projector.fadeFactor = Mathf.SmoothDamp(m_projector.fadeFactor, m_desiredOpacity, ref m_smoothRefOpacity, m_smoothTimeOpacity);
+
+        /*
 
         Vector3 projSize = m_projector.size;
         Vector2 widthHeight = new Vector2(projSize.x, projSize.y);
@@ -127,8 +138,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
         projSize.x = widthHeight.x;
         projSize.y = widthHeight.y;
         projSize.z = m_projectionDepthCurrent;
-        m_projector.size = projSize;
-
+        m_projector.size = projSize;*/
     }
 
     private void UpdateValues(bool hitSomething, RaycastHit hitInfo, float projectionDepth)

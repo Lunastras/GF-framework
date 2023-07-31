@@ -18,6 +18,12 @@ public class ParticleTriggerDamageManager : MonoBehaviour
         HostilityManager.OnCharacterRemoved += RemoveCharacter;
     }
 
+    protected void OnDestroy()
+    {
+        HostilityManager.OnCharacterAdded -= AddCharacter;
+        HostilityManager.OnCharacterRemoved -= RemoveCharacter;
+    }
+
     public WeaponParticle GetWeaponParticle(int index)
     {
         return m_particleWeapons[index];
@@ -37,13 +43,19 @@ public class ParticleTriggerDamageManager : MonoBehaviour
         int indexToRemove = characterToRemove.GetCharacterIndex(CharacterIndexType.CHARACTERS_ALL_LIST);
         int numParticleWeapons = m_particleWeapons.Count;
         int lastIndex = HostilityManager.GetAllCharactersCount() - 1;
+        StatsCharacter lastCharacter = HostilityManager.GetAllCharacters()[lastIndex];
 
         ParticleSystem ps;
         for (int i = 0; i < numParticleWeapons; ++i)
         {
             ps = m_particleWeapons[i].GetParticleSystem();
-            ps.trigger.SetCollider(indexToRemove, ps.trigger.GetCollider(lastIndex));
+            ps.trigger.SetCollider(indexToRemove, lastCharacter);
             ps.trigger.RemoveCollider(lastIndex);
+
+            if (ps.trigger.colliderCount != lastIndex)
+            {
+                Debug.Log("FUCK THESE VALUES ARE DIFFERENT, i have " + ps.trigger.colliderCount + " they have " + lastIndex);
+            }
         }
     }
 

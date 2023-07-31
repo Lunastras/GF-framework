@@ -73,7 +73,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     protected bool m_isGrounded = false;
 
-    protected Vector3 m_slopeNormal;
+    protected Vector3 m_slopeNormal = UPDIR;
 
     private bool m_adjustedVelocityToParent;  // whether or not the velocity was adjusted to that of the parent upon parenting
 
@@ -128,7 +128,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     protected readonly static Quaternion IDENTITY_QUAT = Quaternion.identity;
 
-    private static List<GfMovementTriggerable> m_triggerResults;
+    private static List<GfMovementTriggerable> m_triggerResults = new(2);
 
     protected MgCollisionStruct m_currentGroundCollision;
 
@@ -137,8 +137,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     private void Awake()
     {
-        m_triggerResults = new(2);
-        m_slopeNormal = m_upVec;
         m_transform = transform;
         m_lastRotation = m_transform.rotation;
         ValidateCollisionArchetype();
@@ -177,7 +175,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
             }
         }
     }
-
     private Vector3 GetParentMovement(Vector3 position, float deltaTime, double currentTime)
     {
         Vector3 movement = Zero3;
@@ -323,7 +320,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 m_archetypeCollision.UpdateValues();
             }
 
-
             if (m_useSimpleCollision)
                 foundCollisions = UpdatePhysicsDiscrete(ref position, deltaTime, colliderbuffer, layermask);
             else
@@ -382,12 +378,10 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 m_currentGroundCollision.SetRaycastHit(hitInfo);
                 m_currentGroundCollision.isStair = false;
                 m_currentGroundCollision.selfPosition = position;
-                m_currentGroundCollision.selfUpVecAngle = GfTools.AngleDeg(m_upVec, hitInfo.normal);
+                m_currentGroundCollision.selfUpVecAngle = GfTools.AngleDegNorm(m_upVec, hitInfo.normal);
 
                 //DetermineGeometryType(ref m_velocity, ref lastNormal, ref m_currentGroundCollision, ref collisions);
-
-                if (MgOnTraceHit(ref m_currentGroundCollision))
-                    MgOnCollision(ref m_currentGroundCollision);
+                MgOnCollision(ref m_currentGroundCollision);
             }
             else m_currentGroundCollision.collider = null;
         }
@@ -420,28 +414,29 @@ public abstract class GfMovementGeneric : MonoBehaviour
             ActorOverlapFilter(ref numCollisions, m_collider, colliderbuffer, ref position); /* filter ourselves out of the collider buffer */
             for (int ci = numCollisions - 1; ci >= 0; ci--)/* pushback against the first valid penetration found in our collider buffer */
             {
-                Collider otherc = colliderbuffer[ci];
-                Transform othert = otherc.transform;
+                Collider otherCollider = colliderbuffer[ci];
+                Transform othert = otherCollider.transform;
 
-                if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherc,
+                if (Physics.ComputePenetration(m_collider, position, m_transform.rotation, otherCollider,
                     othert.position, othert.rotation, out Vector3 normal, out float mindistance))
                 {
                     foundCollisions = true;
 
-                    position += normal * (mindistance + TRACE_SKIN);
+                    float pushback = mindistance + TRACE_SKIN;
+                    position.x += normal.x * pushback;
+                    position.y += normal.y * pushback;
+                    position.z += normal.z * pushback;
 
-                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_archetypeCollision, true, true, position);
+                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherCollider, Zero3, false, m_archetypeCollision, true, true, position);
                     collision.isGrounded = CheckGround(ref collision);
                     m_isGrounded |= collision.isGrounded;
 
                     collision.selfPosition = position;
-                    collision.selfVelocity = m_velocity;
 
                     if (MIN_DISPLACEMENT <= _tracelen)
                     {
-                        Vector3 traceDir = _trace / _tracelen;
                         float _traceLenInv = 1.0f / _tracelen;
-                        GfTools.Mult3(ref traceDir, _traceLenInv);
+                        Vector3 traceDir = _trace * _traceLenInv;
 
                         float velNormalDot = System.MathF.Max(0, -Vector3.Dot(normal, traceDir));
                         float pushbackLength = velNormalDot * mindistance;
@@ -450,7 +445,9 @@ public abstract class GfMovementGeneric : MonoBehaviour
                         timefactor = System.MathF.Max(0f, timefactor - distance * _traceLenInv);
                     }
 
-                    CallTriggerableEvents(ref collision);
+                    CallTriggerableEvents(otherCollider.gameObject, normal, Zero3, ref position);
+                    collision.selfVelocity = m_velocity;
+
                     // if (Vector3.Dot(m_velocity, normal) <= 0F) /* only consider normals that we are technically penetrating into */
                     DetermineGeometryType(ref m_velocity, ref lastNormal, ref collision, ref geometryclips);
                     MgOnCollision(ref collision);
@@ -498,8 +495,9 @@ public abstract class GfMovementGeneric : MonoBehaviour
                     MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_archetypeCollision, true, true, position);
                     collision.isGrounded = CheckGround(ref collision);
                     m_isGrounded |= collision.isGrounded;
+
+                    CallTriggerableEvents(collision.collider.gameObject, normal, Zero3, ref position);
                     collision.selfVelocity = m_velocity;
-                    CallTriggerableEvents(ref collision);
 
                     DetermineGeometryType(ref m_velocity, ref lastNormal, ref collision, ref geometryclips);
 
@@ -522,35 +520,37 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         while (numbumps++ <= m_maxCasts && timefactor > 0)
         {
-            Vector3 _trace = m_velocity * deltaTime * timefactor;
-            float _tracelen = _trace.magnitude;
+            Vector3 trace = m_velocity * deltaTime * timefactor;
+            float tracelen = trace.magnitude;
 
-
-            if (_tracelen > MIN_DISPLACEMENT)
+            if (tracelen > MIN_DISPLACEMENT)
             {
-                Vector3 traceDir = _trace;
-                float _traceLenInv = 1.0f / _tracelen;
+                Vector3 traceDir = trace;
+                float _traceLenInv = 1.0f / tracelen;
                 GfTools.Mult3(ref traceDir, _traceLenInv);
 
-                m_archetypeCollision.Trace(position, traceDir, _tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, out numCollisions);/* prevent tunneling by using this skin length */
-                MgCollisionStruct collision = ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, ref position);
+                m_archetypeCollision.Trace(position, traceDir, tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, out numCollisions);/* prevent tunneling by using this skin length */
+                ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, ref position);
 
-                if (_i0 > -1 && collision.touched) /* we found something in our trace */
+                if (_i0 > -1) /* we found something in our trace */
                 {
                     foundCollisions = true;
-                    RaycastHit _closest = tracesbuffer[_i0];
+                    RaycastHit closestHit = tracesbuffer[_i0];
+                    MgCollisionStruct collision = new MgCollisionStruct(closestHit.normal, m_upVec, closestHit.collider, closestHit.point, true, m_archetypeCollision, true, false, position);
+
                     collision.isGrounded = CheckGround(ref collision);
 
-                    float _dist = System.MathF.Max(_closest.distance - TRACE_SKIN, 0F);
+                    float distanceFromHit = System.MathF.Max(closestHit.distance - TRACE_SKIN, 0F);
 
-                    timefactor -= _dist * _traceLenInv;
-                    GfTools.Mult3(ref traceDir, _dist);
+                    timefactor -= distanceFromHit * _traceLenInv;
+                    GfTools.Mult3(ref traceDir, distanceFromHit);
                     GfTools.Add3(ref position, traceDir);
 
                     collision.selfPosition = position;
+
+                    CallTriggerableEvents(collision.collider.gameObject, collision.selfNormal, Zero3, ref position); //todo
                     collision.selfVelocity = m_velocity;
 
-                    CallTriggerableEvents(ref collision);
                     DetermineGeometryType(ref m_velocity, ref lastNormal, ref collision, ref geometryclips);
                     MgOnCollision(ref collision);
 
@@ -559,7 +559,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 }
                 else /* Discovered noting along our linear path */
                 {
-                    GfTools.Add3(ref position, _trace);
+                    GfTools.Add3(ref position, trace);
                     break;
                 }
             }
@@ -615,15 +615,14 @@ public abstract class GfMovementGeneric : MonoBehaviour
         return Vector3.Dot(m_upVec, localStepHitPos - bottomPos);
     }
 
-    private void DetermineGeometryType(ref Vector3 velocity, ref Vector3 lastNormal, ref MgCollisionStruct collision, ref int geometryclips)
+    private void DetermineGeometryType(ref Vector3 velocity, ref Vector3 lastNormal, ref MgCollisionStruct collision, ref int geometryClips)
     {
         bool underSlopeLimit = m_slopeLimit > collision.selfUpVecAngle;
         m_isGrounded |= collision.isGrounded;
         bool recalculateVelocity = true;
-        Vector3 normal = collision.selfNormal;
         if (collision.isGrounded) m_currentGroundCollision = collision;
+        Vector3 normal = collision.selfNormal;
 
-        //Debug.Log("I am here");
         //not perfect TODO
         //Check for stair, if no stair is found, then perform normal velocity calculations
         if (!collision.isGrounded && false)
@@ -647,86 +646,55 @@ public abstract class GfMovementGeneric : MonoBehaviour
             }
         }
 
-        switch (geometryclips)
+        if (recalculateVelocity)
         {
-            case 0: /* the first penetration plane has been identified in the feedback loop */
-                if (recalculateVelocity)
-                {
-                    ClipVelocity(ref velocity, ref collision, normal);
-                    geometryclips = 1;
-                }
-
-                break;
-            case 1: /* two planes have been discovered, which potentially result in a crease */
-                if (recalculateVelocity)
-                {
-                    if (!collision.isGrounded)
-                    {
-                        Vector3 crease = Vector3.Cross(lastNormal, normal);
-                        crease.Normalize();
-                        velocity = Vector3.Project(velocity, crease);
-                    }
-                    else ClipVelocity(ref velocity, ref collision, normal);
-
-                    geometryclips = 2;
-                }
-
-                break;
-            case 2: /* three planes have been detected, our velocity must be cancelled entirely. */
-                if (collision.isGrounded)
-                    ClipVelocity(ref velocity, ref collision, normal);
-                else
-                    velocity = Zero3;
-
-                geometryclips = 2;
-                break;
-        }
-
-        lastNormal = normal;
-    }
-
-    protected virtual void ClipVelocity(ref Vector3 velocity, ref MgCollisionStruct collision, Vector3 normal)
-    {
-        if (Vector3.Dot(velocity, normal) < 0F) //only do these calculations if the normal is facing away from the velocity
-        {
-            float dotSlopeVel = Vector3.Dot(m_slopeNormal, velocity); //dot of the previous slope
-
-            if (collision.selfUpVecAngle > m_upperSlopeLimit)
-                GfTools.Minus3(ref velocity, m_slopeNormal * System.MathF.Max(0, dotSlopeVel));
-
-
-            if (collision.isGrounded)
+            if (!collision.isGrounded && geometryClips == 1)
             {
-                GfTools.RemoveAxis(ref velocity, m_slopeNormal);
-                GfTools.RemoveAxis(ref velocity, normal);
-                m_slopeNormal = normal;
+                Vector3 crease = Vector3.Cross(lastNormal, normal);
+                GfTools.Normalize(ref crease);
+                GfTools.Project(ref velocity, crease);
             }
+            else //clip velocity
+            {
+                if (collision.selfUpVecAngle > m_upperSlopeLimit)
+                    GfTools.Minus3(ref velocity, m_slopeNormal * System.MathF.Max(0, Vector3.Dot(m_slopeNormal, velocity)));
 
-            GfTools.Minus3(ref velocity, (Vector3.Dot(velocity, normal)) * normal);
+                if (collision.isGrounded)
+                {
+                    GfTools.RemoveAxis(ref velocity, m_slopeNormal);
+                    m_slopeNormal = normal;
+                }
+
+                GfTools.Mult3(ref normal, Vector3.Dot(velocity, normal));
+                GfTools.Minus3(ref velocity, normal);
+            }
         }
+
+        geometryClips++;
+        lastNormal = collision.selfNormal;
     }
 
-    protected void CallTriggerableEvents(ref MgCollisionStruct collisionStruct)
+    protected void CallTriggerableEvents(GameObject gameObject, Vector3 normal, Vector3 point, ref Vector3 position)
     {
-        collisionStruct.collider.GetComponents<GfMovementTriggerable>(m_triggerResults);
+        gameObject.GetComponents<GfMovementTriggerable>(m_triggerResults);
         int count = m_triggerResults.Count;
 
         if (count > 0)
         {
-            m_transform.position = collisionStruct.selfPosition;
-            for (int j = 0; j < count; ++j)
+            m_transform.position = position;
+            for (int i = 0; i < count; ++i)
             {
-                m_triggerResults[j].MgOnTrigger(ref collisionStruct, this);
+                m_triggerResults[i].MgOnTrigger(this);
             }
 
-            collisionStruct.selfPosition = m_transform.position;
+            position = m_transform.position;
         }
     }
 
     // Simply a copy of ArchetypeHeader.OverlapFilters.FilterSelf() with trigger checking
-    private void ActorOverlapFilter(ref int _overlapsfound, Collider _self, Collider[] _colliders, ref Vector3 position)
+    private void ActorOverlapFilter(ref int overlapsfound, Collider _self, Collider[] _colliders, ref Vector3 position)
     {
-        for (int i = _overlapsfound - 1; i >= 0; i--)
+        for (int i = overlapsfound - 1; i >= 0; i--)
         {
             Collider col = _colliders[i];
             bool filterout = col == _self;
@@ -735,64 +703,54 @@ public abstract class GfMovementGeneric : MonoBehaviour
             // may lead to unintended consequences for the end-user.
             if (!filterout && col.isTrigger)
             {
-                MgCollisionStruct collision = new MgCollisionStruct(Zero3, m_upVec, col, Zero3, false, m_archetypeCollision, true, true, position);
-                CallTriggerableEvents(ref collision);
-                position = collision.selfPosition;
+                CallTriggerableEvents(col.gameObject, Zero3, Zero3, ref position);
                 filterout = true;
             }
 
             if (filterout)
             {
-                _overlapsfound--;
+                overlapsfound--;
 
-                if (i < _overlapsfound)
-                    _colliders[i] = _colliders[_overlapsfound];
+                if (i < overlapsfound)
+                    _colliders[i] = _colliders[overlapsfound];
             }
         }
     }
 
     // Simply a copy of ArchetypeHeader.TraceFilters.FindClosestFilterInvalids() with added trigger functionality
-    private MgCollisionStruct ActorTraceFilter(ref int _tracesfound, out int _closestindex, float _bias, Collider _self, RaycastHit[] _hits, ref Vector3 position)
+    private void ActorTraceFilter(ref int tracesfound, out int closestindex, float bias, Collider self, RaycastHit[] hits, ref Vector3 position)
     {
         float _closestdistance = Mathf.Infinity;
-        _closestindex = -1;
+        closestindex = -1;
 
-        MgCollisionStruct collisionToReturn = default;
-
-        for (int i = _tracesfound - 1; i >= 0; i--)
+        for (int i = tracesfound - 1; i >= 0; i--)
         {
-            _hits[i].distance -= _bias + OVERLAP_SKIN;
-            RaycastHit _hit = _hits[i];
-            Collider _col = _hit.collider;
-            float _tracelen = _hit.distance;
-            bool filterout = _tracelen < -OVERLAP_SKIN || _col == _self;
+            hits[i].distance -= bias + OVERLAP_SKIN;
+            RaycastHit hit = hits[i];
+            Collider col = hit.collider;
+            float tracelen = hit.distance;
+            bool filterout = tracelen < -OVERLAP_SKIN || col == self;
 
-            MgCollisionStruct collision = new MgCollisionStruct(_hit.normal, m_upVec, _hit.collider, _hit.point, true, m_archetypeCollision, _tracelen >= 0, false, position);
             // if we aren't already filtering ourselves out, check to see if we're a collider
-            if (!filterout && _hit.collider.isTrigger && MgOnTriggerHit(ref collision))
+            if (!filterout && hit.collider.isTrigger)
             {
-                CallTriggerableEvents(ref collision);
-                position = collision.selfPosition;
+                CallTriggerableEvents(hit.collider.gameObject, hit.normal, hit.point, ref position);
                 filterout = true;
             }
 
             if (filterout)
             {
-                _tracesfound--;
+                tracesfound--;
 
-                if (i < _tracesfound)
-                    _hits[i] = _hits[_tracesfound];
+                if (i < tracesfound)
+                    hits[i] = hits[tracesfound];
             }
-            else if (MgOnTraceHit(ref collision) && collision.touched && _tracelen < _closestdistance)
+            else if (tracelen >= 0 && tracelen < _closestdistance)
             {
-                _closestdistance = _tracelen;
-                _closestindex = i;
-                collisionToReturn = collision;
+                _closestdistance = tracelen;
+                closestindex = i;
             }
-            //s else MgOnCollision(ownCollision);
         }
-
-        return collisionToReturn;
     }
 
     protected bool CheckGround(ref MgCollisionStruct collision)
@@ -866,7 +824,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     private void BeginUpVecSmoothing(Vector3 newUpVec)
     {
-        float angleDifference = GfTools.AngleDeg(m_rotationUpVec, newUpVec);
+        float angleDifference = GfTools.AngleDegNorm(m_rotationUpVec, newUpVec);
         m_rotationSmoothSeconds = angleDifference * INV_180 * m_fullRotationSeconds;
         //Debug.Log("The rotation");
         m_rotationSmoothProgress = 0;
@@ -1066,15 +1024,10 @@ public abstract class GfMovementGeneric : MonoBehaviour
         MovementDirRaw = dir;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public virtual void SetMovementSpeed(float speed) { this.m_speed = speed; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public virtual bool GetIsGrounded() { return m_isGrounded; }
+    public virtual bool IsGrounded() { return m_isGrounded; }
     protected virtual void MgOnCollision(ref MgCollisionStruct collision) { }
-
-    protected virtual bool MgOnTraceHit(ref MgCollisionStruct collision) { return true; }
-    protected virtual bool MgOnTriggerHit(ref MgCollisionStruct collision) { return collision.touched; }
 }
 
 #region MiscType
@@ -1087,7 +1040,8 @@ public unsafe struct MgCollisionStruct
         this.collider = collider;
         this.selfNormal = selfNormal;
         this.point = point;
-        selfUpVecAngle = GfTools.AngleDeg(selfNormal, upVec) + 0.00001F;
+        selfUpVecAngle = GfTools.AngleDegNorm(selfNormal, upVec) + 0.00001F;
+        //Debug.Log("angle is " + selfUpVecAngle);
         isGrounded = false;
         this.archetypeCollision = archetypeCollision;
         this.calculatedPoint = calculatedPoint;
@@ -1158,7 +1112,7 @@ public unsafe struct MgCollisionStruct
         if (!calculatedHitUpVecAngle)
         {
             calculatedHitUpVecAngle = true;
-            hitUpVecAngle = GfTools.AngleDeg(upVec, GetRaycastHit().normal);
+            hitUpVecAngle = GfTools.AngleDegNorm(upVec, GetRaycastHit().normal);
         }
 
         return hitUpVecAngle;

@@ -25,7 +25,7 @@ public class GfTriggerMovGravity : GfMovementTriggerable
         SetUpvec(m_defaultUpVec);
     }
 
-    public override void MgOnTrigger(ref MgCollisionStruct collision, GfMovementGeneric movement)
+    public override void MgOnTrigger(GfMovementGeneric movement)
     {
         if (m_sphericalParent)
             movement.SetParentSpherical(m_sphericalParent, m_priority, m_overridePriority);

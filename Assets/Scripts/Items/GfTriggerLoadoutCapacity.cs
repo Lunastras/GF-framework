@@ -26,7 +26,7 @@ public class GfTriggerLoadoutCapacity : GfMovementTriggerable
     protected bool m_destroyOnWeaponSet = true;
 
 
-    public override void MgOnTrigger(ref MgCollisionStruct collision, GfMovementGeneric movement)
+    public override void MgOnTrigger(GfMovementGeneric movement)
     {
         LoadoutManager loadoutManager;
         if ((!m_onlyForPlayer || GameManager.GetPlayer() == movement.transform)

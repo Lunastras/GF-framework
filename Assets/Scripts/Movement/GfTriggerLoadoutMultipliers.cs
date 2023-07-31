@@ -17,7 +17,7 @@ public class GfTriggerLoadoutMultipliers : GfMovementTriggerable
     [SerializeField]
     protected PriorityValueSetter<float> m_weaponCapacityMultiplier = new(1);
 
-    public override void MgOnTrigger(ref MgCollisionStruct collision, GfMovementGeneric movement)
+    public override void MgOnTrigger(GfMovementGeneric movement)
     {
         LoadoutManager loadoutManager;
         if ((!m_onlyForPlayer || GameManager.GetPlayer() == movement.transform)

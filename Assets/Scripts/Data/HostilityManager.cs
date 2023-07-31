@@ -136,7 +136,7 @@ public class HostilityManager : MonoBehaviour
             typeList.Add(character);
             Instance.m_allCharacters.Add(character);
 
-            if (null != OnCharacterRemoved) OnCharacterAdded(character);
+            if (null != OnCharacterAdded) OnCharacterAdded(character);
         }
     }
 
@@ -146,10 +146,10 @@ public class HostilityManager : MonoBehaviour
 
         if (0 <= characterIndex) //make sure it is in the list
         {
-            List<StatsCharacter> typeList = Instance.m_instantiatedCharacters[(int)character.GetCharacterType()];
-            List<StatsCharacter> characterList = Instance.m_allCharacters;
-
             if (null != OnCharacterRemoved) OnCharacterRemoved(character);
+
+            List<StatsCharacter> typeList = Instance.m_instantiatedCharacters[(int)character.GetCharacterType()];
+            List<StatsCharacter> allCharacters = Instance.m_allCharacters;
 
             int lastCharacterIndex = typeList.Count - 1;
 
@@ -158,13 +158,16 @@ public class HostilityManager : MonoBehaviour
             typeList.RemoveAt(lastCharacterIndex);
             character.SetCharacterIndex(-1, CharacterIndexType.CHARACTERS_TYPE_LIST);
 
-            lastCharacterIndex = characterList.Count - 1;
             int allCharactersIndex = character.GetCharacterIndex(CharacterIndexType.CHARACTERS_ALL_LIST);
 
-            characterList[allCharactersIndex] = characterList[lastCharacterIndex];
-            characterList[allCharactersIndex].SetCharacterIndex(allCharactersIndex, CharacterIndexType.CHARACTERS_ALL_LIST);
-            characterList.RemoveAt(lastCharacterIndex);
+            lastCharacterIndex = allCharacters.Count - 1;
+
+            allCharacters[allCharactersIndex] = allCharacters[lastCharacterIndex];
+            allCharacters[allCharactersIndex].SetCharacterIndex(allCharactersIndex, CharacterIndexType.CHARACTERS_ALL_LIST);
+            allCharacters.RemoveAt(lastCharacterIndex);
             character.SetCharacterIndex(-1, CharacterIndexType.CHARACTERS_ALL_LIST);
+
+            Debug.Log("enemies left in list: " + allCharacters.Count);
         }
     }
 

@@ -157,7 +157,7 @@ public class HudManager : MonoBehaviour
 
     public static void TriggerSoftCheckpointVisuals()
     {
-        Debug.Log("Triggered soft checkpoint");
+
     }
 
     public static void FadeGameBlackScreen(float fadeInTime, float fadeOutTime, float waitTime = 0)
@@ -175,19 +175,16 @@ public class HudManager : MonoBehaviour
     //returns the trigger delay
     public static float ResetSoftCheckpointVisuals()
     {
-        Debug.Log("Reset soft checkpoint");
         FadeGameBlackScreen(Instance.m_auxFadeToBlackImageFadeInTime, Instance.m_auxFadeToBlackImageFadeOutTime, 0.05f);
         return Instance.m_auxFadeToBlackImageFadeInTime;
     }
 
     public static void TriggerHardCheckpointVisuals()
     {
-        Debug.Log("Triggered HARD checkpoint");
     }
 
     public static void ResetHardCheckpointVisuals()
     {
-        Debug.Log("Reset HARD checkpoint");
     }
 
 

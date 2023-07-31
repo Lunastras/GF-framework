@@ -73,7 +73,7 @@ MonoBehaviour:
   m_parentMovement: {fileID: 432613321654859549}
   m_selfCollider: {fileID: 6910084372030936651}
   m_intervalObjCheck: 0.1
-  m_intervalDistanceCheck: 0.02
+  m_intervalDistanceCheck: 0.1
   m_updateVariance: 0
   m_maxProjectionDistance: 40
   m_extraDepth: 1
@@ -365,6 +365,8 @@ MonoBehaviour:
     m_minDistance: 10
     m_maxDistance: 500
     m_spatialBlend: 1
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
   m_deathSound:
     m_clip: {fileID: 0}
     m_mixerType: 0
@@ -377,6 +379,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
 --- !u!114 &8334912748930156530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -406,6 +410,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
   m_collisionSound:
     m_clip: {fileID: 0}
     m_mixerType: 0
@@ -418,6 +424,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
   m_canDamageSelf: 0
   m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
@@ -5380,6 +5388,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0.6
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
   m_deathSound:
     m_clip: {fileID: 8300000, guid: 3de99b229ce91c545933bf05cd6c5530, type: 3}
     m_mixerType: 0
@@ -5392,6 +5402,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
 --- !u!114 &432613321654859549
 MonoBehaviour:
   m_ObjectHideFlags: 0

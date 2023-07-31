@@ -15,7 +15,7 @@ public class GfTriggerRevertToCheckpoint : GfMovementTriggerable
         if (null == m_triggerCheckpoint) Debug.LogWarning("Warning! GfTriggerSoftKill requires a GfTriggerCheckpoint reference for its inspector element m_triggerCheckpoint.");
     }
 
-    public override void MgOnTrigger(ref MgCollisionStruct collisionData, GfMovementGeneric player)
+    public override void MgOnTrigger(GfMovementGeneric player)
     {
         CheckpointManager checkpointManager = player.GetComponent<CheckpointManager>();
         if (checkpointManager && checkpointManager.HasCheckpointRegistered(m_triggerCheckpoint))

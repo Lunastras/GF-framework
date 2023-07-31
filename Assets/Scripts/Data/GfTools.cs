@@ -219,25 +219,45 @@ public class GfTools
         }
     }
 
-    /*Props to allista from the kerbal space program forum for this incredible function*/
-    public static float AngleDeg(Vector3 a, Vector3 b)
+    public static void Project(ref Vector3 vector, Vector3 onNormal)
     {
-        Vector3 abm = a * b.magnitude;
-        Vector3 bam = b * a.magnitude;
-        return 2 * atan2((abm - bam).magnitude, (abm + bam).magnitude) * Mathf.Rad2Deg;
+        var dot = Vector3.Dot(vector, onNormal);
+        vector.x = onNormal.x * dot;
+        vector.y = onNormal.y * dot;
+        vector.z = onNormal.z * dot;
     }
 
     /*Props to allista from the kerbal space program forum for this incredible function*/
-    public static float AngleDeg(float3 a, float3 b)
+    /*
+    public static float AngleDeg(Vector3 a, Vector3 b)
     {
-        float3 abm = a * length(b);
-        float3 bam = b * length(a);
-        return 2.0f * atan2(length(abm - bam), length(abm + bam)) * Mathf.Rad2Deg;
+        GfTools.Mult3(ref a, sqrt(b.sqrMagnitude));
+        GfTools.Mult3(ref b, sqrt(a.sqrMagnitude));
+        return 2 * atan2(sqrt((a - b).sqrMagnitude), sqrt((a + b).sqrMagnitude)) * Mathf.Rad2Deg;
+    }*/
+
+    public static float AngleDegNorm(Vector3 aNorm, Vector3 bNorm)
+    {
+        float dot = aNorm.x * bNorm.x + aNorm.y * bNorm.y + aNorm.z * bNorm.z;
+        //dot = clamp(dot, -1F, 1F);
+        dot *= 0.9999999f;
+        return acos(dot) * Mathf.Rad2Deg;
+    }
+
+    public static float SignedAngleDegNorm(Vector3 from, Vector3 to, Vector3 axis)
+    {
+        float unsignedAngle = AngleDegNorm(from, to);
+
+        float cross_x = from.y * to.z - from.z * to.y;
+        float cross_y = from.z * to.x - from.x * to.z;
+        float cross_z = from.x * to.y - from.y * to.x;
+        float sign = Mathf.Sign(axis.x * cross_x + axis.y * cross_y + axis.z * cross_z);
+        return unsignedAngle * sign;
     }
 
     public static float SignedAngleDeg(Vector3 from, Vector3 to, Vector3 axis)
     {
-        float unsignedAngle = AngleDeg(from, to);
+        float unsignedAngle = Vector3.Angle(from, to);
 
         float cross_x = from.y * to.z - from.z * to.y;
         float cross_y = from.z * to.x - from.x * to.z;

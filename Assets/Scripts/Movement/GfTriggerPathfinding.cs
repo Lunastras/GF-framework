@@ -14,7 +14,7 @@ public class GfTriggerPathfinding : GfMovementTriggerable
         if (null == m_pathfinding) m_pathfinding = GetComponent<GfPathfinding>();
     }
 
-    public override void MgOnTrigger(ref MgCollisionStruct collision, GfMovementGeneric movement)
+    public override void MgOnTrigger(GfMovementGeneric movement)
     {
         NpcController npcController = movement.GetComponent<NpcController>();
         if (npcController) npcController.SetPathfindingManager(m_pathfinding);

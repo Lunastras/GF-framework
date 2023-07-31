@@ -213,7 +213,7 @@ public class GfMovementWallrun : GfMovementSimple
         bool hitWall = collision.collider.Raycast(wallRay, out RaycastHit hitInfo, 2);
         float angle = 0;
         hitWall = hitWall
-                && (angle = GfTools.AngleDeg(m_upVec, hitInfo.normal)) > m_slopeLimit //we do this to avoid using an if statement
+                && (angle = GfTools.AngleDegNorm(m_upVec, hitInfo.normal)) > m_slopeLimit //we do this to avoid using an if statement
                 && angle <= MAX_WALL_ANGLE;
 
         return hitWall;

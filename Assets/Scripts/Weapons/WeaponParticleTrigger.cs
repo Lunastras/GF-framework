@@ -40,15 +40,20 @@ public class WeaponParticleTrigger : WeaponParticle
         var triggerModule = m_particleSystem.trigger;
         triggerModule.enabled = true;
     }
-    
+
     protected void Start()
     {
         ParticleTriggerDamageManager.AddParticleSystem(this);
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        if (m_aimsAtTarget && m_target)
+        LookAtTarget();
+    }
+
+    protected void LookAtTarget()
+    {
+        if (m_aimsAtTarget && m_target && m_isFiring)
         {
             if (m_movementParent)
                 m_transform.LookAt(m_target, m_movementParent.GetUpvecRotation());
@@ -120,6 +125,18 @@ public class WeaponParticleTrigger : WeaponParticle
                 HitCollision(ref particle, selfStats, hitObject, damageSource);
             }
         }
+    }
+
+    public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)
+    {
+        if (!m_isFiring)
+        {
+            m_isFiring = true;
+            LookAtTarget();
+        }
+
+        m_isFiring = true;
+        m_particleSystem.Play();
     }
 
     protected virtual void HitTarget(ref ParticleSystem.Particle particle, StatsCharacter self, StatsCharacter target, float damageMultiplier, DamageSource damageSource)

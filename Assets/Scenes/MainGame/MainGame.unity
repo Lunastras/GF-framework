@@ -14748,6 +14748,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
   m_overrideGameTypeMode: 0
   m_gameType: 0
   CanPause: 1
@@ -14976,6 +14978,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
   m_actionMusic:
     m_clip: {fileID: 8300000, guid: 72f10f44b88454340bf823d6ad861802, type: 3}
     m_mixerType: 3
@@ -14988,6 +14992,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
   m_actionCalmBlendTime: 1
   m_requiredScenesIndeces: 
   m_pathfindingSystems: []

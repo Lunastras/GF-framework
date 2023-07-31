@@ -11,7 +11,7 @@ public class GfTriggerMovGenericModifier : GfMovementTriggerable
     [SerializeField]
     protected PriorityValueSetter<float> m_massMultiplier = new(1);
 
-    public override void MgOnTrigger(ref MgCollisionStruct collision, GfMovementGeneric movement)
+    public override void MgOnTrigger(GfMovementGeneric movement)
     {
         if (!m_onlyForPlayer || GameManager.GetPlayer() == movement.transform)
         {

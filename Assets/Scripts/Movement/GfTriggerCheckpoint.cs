@@ -13,7 +13,7 @@ public class GfTriggerCheckpoint : GfMovementTriggerable
         if (null == Checkpoint) Checkpoint = transform;
     }
 
-    public override void MgOnTrigger(ref MgCollisionStruct collisionData, GfMovementGeneric player)
+    public override void MgOnTrigger(GfMovementGeneric player)
     {
         CheckpointManager checkpointManager = player.GetComponent<CheckpointManager>();
         if (checkpointManager)

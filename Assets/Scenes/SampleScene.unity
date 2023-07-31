@@ -1691,7 +1691,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!135 &450051789
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1821,6 +1821,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
   m_actionMusic:
     m_clip: {fileID: 0}
     m_mixerType: 0
@@ -1833,6 +1835,8 @@ MonoBehaviour:
     m_minDistance: 1
     m_maxDistance: 500
     m_spatialBlend: 0
+    m_maxInstances: 12
+    m_currentPlayingInstances: 0
   m_actionCalmBlendTime: 1
   m_requiredScenesIndeces: 0200000004000000
   m_pathfindingSystems:
@@ -18423,6 +18427,7 @@ MonoBehaviour:
   m_drag: 300
   m_sphericalParent: {fileID: 0}
   m_defaultGravityDir: {x: 0, y: -1, z: 0}
+  m_defaultSettingsOnDisable: 1
   MovementGravityReference: {fileID: 0}
 --- !u!114 &3488292408714486462
 MonoBehaviour:

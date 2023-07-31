@@ -13,7 +13,7 @@ public class GfCameraModifier : GfMovementTriggerable
     [SerializeField]
     private int m_fovSmoothTime = 1;
 
-    public override void MgOnTrigger(ref MgCollisionStruct collision, GfMovementGeneric movement)
+    public override void MgOnTrigger(GfMovementGeneric movement)
     {
         if (GameManager.GetPlayer() == movement.transform)
         {
