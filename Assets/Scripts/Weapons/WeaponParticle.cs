@@ -4,6 +4,12 @@ using UnityEngine;
 
 public abstract class WeaponParticle : WeaponGeneric
 {
+    [SerializeField]
+    protected bool m_eraseParticlesAfterOwnerKilled = true;
+
+    [SerializeField]
+    protected float m_particlesEraseFromCenterSpeed = 10f;
+
     private int m_particleTriggerDamageListIndex = -1;
     protected ParticleSystem m_particleSystem;
 
@@ -26,6 +32,12 @@ public abstract class WeaponParticle : WeaponGeneric
         return ps;
     }
 
+    protected void OnOwnerKilled(StatsCharacter character, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    {
+        if (m_eraseParticlesAfterOwnerKilled)
+            ParticleEraser.EraseParticlesFromCenter(m_particleSystem, character.transform.position, m_particlesEraseFromCenterSpeed);
+    }
+
     public override void StopFiring(bool killBullets)
     {
         m_isFiring = false;
@@ -38,9 +50,48 @@ public abstract class WeaponParticle : WeaponGeneric
 
     public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)
     {
-        m_isFiring = true;
-        m_particleSystem.Play();
+        switch (fireType)
+        {
+            case (FireType.MAIN):
+                m_isFiring = true;
+                m_particleSystem.Play();
+                break;
+            case (FireType.SECONDARY):
+                break;
+            case (FireType.SPECIAL):
+                break;
+
+        }
     }
+
+    public override void SetSeed(uint seed)
+    {
+        if (seed != m_particleSystem.randomSeed)
+        {
+            m_particleSystem.randomSeed = seed;
+
+            foreach (Transform item in m_particleSystem.transform)
+            {
+                ParticleSystem subSystem = item.GetComponent<ParticleSystem>();
+                if (subSystem)
+                    subSystem.randomSeed = seed;
+            }
+        }
+    }
+
+    public override void WasSwitchedOn()
+    {
+        base.WasSwitchedOn();
+        GetStatsCharacter().OnKilled += OnOwnerKilled;
+    }
+
+    public override void WasSwitchedOff()
+    {
+        base.WasSwitchedOff();
+        GetStatsCharacter().OnKilled -= OnOwnerKilled;
+    }
+
+    public override uint GetSeed() { return 0; }
 
     public override bool IsFiring() { return m_particleSystem.isEmitting; }
 
@@ -52,28 +103,18 @@ public abstract class WeaponParticle : WeaponGeneric
 
     public override bool IsAlive() { return m_particleSystem.IsAlive(true); }
 
-    public override bool SetSpeedMultiplier(float multiplier, uint priority, bool overridePriority)
+    public override void SetSpeedMultiplier(float multiplier)
     {
-        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
-        if (changedValue)
-        {
-            var main = m_particleSystem.main;
-            main.simulationSpeed = multiplier;
-        }
-
-        return changedValue;
+        base.SetSpeedMultiplier(multiplier);
+        var main = m_particleSystem.main;
+        main.simulationSpeed = multiplier;
     }
 
-    public override bool SetFireRateMultiplier(float multiplier, uint priority, bool overridePriority)
+    public override void SetFireRateMultiplier(float multiplier)
     {
-        bool changedValue = m_fireRateMultiplier.SetValue(multiplier, priority, overridePriority);
-        if (changedValue)
-        {
-            var emission = m_particleSystem.emission;
-            emission.rateOverTimeMultiplier = m_initialRateOverTimeMultiplier * multiplier;
-        }
-
-        return changedValue;
+        base.SetFireRateMultiplier(multiplier);
+        var emission = m_particleSystem.emission;
+        emission.rateOverTimeMultiplier = m_initialRateOverTimeMultiplier * multiplier;
     }
 
     public override void SetMovementParent(GfMovementGeneric parent)

@@ -7,18 +7,18 @@ public abstract class DamageSource : MonoBehaviour
     [SerializeField]
     private StatsCharacter m_statsCharacter;
 
-    public DamageSource m_parentDamageSource = null;
+    public DamageSource ParentDamageSource = null;
 
     public void SetStatsCharacter(StatsCharacter value)
     {
         m_statsCharacter = value;
-        if (m_parentDamageSource) m_parentDamageSource.SetStatsCharacter(value);
+        if (ParentDamageSource) ParentDamageSource.SetStatsCharacter(value);
     }
 
     public StatsCharacter GetStatsCharacter()
     {
-        if (m_parentDamageSource)
-            return m_parentDamageSource.GetStatsCharacter();
+        if (ParentDamageSource)
+            return ParentDamageSource.GetStatsCharacter();
         else
             return m_statsCharacter;
     }

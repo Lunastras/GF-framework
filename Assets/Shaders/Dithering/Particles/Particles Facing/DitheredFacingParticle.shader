@@ -105,6 +105,9 @@ Shader "DistanceDither/Particles/Facing Particle"
             HLSLPROGRAM
             #pragma target 2.0
 
+            #pragma shader_feature _LAMBERT_DISABLED
+            #pragma shader_feature _FOG_DISABLED
+
             // -------------------------------------
             // Material Keywords
             #pragma shader_feature_local _NORMALMAP

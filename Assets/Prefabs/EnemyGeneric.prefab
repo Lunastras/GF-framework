@@ -1,89 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2081294480369078964
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7242947389415807975}
-  - component: {fileID: 3271172313896487433}
-  - component: {fileID: 2042058616149053171}
-  m_Layer: 6
-  m_Name: ShadowDecal
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &7242947389415807975
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2081294480369078964}
-  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4759944753111975126}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &3271172313896487433
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2081294480369078964}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: c398a5e2a53ccc848a8566d1c4d739cd, type: 2}
-  m_DrawDistance: 10000
-  m_FadeScale: 1
-  m_StartAngleFade: 0
-  m_EndAngleFade: 58.29181
-  m_UVScale: {x: 1, y: 1}
-  m_UVBias: {x: 0, y: 0}
-  m_DecalLayerMask: 1
-  m_ScaleMode: 0
-  m_Offset: {x: 0, y: 0, z: 0.60729694}
-  m_Size: {x: 1.2860512, y: 1.2860512, z: 1.2145939}
-  m_FadeFactor: 0.6924891
---- !u!114 &2042058616149053171
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2081294480369078964}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a430eb5a2fc9d3d4da8f160823cc74d2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_projector: {fileID: 3271172313896487433}
-  m_parentMovement: {fileID: 432613321654859549}
-  m_selfCollider: {fileID: 6910084372030936651}
-  m_intervalObjCheck: 0.1
-  m_intervalDistanceCheck: 0.1
-  m_updateVariance: 0
-  m_maxProjectionDistance: 40
-  m_extraDepth: 1
-  m_opacityStartEnd: {x: 0.6, y: 0}
-  m_sizeStart: {x: 2, y: 2}
-  m_sizeEnd: {x: 0, y: 0}
-  m_smoothTimeOpacity: 0.1
-  m_smoothTimeSize: 0.1
-  m_overrideZaxisRotation: 1
-  m_upDir: {x: 0, y: 1, z: 0}
 --- !u!1 &3538087118917617869
 GameObject:
   m_ObjectHideFlags: 0
@@ -160,7 +76,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3538087118917617869}
   m_Enabled: 1
-  m_CastShadows: 0
+  m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -235,7 +151,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5661663903598815525}
   m_Father: {fileID: 4759944753111975126}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -354,33 +271,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_spawnSound:
-    m_clip: {fileID: 8300000, guid: b63b6d75342e5204c831294d284c52e1, type: 3}
-    m_mixerType: 0
-    m_volume: 0.15
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 10
-    m_maxDistance: 500
-    m_spatialBlend: 1
-    m_maxInstances: 12
-    m_currentPlayingInstances: 0
+    Clip: {fileID: 8300000, guid: 3de99b229ce91c545933bf05cd6c5530, type: 3}
+    MixerType: 6
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 1
+    MaxInstances: 12
   m_deathSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
-    m_maxInstances: 12
-    m_currentPlayingInstances: 0
+    Clip: {fileID: 0}
+    MixerType: 6
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 1
+    MaxInstances: 12
 --- !u!114 &8334912748930156530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -394,38 +309,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 7866579364068057338}
-  m_parentDamageSource: {fileID: 0}
+  ParentDamageSource: {fileID: 0}
   m_damage: 10
   m_movementParent: {fileID: 432613321654859549}
   m_target: {fileID: 0}
+  m_eraseParticlesAfterOwnerKilled: 1
+  m_particlesEraseFromCenterSpeed: 25
   m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
-    m_maxInstances: 12
-    m_currentPlayingInstances: 0
+    Clip: {fileID: 8300000, guid: 14c31c6cf8f59fd43883ea2d75667ec2, type: 3}
+    MixerType: 6
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 1
+    MaxInstances: 12
   m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
-    m_maxInstances: 12
-    m_currentPlayingInstances: 0
+    Clip: {fileID: 8300000, guid: 0126877a6a6bae04ea48ced54c12b348, type: 3}
+    MixerType: 6
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 1
+    MaxInstances: 12
   m_canDamageSelf: 0
   m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
@@ -619,7 +534,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0, g: 1, b: 0.1493411, a: 1}
+      maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -1204,7 +1119,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
     arc:
-      value: 60
+      value: 100
       mode: 2
       spread: 0
       speed:
@@ -4208,11 +4123,11 @@ ParticleSystem:
     - {fileID: 0}
   SubModule:
     serializedVersion: 2
-    enabled: 0
+    enabled: 1
     subEmitters:
     - serializedVersion: 3
-      emitter: {fileID: 0}
-      type: 0
+      emitter: {fileID: 1191255498477783372}
+      type: 2
       properties: 0
       emitProbability: 1
   LightsModule:
@@ -5288,7 +5203,6 @@ Transform:
   m_Children:
   - {fileID: 7669414761986027255}
   - {fileID: 3126376338053538287}
-  - {fileID: 7242947389415807975}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5308,8 +5222,6 @@ MonoBehaviour:
   m_targetCheckCooldown: 0.25
   m_pathFindingCooldown: 0.3
   m_updateInterval: 0.05
-  m_usesRigidBody: 0
-  m_usesFixedUpdate: 1
   m_cosFieldOfView: -1
   m_lineOfSightLength: 100
   m_targetTrackingTimeWindow: 3
@@ -5343,9 +5255,12 @@ MonoBehaviour:
   m_turretPhases:
   - weapons:
     - {fileID: 8334912748930156530}
+    DamageMultipliers: []
+    SpeedMultipliers: []
+    FireRateMultipliers: []
   m_autoPlay: 0
-  m_statsCharacter: {fileID: 0}
-  m_destoryWhenDone: 0
+  m_statsCharacter: {fileID: 7866579364068057338}
+  DestoryWhenDone: 0
   m_objectToDestroy: {fileID: 0}
 --- !u!114 &7866579364068057338
 MonoBehaviour:
@@ -5364,9 +5279,11 @@ MonoBehaviour:
     m_InternalValue: 100
   m_characterType:
     m_InternalValue: 2
-  m_testPrefab: {fileID: 4759944753111975130}
+  m_threatLevel: 1
   m_graphics: {fileID: 3538087118917617869}
   m_movement: {fileID: 432613321654859549}
+  m_spawnPrefab: {fileID: 232221197201758988, guid: da94503518d43044a9253dad446cd872,
+    type: 3}
   m_powerItemsToDrop: 10
   m_itemDropsAfterDeath: []
   m_dropsToSpawn: 01000000
@@ -5377,33 +5294,31 @@ MonoBehaviour:
   m_objectCollider: {fileID: 6910084372030936651}
   m_turret: {fileID: 0}
   m_damageSound:
-    m_clip: {fileID: 8300000, guid: 94d1cc8d45d5fb541afdd80639a8c3fd, type: 3}
-    m_mixerType: 0
-    m_volume: 0.1
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0.6
-    m_maxInstances: 12
-    m_currentPlayingInstances: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_deathSound:
-    m_clip: {fileID: 8300000, guid: 3de99b229ce91c545933bf05cd6c5530, type: 3}
-    m_mixerType: 0
-    m_volume: 0.1
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
-    m_maxInstances: 12
-    m_currentPlayingInstances: 0
+    Clip: {fileID: 8300000, guid: b63b6d75342e5204c831294d284c52e1, type: 3}
+    MixerType: 6
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
 --- !u!114 &432613321654859549
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5431,8 +5346,8 @@ MonoBehaviour:
   FlagDash: 0
   m_maxOverlaps: 4
   m_maxCasts: 4
-  m_acceleration: 45
-  m_deacceleration: 40
+  m_acceleration: 25
+  m_deacceleration: 25
   m_midAirAcceleration: 20
   m_midAirDeacceleration: 15
   m_maxFallSpeed: 50
@@ -5625,3 +5540,88 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1001 &8427528306251661718
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7669414761986027255}
+    m_Modifications:
+    - target: {fileID: 2348196709725063840, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_Name
+      value: Death Particles
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: cfdb141e2133ff541a8a71e797603fa7, type: 3}
+--- !u!198 &1191255498477783372 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 7240847875768436954, guid: cfdb141e2133ff541a8a71e797603fa7,
+    type: 3}
+  m_PrefabInstance: {fileID: 8427528306251661718}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &5661663903598815525 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
+    type: 3}
+  m_PrefabInstance: {fileID: 8427528306251661718}
+  m_PrefabAsset: {fileID: 0}

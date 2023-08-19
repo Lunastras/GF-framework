@@ -19,9 +19,7 @@ public class GfTriggerRevertToCheckpoint : GfMovementTriggerable
     {
         CheckpointManager checkpointManager = player.GetComponent<CheckpointManager>();
         if (checkpointManager && checkpointManager.HasCheckpointRegistered(m_triggerCheckpoint))
-            if (m_triggerCheckpoint.SoftCheckpoint)
-                checkpointManager.ResetToSoftCheckpoint(Damage, CanKillOnRevert);
-            else
-                checkpointManager.ResetToHardCheckpoint();
+            checkpointManager.ResetToSoftCheckpoint(Damage, CanKillOnRevert);
+
     }
 }

@@ -2,8 +2,6 @@
 
 public class CameraController : MonoBehaviour
 {
-    private static CameraController Instance = null;
-
     [SerializeField]
     private Transform m_mainTarget = null;
 
@@ -73,7 +71,7 @@ public class CameraController : MonoBehaviour
 
     private Camera m_camera = null;
 
-    public static CameraController m_currentCamera;
+    public static CameraController Instance;
 
     public Vector3 m_upvec = Vector3.up;
 
@@ -95,14 +93,11 @@ public class CameraController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (Instance) Destroy(Instance);
+        if (Instance != this) Destroy(Instance);
         Instance = this;
 
         m_transform = transform;
         m_camera = GetComponent<Camera>();
-
-        if (m_currentCamera) Destroy(m_currentCamera);
-        m_currentCamera = this;
 
         m_currentTargetDst = m_dstFromtarget;
         m_desiredDst = m_dstFromtarget;
@@ -112,6 +107,8 @@ public class CameraController : MonoBehaviour
     {
         Instance.SnapToTarget();
     }
+
+    public CameraController GetInstance() { return Instance; }
 
     public void SnapToTarget()
     {

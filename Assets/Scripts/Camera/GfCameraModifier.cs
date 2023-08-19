@@ -15,12 +15,12 @@ public class GfCameraModifier : GfMovementTriggerable
 
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
-        if (GameManager.GetPlayer() == movement.transform)
+        if (GfLevelManager.GetPlayer() == movement.transform)
         {
             if (!m_targetDistanceMultiplier.m_ignore)
-                CameraController.m_currentCamera.SetDistanceMultiplier(m_targetDistanceMultiplier, m_targetDistanceMultiplier.m_priority, m_targetDistanceMultiplier.m_overridePriority);
+                CameraController.Instance.SetDistanceMultiplier(m_targetDistanceMultiplier, m_targetDistanceMultiplier.m_priority, m_targetDistanceMultiplier.m_overridePriority);
             if (!m_fovMultiplier.m_ignore)
-                CameraController.m_currentCamera.SetFovMultiplier(m_fovMultiplier, m_fovSmoothTime, m_fovMultiplier.m_priority, m_fovMultiplier.m_overridePriority);
+                CameraController.Instance.SetFovMultiplier(m_fovMultiplier, m_fovSmoothTime, m_fovMultiplier.m_priority, m_fovMultiplier.m_overridePriority);
         }
     }
 }

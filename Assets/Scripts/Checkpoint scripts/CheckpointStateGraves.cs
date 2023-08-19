@@ -10,6 +10,7 @@ public class CheckpointStateGraves : CheckpointState
 
     public GravityReference GravityReference;
 
+
     public override void ExecuteCheckpointState()
     {
         GameParticles.SpawnGraves(GravesPositions, GravityReference);

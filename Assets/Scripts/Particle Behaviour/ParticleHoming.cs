@@ -14,9 +14,6 @@ public class ParticleHoming : JobChild
     protected ParticleSystem m_particleSystem;
 
     [SerializeField]
-    protected Transform m_mainTarget;
-
-    [SerializeField]
     protected float m_physInterval = 0.1f;
 
     [SerializeField]
@@ -49,11 +46,11 @@ public class ParticleHoming : JobChild
     [SerializeField]
     protected bool m_defaultSettingsOnDisable = true;
 
-
-
     protected static readonly Vector3 DOWNDIR = Vector3.down;
 
     protected NativeArray<ParticleSystem.Particle> m_particleList;
+
+    protected List<Transform> m_targetsOverride = new(0);
 
     protected int m_numActiveParticles = 0;
 
@@ -63,7 +60,15 @@ public class ParticleHoming : JobChild
 
     protected float m_timeUntilPhysUpdate = 0;
 
+    protected NativeArray<float3>.ReadOnly m_targetPositions;
+
     public GfMovementGeneric MovementGravityReference = null;
+
+    protected NativeArray<float3> m_effectiveTargetPositions;
+
+    protected bool m_mustDisposeEffectivePositions = false;
+
+    public Action OnJobSchedule = null;
 
     // Start is called before the first frame update
     protected void Awake()
@@ -100,7 +105,7 @@ public class ParticleHoming : JobChild
 
     public void ResetToDefault()
     {
-        m_mainTarget = m_sphericalParent = null;
+        m_targetsOverride.Clear();
         MovementGravityReference = null;
         m_defaultGravityDir = DOWNDIR;
         UpdateDefaultGravityCustomData();
@@ -122,6 +127,8 @@ public class ParticleHoming : JobChild
             //Debug.Log("The num of particles i have is: " + m_numActiveParticles + " name is: " + gameObject.name);
             if (m_numActiveParticles > 0)
             {
+                OnJobSchedule?.Invoke();
+
                 if (MovementGravityReference)
                 {
                     GfMovementGeneric auxMovement = MovementGravityReference;
@@ -131,9 +138,6 @@ public class ParticleHoming : JobChild
 
                 m_particleList = new(m_numActiveParticles, Allocator.TempJob);
                 m_particleSystem.GetParticles(m_particleList, m_numActiveParticles);
-
-                Vector3 targetPos = DOWNDIR;
-                if (m_mainTarget) targetPos = m_mainTarget.position;
 
                 Vector3 gravity3 = m_defaultGravityDir;
                 if (m_sphericalParent)
@@ -147,9 +151,22 @@ public class ParticleHoming : JobChild
                     customData.SetVector(ParticleSystemCustomData.Custom1, 3, 1); //1, position
                 }
 
-                ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPos, timeSinceLastCheck, m_maxSpeed, m_maxSpeedHoming
-                , m_acceleration, m_gravity, m_deacceleration, m_drag, m_targetRadius * m_targetRadius
-                , gravity3, null != m_sphericalParent, null != m_mainTarget);
+                NativeArray<float3>.ReadOnly targetPositions = m_targetPositions;
+                m_mustDisposeEffectivePositions = false;
+
+                int countTargets = m_targetsOverride.Count;
+                if (!targetPositions.IsCreated || countTargets > 0)
+                {
+                    m_mustDisposeEffectivePositions = true;
+                    m_effectiveTargetPositions = new(countTargets, Allocator.TempJob);
+                    for (int i = 0; i < countTargets; ++i)
+                        m_effectiveTargetPositions[i] = m_targetsOverride[i].position;
+
+                    targetPositions = m_effectiveTargetPositions.AsReadOnly();
+                }
+
+                ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPositions, timeSinceLastCheck, m_maxSpeed, m_maxSpeedHoming
+                , m_acceleration, m_gravity, m_deacceleration, m_drag, m_targetRadius * m_targetRadius, gravity3, null != m_sphericalParent);
 
                 handle = jobStruct.Schedule(m_numActiveParticles, min(16, m_numActiveParticles));
                 m_hasAJob = true;
@@ -157,6 +174,16 @@ public class ParticleHoming : JobChild
         }
 
         return m_hasAJob;
+    }
+
+    public NativeArray<float3>.ReadOnly GetTargetPositions()
+    {
+        return m_targetPositions;
+    }
+
+    public void SetTargetPositions(NativeArray<float3>.ReadOnly list)
+    {
+        m_targetPositions = list;
     }
 
     public ParticleSystem GetParticleSystem()
@@ -168,19 +195,28 @@ public class ParticleHoming : JobChild
     {
         if (m_hasAJob)
         {
+            if (m_mustDisposeEffectivePositions)
+                m_effectiveTargetPositions.Dispose();
+
+            m_mustDisposeEffectivePositions = false;
             m_particleSystem.SetParticles(m_particleList, m_numActiveParticles);
             m_particleList.Dispose();
         }
     }
 
-    public Transform GetTarget()
+    public List<Transform> GetTargetList()
     {
-        return m_mainTarget;
+        return m_targetsOverride;
     }
 
-    public void SetTarget(Transform target)
+    public void AddTarget(Transform target)
     {
-        m_mainTarget = target;
+        m_targetsOverride.Add(target);
+    }
+
+    public void ClearTargets()
+    {
+        if (null != m_targetsOverride) m_targetsOverride.Clear();
     }
 
     public Transform GetParentSpherical()
@@ -260,7 +296,6 @@ public class ParticleHoming : JobChild
 public struct ParticleHomingJob : IJobParallelFor
 {
     NativeArray<ParticleSystem.Particle> m_particleList;
-    public float3 m_targetPos;
     public float m_deltaTime;
     public float m_maxSpeed;
 
@@ -274,14 +309,14 @@ public struct ParticleHomingJob : IJobParallelFor
     float m_gravity;
 
     bool m_hasParent;
-    bool m_hasTarget;
 
-    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, float3 targetPos
+    NativeArray<float3>.ReadOnly m_targetPositions;
+
+    public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, NativeArray<float3>.ReadOnly targetPositions
     , float deltaTime, float maxSpeed, float maxSpeedHoming, float acceleration, float gravity, float deacceleration
-    , float drag, float targetRadiusSquared, float3 gravity3, bool hasParent
-    , bool hasTarget)
+    , float drag, float targetRadiusSquared, float3 gravity3, bool hasParent)
     {
-        m_targetPos = targetPos;
+        m_targetPositions = targetPositions;
         m_particleList = particleList;
         m_deltaTime = deltaTime;
         m_maxSpeed = maxSpeed;
@@ -290,7 +325,6 @@ public struct ParticleHomingJob : IJobParallelFor
         m_targetRadiusSquared = targetRadiusSquared;
         m_gravity3 = gravity3;
         m_hasParent = hasParent;
-        m_hasTarget = hasTarget;
         m_drag = drag;
         m_gravity = gravity;
         m_maxSpeedHoming = maxSpeedHoming;
@@ -302,17 +336,34 @@ public struct ParticleHomingJob : IJobParallelFor
         float3 currentPos = particle.position;
         float3 velocity = particle.velocity;
 
-        float3 dirToTarget = m_targetPos - currentPos;
+        float3 dirToTarget;
+        float shortestSqrdDistance = float.MaxValue;
+        float3 shortestDirToTarget = new();
+        bool hasTarget = false;
+
+        int targetsCount = m_targetPositions.Length;
+        for (int j = 0; j < targetsCount; ++j)
+        {
+            dirToTarget = m_targetPositions[j] - currentPos;
+            float distanceSq = lengthsq(dirToTarget);
+            if (distanceSq <= shortestSqrdDistance)
+            {
+                hasTarget = true;
+                shortestSqrdDistance = distanceSq;
+                shortestDirToTarget = dirToTarget;
+            }
+        }
+
         float3 dirToPlanet = m_gravity3 - currentPos;
 
-        bool followsTarget = m_hasTarget && lengthsq(dirToTarget) <= m_targetRadiusSquared;
+        bool followsTarget = hasTarget && sqrt(shortestSqrdDistance) <= m_targetRadiusSquared;
         bool usesParentGravity = !followsTarget && m_hasParent;
 
         float followsTargetF = Convert.ToSingle(followsTarget);
         float notFollowingTargetF = 1f - followsTargetF;
 
         float3 movDir = m_gravity3 * Convert.ToSingle(!usesParentGravity && !followsTarget)
-                    + dirToTarget * followsTargetF
+                    + shortestDirToTarget * followsTargetF
                     + dirToPlanet * Convert.ToSingle(usesParentGravity);
 
         float currentSpeed = length(velocity);

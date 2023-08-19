@@ -5,6 +5,12 @@ using UnityEngine;
 public class GfMovementAnimator : MonoBehaviour
 {
     [SerializeField]
+    protected int m_animationIndexIdle = 0;
+
+    [SerializeField]
+    protected int m_animationIndexRunning = 1;
+
+    [SerializeField]
     protected GfMovementGeneric m_movement;
 
     [SerializeField]
@@ -25,6 +31,17 @@ public class GfMovementAnimator : MonoBehaviour
     {
         Vector3 velocity = m_movement.GetVelocity();
         GfTools.RemoveAxis(ref velocity, m_movement.GetUpvecRotation());
-        m_spriteAnimator.SpeedMultiplier = System.MathF.Sqrt(velocity.sqrMagnitude) / m_defaultSpeed;
+        float speed = System.MathF.Sqrt(velocity.sqrMagnitude);
+
+        if (speed > 0.01f || true) //running
+        {
+            m_spriteAnimator.PlayState(m_animationIndexRunning);
+            m_spriteAnimator.SpeedMultiplier = speed / m_defaultSpeed;
+        }
+        else //idle
+        {
+            m_spriteAnimator.PlayState(m_animationIndexIdle);
+            m_spriteAnimator.SpeedMultiplier = 1;
+        }
     }
 }

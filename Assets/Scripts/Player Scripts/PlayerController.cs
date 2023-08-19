@@ -31,23 +31,31 @@ public class PlayerController : NetworkBehaviour
     //misc
     private float m_timeBetweenPhysChecks = 0.02f;
 
+    [SerializeField]
+    //misc
+    private float m_scrollCooldown = 0.02f;
+
+    private float m_timeUntillCanScroll = 0;
+
     private float m_timeUntilPhysChecks = 0;
 
-    private bool m_wasFiring = false;
+    private bool m_isFiring = false;
     //misc
     private Transform m_playerCamera;
 
     private Vector3 m_movDir = Vector3.zero;
-    private NetworkVariable<bool> m_flagFire = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    private NetworkVariable<FireType> m_fireType = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     private bool m_flagJump = false;
     private bool m_flagDash = false;
+
+    protected FireType m_lastFireType;
 
     // Start is called before the first frame update
     void Start()
     {
         if (IsOwner)
         {
-            GameManager.SetPlayer(transform);
+            GfLevelManager.SetPlayer(transform);
             if (null == m_movement)
             {
                 m_movement = GetComponent<GfMovementGeneric>();
@@ -83,6 +91,8 @@ public class PlayerController : NetworkBehaviour
             if (null == m_weaponFiring)
                 Debug.LogError("ERROR: The gameobject does not have a WeaponFiring component! Please add on to the object");
         }
+
+        m_weaponFiring.SetAimTransform(m_playerCamera);
     }
 
 
@@ -116,37 +126,42 @@ public class PlayerController : NetworkBehaviour
         return movDir;
     }
 
-    private void Fire(bool fire, FireType fireType = FireType.MAIN)
+    private void Fire()
     {
-        if (!m_weaponFiring)
-            return;
+        if (m_weaponFiring)
+        {
+            if (m_lastFireType != m_fireType.Value && m_lastFireType != FireType.NONE)
+            {
+                m_isFiring = false;
+                m_weaponFiring.ReleaseFire(m_lastFireType);
+            }
 
-        if (fire)
-        {
-            m_wasFiring = true;
-            m_weaponFiring.Fire();
+            if (m_fireType.Value != FireType.NONE)
+            {
+                m_isFiring = true;
+                m_weaponFiring.Fire(m_fireType.Value);
+            }
         }
-        else if (m_wasFiring)
-        {
-            m_wasFiring = false;
-            m_weaponFiring.ReleaseFire();
-        }
+
+        m_lastFireType = m_fireType.Value;
     }
 
     private void GetWeaponScrollInput()
     {
-        if (m_loadoutManager == null)
-            return;
-
-        float wheelValue = Input.GetAxisRaw("Mouse ScrollWheel");
-
-        if (wheelValue >= 0.1f)
+        if (m_loadoutManager && m_timeUntillCanScroll <= 0)
         {
-            m_loadoutManager.NextLoadout();
-        }
-        else if (wheelValue <= -0.1f)
-        {
-            m_loadoutManager.PreviousLoadout();
+            float wheelValue = Input.GetAxisRaw("Mouse ScrollWheel");
+
+            if (wheelValue >= 0.1f)
+            {
+                m_timeUntillCanScroll = m_scrollCooldown;
+                m_loadoutManager.NextLoadout();
+            }
+            else if (wheelValue <= -0.1f)
+            {
+                m_timeUntillCanScroll = m_scrollCooldown;
+                m_loadoutManager.PreviousLoadout();
+            }
         }
     }
 
@@ -165,18 +180,20 @@ public class PlayerController : NetworkBehaviour
 
     void GetInputs(float deltaTime)
     {
-        bool auxFlagFire = false;
+        bool auxFlagFire1 = false;
+        bool auxFlagFire2 = false;
         bool auxFlagDash = false;
         bool auxFlagJump = false;
         Vector3 auxMovDir = Vector3.zero;
 
-        if (!GameManager.IsPaused()) //get inputs
+        if (!GfLevelManager.IsPaused()) //get inputs
         {
             Vector3 upVec = m_movement.GetUpvecRotation();
             m_cameraController.m_upvec = m_movement.GetUpvecRotation();
             m_cameraController.UpdateRotation(deltaTime);
 
-            auxFlagFire = Input.GetAxisRaw("Fire1") > 0.5f;
+            auxFlagFire1 = Input.GetAxisRaw("Fire1") > 0.5f;
+            auxFlagFire2 = Input.GetAxisRaw("Fire2") > 0.5f;
             auxFlagDash = Input.GetAxisRaw("Dash") > 0.8f;
             auxFlagJump = Input.GetAxisRaw("Jump") > 0.8f;
             auxMovDir = GetMovementInput(upVec);
@@ -184,7 +201,11 @@ public class PlayerController : NetworkBehaviour
             GetWeaponScrollInput();
         }
 
-        m_flagFire.Value = auxFlagFire; //calculated every frame, we just need the raw input
+        FireType finalType = FireType.NONE;
+        if (auxFlagFire1) finalType = FireType.MAIN;
+        if (auxFlagFire2) finalType = FireType.SECONDARY;
+        m_fireType.Value = finalType;
+
         m_flagDash |= auxFlagDash; // used the | operator to keep the flag true until the next phys update call
         m_flagJump |= auxFlagJump;
         m_movDir = auxMovDir;
@@ -200,6 +221,7 @@ public class PlayerController : NetworkBehaviour
         if (IsOwner)
         {
             float deltaTime = Time.deltaTime;
+            m_timeUntillCanScroll -= deltaTime;
 
             GetInputs(deltaTime);
 
@@ -218,7 +240,7 @@ public class PlayerController : NetworkBehaviour
             m_cameraController.Move(deltaTime);
         }
 
-        Fire(m_flagFire.Value);
+        Fire();
     }
 
     /*

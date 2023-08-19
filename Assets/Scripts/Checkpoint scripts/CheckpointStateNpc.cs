@@ -1,27 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
-public class CheckpointStateNpc : CheckpointState
+public class CheckpointStateNpc : CheckpointStatePlayer
 {
-    public Vector3 Position = Vector3.zero;
-    public Quaternion Rotation = Quaternion.identity;
-    public Vector3 Scale = new Vector3(1, 1, 1);
-    public float CurrentHp = 100;
+    public bool WasFollowingPlayer = false;
     public GameObject Prefab = null;
 
-    public Transform MovementParent = null;
-
-    public uint MovementParentPriority = 0;
-
-    public Transform MovementParentSpherical = null;
-    public uint MovementGravityPriority = 0;
-
-    public Vector3 Velocity;
-
-    public Vector3 UpVec;
-
-    public bool WasFollowingPlayer = false;
+    public Action<StatsCharacter, ulong, bool, int, int> OnKilled = null;
 
     public override void ExecuteCheckpointState()
     {
@@ -29,18 +16,4 @@ public class CheckpointStateNpc : CheckpointState
         statsNpc.SetCheckpointState(this);
     }
 
-    public void CopyState(CheckpointStateNpc state)
-    {
-        Position = state.Position;
-        Rotation = state.Rotation;
-        Scale = state.Scale;
-        CurrentHp = state.CurrentHp;
-        Prefab = state.Prefab;
-        Velocity = state.Velocity;
-        MovementParent = state.MovementParent;
-        MovementParentPriority = state.MovementParentPriority;
-        MovementParentSpherical = state.MovementParentSpherical;
-        MovementGravityPriority = state.MovementGravityPriority;
-        UpVec = state.UpVec;
-    }
 }

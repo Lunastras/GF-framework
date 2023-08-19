@@ -8,10 +8,10 @@ public class ParticleSingleHit : WeaponParticle
     [SerializeField]
     private bool m_canDamageSelf = false;
     [SerializeField]
-    private Sound m_damageSound = null;
+    private GfSound m_damageSound = null;
 
     [SerializeField]
-    private Sound m_collisionSound = null;
+    private GfSound m_collisionSound = null;
 
     public static List<ParticleCollisionEvent> m_collisionEvents;
 
@@ -77,7 +77,7 @@ public class ParticleSingleHit : WeaponParticle
     {
         //  Debug.Log("GONNA DAMAJE IT " + target.name);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
-        AudioManager.PlayAudio(m_damageSound, collisionEvent.intersection);
+        GfAudioManager.PlayAudio(m_damageSound, collisionEvent.intersection);
         target.Damage(m_damage * damageMultiplier, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex);
 
         return true;
@@ -91,7 +91,7 @@ public class ParticleSingleHit : WeaponParticle
 
     protected virtual void HitCollision(ParticleCollisionEvent collisionEvent, StatsCharacter self, GameObject other)
     {
-        AudioManager.PlayAudio(m_collisionSound, collisionEvent.intersection);
+        GfAudioManager.PlayAudio(m_collisionSound, collisionEvent.intersection);
         GameParticles.PlayParticleDust(collisionEvent.intersection, collisionEvent.normal);
     }
 

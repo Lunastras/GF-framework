@@ -3,90 +3,98 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 
 public class MainMenuBehaviour : MonoBehaviour
 {
-    public Image m_fadeOverlay;
+    [SerializeField]
+    protected GameObject m_mainScreen = null;
+
+    [SerializeField]
+    protected GameObject m_multiplayerScreen = null;
+
+    [SerializeField]
+    protected TMP_InputField m_ipInputField = null;
+
+    [SerializeField]
+    protected TMP_InputField m_portInputField = null;
+
+
     public float m_fadeDelay = 1.0f;
 
-    private void Start()
+    private void Awake()
     {
         Cursor.lockState = CursorLockMode.Confined;
         Cursor.visible = true;
-
-        Color fixedColor = m_fadeOverlay.color;
-        fixedColor.a = 1;
-        m_fadeOverlay.color = fixedColor;
-        m_fadeOverlay.CrossFadeAlpha(1f, 0f, true);
 
         if (!SceneManager.GetSceneByBuildIndex(4).isLoaded)
         {
             SceneManager.LoadScene(4, LoadSceneMode.Additive);
         }
-        Time.timeScale = 1;
-
-
-        //replayScreen.SetActive(false);
-        //mainScreen.SetActive(true);
-
-        Debug.Log("lmao i am here");
-        StartCoroutine(StartMenu());
     }
 
+    private void Start()
+    {
+        //m_fadeOverlay.CrossFadeAlpha(1f, 0f, true);
+        GfUiTools.SetOverlayColor(Color.black);
+        GfUiTools.CrossFadeAlpha(1f, 0);
+
+        m_multiplayerScreen.SetActive(false);
+        m_mainScreen.SetActive(true);
+
+        GfUiTools.CrossFadeAlpha(0f, m_fadeDelay);
+        Time.timeScale = 1;
+    }
+
+    public void ToggleMultiplayerScreen()
+    {
+        m_multiplayerScreen.SetActive(!m_multiplayerScreen.activeSelf);
+        m_mainScreen.SetActive(!m_multiplayerScreen.activeSelf);
+    }
+
+    public void StartClientGame(int levelIndex)
+    {
+        StartGame(levelIndex, GameMultiplayerType.CLIENT);
+    }
+
+    public void StartSingleplayerGame(int levelIndex)
+    {
+        StartGame(levelIndex, GameMultiplayerType.SINGLEPLAYER);
+    }
+
+    public void StartHostGame(int levelIndex)
+    {
+        StartGame(levelIndex, GameMultiplayerType.HOST);
+    }
+
+    public void StartServerGame(int levelIndex)
+    {
+        StartGame(levelIndex, GameMultiplayerType.SERVER);
+    }
+
+    protected void StartGame(int levelIndex, GameMultiplayerType gameType)
+    {
+        if (gameType == GameMultiplayerType.SINGLEPLAYER)
+        {
+            GfGameManager.SetServerIp("127.0.0.1");
+        }
+        else
+        {
+            GfGameManager.SetServerIp(m_ipInputField.text, ushort.Parse(m_portInputField.text));
+        }
+
+        GfGameManager.GameType = gameType;
+        LoadingScreenManager.LoadScene(levelIndex, ServerLoadingMode.KEEP_SERVER);
+    }
 
     private IEnumerator StartMenu()
     {
         yield return new WaitForSeconds(m_fadeDelay);
 
-        m_fadeOverlay.CrossFadeAlpha(0f, m_fadeDelay, true);
+        GfUiTools.CrossFadeAlpha(0f, m_fadeDelay);
 
         yield return new WaitForSeconds(m_fadeDelay);
-
-        m_fadeOverlay.gameObject.SetActive(false);
-    }
-
-    public void SwitchScreen()
-    {
-        //AudioManager.instance.Play("Selection");
-        // mainScreen.SetActive(!mainScreen.activeSelf);
-        // replayScreen.SetActive(!replayScreen.activeSelf);
-    }
-
-    public void StartGame()
-    {
-        Debug.Log("game started");
-        StartCoroutine(ChoiceMade(3));
-    }
-
-    public void StartReplay(int replayIndex)
-    {
-
-        StartCoroutine(ChoiceMade(3));
-    }
-
-    public void Tutorial()
-    {
-
-        StartCoroutine(ChoiceMade(4));
-    }
-
-
-    private IEnumerator ChoiceMade(int levelIndex)
-    {
-        Debug.Log("i am in the coroutine");
-        m_fadeOverlay.gameObject.SetActive(true);
-
-        Color fixedColor = m_fadeOverlay.color;
-        fixedColor.a = 1;
-        m_fadeOverlay.color = fixedColor;
-        m_fadeOverlay.CrossFadeAlpha(0f, 0f, true);
-
-        m_fadeOverlay.CrossFadeAlpha(1f, m_fadeDelay, true);
-
-        yield return new WaitForSeconds(m_fadeDelay);
-
-        LoadingScreenManager.LoadScene(levelIndex);
     }
 
     public void QuitButton()

@@ -15,7 +15,10 @@ public class GfPooling : MonoBehaviour
     {
         public PoolStruct(int poolSize, GameObject prefab = null)
         {
-            list = new(4);
+            list = null;
+            if (poolSize > 0)
+                list = new(poolSize);
+
             this.prefab = prefab;
         }
 
@@ -35,12 +38,14 @@ public class GfPooling : MonoBehaviour
     //magic value for the destruction of objects, we really just assume an object cannot be in this position unless we set it here
     //looks like bad design, but it's nicer than using a component specific for keeping track of objects in the pool
     //If these values are too high/low, the physics stop working
-    private static readonly Vector3 DESTROY_POSITION = new Vector3(9997, 9997, 9997);
+    private static readonly Vector3 DESTROY_POSITION = new(9997, 9997, 9997);
 
     //a dictionary mapping a pooled object to its pool
 
     private void Awake()
     {
+        if (Instance != this)
+            Destroy(Instance);
         Instance = this;
 
         foreach (InitializationPool poolsToCreate in poolsToInstantiate)
@@ -56,9 +61,8 @@ public class GfPooling : MonoBehaviour
     {
         //Debug.Log("called to instantiate: " + objectToSpawn.name);
         GameObject spawnedObject = null;
-
-        PoolStruct pool;
-        if (Instance.m_pools.TryGetValue(objectName, out pool))
+        GetNameWithoutNumberParenthesis(ref objectName);
+        if (Instance.m_pools.TryGetValue(objectName, out PoolStruct pool))
         {
             var currentPool = pool.list;
             if (null != currentPool && currentPool.Count > 0)
@@ -83,7 +87,7 @@ public class GfPooling : MonoBehaviour
         {
             pool.prefab = objectToSpawn;
             pool.list = null;
-            Instance.m_pools.Add(objectToSpawn.name, pool);
+            Instance.m_pools.Add(objectName, pool);
         }
 
         if (null == spawnedObject && objectToSpawn)
@@ -122,7 +126,7 @@ public class GfPooling : MonoBehaviour
 
     public static GameObject Instantiate(string prefabName, Vector3 position, Quaternion rotation, Transform parent = null, bool mustBeInactive = true)
     {
-        return InternalInstantiate(null, prefabName, Vector3.zero, Quaternion.identity, parent, true, mustBeInactive);
+        return InternalInstantiate(null, prefabName, position, rotation, parent, true, mustBeInactive);
     }
 
 
@@ -150,7 +154,7 @@ public class GfPooling : MonoBehaviour
     /**
      *  Tries to instantiate from pool, if no more objects are in the pool, it will increase the size of the pool
      */
-    public static GameObject PoolInstantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent = null, bool mustBeInactive = true, bool goOverCapacity = true)
+    public static GameObject PoolInstantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent = null, bool mustBeInactive = true)
     {
         if (PoolSizeAvailable(objectToSpawn) == 0)
             Pool(objectToSpawn, 1);
@@ -164,6 +168,9 @@ public class GfPooling : MonoBehaviour
     {
         while (obj.childCount > 0)
             GfPooling.Destroy(obj.GetChild(0).gameObject);
+
+        if (deleteSelf)
+            GfPooling.Destroy(obj.gameObject);
     }
 
     public static void Destroy(GameObject objectToDestroy, float delay = 0, bool goOverCapacity = true)
@@ -199,12 +206,16 @@ public class GfPooling : MonoBehaviour
         currentPool.Add(objectToDestroy); //we wait one frame before putting it in the pool because Unity doesn't like it when an object is enabled and disabled in the same frame
     }
 
+    protected void OnDestroy()
+    {
+        Instance = null;
+    }
+
     private static void InternalDestroy(GameObject objectToDestroy, bool keepActive, bool goOverCapacity)
     {
         bool destroyObject = true;
 
-        PoolStruct pool;
-        if (Instance.m_pools.TryGetValue(objectToDestroy.name, out pool) && null != pool.list)
+        if (Instance.m_pools.TryGetValue(objectToDestroy.name, out PoolStruct pool) && null != pool.list)
         {
             var currentPool = pool.list;
             bool alreadyInPool = objectToDestroy.transform.position.Equals(DESTROY_POSITION);
@@ -230,7 +241,6 @@ public class GfPooling : MonoBehaviour
     private static void DestroyObjectsFromPool(List<GameObject> objects, int numInstances = -1)
     {
         int count = objects.Count;
-        int desiredCapacity = count - numInstances;
         while (0 < count && -1 != --numInstances)
         {
             --count;
@@ -255,8 +265,7 @@ public class GfPooling : MonoBehaviour
 
     public static void TrimPool(string prefabName)
     {
-        PoolStruct pool;
-        if (Instance.m_pools.TryGetValue(prefabName, out pool) && null != pool.list)
+        if (Instance.m_pools.TryGetValue(prefabName, out PoolStruct pool) && null != pool.list)
         {
             pool.list.TrimExcess();
         }
@@ -278,8 +287,7 @@ public class GfPooling : MonoBehaviour
 
     public static void ClearPool(string prefabName, int numInstances = int.MaxValue, bool keepPoolIfEmpty = false)
     {
-        PoolStruct pool;
-        if (Instance.m_pools.TryGetValue(prefabName, out pool) && null != pool.list)
+        if (Instance.m_pools.TryGetValue(prefabName, out PoolStruct pool) && null != pool.list)
         {
             var currentPool = pool.list;
             DestroyObjectsFromPool(currentPool, numInstances);
@@ -298,12 +306,10 @@ public class GfPooling : MonoBehaviour
     {
         if (numInstances < 0)
             ClearPool(objectToPool, -numInstances);
-        else if (numInstances == 0)
-            return;
+
         //Debug.Log("Pool request for " + numInstances + " " + objectToPool.name);
 
-        PoolStruct pool;
-        if (!Instance.m_pools.TryGetValue(objectToPool.name, out pool) || null == pool.list)
+        if (!Instance.m_pools.TryGetValue(objectToPool.name, out PoolStruct pool) || null == pool.list)
         {
             pool = new(numInstances, objectToPool);
 
@@ -392,10 +398,30 @@ public class GfPooling : MonoBehaviour
         return GetPrefab(GetPrefab(objectPooled.name));
     }
 
+    public static void GetNameWithoutNumberParenthesis(ref string name)
+    {
+        if (name[^1] == ')') // ^1 is the last index in an array
+        {
+            int currentIndex = name.Length - 1;
+            for (; currentIndex >= 0 && name[currentIndex] != '('; --currentIndex) ;
+            --currentIndex; //we need to remove the space before the parenthesis start as well
+            if (currentIndex > 0)
+                name = name[..currentIndex]; //substring between index 0 to currentIndex
+        }
+    }
+
     public static GameObject GetPrefab(string prefabName)
     {
+        GetNameWithoutNumberParenthesis(ref prefabName);
         Instance.m_pools.TryGetValue(prefabName, out var pool);
-        return pool.prefab;
+        GameObject prefab = pool.prefab;
+        if (null == prefab)
+        {
+            Debug.LogWarning("GfPool warning, the requested prefab of name " + prefabName
+                             + " could not be found, make sure you instantiated it at least once with GfPooling or that you add it to do prefab list in the editor.");
+        }
+
+        return prefab;
     }
 }
 

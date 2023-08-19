@@ -5,14 +5,13 @@ using Unity.Netcode.Components;
 public class StatsNpc : StatsCharacter
 {
     [SerializeField]
-    protected GameObject m_testPrefab;
-
-    [SerializeField]
     protected GameObject m_graphics;
 
     [SerializeField]
     protected GfMovementGeneric m_movement;
 
+    [SerializeField]
+    protected GameObject m_spawnPrefab = null;
 
     [SerializeField]
     protected int m_powerItemsToDrop = 5;
@@ -42,9 +41,9 @@ public class StatsNpc : StatsCharacter
     protected AudioSource m_audioSource;
 
     [SerializeField]
-    protected Sound m_damageSound;
+    protected GfSound m_damageSound;
     [SerializeField]
-    protected Sound m_deathSound;
+    protected GfSound m_deathSound;
 
     //The damage values in total from the enemies
     protected float m_biggestDamageReceived = 0;
@@ -56,13 +55,15 @@ public class StatsNpc : StatsCharacter
 
     public CheckpointStateNpc m_checkpointStateNpc = null;
 
+    protected float m_pitch = 1;
 
     // Start is called before the first frame update
 
-    void Start()
+    new protected void Start()
     {
         if (!m_initialised)
         {
+            base.Start();
             if (null == m_objectCollider)
                 m_objectCollider = GetComponent<Collider>();
 
@@ -78,7 +79,6 @@ public class StatsNpc : StatsCharacter
             if (null == m_mainGameObject)
                 m_mainGameObject = gameObject;
 
-            m_networkTransform = GetComponent<NetworkTransform>();
 
             if (null == m_audioSource)
             {
@@ -93,17 +93,6 @@ public class StatsNpc : StatsCharacter
             m_deathSound.LoadAudioClip();
 
             m_transform = transform;
-
-            m_networkObject = GetComponent<NetworkObject>();
-            if (m_networkTransform) m_networkTransform.enabled = true;
-            if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
-
-            if (HasAuthority)
-                m_currentHealth.Value = GetMaxHealthEffective();
-
-
-            m_initialised = true;
-            HostilityManager.AddCharacter(this);
         }
     }
 
@@ -112,17 +101,14 @@ public class StatsNpc : StatsCharacter
         base.OnEnable();
         if (m_initialised)
         {
-            m_currentHealth = m_maxHealth;
-
             if (null != m_graphics)
                 m_graphics.SetActive(true);
 
             if (null != m_objectCollider)
                 m_objectCollider.enabled = true;
 
-            m_networkObject = GetComponent<NetworkObject>();
-            if (m_networkTransform) m_networkTransform.enabled = true;
-            if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned) m_networkObject.Spawn();
+            if (null != m_npcController)
+                m_npcController.ResumeMovement();
         }
 
         CheckpointManager.OnHardCheckpoint += OnHardCheckpoint;
@@ -136,32 +122,31 @@ public class StatsNpc : StatsCharacter
 
     public override void SetCheckpointState(CheckpointState state)
     {
-        if (IsCheckpointable())
-        {
-            CheckpointStateNpc checkpointStateNpc = state as CheckpointStateNpc;
-            Start();
-            Respawn();
-            m_movement.ReturnToDefaultValues();
-            transform.SetPositionAndRotation(checkpointStateNpc.Position, checkpointStateNpc.Rotation);
-            transform.localScale = checkpointStateNpc.Scale;
-            m_currentHealth.Value = checkpointStateNpc.CurrentHp;
-            m_npcController.SetDestination(null);
-            m_turret.Stop(true);
-            m_turret.SetCurrentPhase(0);
-            m_movement.SetVelocity(checkpointStateNpc.Velocity);
-            m_movement.SetParentTransform(checkpointStateNpc.MovementParent, checkpointStateNpc.MovementParentPriority, true);
+        CheckpointStateNpc checkpointStateNpc = state as CheckpointStateNpc;
+        Start();
+        m_movement.ReturnToDefaultValues();
+        transform.position = checkpointStateNpc.Position;
+        transform.localScale = checkpointStateNpc.Scale;
+        m_currentHealth.Value = checkpointStateNpc.CurrentHp;
+        m_npcController.SetDestination(null);
+        m_turret.Stop(true);
+        m_isDead = checkpointStateNpc.IsDead;
+        m_turret.SetCurrentPhase(0);
+        m_movement.SetVelocity(checkpointStateNpc.Velocity);
+        m_movement.SetParentTransform(checkpointStateNpc.MovementParent, checkpointStateNpc.MovementParentPriority, true);
+        OnKilled = checkpointStateNpc.OnKilled;
+        m_movement.OrientToUpVecForced();
 
-            if (checkpointStateNpc.WasFollowingPlayer)
-                m_npcController.SetDestination(GameManager.GetPlayer());
+        if (checkpointStateNpc.WasFollowingPlayer)
+            m_npcController.SetDestination(GfLevelManager.GetPlayer());
 
-            if (checkpointStateNpc.MovementParentSpherical)
-                m_movement.SetParentSpherical(checkpointStateNpc.MovementParentSpherical, checkpointStateNpc.MovementGravityPriority, true);
-            else
-                m_movement.SetUpVec(checkpointStateNpc.UpVec, checkpointStateNpc.MovementGravityPriority, true);
+        if (checkpointStateNpc.MovementParentSpherical)
+            m_movement.SetParentSpherical(checkpointStateNpc.MovementParentSpherical, checkpointStateNpc.MovementGravityPriority, true);
+        else
+            m_movement.SetUpVec(checkpointStateNpc.UpVec, checkpointStateNpc.MovementGravityPriority, true);
 
-            m_isDead = false;
-            m_checkpointStateNpc = checkpointStateNpc;
-        }
+
+        m_checkpointStateNpc = checkpointStateNpc;
     }
 
     public override void OnHardCheckpoint()
@@ -169,30 +154,45 @@ public class StatsNpc : StatsCharacter
         if (IsCheckpointable())
         {
             if (null == m_checkpointStateNpc) m_checkpointStateNpc = new();
-
+            m_transform = transform;
             m_checkpointStateNpc.Position = m_transform.position;
             m_checkpointStateNpc.Rotation = m_transform.rotation;
             m_checkpointStateNpc.Scale = m_transform.localScale;
             m_checkpointStateNpc.CurrentHp = m_currentHealth.Value;
             m_checkpointStateNpc.Prefab = GfPooling.GetPrefab(gameObject.name);
             m_checkpointStateNpc.Velocity = m_movement.GetVelocity();
+            m_checkpointStateNpc.IsDead = m_isDead;
             m_checkpointStateNpc.MovementParent = m_movement.GetParentTransform();
             m_checkpointStateNpc.MovementParentPriority = m_movement.GetParentPriority();
             m_checkpointStateNpc.MovementParentSpherical = m_movement.GetParentSpherical();
             m_checkpointStateNpc.MovementGravityPriority = m_movement.GetGravityPriority();
             m_checkpointStateNpc.UpVec = m_movement.GetUpVecRaw();
-            m_checkpointStateNpc.WasFollowingPlayer = GameManager.GetPlayer() == m_npcController.GetDestinationTransform();
-
+            m_checkpointStateNpc.WasFollowingPlayer = GfLevelManager.GetPlayer() == m_npcController.GetDestinationTransform();
+            m_checkpointStateNpc.OnKilled = OnKilled;
 
             CheckpointState state = m_checkpointStateNpc;
             CheckpointManager.AddCheckpointState(state);
         }
     }
 
+    public override void SetPitch(float pitch) { m_pitch = pitch; }
+
+    public override float GetPitch() { return m_pitch; }
+
+    public override void SpawnBehaviour()
+    {
+        if (m_spawnPrefab)
+        {
+            var spawnBehaviour = GfPooling.PoolInstantiate(m_spawnPrefab).GetComponent<NpcSpawnBehaviour>();
+            if (spawnBehaviour) spawnBehaviour.SetPitch(m_pitch);
+        }
+    }
     protected override void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
         if (isServerCall)
         {
+            OnKilled?.Invoke(this, killerNetworkId, hasKillerNetworkId, weaponLoadoutIndex, weaponIndex);
+
             Vector3 currentPos = m_transform.position;
             GameParticles.PlayDeathDust(currentPos);
             GameParticles.SpawnPowerItems(currentPos, m_powerItemsToDrop, m_movement.GetGravityReference());
@@ -209,11 +209,11 @@ public class StatsNpc : StatsCharacter
                 }
             }
 
-            AudioManager.PlayAudio(m_deathSound, m_transform.position);
+            GfAudioManager.PlayAudio(m_deathSound, m_transform.position);
 
             if (hasKillerNetworkId)
             {
-                StatsCharacter statsKiller = GameManager.GetComponentFromNetworkObject<StatsCharacter>(killerNetworkId);
+                StatsCharacter statsKiller = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(killerNetworkId);
                 if (statsKiller)
                 {
                     DamageSource damageSource = statsKiller.GetWeaponDamageSource(weaponLoadoutIndex, weaponIndex);
@@ -236,10 +236,12 @@ public class StatsNpc : StatsCharacter
             if (null != m_npcController)
                 m_npcController.PauseMovement();
 
-            HostilityManager.RemoveCharacter(this);
-
             if (null != m_turret && HasAuthority)
                 m_turret.DestroyWhenDone(gameObject);
+
+            HostilityManager.RemoveCharacter(this);
+
+            OnKilled = null;
         }
     }
 
@@ -262,7 +264,7 @@ public class StatsNpc : StatsCharacter
             StatsCharacter enemy = null;
             if (hasEnemyNetworkId)
             {
-                enemy = GameManager.GetComponentFromNetworkObject<StatsCharacter>(enemyNetworkId);
+                enemy = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(enemyNetworkId);
                 if (enemy)
                 {
                     DamageSource damageSource = enemy.GetWeaponDamageSource(weaponLoadoutIndex, weaponIndex);

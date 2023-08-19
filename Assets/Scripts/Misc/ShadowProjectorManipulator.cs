@@ -129,8 +129,6 @@ public class ShadowProjectorManipulator : MonoBehaviour
 
         m_projector.fadeFactor = Mathf.SmoothDamp(m_projector.fadeFactor, m_desiredOpacity, ref m_smoothRefOpacity, m_smoothTimeOpacity);
 
-        /*
-
         Vector3 projSize = m_projector.size;
         Vector2 widthHeight = new Vector2(projSize.x, projSize.y);
         widthHeight = Vector2.SmoothDamp(widthHeight, m_sizeDesired, ref m_smoothRefSize, m_smoothTimeSize);
@@ -138,7 +136,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
         projSize.x = widthHeight.x;
         projSize.y = widthHeight.y;
         projSize.z = m_projectionDepthCurrent;
-        m_projector.size = projSize;*/
+        m_projector.size = projSize;
     }
 
     private void UpdateValues(bool hitSomething, RaycastHit hitInfo, float projectionDepth)

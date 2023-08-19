@@ -185,7 +185,6 @@ public class GfCommandConsole : MonoBehaviour
 
         InitializeLog();
 
-        DontDestroyOnLoad(transform.parent);
         RectTransform selfRectTransform = GetComponent<RectTransform>();
 
         selfRectTransform.sizeDelta = new Vector2(Screen.width * 0.45f, Screen.height * 0.45f);
@@ -515,7 +514,7 @@ public class GfCommandConsole : MonoBehaviour
         float newFullHeight = m_fullHeight + height;
         m_mustRedoText = true;
         m_mustScrollDown |= m_currentYScroll >= m_fullHeight;
-        if (m_console.activeSelf)
+        if (m_console && m_console.activeSelf)
         {
             UpdateLogCounters();
             m_currentYScroll = System.MathF.Max(m_currentYScroll, m_visibleViewport.rect.height);
@@ -880,7 +879,7 @@ public class GfCommandConsole : MonoBehaviour
             m_scrollBar.value = 1;
         }
 
-        m_scrollBar.size = System.MathF.Min(1.0f, visibleHeight / m_fullHeight);
+        m_scrollBar.size = System.MathF.Max(System.MathF.Min(1.0f, visibleHeight / m_fullHeight), 0.1f);
         m_lastScrollValue = m_scrollBar.value;
     }
 

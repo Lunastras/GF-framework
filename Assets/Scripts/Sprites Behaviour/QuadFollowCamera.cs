@@ -17,8 +17,6 @@ public class QuadFollowCamera : MonoBehaviour
 
     public Vector3 m_defaultUpvec = Vector3.up;
 
-    private static Transform m_cameraTransform;
-
     private Transform m_transform;
 
     private static readonly Vector3 RIGHT3 = Vector3.right;
@@ -28,23 +26,29 @@ public class QuadFollowCamera : MonoBehaviour
     {
         m_transform = transform;
         Camera mainCamera = Camera.main;
-        if (mainCamera) m_cameraTransform = mainCamera.transform;
     }
 
 
     private void LateUpdate()
     {
-        Vector3 upVec = m_defaultUpvec;
-        if (m_transformCharacter) upVec = m_transformCharacter.up;
+        if (CameraController.Instance)
+        {
+            Transform cameraTransform = CameraController.Instance.transform;
+            if (cameraTransform)
+            {
+                Vector3 upVec = m_defaultUpvec;
+                if (m_transformCharacter) upVec = m_transformCharacter.up;
 
-        Vector3 dirFromCamera = m_transform.position;
-        GfTools.Minus3(ref dirFromCamera, m_cameraTransform.position);
-        GfTools.Normalize(ref dirFromCamera);
+                Vector3 dirFromCamera = m_transform.position;
+                GfTools.Minus3(ref dirFromCamera, cameraTransform.position);
+                GfTools.Normalize(ref dirFromCamera);
 
-        float angle = GfTools.AngleDegNorm(upVec, dirFromCamera);
-        float auxAngle = 90f + m_xFollowFactor * (angle - 90f);
+                float angle = GfTools.AngleDegNorm(upVec, dirFromCamera);
+                float auxAngle = 90f + m_xFollowFactor * (angle - 90f);
 
-        m_transform.rotation = Quaternion.LookRotation(dirFromCamera, upVec) * Quaternion.AngleAxis(auxAngle - angle, RIGHT3);
+                m_transform.rotation = Quaternion.LookRotation(dirFromCamera, upVec) * Quaternion.AngleAxis(auxAngle - angle, RIGHT3);
+            }
+        }
     }
 
     public void SetUpVec(Vector3 upVec)

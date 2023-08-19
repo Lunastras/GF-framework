@@ -95,7 +95,7 @@ public class LoadoutManager : NetworkBehaviour
     {
         if (IsOwner)
         {
-            m_hudManager = GameManager.GetHudManager();
+            m_hudManager = GfLevelManager.GetHudManager();
         }
 
         InternalAwake();
@@ -115,22 +115,13 @@ public class LoadoutManager : NetworkBehaviour
 
     private void Test()
     {
-        SetWeaponCapacity(4);
+        SetWeaponCapacity(1);
         AddLoadout(5);
 
-        SetLoadoutWeapon(0, 0, 1);
-        SetLoadoutWeapon(0, 1, 1);
-        SetLoadoutWeapon(0, 2, 1);
-
-        SetLoadoutWeapon(1, 0, 2);
-        SetLoadoutWeapon(1, 1, 2);
-        SetLoadoutWeapon(1, 2, 2);
-
-        SetLoadoutWeapon(2, 0, 3);
-        SetLoadoutWeapon(2, 1, 3);
-
-        SetLoadoutWeapon(3, 0, 4);
-        SetLoadoutWeapon(4, 0, 5);
+        // SetLoadoutWeapon(0, 0, 1, true);
+        // SetLoadoutWeapon(1, 0, 2, true);
+        //SetLoadoutWeapon(2, 0, 3, true);
+        //SetLoadoutWeapon(3, 0, 4, true);
 
         SetCurrentLoadout(0);
     }
@@ -196,30 +187,30 @@ public class LoadoutManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void SetLoadoutAllWeaponsClientRpc(int indexLoadout, int newWeapon, bool fillToCapacity)
+    public void SetLoadoutAllWeaponsClientRpc(int indexLoadout, int newWeapon, bool fillToCapacity, bool switchToLoadout)
     {
-        InternalSetLoadoutAllWeapons(indexLoadout, newWeapon, false);
+        InternalSetLoadoutAllWeapons(indexLoadout, newWeapon, false, switchToLoadout);
     }
 
     [ServerRpc]
-    public void SetLoadoutAllWeaponsServerRpc(int indexLoadout, int newWeapon, bool fillToCapacity)
+    public void SetLoadoutAllWeaponsServerRpc(int indexLoadout, int newWeapon, bool fillToCapacity, bool switchToLoadout)
     {
-        SetLoadoutAllWeaponsClientRpc(indexLoadout, newWeapon, fillToCapacity);
+        SetLoadoutAllWeaponsClientRpc(indexLoadout, newWeapon, fillToCapacity, switchToLoadout);
     }
 
-    public void SetLoadoutAllWeapons(int indexLoadout, int newWeapon, bool fillToCapacity)
+    public void SetLoadoutAllWeapons(int indexLoadout, int newWeapon, bool fillToCapacity, bool switchToLoadout)
     {
         if (HasAuthority)
         {
-            SetLoadoutAllWeaponsClientRpc(indexLoadout, newWeapon, fillToCapacity);
+            SetLoadoutAllWeaponsClientRpc(indexLoadout, newWeapon, fillToCapacity, switchToLoadout);
         }
         else if (IsOwner)
         {
-            SetLoadoutAllWeaponsServerRpc(indexLoadout, newWeapon, fillToCapacity);
+            SetLoadoutAllWeaponsServerRpc(indexLoadout, newWeapon, fillToCapacity, switchToLoadout);
         }
     }
 
-    private bool InternalSetLoadoutAllWeapons(int indexLoadout, int newWeapon, bool fillToCapacity)
+    private bool InternalSetLoadoutAllWeapons(int indexLoadout, int newWeapon, bool fillToCapacity, bool switchToLoadout)
     {
         bool ret = false;
         if (indexLoadout < m_loadouts.Count)
@@ -231,7 +222,7 @@ public class LoadoutManager : NetworkBehaviour
             while (--numWeapons >= 0)
             {
                 weaponIndex = (nullWeapon || m_infiniteInventory || 0 < m_weaponsInInventory[newWeapon]) ? newWeapon : -1;
-                ret |= InternalSetLoadoutWeapon(indexLoadout, numWeapons, newWeapon);
+                ret |= InternalSetLoadoutWeapon(indexLoadout, numWeapons, newWeapon, switchToLoadout);
             }
 
         }
@@ -243,33 +234,33 @@ public class LoadoutManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void SetLoadoutWeaponClientRpc(int indexLoadout, int indexWeapon, int newWeapon)
+    public void SetLoadoutWeaponClientRpc(int indexLoadout, int indexWeapon, int newWeapon, bool switchToLoadout)
     {
-        InternalSetLoadoutWeapon(indexLoadout, indexWeapon, newWeapon, false);
+        InternalSetLoadoutWeapon(indexLoadout, indexWeapon, newWeapon, switchToLoadout);
     }
 
     [ServerRpc]
-    public void SetLoadoutWeaponServerRpc(int indexLoadout, int indexWeapon, int newWeapon)
+    public void SetLoadoutWeaponServerRpc(int indexLoadout, int indexWeapon, int newWeapon, bool switchToLoadout)
     {
-        SetLoadoutWeaponClientRpc(indexLoadout, indexWeapon, newWeapon);
+        SetLoadoutWeaponClientRpc(indexLoadout, indexWeapon, newWeapon, switchToLoadout);
     }
 
-    public bool SetLoadoutWeapon(int indexLoadout, int indexWeapon, int newWeapon)
+    public bool SetLoadoutWeapon(int indexLoadout, int indexWeapon, int newWeapon, bool switchToLoadout)
     {
         bool changedWeapon = false;
         if (HasAuthority)
         {
-            SetLoadoutWeaponClientRpc(indexLoadout, indexWeapon, newWeapon);
+            SetLoadoutWeaponClientRpc(indexLoadout, indexWeapon, newWeapon, switchToLoadout);
         }
         else if (IsOwner)
         {
-            SetLoadoutWeaponServerRpc(indexLoadout, indexWeapon, newWeapon);
+            SetLoadoutWeaponServerRpc(indexLoadout, indexWeapon, newWeapon, switchToLoadout);
         }
 
         return changedWeapon;
     }
 
-    private unsafe bool InternalSetLoadoutWeapon(int indexLoadout, int indexWeapon, int newWeapon, bool refreshLoadout = true)
+    private unsafe bool InternalSetLoadoutWeapon(int indexLoadout, int indexWeapon, int newWeapon, bool switchToLoadout)
     {
         bool changedWeapon = false;
         if (indexLoadout < m_loadouts.Count)
@@ -316,7 +307,10 @@ public class LoadoutManager : NetworkBehaviour
                     }
                 }
 
-                if (changedWeapon && refreshLoadout && indexLoadout == m_currentLoadOutIndex)
+                if (changedWeapon && switchToLoadout)
+                    m_currentLoadOutIndex = indexLoadout;
+
+                if (changedWeapon && indexLoadout == m_currentLoadOutIndex)
                     InternalSetCurrentLoadout(m_currentLoadOutIndex);
             }
         }
@@ -324,13 +318,11 @@ public class LoadoutManager : NetworkBehaviour
         return changedWeapon;
     }
 
-
-
-    private WeaponGeneric GetWeapon(GameObject reference)
+    private WeaponGeneric GetWeapon(GameObject desiredWeapon, int desiredSeed)
     {
         WeaponGeneric objectToReturn = null;
 
-        List<GameObject> objList = GfPooling.GetPoolList(reference);
+        List<GameObject> objList = GfPooling.GetPoolList(desiredWeapon);
         int listCount = 0, index = 0;
         if (null != objList) listCount = objList.Count;
         index = listCount;
@@ -338,7 +330,7 @@ public class LoadoutManager : NetworkBehaviour
         {
             GameObject obj = objList[index];
             WeaponGeneric wb = obj.GetComponent<WeaponGeneric>();
-            if (!obj.activeSelf || wb.GetStatsCharacter() == m_statsCharacter) //check if it is inactive or if they have the same character stats
+            if (!obj.activeSelf || (wb.GetStatsCharacter() == m_statsCharacter && wb.GetSeed() == desiredSeed)) //check if it is inactive or if they have the same character stats
             {
                 obj.SetActive(true);
                 objectToReturn = wb;
@@ -352,7 +344,7 @@ public class LoadoutManager : NetworkBehaviour
 
         if (null == objectToReturn)
         {
-            objectToReturn = GfPooling.PoolInstantiate(reference).GetComponent<WeaponGeneric>();
+            objectToReturn = GfPooling.PoolInstantiate(desiredWeapon).GetComponent<WeaponGeneric>();
         }
 
         return objectToReturn;
@@ -421,17 +413,19 @@ public class LoadoutManager : NetworkBehaviour
             for (i = 0; i < weaponsCount; ++i)
             {
                 GameObject desiredWeapon = ManagerWeapons.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].Weapon);
-                m_weapons.Add(GetWeapon(desiredWeapon));
+                m_weapons.Add(GetWeapon(desiredWeapon, i));
 
                 WeaponGeneric weapon = m_weapons[i];
                 weapon.Initialize();
+                weapon.StopFiring(false);
                 weapon.SetMovementParent(m_parentMovement);
-                weapon.SetSpeedMultiplier(m_speedMultiplier, 0, true);
-                weapon.SetFireRateMultiplier(m_fireRateMultiplier, 0, true);
-                weapon.SetDamageMultiplier(m_damageMultiplier, 0, true);
+                weapon.SetSpeedMultiplier(m_speedMultiplier);
+                weapon.SetFireRateMultiplier(m_fireRateMultiplier);
+                weapon.SetDamageMultiplier(m_damageMultiplier);
                 weapon.SetLoadoutCount(weaponsCount);
                 weapon.SetLoadoutWeaponIndex(i);
                 weapon.SetLoadoutIndex(m_currentLoadOutIndex);
+                weapon.SetSeed((uint)i);
                 weapon.SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
                 weapon.WasSwitchedOn();
                 weapon.DisableWhenDone = false;
@@ -706,19 +700,35 @@ public class LoadoutManager : NetworkBehaviour
         return m_loadouts[indexLoadout][indexWeapon].Weapon;
     }
 
-    public void RemoveWeapon(int indexLoadout, int indexWeapon)
+    public void RemoveWeapon(int indexLoadout, int indexWeapon, bool switchToLoadout)
     {
-        SetLoadoutWeapon(-1, indexLoadout, indexWeapon);
+        SetLoadoutWeapon(-1, indexLoadout, indexWeapon, switchToLoadout);
     }
 
-    public void NextLoadout()
+    public void NextLoadout(bool mustHaveWeapon = true)
     {
-        SetCurrentLoadout(m_currentLoadOutIndex + 1);
+        int originalIndex = m_currentLoadOutIndex;
+        do
+        {
+            ++m_currentLoadOutIndex;
+            m_currentLoadOutIndex %= m_loadouts.Count;
+        } while (originalIndex != m_currentLoadOutIndex && mustHaveWeapon && 0 >= m_loadouts[m_currentLoadOutIndex].Count);
+
+        if (originalIndex != m_currentLoadOutIndex)
+            SetCurrentLoadout(m_currentLoadOutIndex);
     }
 
-    public void PreviousLoadout()
+    public void PreviousLoadout(bool mustHaveWeapon = true)
     {
-        SetCurrentLoadout(m_currentLoadOutIndex - 1);
+        int originalIndex = m_currentLoadOutIndex;
+        do
+        {
+            --m_currentLoadOutIndex;
+            m_currentLoadOutIndex = GfTools.Mod(m_currentLoadOutIndex, m_loadouts.Count);
+        } while (originalIndex != m_currentLoadOutIndex && mustHaveWeapon && 0 >= m_loadouts[m_currentLoadOutIndex].Count);
+
+        if (originalIndex != m_currentLoadOutIndex)
+            SetCurrentLoadout(m_currentLoadOutIndex);
     }
 
     public List<WeaponGeneric> GetWeapons()

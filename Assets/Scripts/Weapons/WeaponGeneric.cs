@@ -16,11 +16,11 @@ public abstract class WeaponGeneric : DamageSource
 
     protected bool m_isFiring = false;
 
-    protected PriorityValue<float> m_damageMultiplier = new(1);
+    protected float m_damageMultiplier = 1;
 
-    protected PriorityValue<float> m_speedMultiplier = new(1);
+    protected float m_speedMultiplier = 1;
 
-    protected PriorityValue<float> m_fireRateMultiplier = new(1);
+    protected float m_fireRateMultiplier = 1;
 
     //the index of the weapon in the loadout it is part of
     protected int m_loadoutWeaponIndex = 0;
@@ -50,13 +50,40 @@ public abstract class WeaponGeneric : DamageSource
     public virtual float GetRawDamage() { return m_damage; }
     public virtual void SetRawDamage(float damage) { m_damage = damage; }
     public virtual float GetDamageMultiplier() { return m_damageMultiplier; }
-    public virtual bool SetDamageMultiplier(float multiplier, uint priority = 0, bool overridePriority = false) { return m_damageMultiplier.SetValue(multiplier, priority, overridePriority); }
+    public virtual void SetDamageMultiplier(float multiplier)
+    {
+        foreach (Transform item in transform)
+        {
+            WeaponGeneric subSystem = item.GetComponent<WeaponGeneric>();
+            subSystem?.SetDamageMultiplier(multiplier);
+        }
+
+        m_damageMultiplier = multiplier;
+    }
 
     public virtual float GetSpeedMultiplier() { return m_speedMultiplier; }
-    public virtual bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false) { return m_speedMultiplier.SetValue(multiplier, priority, overridePriority); }
+    public virtual void SetSpeedMultiplier(float multiplier)
+    {
+        foreach (Transform item in transform)
+        {
+            WeaponGeneric subSystem = item.GetComponent<WeaponGeneric>();
+            subSystem?.SetSpeedMultiplier(multiplier);
+        }
+
+        m_speedMultiplier = multiplier;
+    }
 
     public virtual float GetFireRateMultiplier() { return m_fireRateMultiplier; }
-    public virtual bool SetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false) { return m_fireRateMultiplier.SetValue(multiplier, priority, overridePriority); }
+    public virtual void SetFireRateMultiplier(float multiplier)
+    {
+        foreach (Transform item in transform)
+        {
+            WeaponGeneric subSystem = item.GetComponent<WeaponGeneric>();
+            subSystem?.SetFireRateMultiplier(multiplier);
+        }
+
+        m_fireRateMultiplier = multiplier;
+    }
 
     public virtual int GetLoadoutIndex() { return m_loadoutIndex; }
     public virtual void SetLoadoutIndex(int index) { m_loadoutIndex = index; }
@@ -69,6 +96,10 @@ public abstract class WeaponGeneric : DamageSource
 
     public virtual GfMovementGeneric GetMovementParent() { return m_movementParent; }
     public virtual void SetMovementParent(GfMovementGeneric parent) { m_movementParent = parent; }
+
+    public virtual void SetSeed(uint seed) { }
+
+    public virtual uint GetSeed() { return 0; }
 
     //Called when the loadout changes this weapon to something else
     public virtual void WasSwitchedOff() { }
@@ -91,11 +122,14 @@ public abstract class WeaponGeneric : DamageSource
     public virtual float AddPoints(WeaponPointsTypes type, float points) { return 0; }
 
     public virtual float SetPoints(WeaponPointsTypes type, float points) { return 0; }
+
+    public virtual float GetPoints(WeaponPointsTypes type) { return 0; }
 }
 
 public enum WeaponPointsTypes
 {
     EXPERIENCE,
+    CHARGE,
     NUMBER_OF_TYPES
 }
 

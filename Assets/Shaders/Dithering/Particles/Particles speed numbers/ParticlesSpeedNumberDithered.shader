@@ -112,6 +112,9 @@ Shader "DistanceDither/Particles/Speed numbers"
             #pragma shader_feature_local_fragment _ _SPECGLOSSMAP _SPECULAR_COLOR
             #pragma shader_feature_local_fragment _GLOSSINESS_FROM_BASE_ALPHA
 
+            #pragma shader_feature _LAMBERT_DISABLED
+            #pragma shader_feature _FOG_DISABLED
+
             // -------------------------------------
             // Particle Keywords
             #pragma shader_feature_local _FLIPBOOKBLENDING_ON

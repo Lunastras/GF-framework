@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using static Unity.Mathematics.math;
 
 public class TurretWeapons : NetworkBehaviour
 {
@@ -14,6 +15,8 @@ public class TurretWeapons : NetworkBehaviour
     [SerializeField]
     private StatsCharacter m_statsCharacter = null;
 
+    protected FireType m_fireType = FireType.MAIN;
+
     private static readonly float[] DEFAULT_WAIT_TIME = { 0 };
 
     private int m_currentPhaseIndex = 0;
@@ -25,7 +28,7 @@ public class TurretWeapons : NetworkBehaviour
 
     private bool m_delayForcePlay = true;
 
-    public bool m_destoryWhenDone = false;
+    public bool DestoryWhenDone = false;
 
     public GameObject m_objectToDestroy = null;
 
@@ -36,16 +39,6 @@ public class TurretWeapons : NetworkBehaviour
     private PriorityValue<float> m_fireRateMultiplier = new(1);
 
     private static readonly Vector3 DESTROY_POSITION = new Vector3(9999, 9999, 9999);
-
-    protected bool HasAuthority
-    {
-        get
-        {
-            bool ret = false;
-            if (NetworkManager.Singleton) ret = HasNetworkObject && NetworkManager.Singleton.IsServer; //if there is no network object, it will have authority locally because the object isn't on the server
-            return ret;
-        }
-    }
 
     // Start is called before the first frame update
     void Start()
@@ -63,15 +56,33 @@ public class TurretWeapons : NetworkBehaviour
                 weapons[j].SetLoadoutWeaponIndex(j);
                 weapons[j].SetLoadoutCount(weaponsLength);
                 weapons[j].SetLoadoutIndex(i);
+                weapons[j].WasSwitchedOn();
+            }
+        }
+    }
+
+    protected void OnEnable()
+    {
+        if (m_statsCharacter)
+        {
+            for (int i = 0; i < m_turretPhases.Length; ++i)
+            {
+                var weapons = m_turretPhases[i].weapons;
+                int weaponsLength = weapons.Length;
+
+                for (int j = 0; j < weaponsLength; ++j)
+                {
+                    weapons[j].WasSwitchedOn();
+                }
             }
         }
     }
 
     private void Update()
     {
-        if (HasAuthority || !HasNetworkObject)
+        if (GfServerManager.HasAuthority || !HasNetworkObject)
         {
-            if (m_destoryWhenDone && !IsAlive())
+            if (DestoryWhenDone && !IsAlive())
             {
                 GfPooling.Destroy(m_objectToDestroy);
             }
@@ -142,6 +153,11 @@ public class TurretWeapons : NetworkBehaviour
         return isPlaying;
     }
 
+    private void OnDisable()
+    {
+        DestoryWhenDone = false;
+    }
+
     public bool IsAlive(bool onlyCurentPhase = false)
     {
         bool isPlaying = false;
@@ -168,6 +184,33 @@ public class TurretWeapons : NetworkBehaviour
         return isPlaying;
     }
 
+    public void SetSeed(uint seed)
+    {
+        for (int i = 0; i < m_turretPhases.Length; ++i)
+        {
+            WeaponGeneric[] systems = m_turretPhases[i].weapons;
+            int length = systems.Length;
+
+            for (int j = 0; j < length; ++j)
+                systems[j].SetSeed(seed);
+        }
+    }
+
+    public void SetFireType(FireType fireType)
+    {
+        if (m_firing && m_fireType != fireType)
+        {
+            m_fireType = fireType;
+            Play(true, m_currentPhaseIndex);
+        }
+
+        m_fireType = fireType;
+    }
+
+    public FireType GetFireType()
+    {
+        return m_fireType;
+    }
 
     public void SetCurrentPhase(int phase)
     {
@@ -214,6 +257,20 @@ public class TurretWeapons : NetworkBehaviour
 
     public StatsCharacter GetStatsCharacter() { return m_statsCharacter; }
 
+    public void SetStatsCharacter(StatsCharacter character)
+    {
+        m_statsCharacter = character;
+        for (int i = 0; i < m_turretPhases.Length; ++i)
+        {
+            WeaponGeneric[] systems = m_turretPhases[i].weapons;
+            int length = systems.Length;
+
+            for (int j = 0; j < length; ++j)
+                systems[j].SetStatsCharacter(character);
+        }
+    }
+
+
     /*
 
     public void Pause(float duration = float.MaxValue)
@@ -258,13 +315,12 @@ public class TurretWeapons : NetworkBehaviour
 
     public void Play(bool forcePlay = false, int phase = -1)
     {
-        //Debug.Log("Has network object is: " + HasNetworkObject);
-        if (HasAuthority)
+        if (GfServerManager.HasAuthority)
         {
             InternalPlay(forcePlay, phase);
             PlayClientRpc(forcePlay, phase);
         }
-        else if (!HasNetworkObject)
+        else if (!IsSpawned)
         {
             InternalPlay(forcePlay, phase);
         }
@@ -273,7 +329,7 @@ public class TurretWeapons : NetworkBehaviour
     [ClientRpc]
     protected void PlayClientRpc(bool forcePlay, int phase)
     {
-        if (!HasAuthority) InternalPlay(forcePlay, phase);
+        if (!NetworkManager.IsHost && !NetworkManager.IsServer) InternalPlay(forcePlay, phase);
     }
 
     protected void InternalPlay(bool forcePlay, int phase)
@@ -298,9 +354,22 @@ public class TurretWeapons : NetworkBehaviour
 
             for (int i = 0; i < systems.Length; ++i)
             {
-                systems[i].SetDamageMultiplier(m_damageMultiplier);
-                systems[i].SetFireRateMultiplier(m_fireRateMultiplier);
-                systems[i].SetSpeedMultiplier(m_speedMultiplier);
+                float damageMultiplier = 1;
+                float fireRateMultiplier = 1;
+                float speedMultiplier = 1;
+
+                if (0 < m_turretPhases[m_currentPhaseIndex].DamageMultipliers.Length)
+                    damageMultiplier = m_turretPhases[m_currentPhaseIndex].DamageMultipliers[min(i, m_turretPhases[m_currentPhaseIndex].DamageMultipliers.Length - 1)];
+
+                if (0 < m_turretPhases[m_currentPhaseIndex].FireRateMultipliers.Length)
+                    fireRateMultiplier = m_turretPhases[m_currentPhaseIndex].FireRateMultipliers[min(i, m_turretPhases[m_currentPhaseIndex].FireRateMultipliers.Length - 1)];
+
+                if (0 < m_turretPhases[m_currentPhaseIndex].SpeedMultipliers.Length)
+                    speedMultiplier = m_turretPhases[m_currentPhaseIndex].SpeedMultipliers[min(i, m_turretPhases[m_currentPhaseIndex].SpeedMultipliers.Length - 1)];
+
+                systems[i].SetDamageMultiplier(m_damageMultiplier * damageMultiplier);
+                systems[i].SetFireRateMultiplier(m_fireRateMultiplier * fireRateMultiplier);
+                systems[i].SetSpeedMultiplier(m_speedMultiplier * speedMultiplier);
                 systems[i].Fire();
             }
         }
@@ -335,7 +404,8 @@ public class TurretWeapons : NetworkBehaviour
 
     public void DestroyWhenDone(GameObject obj, bool killBullets = false)
     {
-        m_destoryWhenDone = true;
+        DestoryWhenDone = true;
+
         m_objectToDestroy = obj;
         Stop(killBullets);
         obj.transform.position = DESTROY_POSITION;
@@ -400,6 +470,8 @@ public class WeaponTurretPhase
 {
     [SerializeReference]
     public WeaponGeneric[] weapons;
-
+    public float[] DamageMultipliers;
+    public float[] SpeedMultipliers;
+    public float[] FireRateMultipliers;
     // public float timeUntilNextPhase;
 }

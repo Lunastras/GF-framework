@@ -29,6 +29,16 @@ public class FiringWeapons : NetworkBehaviour
 
     private List<WeaponGeneric> m_weapons = null;
 
+    public void SetAimTransform(Transform transform)
+    {
+        m_aimTransform = transform;
+    }
+
+    public Transform GetAimTransform()
+    {
+        return m_aimTransform;
+    }
+
     private RaycastHit m_lastRayHit;
 
     private double m_timeOflastCheck = 0;
@@ -43,8 +53,7 @@ public class FiringWeapons : NetworkBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        if (null == m_aimTransform)
-            m_aimTransform = Camera.main.transform;
+        if (null == m_aimTransform) m_aimTransform = transform;
 
         if (m_statsCharacter == null)
             m_statsCharacter = GetComponent<StatsCharacter>();

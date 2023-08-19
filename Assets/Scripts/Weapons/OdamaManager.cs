@@ -116,20 +116,20 @@ public class OdamaManager : LoadoutManager
             OdamaBehaviour odama;
             float angleOffset, angle, height;
             Vector3 dirFromPlayer = Vector3.zero;
-            float angleBetweenOdamas = 360.0f / odamaCount;
+            float angleBetweenOdamasRad = PI_MULT_2 / odamaCount;
             float heightCoef = m_bopRange * m_bopCoef * 0.5f;
 
             for (int i = 0; i < odamaCount; ++i)
             {
                 odama = m_odamaList[i];
-                angleOffset = angleBetweenOdamas * i;
+                angleOffset = angleBetweenOdamasRad * i;
                 angle = m_currentRotationRelativeToParentRad.Value + angleOffset;
-                height = System.MathF.Sin(m_currentBopValue.Value + angleOffset * DEG_2_RAD_MULT_2) * heightCoef;
+                height = System.MathF.Sin((m_currentBopValue.Value + angleOffset) * 2F) * heightCoef;
 
                 dirFromPlayer = m_parentMovement.GetCurrentRotation() * RIGHT3;
                 GfTools.Mult3(ref dirFromPlayer, odama.GetDesiredDst());
                 GfTools.Add3(ref dirFromPlayer, height * upVec);
-                dirFromPlayer = Quaternion.AngleAxis(angle, upVec) * dirFromPlayer;
+                dirFromPlayer = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, upVec) * dirFromPlayer;
 
                 odama.UpdateMovement(deltaTime, dirFromPlayer, transform.position, dstCoef, m_parentMovement);
             }

@@ -12,10 +12,10 @@ public class HudManager : MonoBehaviour
     private CanvasGroup m_deathScreenGroup = null;
 
     [SerializeField]
-    private float m_deathScreenFadeInTime = 2;
+    private LevelEndScreen m_levelEndScreen = null;
 
     [SerializeField]
-    private Image m_auxFadeToBlackImage = null;
+    private float m_deathScreenFadeInTime = 2;
 
     [SerializeField]
     private float m_auxFadeToBlackImageFadeInTime = 0.25f;
@@ -44,6 +44,14 @@ public class HudManager : MonoBehaviour
     [SerializeField]
     private GameObject m_gameUiElements = null;
 
+    [SerializeField]
+    private Slider m_sliderCharge = null;
+
+    [SerializeField]
+    private Text m_chargeText = null;
+
+    protected List<WeaponGeneric> m_weapons = null;
+
     private List<ExperienceSliderWeapon> m_weaponSliders = null;
 
     // Start is called before the first frame update
@@ -53,14 +61,45 @@ public class HudManager : MonoBehaviour
         if (Instance) Destroy(Instance);
         Instance = this;
         //levelSlidersParent = new GameObject("Level Sliders").transform;
+        GfLevelManager.OnLevelStart += OnLevelStart;
+        GfLevelManager.OnLevelEnd += OnLevelEnd;
+    }
+
+    protected void OnLevelStart()
+    {
+
+    }
+
+    protected void OnLevelEnd()
+    {
+        ToggleGameUiElements(false);
+        m_levelEndScreen.EnableEndScreen();
     }
 
     void Start()
     {
-        Color col = m_auxFadeToBlackImage.color;
-        col.a = 1;
-        m_auxFadeToBlackImage.color = col;
-        m_auxFadeToBlackImage.CrossFadeAlpha(0f, 0f, true);
+        GfUiTools.CrossFadeAlpha(0, 0, true);
+        m_sliderCharge.value = 0;
+        m_chargeText.text = "0";
+    }
+
+    void Update()
+    {
+        if (null != m_weapons && m_weapons.Count > 0)
+        {
+            WeaponLevels weapon = m_weapons[0] as WeaponLevels;
+            if (weapon)
+            {
+                m_sliderCharge.value = weapon.NextLevelProgress(1);
+                m_chargeText.text = weapon.CurrentLevel(1).ToString();
+            }
+        }
+    }
+
+    void OnDestroy()
+    {
+        GfLevelManager.OnLevelStart -= OnLevelStart;
+        GfLevelManager.OnLevelEnd -= OnLevelEnd;
     }
 
     /** Set the max number of sliders and stup the sliders
@@ -68,6 +107,7 @@ public class HudManager : MonoBehaviour
     */
     public void UpdateWeaponLevelSlidersNumber(List<WeaponGeneric> weapons)
     {
+        m_weapons = weapons;
         int desiredWeaponCount = 1;
         int currentWeaponCount = weapons.Count;
         if (!m_onlyShowFirstWeapon || 0 == currentWeaponCount) desiredWeaponCount = currentWeaponCount;
@@ -105,6 +145,7 @@ public class HudManager : MonoBehaviour
 
     public void UpdateWeaponLevelSlidersValues(List<WeaponGeneric> weapons)
     {
+        m_weapons = weapons;
         int effectiveWeaponCount = 1;
         int realWeaponCount = m_weaponSliders.Count;
         if (!m_onlyShowFirstWeapon || 0 == realWeaponCount) effectiveWeaponCount = realWeaponCount;
@@ -120,8 +161,8 @@ public class HudManager : MonoBehaviour
             if (weapon)
             {
                 //Debug.Log("yeee we are level" + i);
-                weaponSlider.SetLevel(weapon.CurrentLevel);
-                weaponSlider.SetProgress(weapon.NextLevelProgress);
+                weaponSlider.SetLevel(weapon.CurrentLevel(0));
+                weaponSlider.SetProgress(weapon.NextLevelProgress(0));
             }
             else
             {
@@ -135,14 +176,14 @@ public class HudManager : MonoBehaviour
     public static void ToggleDeathScreen(bool active)
     {
         if (active) //enable deathscreen
-            GfUITools.CrossFadeAlphaGroup(Instance.m_deathScreenGroup, 1, Instance.m_deathScreenFadeInTime);
+            GfUiTools.CrossFadeAlphaGroup(Instance.m_deathScreenGroup, 1, Instance.m_deathScreenFadeInTime);
         else //disable deathscreen
         {
             //GfUITools.CrossFadeAlphaGroup(Instance.m_deathScreenGroup, 0, Instance.m_deathScreenFadeOutTime);
 
-            Instance.m_auxFadeToBlackImage.CrossFadeAlpha(1, 0, true);
+            GfUiTools.CrossFadeAlpha(1, 0, true);
             Instance.m_deathScreenGroup.alpha = 0;
-            Instance.m_auxFadeToBlackImage.CrossFadeAlpha(0, 0.4f, false);
+            GfUiTools.CrossFadeAlpha(0, 0.4f, false);
         }
 
 
@@ -167,9 +208,9 @@ public class HudManager : MonoBehaviour
 
     private IEnumerator<float> _FadeBlackScreenCoroutine(float fadeInTime, float fadeOutTime, float waitTime)
     {
-        m_auxFadeToBlackImage.CrossFadeAlpha(1, fadeInTime, false);
+        GfUiTools.CrossFadeAlpha(1, fadeInTime, false);
         yield return Timing.WaitForSeconds(fadeInTime + waitTime);
-        m_auxFadeToBlackImage.CrossFadeAlpha(0, fadeOutTime, false);
+        GfUiTools.CrossFadeAlpha(0, fadeOutTime, false);
     }
 
     //returns the trigger delay

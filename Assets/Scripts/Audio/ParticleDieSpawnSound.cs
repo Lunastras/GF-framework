@@ -6,9 +6,9 @@ using UnityEngine;
 public class ParticleDieSpawnSound : ParticleDieSpawnAction
 {
     [SerializeField]
-    protected Sound m_spawnSound = null;
+    protected GfSound m_spawnSound = null;
     [SerializeField]
-    protected Sound m_deathSound = null;
+    protected GfSound m_deathSound = null;
 
     protected AudioSource m_audioSource;
 

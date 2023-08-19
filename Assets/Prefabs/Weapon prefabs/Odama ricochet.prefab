@@ -50,34 +50,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 9
+  ParentDamageSource: {fileID: 4752404752914725046}
+  m_damage: 10
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_eraseParticlesAfterOwnerKilled: 1
+  m_particlesEraseFromCenterSpeed: 10
   m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_canDamageSelf: 0
   m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
@@ -94,29 +98,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_spawnSound:
-    m_clip: {fileID: 8300000, guid: 60f8fc80e7557ca408af257449f40834, type: 3}
-    m_mixerType: 0
-    m_volume: 0.2
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_deathSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_weapon: {fileID: 4752404752914725046}
   m_highestIndexAllowed: 6
 --- !u!199 &1740038083976819070
@@ -1028,7 +1034,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 4
+      scalar: 6
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -5060,34 +5066,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 6
+  ParentDamageSource: {fileID: 4752404752914725046}
+  m_damage: 10
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_eraseParticlesAfterOwnerKilled: 1
+  m_particlesEraseFromCenterSpeed: 10
   m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_canDamageSelf: 0
   m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
@@ -5104,29 +5114,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_spawnSound:
-    m_clip: {fileID: 8300000, guid: 60f8fc80e7557ca408af257449f40834, type: 3}
-    m_mixerType: 0
-    m_volume: 0.2
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_deathSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_weapon: {fileID: 4752404752914725046}
   m_highestIndexAllowed: 6
 --- !u!199 &7744653069361825300
@@ -6038,7 +6050,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 3
+      scalar: 5
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -10074,17 +10086,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 0}
+  ParentDamageSource: {fileID: 0}
   m_damage: 0
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
   m_audioSource: {fileID: 0}
   m_turret: {fileID: 0}
+  m_chargeBeginSound: []
+  m_chargeEndSound: []
   m_levelFireSounds: []
   m_levelReleaseFireSounds: []
   m_expRequiredForLevels:
-  - 90
-  - 300
+  - array:
+    - 50
+    - 100
+  - array:
+    - 40
+    - 70
+  m_chargePointsSpeed: 10
 --- !u!114 &-2252768170966880630
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10100,13 +10119,22 @@ MonoBehaviour:
   m_turretPhases:
   - weapons:
     - {fileID: 110439690657272210}
+    DamageMultipliers: []
+    SpeedMultipliers: []
+    FireRateMultipliers: []
   - weapons:
     - {fileID: 8079317430149583104}
+    DamageMultipliers: []
+    SpeedMultipliers: []
+    FireRateMultipliers: []
   - weapons:
     - {fileID: 269537702137775165}
+    DamageMultipliers: []
+    SpeedMultipliers: []
+    FireRateMultipliers: []
   m_autoPlay: 0
   m_statsCharacter: {fileID: 0}
-  m_destoryWhenDone: 0
+  DestoryWhenDone: 0
   m_objectToDestroy: {fileID: 0}
 --- !u!114 &3395991133157087367
 MonoBehaviour:
@@ -10378,34 +10406,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 14
+  ParentDamageSource: {fileID: 4752404752914725046}
+  m_damage: 10
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_eraseParticlesAfterOwnerKilled: 1
+  m_particlesEraseFromCenterSpeed: 10
   m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_canDamageSelf: 0
   m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
@@ -10422,29 +10454,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_spawnSound:
-    m_clip: {fileID: 8300000, guid: 60f8fc80e7557ca408af257449f40834, type: 3}
-    m_mixerType: 0
-    m_volume: 0.2
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_deathSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_weapon: {fileID: 4752404752914725046}
   m_highestIndexAllowed: 6
 --- !u!199 &7859347979329334379
@@ -11356,7 +11390,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 7
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -15387,34 +15421,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
+  ParentDamageSource: {fileID: 4752404752914725046}
   m_damage: 10
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_eraseParticlesAfterOwnerKilled: 1
+  m_particlesEraseFromCenterSpeed: 10
   m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_canDamageSelf: 0
   m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
@@ -15431,29 +15469,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_spawnSound:
-    m_clip: {fileID: 8300000, guid: 60f8fc80e7557ca408af257449f40834, type: 3}
-    m_mixerType: 0
-    m_volume: 0.2
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_deathSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_weapon: {fileID: 4752404752914725046}
   m_highestIndexAllowed: 6
 --- !u!199 &8644734743808449361
@@ -20572,34 +20612,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 16
+  ParentDamageSource: {fileID: 4752404752914725046}
+  m_damage: 10
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_eraseParticlesAfterOwnerKilled: 1
+  m_particlesEraseFromCenterSpeed: 10
   m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_canDamageSelf: 0
   m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
@@ -20616,29 +20660,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_spawnSound:
-    m_clip: {fileID: 8300000, guid: 60f8fc80e7557ca408af257449f40834, type: 3}
-    m_mixerType: 0
-    m_volume: 0.2
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_deathSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_weapon: {fileID: 4752404752914725046}
   m_highestIndexAllowed: 6
 --- !u!199 &1859102154082545067
@@ -25639,34 +25685,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 12
+  ParentDamageSource: {fileID: 4752404752914725046}
+  m_damage: 10
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_eraseParticlesAfterOwnerKilled: 1
+  m_particlesEraseFromCenterSpeed: 10
   m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_canDamageSelf: 0
   m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
@@ -25683,29 +25733,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_spawnSound:
-    m_clip: {fileID: 8300000, guid: 60f8fc80e7557ca408af257449f40834, type: 3}
-    m_mixerType: 0
-    m_volume: 0.2
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_deathSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_weapon: {fileID: 4752404752914725046}
   m_highestIndexAllowed: 6
 --- !u!199 &788687449870927687
@@ -30706,34 +30758,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  m_parentDamageSource: {fileID: 4752404752914725046}
-  m_damage: 18
+  ParentDamageSource: {fileID: 4752404752914725046}
+  m_damage: 10
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_eraseParticlesAfterOwnerKilled: 1
+  m_particlesEraseFromCenterSpeed: 10
   m_damageSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_collisionSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_canDamageSelf: 0
   m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
@@ -30750,29 +30806,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_spawnSound:
-    m_clip: {fileID: 8300000, guid: 60f8fc80e7557ca408af257449f40834, type: 3}
-    m_mixerType: 0
-    m_volume: 0.2
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_deathSound:
-    m_clip: {fileID: 0}
-    m_mixerType: 0
-    m_volume: 0.5
-    m_volumeVariance: 0
-    m_pitch: 1
-    m_pitchVariance: 0
-    m_coolDownTime: 0.08
-    m_loop: 0
-    m_minDistance: 1
-    m_maxDistance: 500
-    m_spatialBlend: 0
+    Clip: {fileID: 0}
+    MixerType: 0
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12
   m_weapon: {fileID: 4752404752914725046}
   m_highestIndexAllowed: 6
 --- !u!199 &8512472578483817046

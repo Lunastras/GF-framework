@@ -79,8 +79,9 @@ public class JobParent : MonoBehaviour
 
     void Awake()
     {
-        if (Instance != null) Destroy(Instance);
+        if (Instance != this) Destroy(Instance);
         Instance = this;
+
         int countChildren = 0;
 
         var inheritedTypes = Assembly.GetAssembly(typeof(JobChild)).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(JobChild)));
@@ -92,6 +93,31 @@ public class JobParent : MonoBehaviour
         m_inheritedTypes = new(countChildren);
         m_jobHandles = new(128, Allocator.Persistent);
         InternalStart();
+    }
+
+    protected void OnDestroy()
+    {
+        if (m_jobHandles.IsCreated)
+            m_jobHandles.Dispose();
+
+        for (int i = 0; i < (int)UpdateTypes.TYPES_COUNT; ++i)
+        {
+            foreach (Type type in m_inheritedTypes)
+            {
+                List<JobChild> list = m_inheritedMembers[type][i];
+                if (null != list)
+                {
+                    int count = list.Count;
+
+                    for (int j = 0; j < count; ++j)
+                    {
+                        list[j].SetJobParentIndex(-1, (UpdateTypes)i);
+                    }
+                }
+            }
+        }
+
+        Instance = null;
     }
 
     protected virtual void InternalStart() { }
@@ -142,12 +168,6 @@ public class JobParent : MonoBehaviour
     {
         RunJobs(UpdateTypes.LATE_UPDATE);
     }
-
-    private void OnDestroy()
-    {
-        if (m_jobHandles.IsCreated)
-            m_jobHandles.Dispose();
-    }
 }
 
 
@@ -155,7 +175,8 @@ public enum UpdateTypes
 {
     UPDATE,
     FIXED_UPDATE,
-    LATE_UPDATE
+    LATE_UPDATE,
+    TYPES_COUNT
 }
 
 

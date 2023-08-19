@@ -11,21 +11,48 @@ public class WeaponLevels : WeaponGeneric
     protected TurretWeapons m_turret = null;
 
     [SerializeField]
-    public Sound[] m_levelFireSounds = null;
+    public GfSound[] m_chargeBeginSound = null;
 
     [SerializeField]
-    public Sound[] m_levelReleaseFireSounds = null;
+    public GfSound[] m_chargeEndSound = null;
 
     [SerializeField]
-    public float[] m_expRequiredForLevels = null;
+    public GfSound[] m_levelFireSounds = null;
 
-    public float CurrentExp { get; private set; } = 0;
+    [SerializeField]
+    public GfSound[] m_levelReleaseFireSounds = null;
 
-    public int CurrentLevel { get; private set; } = 0;
+    [SerializeField]
+    public StructArray<float>[] m_expRequiredForLevels = null;
 
-    public float NextLevelProgress { get; private set; } = 0;
+    [SerializeField]
+    protected float m_chargePointsSpeed = 10;
+
+
+    public float CurrentExp(int index = 0)
+    {
+        return m_currentExps[index];
+    }
+
+    public int CurrentLevel(int index = 0)
+    {
+        return m_currentLevels[index];
+    }
+
+    public float NextLevelProgress(int index = 0)
+    {
+        return m_nextLevelProgress[index];
+    }
+
+    protected float[] m_currentExps = new float[(int)WeaponPointsTypes.NUMBER_OF_TYPES];
+
+    protected int[] m_currentLevels = new int[(int)WeaponPointsTypes.NUMBER_OF_TYPES];
+
+    protected float[] m_nextLevelProgress = new float[(int)WeaponPointsTypes.NUMBER_OF_TYPES];
 
     protected bool m_initialised = false;
+
+    protected bool m_isCharging = false;
 
     private void Awake()
     {
@@ -98,37 +125,74 @@ public class WeaponLevels : WeaponGeneric
         }
     }
 
-    protected Sound GetFireSound()
+    protected GfSound GetFireSound()
     {
-        return m_levelFireSounds.Length > 0 ? m_levelFireSounds[Mathf.Clamp(CurrentLevel, 0, m_levelFireSounds.Length - 1)] : null;
+        return m_levelFireSounds.Length > 0 ? m_levelFireSounds[Mathf.Clamp(m_currentLevels[m_currentLevels[0]], 0, m_levelFireSounds.Length - 1)] : null;
     }
 
-    protected Sound GetReleaseFireSound()
+    protected GfSound GetReleaseFireSound()
     {
-        return m_levelReleaseFireSounds.Length > 0 ? m_levelReleaseFireSounds[Mathf.Clamp(CurrentLevel, 0, m_levelReleaseFireSounds.Length - 1)] : null;
+        return m_levelReleaseFireSounds.Length > 0 ? m_levelReleaseFireSounds[Mathf.Clamp(m_currentLevels[0], 0, m_levelReleaseFireSounds.Length - 1)] : null;
     }
 
     public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)
     {
-        m_isFiring = true;
-
-        if (m_levelFireSounds.Length > 0)
+        switch (fireType)
         {
-            GetFireSound().Play(m_audioSource);
-        }
-        Vector3 dirBullet = (hit.point - transform.position).normalized;
+            case (FireType.MAIN):
+                m_isFiring = true;
 
-        // Debug.Log("I GOT HERE ehehe");
-        m_turret.SetRotation(Quaternion.LookRotation(dirBullet));
-        m_turret.Play(false, CurrentLevel);
+                if (m_levelFireSounds.Length > 0)
+                {
+                    GetFireSound().Play(m_audioSource);
+                }
+                Vector3 dirBullet = (hit.point - transform.position).normalized;
+
+                m_turret.SetRotation(Quaternion.LookRotation(dirBullet));
+                m_turret.Play(false, m_currentLevels[0]);
+
+                break;
+            case (FireType.SECONDARY):
+                m_isCharging = true;
+                break;
+            case (FireType.SPECIAL):
+                break;
+
+        }
+    }
+
+    protected void Update()
+    {
+        if (m_isCharging)
+        {
+            int chargeIndex = 1;
+            m_currentExps[chargeIndex] += Time.deltaTime * m_chargePointsSpeed;
+            GetExpLevels(m_expRequiredForLevels[chargeIndex].array, ref m_currentExps[chargeIndex], ref m_currentLevels[chargeIndex], ref m_nextLevelProgress[chargeIndex]);
+        }
     }
 
     public override void ReleasedFire(FireHit hit = default, FireType fireType = FireType.MAIN)
     {
-        if (m_levelReleaseFireSounds.Length > 0)
-            GetReleaseFireSound().Play(m_audioSource);
-        m_isFiring = false;
-        m_turret.Stop(false);
+        switch (fireType)
+        {
+            case (FireType.MAIN):
+                if (m_levelReleaseFireSounds.Length > 0)
+                    GetReleaseFireSound().Play(m_audioSource);
+                m_isFiring = false;
+                m_turret.Stop(false);
+
+                break;
+            case (FireType.SECONDARY):
+                m_isCharging = false;
+                int chargeIndex = 1;
+                m_currentExps[chargeIndex] = 0;
+                GetExpLevels(m_expRequiredForLevels[chargeIndex].array, ref m_currentExps[chargeIndex], ref m_currentLevels[chargeIndex], ref m_nextLevelProgress[chargeIndex]);
+
+                break;
+            case (FireType.SPECIAL):
+                break;
+
+        }
     }
 
     /**
@@ -138,24 +202,16 @@ public class WeaponLevels : WeaponGeneric
     */
     public override float AddPoints(WeaponPointsTypes type, float points)
     {
-        float retPoints = 0;
-        switch (type)
-        {
-            case (WeaponPointsTypes.EXPERIENCE):
-                if (m_expRequiredForLevels.Length > 0)
-                {
-                    CurrentExp += points;
-                    CurrentExp = Mathf.Clamp(CurrentExp, 0, m_expRequiredForLevels[m_expRequiredForLevels.Length - 1]);
+        int index = (int)type;
+        m_currentExps[index] += points;
+        GetExpLevels(m_expRequiredForLevels[index].array, ref m_currentExps[index], ref m_currentLevels[index], ref m_nextLevelProgress[index]);
 
-                    UpdateFireLevel();
+        return m_currentExps[index];
+    }
 
-                    retPoints = CurrentExp;
-                }
-                break;
-        }
-
-
-        return retPoints;
+    public override float GetPoints(WeaponPointsTypes type)
+    {
+        return m_currentExps[(int)type];
     }
 
     /**
@@ -165,90 +221,74 @@ public class WeaponLevels : WeaponGeneric
     */
     public override float SetPoints(WeaponPointsTypes type, float points)
     {
-        float retPoints = 0;
-        switch (type)
-        {
-            case (WeaponPointsTypes.EXPERIENCE):
-                if (m_expRequiredForLevels.Length > 0)
-                {
-                    CurrentExp = points;
-                    CurrentExp = Mathf.Clamp(CurrentExp, 0, m_expRequiredForLevels[m_expRequiredForLevels.Length - 1]);
+        int index = (int)type;
+        m_currentExps[index] = points;
+        GetExpLevels(m_expRequiredForLevels[index].array, ref m_currentExps[index], ref m_currentLevels[index], ref m_nextLevelProgress[index]);
 
-                    UpdateFireLevel();
-
-                    retPoints = CurrentExp;
-                }
-                break;
-        }
-
-
-        return retPoints;
+        return m_currentExps[index];
     }
 
-    protected void UpdateFireLevel(bool forceUpdate = false)
+    public override void SetSeed(uint seed)
+    {
+        base.SetSeed(seed);
+        m_turret.SetSeed(seed);
+    }
+
+    protected static void GetExpLevels(float[] expArray, ref float currentExp, ref int currentLevel, ref float nextLevelProgress)
     {
         int auxCurrentLevel = 0;
 
-        if (m_expRequiredForLevels.Length > 0)
+        if (expArray.Length > 0)
         {
-            // float effectiveExp = currentExp / (float)weapons.Count;
-            float effectiveExp = CurrentExp;
+            currentExp = Mathf.Clamp(currentExp, 0, expArray[expArray.Length - 1]);
 
+            // float effectiveExp = currentExp / (float)weapons.Count;
             auxCurrentLevel = -1;
-            while (m_expRequiredForLevels.Length > ++auxCurrentLevel && m_expRequiredForLevels[auxCurrentLevel] < effectiveExp) ;
+            while (expArray.Length > ++auxCurrentLevel && expArray[auxCurrentLevel] < currentExp) ;
 
             //Debug.Log("The current level is " + loadOut.currentLevel);
-            float upperExp = m_expRequiredForLevels[auxCurrentLevel];
-            float lowerExp = effectiveExp;
+            float upperExp = expArray[auxCurrentLevel];
+            float lowerExp = currentExp;
 
             if (auxCurrentLevel != 0)
             {
-                upperExp -= m_expRequiredForLevels[auxCurrentLevel - 1];
-                lowerExp -= m_expRequiredForLevels[auxCurrentLevel - 1];
+                upperExp -= expArray[auxCurrentLevel - 1];
+                lowerExp -= expArray[auxCurrentLevel - 1];
             }
 
-            if (effectiveExp == m_expRequiredForLevels[m_expRequiredForLevels.Length - 1])
+            if (currentExp == expArray[expArray.Length - 1])
             {
-                auxCurrentLevel = m_expRequiredForLevels.Length;
+                auxCurrentLevel = expArray.Length;
             }
 
-            NextLevelProgress = lowerExp / upperExp;
+            nextLevelProgress = lowerExp / upperExp;
         }
 
-        CurrentLevel = auxCurrentLevel;
+        currentLevel = auxCurrentLevel;
     }
 
-    public override bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    public override void SetSpeedMultiplier(float multiplier)
     {
-        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
-        if (changedValue)
-            m_turret.SetSpeedMultiplier(multiplier, priority, overridePriority);
-
-        return changedValue;
+        base.SetSpeedMultiplier(multiplier);
+        m_turret.SetSpeedMultiplier(multiplier, 0, true);
     }
 
-    public override bool SetDamageMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    public override void SetDamageMultiplier(float multiplier)
     {
-        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
-        if (changedValue)
-            m_turret.SetDamageMultiplier(multiplier, priority, overridePriority);
-
-        return changedValue;
+        base.SetSpeedMultiplier(multiplier);
+        m_turret.SetDamageMultiplier(multiplier, 0, true);
     }
 
-    public override bool SetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    public override void SetFireRateMultiplier(float multiplier)
     {
-        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority);
-        if (changedValue)
-            m_turret.SetFireRateMultiplier(multiplier, priority, overridePriority);
-
-        return changedValue;
+        base.SetSpeedMultiplier(multiplier);
+        m_turret.SetFireRateMultiplier(multiplier, 0, true);
     }
 
 
-    public bool IsMaxLevel()
+    public bool IsMaxLevel(WeaponPointsTypes type)
     {
-        return CurrentLevel > m_expRequiredForLevels.Length;
+        return m_currentLevels[(int)type] > m_expRequiredForLevels[(int)type].array.Length;
     }
 
 }

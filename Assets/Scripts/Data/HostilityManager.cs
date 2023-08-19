@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Unity.Burst;
+using Unity.Jobs;
+using Unity.Collections;
+using Unity.Mathematics;
 
 public class HostilityManager : MonoBehaviour
 {
     protected List<StatsCharacter>[] m_instantiatedCharacters;
     protected static HostilityManager Instance = null;
-    protected int m_numTypes = 0;
 
     [SerializeField]
     protected StructArray<bool>[] m_typesEnemiesWith;
@@ -16,29 +19,87 @@ public class HostilityManager : MonoBehaviour
 
     protected List<StatsCharacter> m_allCharacters = new(32);
 
+    protected NativeList<float3>[] m_characterPositions = new NativeList<float3>[NUM_CHARACTER_TYPES];
+
+    protected NativeList<float3> m_allCharactersPositions;
+
     public static Action<StatsCharacter> OnCharacterRemoved;
     public static Action<StatsCharacter> OnCharacterAdded;
 
+    private const int NUM_CHARACTER_TYPES = (int)CharacterTypes.NUM_CHARACTER_TYPES;
+
     private void Awake()
     {
-        if (Instance)
+        if (Instance != this)
             Destroy(Instance);
 
         Instance = this;
-        m_numTypes = Enum.GetValues(typeof(CharacterTypes)).Length;
 
-        m_instantiatedCharacters = new List<StatsCharacter>[m_numTypes];
+        m_instantiatedCharacters = new List<StatsCharacter>[NUM_CHARACTER_TYPES];
 
-        Array.Resize<StructArray<bool>>(ref m_typesEnemiesWith, m_numTypes);
-        Array.Resize<StructArray<float>>(ref m_typesDamageMultiplier, m_numTypes);
+        Array.Resize<StructArray<bool>>(ref m_typesEnemiesWith, NUM_CHARACTER_TYPES);
+        Array.Resize<StructArray<float>>(ref m_typesDamageMultiplier, NUM_CHARACTER_TYPES);
 
-        for (int i = 0; i < m_numTypes; ++i)
+        for (int i = 0; i < NUM_CHARACTER_TYPES; ++i)
         {
             m_instantiatedCharacters[i] = new List<StatsCharacter>(4);
-            Array.Resize<bool>(ref m_typesEnemiesWith[i].array, m_numTypes);
-            Array.Resize<float>(ref m_typesDamageMultiplier[i].array, m_numTypes);
+            Array.Resize<bool>(ref m_typesEnemiesWith[i].array, NUM_CHARACTER_TYPES);
+            Array.Resize<float>(ref m_typesDamageMultiplier[i].array, NUM_CHARACTER_TYPES);
+        }
+
+        for (int i = 0; i < NUM_CHARACTER_TYPES; ++i)
+        {
+            m_characterPositions[i] = new();
+        }
+
+        m_allCharactersPositions = new();
+    }
+    private void FixedUpdate()
+    {
+        for (int i = 0; i < NUM_CHARACTER_TYPES; ++i)
+        {
+            if (m_characterPositions[i].IsCreated)
+                CopyPositionsToNativeArray(m_instantiatedCharacters[i], m_characterPositions[i]);
+        }
+
+        if (m_allCharactersPositions.IsCreated)
+            CopyPositionsToNativeArray(m_allCharacters, m_allCharactersPositions);
+    }
+
+    private static void CopyPositionsToNativeArray(List<StatsCharacter> source, NativeList<float3> destination)
+    {
+        int countCharacters = source.Count;
+        destination.ResizeUninitialized(countCharacters);
+        for (int j = 0; j < countCharacters; ++j)
+        {
+            destination[j] = source[j].transform.position;
         }
     }
+
+    public static NativeArray<float3>.ReadOnly GetCharacterPositions(CharacterTypes type)
+    {
+        int index = (int)type;
+        if (!Instance.m_characterPositions[index].IsCreated)
+        {
+            Instance.m_characterPositions[index] = new(Instance.m_instantiatedCharacters[index].Count, Allocator.Persistent);
+            CopyPositionsToNativeArray(Instance.m_instantiatedCharacters[index], Instance.m_characterPositions[index]);
+        }
+
+        return Instance.m_characterPositions[index].AsArray().AsReadOnly();
+    }
+
+    public static NativeArray<float3>.ReadOnly GetAllCharacterPositions()
+    {
+        if (!Instance.m_allCharactersPositions.IsCreated)
+        {
+            Instance.m_allCharactersPositions = new(Instance.m_allCharacters.Count, Allocator.Persistent);
+            CopyPositionsToNativeArray(Instance.m_allCharacters, Instance.m_allCharactersPositions);
+        }
+
+        return Instance.m_allCharactersPositions.AsArray().AsReadOnly();
+    }
+
+    public static bool HasInstance() { return Instance; }
 
     public static float DamageMultiplier(CharacterTypes a, CharacterTypes b)
     {
@@ -88,7 +149,7 @@ public class HostilityManager : MonoBehaviour
         int startingType = 1;
         if (destroyPlayers) startingType = 0;
 
-        for (int i = startingType; i < Instance.m_numTypes; ++i)
+        for (int i = startingType; i < NUM_CHARACTER_TYPES; ++i)
         {
             DestroyAllCharacters((CharacterTypes)i);
         }
@@ -99,7 +160,7 @@ public class HostilityManager : MonoBehaviour
         List<StatsCharacter> charactersList = Instance.m_instantiatedCharacters[(int)characterType];
         int count = charactersList.Count;
         for (int i = 0; i < count; ++i)
-            GfPooling.DestroyInsert(charactersList[0].gameObject);
+            GfPooling.Destroy(charactersList[0].gameObject);
     }
 
     public static void KillAllCharacters(bool killPlayers)
@@ -107,7 +168,7 @@ public class HostilityManager : MonoBehaviour
         int startingType = 1;
         if (killPlayers) startingType = 0;
 
-        for (int i = startingType; i < Instance.m_numTypes; ++i)
+        for (int i = startingType; i < NUM_CHARACTER_TYPES; ++i)
         {
             KillAllCharacters((CharacterTypes)i);
         }
@@ -136,8 +197,22 @@ public class HostilityManager : MonoBehaviour
             typeList.Add(character);
             Instance.m_allCharacters.Add(character);
 
-            if (null != OnCharacterAdded) OnCharacterAdded(character);
+            OnCharacterAdded?.Invoke(character);
         }
+    }
+
+    protected void OnDestroy()
+    {
+        DestroyAllCharacters(true);
+        Instance = null;
+        for (int i = 0; i < NUM_CHARACTER_TYPES; ++i)
+        {
+            if (m_characterPositions[i].IsCreated)
+                m_characterPositions[i].Dispose();
+        }
+
+        if (m_allCharactersPositions.IsCreated)
+            m_allCharactersPositions.Dispose();
     }
 
     public static void RemoveCharacter(StatsCharacter character)
@@ -146,7 +221,7 @@ public class HostilityManager : MonoBehaviour
 
         if (0 <= characterIndex) //make sure it is in the list
         {
-            if (null != OnCharacterRemoved) OnCharacterRemoved(character);
+            OnCharacterRemoved?.Invoke(character);
 
             List<StatsCharacter> typeList = Instance.m_instantiatedCharacters[(int)character.GetCharacterType()];
             List<StatsCharacter> allCharacters = Instance.m_allCharacters;
@@ -166,8 +241,6 @@ public class HostilityManager : MonoBehaviour
             allCharacters[allCharactersIndex].SetCharacterIndex(allCharactersIndex, CharacterIndexType.CHARACTERS_ALL_LIST);
             allCharacters.RemoveAt(lastCharacterIndex);
             character.SetCharacterIndex(-1, CharacterIndexType.CHARACTERS_ALL_LIST);
-
-            Debug.Log("enemies left in list: " + allCharacters.Count);
         }
     }
 
@@ -184,7 +257,7 @@ public class HostilityManager : MonoBehaviour
         if (mutual) Instance.m_typesEnemiesWith[(int)b].array[(int)a] = value;
     }
 
-    public static int GetNumTypes() { return Instance.m_numTypes; }
+    public static int GetNumTypes() { return NUM_CHARACTER_TYPES; }
 }
 
 //Used to visualise matrices in the editor

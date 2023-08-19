@@ -4,10 +4,10 @@ using UnityEngine;
 public class WeaponParticleTrigger : WeaponParticle
 {
     [SerializeField]
-    protected Sound m_damageSound = null;
+    protected GfSound m_damageSound = null;
 
     [SerializeField]
-    protected Sound m_collisionSound = null;
+    protected GfSound m_collisionSound = null;
     [SerializeField]
     protected bool m_canDamageSelf;
 
@@ -34,9 +34,6 @@ public class WeaponParticleTrigger : WeaponParticle
 
         InitWeaponParticle();
 
-        m_damageSound.LoadAudioClip();
-        m_collisionSound.LoadAudioClip();
-
         var triggerModule = m_particleSystem.trigger;
         triggerModule.enabled = true;
     }
@@ -44,6 +41,8 @@ public class WeaponParticleTrigger : WeaponParticle
     protected void Start()
     {
         ParticleTriggerDamageManager.AddParticleSystem(this);
+        m_damageSound.LoadAudioClip();
+        m_collisionSound.LoadAudioClip();
     }
 
     private void FixedUpdate()
@@ -129,14 +128,25 @@ public class WeaponParticleTrigger : WeaponParticle
 
     public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)
     {
-        if (!m_isFiring)
+        switch (fireType)
         {
-            m_isFiring = true;
-            LookAtTarget();
-        }
+            case (FireType.MAIN):
+                if (!m_isFiring)
+                {
+                    m_isFiring = true;
+                    LookAtTarget();
+                }
 
-        m_isFiring = true;
-        m_particleSystem.Play();
+                m_isFiring = true;
+                m_particleSystem.Play();
+
+                break;
+            case (FireType.SECONDARY):
+                break;
+            case (FireType.SPECIAL):
+                break;
+
+        }
     }
 
     protected virtual void HitTarget(ref ParticleSystem.Particle particle, StatsCharacter self, StatsCharacter target, float damageMultiplier, DamageSource damageSource)

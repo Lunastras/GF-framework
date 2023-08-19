@@ -2,11 +2,12 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using static Unity.Mathematics.math;
 
 [RequireComponent(typeof(AudioSource))]
-public class AudioManager : MonoBehaviour
+public class GfAudioManager : MonoBehaviour
 {
-    private static AudioManager Instance = null;
+    private static GfAudioManager Instance = null;
 
     [SerializeField]
     private AudioMixerGroup[] m_mixerGroups = null;
@@ -31,29 +32,37 @@ public class AudioManager : MonoBehaviour
     [SerializeField]
     private AudioSource m_audioLoadAudioSource = null;
 
+    //twelveth root of 2
+    const float NOTE_PROGRESSION_COEF = 1.05946309436f;
+
     void Awake()
     {
         m_audioLoadAudioSource = GetComponent<AudioSource>();
 
-        if (Instance)
+        if (this != Instance)
             Destroy(Instance);
-
-        DontDestroyOnLoad(this);
 
         Instance = this;
     }
 
-    public static void LoadAudioClip(Sound sound)
+    public static void LoadAudioClip(GfSound sound)
     {
         if (Instance && Instance.m_audioLoadAudioSource)
         {
             Instance.m_audioLoadAudioSource.Stop();
             Instance.m_audioLoadAudioSource.volume = 0;
-            Instance.m_audioLoadAudioSource.clip = sound.m_clip;
+            Instance.m_audioLoadAudioSource.clip = sound.Clip;
             Instance.m_audioLoadAudioSource.Play();
         }
         else Debug.LogWarning("Clip cannot load before the audioManager initializes.");
 
+    }
+
+    public static float GetPitchFromNote(int octave, PianoNotes note)
+    {
+        octave -= 4; //middle C will have pitch 1
+        float cPitchOfOctave = pow(2, octave); //get the c pitch of the given octave
+        return cPitchOfOctave * pow(NOTE_PROGRESSION_COEF, (int)note); //go from the c note to the desired note
     }
 
     public static float ValueToVolume(float value)
@@ -158,28 +167,14 @@ public class AudioManager : MonoBehaviour
         return InternalPlayAudio(audio, null, position, delay, volume, pitch, loop, mixer, spatialBlend, minDst, maxDst);
     }
 
-    public static GfAudioSource PlayAudio(Sound audio, Vector3 position, float delay = 0, float volume = 1, float pitch = 1)
+    public static GfAudioSource PlayAudio(GfSound audio, Vector3 position, float delay = 0, float volume = 1, float pitch = 1)
     {
-        double timeAsDouble = Time.timeAsDouble;
-        if (audio.CanPlay(timeAsDouble))
-        {
-            audio.Played(timeAsDouble, delay);
-            return InternalPlayAudio(audio.m_clip, null, position, delay, volume * audio.GetVolume(), pitch * audio.GetPitch(), audio.m_loop, audio.GetAudioMixerGroup(), audio.m_spatialBlend, audio.m_minDistance, audio.m_maxDistance);
-        }
-
-        return null;
+        return InternalPlayAudio(audio.Clip, null, position, delay, volume * audio.GetVolume(), pitch * audio.GetPitch(), audio.Loop, audio.GetAudioMixerGroup(), audio.SpatialBlend, audio.MinDistance, audio.MaxDistance);
     }
 
-    public static GfAudioSource PlayAudio(Sound audio, Transform parent, float delay = 0, float volume = 1, float pitch = 1)
+    public static GfAudioSource PlayAudio(GfSound audio, Transform parent, float delay = 0, float volume = 1, float pitch = 1)
     {
-        double timeAsDouble = Time.timeAsDouble;
-        if (audio.CanPlay(timeAsDouble))
-        {
-            audio.Played(timeAsDouble, delay);
-            return InternalPlayAudio(audio.m_clip, parent, ZERO3, delay, volume * audio.GetVolume(), pitch * audio.GetPitch(), audio.m_loop, audio.GetAudioMixerGroup(), audio.m_spatialBlend, audio.m_minDistance, audio.m_maxDistance);
-        }
-
-        return null;
+        return InternalPlayAudio(audio.Clip, parent, ZERO3, delay, volume * audio.GetVolume(), pitch * audio.GetPitch(), audio.Loop, audio.GetAudioMixerGroup(), audio.SpatialBlend, audio.MinDistance, audio.MaxDistance);
     }
 
     private static GfAudioSource InternalPlayAudio(AudioClip audio, Transform parent, Vector3 position, float delay = 0, float volume = 1, float pitch = 1, bool loop = false, AudioMixerGroup mixer = null, float spatialBlend = 1, float minDst = 1, float maxDst = 500)

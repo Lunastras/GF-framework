@@ -27,12 +27,6 @@ public class NpcController : NetworkBehaviour
     protected float m_updateInterval = 0.05f;
 
     [SerializeField]
-    protected bool m_usesRigidBody = false;
-
-    [SerializeField]
-    protected bool m_usesFixedUpdate = true;
-
-    [SerializeField]
     protected float m_cosFieldOfView = 0.0f;
 
     [SerializeField]
@@ -51,7 +45,6 @@ public class NpcController : NetworkBehaviour
     private float m_timeUntilNextTargetCheck = 0;
     private float m_timeUntilNextStateUpdate = 0;
     private float m_timeUntilLosetarget = 0;
-    protected float m_timeUntilPathFind = 0;
 
     //protected DestinationManager destinations;
     protected Destination m_destination = new(null);
@@ -61,8 +54,6 @@ public class NpcController : NetworkBehaviour
     protected bool m_runsAwayFromTarget = false;
 
     protected float m_currentSpeedMultiplier;
-
-    private float m_stateCheckBias = 0;
 
     protected Transform m_transform;
     protected NpcState m_currentState;
@@ -120,7 +111,7 @@ public class NpcController : NetworkBehaviour
     {
         bool scheduleJob = m_pathFindingManager
                         && (m_currentState == NpcState.SEARCHING_TARGET || m_currentState == NpcState.ENGAGING_TARGET)
-                        && m_timeUntilPathFind <= 0
+                        && GfPathfindingScheduler.CanSchedule()
                         && m_destination.HasDestination;
 
         if (scheduleJob)
@@ -140,49 +131,34 @@ public class NpcController : NetworkBehaviour
 
     public virtual void OnPathFindingJobFinished(float deltaTime, UpdateTypes updateType) { }
 
-    void Update()
-    {
-        if (!m_usesFixedUpdate && IsServer)
-        {
-            float deltaTime = Time.deltaTime;
-            m_timeUntilNextStateUpdate -= deltaTime;
-
-            if (0 >= m_timeUntilNextStateUpdate)
-            {
-                float stateDelta = m_updateInterval * m_stateCheckBias - m_timeUntilNextStateUpdate;
-                m_stateCheckBias = UnityEngine.Random.Range(0.9f, 1.1f);
-                m_timeUntilNextStateUpdate = m_updateInterval * m_stateCheckBias + m_timeUntilNextStateUpdate;
-
-                stateDelta = System.MathF.Max(deltaTime, stateDelta);
-                m_timeUntilNextStateUpdate = System.MathF.Max(deltaTime, m_timeUntilNextStateUpdate);
-                StateUpdate(stateDelta, m_timeUntilNextStateUpdate);
-            }
-        }
-    }
-
     void FixedUpdate()
     {
-        if (m_usesFixedUpdate && IsServer)
+        float deltaTime = Time.deltaTime;
+        m_timeUntilNextStateUpdate -= deltaTime;
+
+        if (0 >= m_timeUntilNextStateUpdate && IsServer)
         {
-            float deltaTime = Time.deltaTime;
-            StateUpdate(deltaTime, deltaTime);
+            float stateDelta = m_updateInterval - m_timeUntilNextStateUpdate;
+            m_timeUntilNextStateUpdate = m_updateInterval * UnityEngine.Random.Range(0.9f, 1.1f);
+
+            stateDelta = System.MathF.Max(deltaTime, stateDelta);
+            StateUpdate(stateDelta);
         }
     }
 
     void LateUpdate()
     {
-        if (!m_usesRigidBody && IsServer)
+        if (IsServer)
             m_movement.Move(Time.deltaTime);
     }
 
     protected virtual void BeforeStateUpdate(float deltaTime) { }
 
-    protected void StateUpdate(float deltaTime, float timeUntilNextUpdate)
+    protected void StateUpdate(float deltaTime)
     {
         m_timeUntilUnpause -= deltaTime;
         m_timeUntilLosetarget -= deltaTime;
         m_timeUntilNextTargetCheck -= deltaTime;
-        m_timeUntilPathFind -= deltaTime;
 
         if (0 >= m_timeUntilUnpause)
         {
@@ -203,9 +179,7 @@ public class NpcController : NetworkBehaviour
                 NoDestinationsBehaviour(deltaTime);
             }
 
-            if (!m_usesRigidBody)
-                m_movement.UpdatePhysics(deltaTime, true, timeUntilNextUpdate, m_updatePhysicsValuesAutomatically);
-
+            m_movement.UpdatePhysics(deltaTime, true, -1, m_updatePhysicsValuesAutomatically);
             AfterStateUpdate(deltaTime);
         }
     }
@@ -288,7 +262,7 @@ public class NpcController : NetworkBehaviour
                     if (canSeeTarget)
                     {
                         m_currentState = NpcState.ENGAGING_TARGET;
-                        EngageEnemyBehaviour(deltaTime, dirToTarget);
+                        EngageEnemyBehaviour(deltaTime, GetPathDirection(dirToTarget));
                     }
                     else
                     {
@@ -328,29 +302,14 @@ public class NpcController : NetworkBehaviour
     {
         Vector3 movementDir;
 
-        /*
-        if (m_pathToDestination.Length > 0)
-        {
-            Debug.Log("yeeee found it");
-            for (int i = 0; i < m_pathToDestination.Length - 1; ++i)
-            {
-                Color colour = i == (m_pathToDestination.Length - 2) ? Color.red : Color.green;
-                Debug.DrawRay(m_pathToDestination[i], m_pathToDestination[i + 1] - m_pathToDestination[i], colour, 0.5f);
-            }
-        }
-        else
-        {
-            Debug.Log("No path, baddyy");
-        }*/
-
         if (m_pathToDestination.Length > 0)
         {
             int pathCount = m_pathToDestination.Length - 1;
             Vector3 nodePosition = m_pathToDestination[pathCount];
             Vector3 position = m_transform.position;
 
-            float dstFromNode = (nodePosition - position).magnitude;
-            if (0.1 <= dstFromNode) //arrived at node
+            float dstFromNodeSqrd = (nodePosition - position).sqrMagnitude;
+            if (0.001f <= dstFromNodeSqrd) //arrived at node
             {
                 m_pathToDestination.RemoveAt(pathCount);
                 if (m_pathToDestination.Length > 0)
@@ -359,14 +318,15 @@ public class NpcController : NetworkBehaviour
                 }
             }
 
-            movementDir = nodePosition - position;
-            movementDir.Normalize();
+            movementDir = nodePosition;
+            GfTools.Minus3(ref movementDir, position);
         }
         else
         {
-            movementDir = dirToTarget.normalized;
+            movementDir = dirToTarget;
         }
 
+        GfTools.Normalize(ref movementDir);
         return movementDir;
     }
     protected virtual void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)

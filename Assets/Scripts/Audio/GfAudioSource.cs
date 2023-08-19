@@ -13,7 +13,7 @@ public class GfAudioSource : MonoBehaviour
 
     public bool m_destroyWhenFinished = false;
 
-    public Sound m_originalSound = null;
+    public GfSound m_originalSound = null;
 
     // Start is called before the first frame update
 

@@ -5,9 +5,15 @@ using System.Collections.Generic;
 using System;
 using MEC;
 
-public class GfUITools : MonoBehaviour
+public class GfUiTools : MonoBehaviour
 {
-    private static GfUITools Instance;
+    [SerializeField]
+    private Image m_colourOverlay = null;
+
+    [SerializeField]
+    private CanvasGroup m_colourOverlayCanvsGroup = null;
+
+    private static GfUiTools Instance;
     private static List<RaycastResult> m_raycastResults = new(1);
     private static PointerEventData m_pointerEventData;
 
@@ -18,7 +24,20 @@ public class GfUITools : MonoBehaviour
         if (Instance) Destroy(Instance);
         Instance = this;
 
+        m_colourOverlayCanvsGroup.alpha = 1;
+        m_colourOverlay.gameObject.SetActive(true);
+        m_colourOverlay.CrossFadeAlpha(0, 0, true);
+
         m_pointerEventData = new PointerEventData(EventSystem.current);
+    }
+
+    void OnDestroy()
+    {
+        Instance = null;
+    }
+
+    void Start()
+    {
     }
 
     public static bool IsMouseOverUICollision(GameObject ui)
@@ -34,6 +53,28 @@ public class GfUITools : MonoBehaviour
     public static GameObject GetUIObjectUnderMouse()
     {
         return GetUIObjectUnderMouse(Input.mousePosition);
+    }
+
+    public static void CrossFadeAlpha(float alpha, float durationSeconds, bool ignoreTimeScale = false)
+    {
+        Instance.m_colourOverlay.CrossFadeAlpha(alpha, durationSeconds, ignoreTimeScale);
+    }
+
+    public static void CrossFadeColor(Color color, float durationSeconds, bool ignoreTimeScale = false, bool useAlpha = true, bool useRgb = true)
+    {
+        Instance.m_colourOverlay.CrossFadeColor(color, durationSeconds, ignoreTimeScale, useAlpha, useRgb);
+    }
+
+    public static void SetOverlayColor(Color color)
+    {
+        Instance.m_colourOverlay.color = color;
+    }
+
+    public static void SetOverlayAlpha(float alpha)
+    {
+        Color color = Instance.m_colourOverlay.color;
+        color.a = alpha;
+        Instance.m_colourOverlay.color = color;
     }
 
     public static GameObject GetUIObjectUnderMouse(Vector3 mousePosition)
@@ -76,14 +117,14 @@ public class GfUITools : MonoBehaviour
     {
         float refSmooth = 0;
         group.alpha = currentAlpha;
-        while (MathF.Abs(currentAlpha - targetAlpha) > 0.001f && group.alpha == currentAlpha) //stop coroutine if alpha is modified by somebody else
+        while (group && MathF.Abs(currentAlpha - targetAlpha) > 0.001f && group.alpha == currentAlpha) //stop coroutine if alpha is modified by somebody else
         {
             currentAlpha = Mathf.SmoothDamp(currentAlpha, targetAlpha, ref refSmooth, smoothTime);
             group.alpha = currentAlpha;
             yield return Timing.WaitForOneFrame;
         }
 
-        if (group.alpha == currentAlpha)
+        if (group && group.alpha == currentAlpha)
             group.alpha = targetAlpha;
     }
 

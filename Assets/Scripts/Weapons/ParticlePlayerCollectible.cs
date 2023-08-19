@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class ParticlePlayerCollectible : ParticleTrigger
 {
     [SerializeField]
@@ -26,12 +27,12 @@ public class ParticlePlayerCollectible : ParticleTrigger
 
     private void FixedUpdate()
     {
-        if (m_particleHoming && GameManager.Instance && m_player != GameManager.GetPlayer())
+        if (m_particleHoming && GfGameManager.Instance && m_player != GfLevelManager.GetPlayer())
         {
             if (m_player) m_particleSystem.trigger.RemoveCollider(m_player);
 
-            m_player = GameManager.GetPlayer();
-            m_particleHoming.SetTarget(m_player);
+            m_player = GfLevelManager.GetPlayer();
+            m_particleHoming.AddTarget(m_player);
             m_particleSystem.trigger.AddCollider(m_player);
         }
     }
@@ -48,7 +49,7 @@ public class ParticlePlayerCollectible : ParticleTrigger
     {
         StatsPlayer playerStats = hitObject.GetComponent<StatsPlayer>();
 
-        if (playerStats && particle.remainingLifetime >= m_destroyTime)
+        if (playerStats && playerStats.transform == GfLevelManager.GetPlayer() && particle.remainingLifetime >= m_destroyTime)
         {
             playerStats.AddPoints(m_type, m_numPoints);
             particle.remainingLifetime = m_destroyTime;

@@ -5,7 +5,7 @@ using UnityEngine;
 public class GfTriggerLoadoutMultipliers : GfMovementTriggerable
 {
     [SerializeField]
-    protected bool m_onlyForPlayer = false;
+    protected bool m_onlyForPlayer = true;
     [SerializeField]
     protected PriorityValueSetter<float> m_speedMultiplier = new(1);
     [SerializeField]
@@ -20,7 +20,7 @@ public class GfTriggerLoadoutMultipliers : GfMovementTriggerable
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
         LoadoutManager loadoutManager;
-        if ((!m_onlyForPlayer || GameManager.GetPlayer() == movement.transform)
+        if ((!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform)
         && null != (loadoutManager = movement.GetComponent<LoadoutManager>()))
         {
             if (!m_damageMultiplier.m_ignore)

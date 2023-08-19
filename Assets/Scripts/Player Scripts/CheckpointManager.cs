@@ -34,9 +34,17 @@ public class CheckpointManager : MonoBehaviour
         Instance.m_checkpointStates.Add(checkpointState);
     }
 
+    private void Awake()
+    {
+        if (m_canTriggerHardCheckpoints)
+        {
+            Instance = this;
+        }
+    }
+
     private void Start()
     {
-        if (Instance != null && !GameManager.IsMultiplayer && m_canTriggerHardCheckpoints)
+        if (Instance != this && !GfGameManager.IsMultiplayer && m_canTriggerHardCheckpoints)
         {
             Debug.LogError("Another CheckpointManager Instance that can trigger hard checkpoints was found (" + Instance.name + "), destroying it now...");
             Destroy(Instance);
@@ -45,36 +53,34 @@ public class CheckpointManager : MonoBehaviour
         GameObject respawnTransform = GameObject.Find("Spawnpoint");
         if (respawnTransform) m_respawnPoint = respawnTransform.transform.position;
 
-        if (m_canTriggerHardCheckpoints)
-        {
-            Instance = this;
-            OnHardCheckpoint = null; //reset callbacks
-        }
-
         if (null == m_movementGeneric) m_movementGeneric = GetComponent<GfMovementGeneric>();
         if (null == m_statsCharacter) m_statsCharacter = GetComponent<StatsCharacter>();
         m_transform = m_statsCharacter.transform;
         m_initialPos = m_respawnPoint;
         m_transform.position = m_respawnPoint;
+
+        m_checkpointStates.Clear();
+        OnHardCheckpoint?.Invoke();
     }
 
     public void SetCheckpoint(GfTriggerCheckpoint checkpoint)
     {
-        if (checkpoint.SoftCheckpoint && checkpoint != m_currentSoftCheckpoint)
+        if (checkpoint != m_currentSoftCheckpoint)
         {
             m_currentSoftCheckpoint = checkpoint;
         }
-        else if (checkpoint != m_currentHardCheckpoint && m_canTriggerHardCheckpoints)//hard checkpoint
+
+        if (checkpoint != m_currentHardCheckpoint && m_canTriggerHardCheckpoints)//hard checkpoint
         {
             m_currentHardCheckpoint = checkpoint;
-            if (null != OnHardCheckpoint && !GameManager.IsMultiplayer)
+            if (null != OnHardCheckpoint && !GfGameManager.IsMultiplayer)
             {
                 m_checkpointStates.Clear();
                 OnHardCheckpoint();
             }
         }
 
-        GameManager.OnCheckpointSet(this, !checkpoint.SoftCheckpoint);
+        GfLevelManager.OnCheckpointSet(this, !checkpoint.SoftCheckpoint);
     }
 
     public bool HasCheckpointRegistered(GfTriggerCheckpoint checkpoint)
@@ -87,7 +93,7 @@ public class CheckpointManager : MonoBehaviour
         if (!m_isSoftReseting)
         {
             m_isSoftReseting = true;
-            float delay = GameManager.OnCheckpointReset(this, false);
+            float delay = GfLevelManager.OnCheckpointReset(this, false);
 
             if (delay > 0)
                 Timing.RunCoroutine(_ResetToSoftCheckpoint(delay, damage, canKill));
@@ -129,7 +135,7 @@ public class CheckpointManager : MonoBehaviour
 
         m_isSoftReseting = false;
         m_movementGeneric.SetVelocity(Vector3.zero);
-        GameManager.CheckpointStatesExecuted(this);
+        GfLevelManager.CheckpointStatesExecuted(this);
     }
 
     protected void ExecuteCheckpointStates()
@@ -142,9 +148,9 @@ public class CheckpointManager : MonoBehaviour
 
     public void ResetToHardCheckpoint()
     {
-        if (m_canTriggerHardCheckpoints)
+        if (m_canTriggerHardCheckpoints && !GfGameManager.IsMultiplayer)
         {
-            GameManager.OnCheckpointReset(this, true);
+            GfLevelManager.OnCheckpointReset(this, true);
 
             if (m_currentHardCheckpoint)
             {
@@ -158,11 +164,15 @@ public class CheckpointManager : MonoBehaviour
 
             HostilityManager.DestroyAllCharacters(false);
             //do not reset checkpoint states if we are playing multiplayer
-            if (!GameManager.IsMultiplayer)
+            if (!GfGameManager.IsMultiplayer)
             {
                 //start coroutine to execute checkpoint states in the next turn
                 Timing.RunCoroutine(_ExecuteCheckpointsInNextFrame());
             }
+        }
+        else if (GfGameManager.IsMultiplayer)
+        {
+            ResetToSoftCheckpoint();
         }
     }
 

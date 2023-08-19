@@ -254,7 +254,7 @@ namespace GfPathFindingNamespace
         public void GenerateNodePath()
         {
             NodePathSaveData data = GenerateNodePathData();
-            LevelManager.SetNodePathData(this, data);
+            GfLevelManager.SetNodePathData(this, data);
             SetNodePathData(data);
             Start();
         }

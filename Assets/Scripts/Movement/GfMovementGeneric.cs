@@ -8,6 +8,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     #region Variables
     [SerializeField]
     public bool CanFly;
+
     [SerializeField]
     protected bool m_useInterpolation;
     [SerializeField]
@@ -118,7 +119,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     static readonly protected Vector3 Zero3 = new Vector3(0, 0, 0);
     private readonly float TRACE_SKIN = 0.05F;
     private readonly float TRACEBIAS = 0.1F;
-    private readonly float DOWNPULL = 0.75F;
+    private readonly float DOWNPULL = 0.5F;
 
     protected const float OVERLAP_SKIN = 0.0f;
     private const float MIN_DISPLACEMENT = 0.00000001F; // min squared length of a displacement vector required for a Move() to proceed.
@@ -128,7 +129,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     protected readonly static Quaternion IDENTITY_QUAT = Quaternion.identity;
 
-    private static List<GfMovementTriggerable> m_triggerResults = new(2);
+    private readonly static List<GfMovementTriggerable> m_triggerResults = new(16);
 
     protected MgCollisionStruct m_currentGroundCollision;
 
@@ -263,12 +264,11 @@ public abstract class GfMovementGeneric : MonoBehaviour
             }
         }
 
-        UpdateSphericalOrientation(deltaTime, true);
+        UpdateSphericalOrientation(true);
 
         m_transform.position += movementThisFrame;
         m_lastRotation = m_transform.rotation;
     }
-
 
     public bool UpdatePhysics(float deltaTime, bool updateParentMovement = true, float timeUntilNextUpdate = -1, bool verifyCollisionArchetype = true, bool ignorePhysics = false)
     {
@@ -278,7 +278,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
             m_accumulatedTimefactor = m_previousLerpAlpha = 0;
 
             m_transform.position += m_interpolationMovement * correctionFactor;
-            Quaternion correctedRotation = GfTools.QuaternionFraction(m_interpolationRotation, correctionFactor);
             m_transform.rotation = m_desiredRotation * m_externalRotation;
             m_interpolationRotation = m_externalRotation = IDENTITY_QUAT;
         }
@@ -292,7 +291,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         m_timeOfLastPhysCheck = currentTime;
         m_lastPhysDeltaTime = deltaTime;
 
-        UpdateSphericalOrientation(deltaTime, false);
+        UpdateSphericalOrientation(false);
 
         if (updateParentMovement)
             m_transform.position += GetParentMovement(m_transform.position, deltaTime, currentTime);
@@ -309,8 +308,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
         bool foundCollisions = false;
         if (!ignorePhysics)
         {
-            Vector3 lastNormal = Zero3;
-
             Collider[] colliderbuffer = GfPhysics.GetCollidersArray();
             int layermask = GfPhysics.GetLayerMask(gameObject.layer);
 
@@ -353,7 +350,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         else
         {
             m_transform.position = position;
-            UpdateSphericalOrientation(deltaTime, false);
+            UpdateSphericalOrientation(false);
         }
 
 
@@ -368,7 +365,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
     {
         if (m_currentGroundCollision.collider)
         {
-            Vector3 lastNormal = Zero3;
             Ray ray = new(m_archetypeCollision.GetLocalBottomPoint() + position, -m_upVec);
             bool hitSomething = m_currentGroundCollision.collider.Raycast(ray, out RaycastHit hitInfo, DOWNPULL);
             if (hitSomething)
@@ -392,7 +388,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
         bool foundCollisions = false;
 
         Vector3 lastNormal = Zero3;
-        Vector3 addedDownpull = Zero3;
 
         /* OVERLAP SECTION START*/
         int numbumps = 0;
@@ -427,7 +422,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                     position.y += normal.y * pushback;
                     position.z += normal.z * pushback;
 
-                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherCollider, Zero3, false, m_archetypeCollision, true, true, position);
+                    MgCollisionStruct collision = new(normal, m_upVec, otherCollider, Zero3, false, m_archetypeCollision, true, true, position);
                     collision.isGrounded = CheckGround(ref collision);
                     m_isGrounded |= collision.isGrounded;
 
@@ -492,14 +487,14 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 {
                     foundCollisions = true;
                     position += normal * (mindistance + MIN_PUSHBACK_DEPTH);
-                    MgCollisionStruct collision = new MgCollisionStruct(normal, m_upVec, otherc, Zero3, false, m_archetypeCollision, true, true, position);
+                    MgCollisionStruct collision = new(normal, m_upVec, otherc, Zero3, false, m_archetypeCollision, true, true, position);
                     collision.isGrounded = CheckGround(ref collision);
                     m_isGrounded |= collision.isGrounded;
 
                     CallTriggerableEvents(collision.collider.gameObject, normal, Zero3, ref position);
                     collision.selfVelocity = m_velocity;
 
-                    DetermineGeometryType(ref m_velocity, ref lastNormal, ref collision, ref geometryclips);
+                    //DetermineGeometryType(ref m_velocity, m_velocity.normalized, ref lastNormal, ref collision, ref geometryclips);
 
                     MgOnCollision(ref collision);
                     position = collision.selfPosition;
@@ -536,7 +531,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 {
                     foundCollisions = true;
                     RaycastHit closestHit = tracesbuffer[_i0];
-                    MgCollisionStruct collision = new MgCollisionStruct(closestHit.normal, m_upVec, closestHit.collider, closestHit.point, true, m_archetypeCollision, true, false, position);
+                    MgCollisionStruct collision = new(closestHit.normal, m_upVec, closestHit.collider, closestHit.point, true, m_archetypeCollision, true, false, position);
 
                     collision.isGrounded = CheckGround(ref collision);
 
@@ -573,7 +568,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     private const float INV_180 = 0.005555555555f;
 
-    private void UpdateSphericalOrientation(float deltaTime, bool rotateOrientation)
+    private void UpdateSphericalOrientation(bool rotateOrientation)
     {
         if (m_parentSpherical.Value)
         {
@@ -590,6 +585,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
             {
                 m_rotationSmoothProgress = Mathf.SmoothDamp(m_rotationSmoothProgress, 1, ref m_refUpVecSmoothRot, m_rotationSmoothSeconds);
                 Vector3 auxVec = Vector3.Lerp(m_initialUpVec, m_upVec, m_rotationSmoothProgress);
+                GfTools.Normalize(ref auxVec);
                 upVecRotCorrection = Quaternion.FromToRotation(m_rotationUpVec, auxVec);
             }
             else
@@ -654,7 +650,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 GfTools.Normalize(ref crease);
                 GfTools.Project(ref velocity, crease);
             }
-            else //clip velocity
+            else
             {
                 if (collision.selfUpVecAngle > m_upperSlopeLimit)
                     GfTools.Minus3(ref velocity, m_slopeNormal * System.MathF.Max(0, Vector3.Dot(m_slopeNormal, velocity)));
@@ -682,6 +678,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         if (count > 0)
         {
             m_transform.position = position;
+
             for (int i = 0; i < count; ++i)
             {
                 m_triggerResults[i].MgOnTrigger(this);
@@ -798,8 +795,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     public void DetachFromParentTransform(bool addVelocity = true, uint priority = 0, bool overridePriority = false)
     {
-        Transform oldParent = m_parentTransform.Value;
-
         if (m_parentTransform.Value && m_parentTransform.SetValue(null, priority, overridePriority))
         {
             if (addVelocity)
@@ -855,6 +850,11 @@ public abstract class GfMovementGeneric : MonoBehaviour
         return changedGravity;
     }
 
+    protected void OnEnable()
+    {
+        ReturnToDefaultValues();
+    }
+
     public bool CopyGravityFrom(GfMovementGeneric movement, bool overridePriority = false)
     {
         Transform sphericalParent = movement.GetParentSpherical();//todo
@@ -866,6 +866,23 @@ public abstract class GfMovementGeneric : MonoBehaviour
             ret = SetUpVec(movement.GetUpVecRaw(), priority, overridePriority);
 
         return ret;
+    }
+
+    public void OrientToUpVecForced()
+    {
+        m_rotationSmoothProgress = 1;
+        UpdateSphericalOrientation(true);
+    }
+
+    public void ReturnToDefaultValues()
+    {
+        m_velocity = Vector3.zero;
+        SetParentTransform(null, 0, true);
+        DetachFromParentSpherical(0, UPDIR, true);
+        m_interpolateThisFrame = false;
+        m_interpolationMovement = Vector3.zero;
+        m_interpolationRotation = Quaternion.identity;
+        m_currentGroundCollision.collider = null;
     }
 
     public bool DetachFromParentSpherical(uint priority, Vector3 newUpVec, bool overridePriority = false)
@@ -880,17 +897,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
         }
 
         return changedParent;
-    }
-
-    public void ReturnToDefaultValues()
-    {
-        m_velocity = Vector3.zero;
-        SetParentTransform(null, 0, true);
-        DetachFromParentSpherical(0, UPDIR, true);
-        m_interpolateThisFrame = false;
-        m_interpolationMovement = Vector3.zero;
-        m_interpolationRotation = Quaternion.identity;
-        m_currentGroundCollision.collider = null;
     }
 
     public bool SetUpVec(Vector3 upVec, uint priority = 0, bool overridePriority = false)
@@ -992,6 +998,11 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public Quaternion GetCurrentRotation()
     {
         return m_currentRotation;
+    }
+
+    public void SetCurrentRotation(Quaternion currentRotation)
+    {
+        m_currentRotation = currentRotation;
     }
 
     public Vector3 GetVelocity()
