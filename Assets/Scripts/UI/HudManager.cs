@@ -44,12 +44,6 @@ public class HudManager : MonoBehaviour
     [SerializeField]
     private GameObject m_gameUiElements = null;
 
-    [SerializeField]
-    private Slider m_sliderCharge = null;
-
-    [SerializeField]
-    private Text m_chargeText = null;
-
     protected List<WeaponGeneric> m_weapons = null;
 
     private List<ExperienceSliderWeapon> m_weaponSliders = null;
@@ -70,6 +64,16 @@ public class HudManager : MonoBehaviour
 
     }
 
+    public void Update()
+    {
+        if (null != m_weapons && m_weapons.Count > 0)
+        {
+            UpdateWeaponLevelSlidersValues(m_weapons);
+        }
+    }
+
+    public static List<WeaponGeneric> GetWeapons() { return Instance.m_weapons; }
+
     protected void OnLevelEnd()
     {
         ToggleGameUiElements(false);
@@ -79,21 +83,6 @@ public class HudManager : MonoBehaviour
     void Start()
     {
         GfUiTools.CrossFadeAlpha(0, 0, true);
-        m_sliderCharge.value = 0;
-        m_chargeText.text = "0";
-    }
-
-    void Update()
-    {
-        if (null != m_weapons && m_weapons.Count > 0)
-        {
-            WeaponLevels weapon = m_weapons[0] as WeaponLevels;
-            if (weapon)
-            {
-                m_sliderCharge.value = weapon.NextLevelProgress(1);
-                m_chargeText.text = weapon.CurrentLevel(1).ToString();
-            }
-        }
     }
 
     void OnDestroy()
@@ -157,7 +146,7 @@ public class HudManager : MonoBehaviour
             var weaponSlider = m_weaponSliders[i];
             weaponSlider.SetWeaponCount(weapons.Count);
 
-            WeaponLevels weapon = weapons[i] as WeaponLevels;
+            WeaponChargeLevels weapon = weapons[i] as WeaponChargeLevels;
             if (weapon)
             {
                 //Debug.Log("yeee we are level" + i);

@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using System;
 using MEC;
+using UnityEditor.ShaderGraph.Internal;
 
 public class GfServerManager : NetworkBehaviour
 {
@@ -20,6 +21,10 @@ public class GfServerManager : NetworkBehaviour
     public Action<ulong> OnPlayerUnready = null;
 
     protected NetworkVariable<bool> m_hostReady = new(false);
+
+    protected NetworkVariable<float> m_timeScale = new(1);
+
+    protected NetworkList<float> m_characterTimeScales = new();
 
     public static bool HostReady
     {
@@ -51,6 +56,9 @@ public class GfServerManager : NetworkBehaviour
     {
         if (HasAuthority)
         {
+            for (int i = 0; i < HostilityManager.GetNumTypes(); ++i)
+                m_characterTimeScales.Add(1);
+
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
             ObjectVisibilityManager.AddExceptionObject(NetworkObject);
             if (!NetworkObject.IsSpawned)
@@ -111,6 +119,8 @@ public class GfServerManager : NetworkBehaviour
     protected new void OnDestroy()
     {
         Instance = null;
+        SetTimeScale(1);
+        m_characterTimeScales.Dispose();
     }
 
     public static bool GetPlayerIsReady(NetworkClient player)
@@ -167,5 +177,89 @@ public class GfServerManager : NetworkBehaviour
             Instance.m_sceneBuildIndex.Value = index;
     }
 
+    public static void SetTimeScale(float timeScale, bool setAll = true, float smoothingTime = 1)
+    {
+        if (HasAuthority && Instance)
+        {
+            if (smoothingTime <= 0)
+            {
+                Instance.m_timeScale.Value = timeScale;
+                Time.timeScale = timeScale;
+            }
+            else
+            {
+                Timing.RunCoroutine(Instance._SetMainTimeScale(timeScale, smoothingTime));
+            }
 
+            if (setAll)
+            {
+                int countTypes = Instance.m_characterTimeScales.Count;
+                for (int i = 0; i < countTypes; ++i)
+                    SetTimeScale(timeScale, (CharacterTypes)i, smoothingTime);
+            }
+        }
+    }
+
+    public static void SetTimeScale(float timeScale, CharacterTypes characterType, float smoothingTime = 1)
+    {
+        if (HasAuthority)
+        {
+            if (smoothingTime <= 0)
+            {
+                Instance.m_characterTimeScales[(int)characterType] = timeScale;
+            }
+            else
+            {
+                Timing.RunCoroutine(Instance._SetTimeScale(timeScale, characterType, smoothingTime));
+            }
+        }
+    }
+
+    public IEnumerator<float> _SetTimeScale(float targetScale, CharacterTypes characterType, float smoothTime)
+    {
+
+        int typeIndex = (int)characterType;
+        float currentScale = m_characterTimeScales[typeIndex];
+        float refSmooth = 0;
+
+        while (null != m_characterTimeScales && MathF.Abs(currentScale - targetScale) > 0.001f && m_characterTimeScales[typeIndex] == currentScale) //stop coroutine if alpha is modified by somebody else
+        {
+            currentScale = Mathf.SmoothDamp(currentScale, targetScale, ref refSmooth, smoothTime);
+            m_characterTimeScales[typeIndex] = currentScale;
+            yield return Timing.WaitForOneFrame;
+        }
+
+        if (null != m_characterTimeScales && m_characterTimeScales[typeIndex] == currentScale)
+            m_characterTimeScales[typeIndex] = targetScale;
+    }
+
+    public IEnumerator<float> _SetMainTimeScale(float targetScale, float smoothTime)
+    {
+        float currentScale = m_timeScale.Value;
+        float refSmooth = 0;
+        Time.timeScale = currentScale;
+
+        while (null != m_characterTimeScales && MathF.Abs(currentScale - targetScale) > 0.001f && m_timeScale.Value == currentScale) //stop coroutine if alpha is modified by somebody else
+        {
+            currentScale = Mathf.SmoothDamp(currentScale, targetScale, ref refSmooth, smoothTime);
+            m_timeScale.Value = currentScale;
+            Time.timeScale = currentScale;
+            yield return Timing.WaitForOneFrame;
+        }
+
+        if (null != m_characterTimeScales && m_timeScale.Value == currentScale)
+        {
+            m_timeScale.Value = targetScale;
+            Time.timeScale = m_timeScale.Value;
+        }
+    }
+
+    public static float GetDeltaTimeCoef(CharacterTypes characterType)
+    {
+        return Instance.m_characterTimeScales[(int)characterType] / Instance.m_timeScale.Value;
+    }
+
+    public static float GetTimeScale() { return Instance.m_timeScale.Value; }
+
+    public static float GetTimeScale(CharacterTypes characterType) { return Instance.m_characterTimeScales[(int)characterType]; }
 }

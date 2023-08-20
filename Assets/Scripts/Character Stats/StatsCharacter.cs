@@ -98,6 +98,8 @@ public abstract class StatsCharacter : NetworkBehaviour
         return m_threatLevel;
     }
 
+    public virtual void EraseAllBullets(StatsCharacter characterResponsible) { }
+
     protected void OnEnable()
     {
         if (m_initialised)
@@ -223,6 +225,8 @@ public abstract class StatsCharacter : NetworkBehaviour
         else
             InternalKill(0, false, -1, -1, false);
     }
+
+    public virtual float GetDeltaTimeCoef() { return GfServerManager.GetDeltaTimeCoef(m_characterType.Value); }
 
     public virtual bool IsDead()
     {

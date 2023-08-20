@@ -396,6 +396,7 @@ public class LoadoutManager : NetworkBehaviour
     {
         if (null != m_loadouts && 0 < m_loadouts.Count)
         {
+            GetPointsFromWeapons();
             m_currentLoadOutIndex = GfTools.Mod(indexLoadout, m_loadouts.Count);
 
             int i = m_weapons.Count;
@@ -437,7 +438,7 @@ public class LoadoutManager : NetworkBehaviour
             }
 
             //refresh the levelweapons
-            RefreshExpForWeapons();
+            RefreshPointsForWeapons();
         }
     }
 
@@ -530,7 +531,7 @@ public class LoadoutManager : NetworkBehaviour
         }
     }*/
 
-    private void RefreshExpForWeapons()
+    private void RefreshPointsForWeapons()
     {
         List<WeaponData> loadOut = m_loadouts[m_currentLoadOutIndex];
 
@@ -543,6 +544,25 @@ public class LoadoutManager : NetworkBehaviour
             for (int i = 0; i < count; ++i)
             {
                 float currentExp = m_weapons[numWeapon].SetPoints((WeaponPointsTypes)i, loadOut[numWeapon].GetPoints(i));
+                loadOut[numWeapon].SetPoints(i, currentExp);
+            }
+        }
+
+        if (m_hudManager) m_hudManager.UpdateWeaponLevelSlidersNumber(m_weapons);
+    }
+
+    private void GetPointsFromWeapons()
+    {
+        List<WeaponData> loadOut = m_loadouts[m_currentLoadOutIndex];
+        int numWeapon = m_weapons.Count;
+        //Debug.Log("Switched weapon, the weapon count is " + numWeapon);
+
+        while (--numWeapon >= 0)
+        {
+            int count = (int)WeaponPointsTypes.NUMBER_OF_TYPES;
+            for (int i = 0; i < count; ++i)
+            {
+                float currentExp = m_weapons[numWeapon].GetPoints((WeaponPointsTypes)i);
                 loadOut[numWeapon].SetPoints(i, currentExp);
             }
         }
@@ -615,7 +635,7 @@ public class LoadoutManager : NetworkBehaviour
 
             while (--numWeapon >= 0)
             {
-                float currentExp = m_weapons[numWeapon].SetPoints(type, points + loadOut[numWeapon].GetPoints((int)type));
+                float currentExp = m_weapons[numWeapon].AddPoints(type, points);
                 loadOut[numWeapon].SetPoints((int)type, currentExp);
             }
 

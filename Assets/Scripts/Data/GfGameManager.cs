@@ -174,6 +174,8 @@ public class GfGameManager : MonoBehaviour
         }
     }
 
+    public static Camera Camera { get { return CameraController.Instance.Camera; } }
+
     public static bool StartGameAutomatically
     {
         get

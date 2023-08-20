@@ -314,7 +314,7 @@ MonoBehaviour:
   m_movementParent: {fileID: 432613321654859549}
   m_target: {fileID: 0}
   m_eraseParticlesAfterOwnerKilled: 1
-  m_particlesEraseFromCenterSpeed: 25
+  m_particlesEraseFromCenterSpeed: 30
   m_damageSound:
     Clip: {fileID: 8300000, guid: 14c31c6cf8f59fd43883ea2d75667ec2, type: 3}
     MixerType: 6
@@ -1636,7 +1636,7 @@ ParticleSystem:
         ctime6: 0
         ctime7: 0
         atime0: 0
-        atime1: 54741
+        atime1: 63608
         atime2: 65535
         atime3: 65535
         atime4: 0
@@ -1644,7 +1644,7 @@ ParticleSystem:
         atime6: 0
         atime7: 0
         m_Mode: 0
-        m_ColorSpace: -1
+        m_ColorSpace: 0
         m_NumColorKeys: 5
         m_NumAlphaKeys: 3
       minGradient:

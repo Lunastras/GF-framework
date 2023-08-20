@@ -32,6 +32,12 @@ public abstract class WeaponParticle : WeaponGeneric
         return ps;
     }
 
+    public override void EraseAllBullets(StatsCharacter characterResponsible)
+    {
+        base.EraseAllBullets(characterResponsible);
+        ParticleEraser.EraseParticlesFromCenter(m_particleSystem, characterResponsible.transform.position, m_particlesEraseFromCenterSpeed);
+    }
+
     protected void OnOwnerKilled(StatsCharacter character, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
         if (m_eraseParticlesAfterOwnerKilled)

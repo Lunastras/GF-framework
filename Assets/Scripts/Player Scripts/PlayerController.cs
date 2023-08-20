@@ -12,6 +12,9 @@ public class PlayerController : NetworkBehaviour
     private GfMovementGeneric m_movement;
 
     [SerializeField]
+    private StatsCharacter m_statsCharacter;
+
+    [SerializeField]
     //misc
     private LoadoutManager m_loadoutManager;
 
@@ -39,7 +42,9 @@ public class PlayerController : NetworkBehaviour
 
     private float m_timeUntilPhysChecks = 0;
 
-    private bool m_isFiring = false;
+    private bool m_fire1WasPressed = false;
+    private bool m_fire2WasPressed = false;
+
     //misc
     private Transform m_playerCamera;
 
@@ -62,6 +67,8 @@ public class PlayerController : NetworkBehaviour
                 //  if (null == m_movement)
                 // Debug.LogError("ERROR: The gameobject does not have a MovementGeneric component! Please add on to the object");
             }
+
+            if (null == m_statsCharacter) m_statsCharacter = GetComponent<StatsCharacter>();
 
             if (null == m_cameraController)
             {
@@ -130,16 +137,14 @@ public class PlayerController : NetworkBehaviour
     {
         if (m_weaponFiring)
         {
-            if (m_lastFireType != m_fireType.Value && m_lastFireType != FireType.NONE)
-            {
-                m_isFiring = false;
-                m_weaponFiring.ReleaseFire(m_lastFireType);
-            }
-
             if (m_fireType.Value != FireType.NONE)
             {
-                m_isFiring = true;
                 m_weaponFiring.Fire(m_fireType.Value);
+            }
+
+            if (m_lastFireType != m_fireType.Value && m_lastFireType != FireType.NONE)
+            {
+                m_weaponFiring.ReleaseFire(m_lastFireType);
             }
         }
 
@@ -170,7 +175,7 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsOwner && m_fixedUpdatePhysics && !m_usesRigidBody)
         {
-            float physDelta = Time.fixedDeltaTime;
+            float physDelta = Time.fixedDeltaTime * m_statsCharacter.GetDeltaTimeCoef();
             GetInputs(physDelta);
 
             m_movement.UpdatePhysics(physDelta, true, physDelta); //actually the current deltatime   
@@ -202,25 +207,42 @@ public class PlayerController : NetworkBehaviour
         }
 
         FireType finalType = FireType.NONE;
-        if (auxFlagFire1) finalType = FireType.MAIN;
-        if (auxFlagFire2) finalType = FireType.SECONDARY;
+
+        if (auxFlagFire2 && (!auxFlagFire1 || !m_fire2WasPressed))
+        {
+            finalType = FireType.SECONDARY;
+        }
+
+        if (auxFlagFire1 && (!auxFlagFire2 || !m_fire1WasPressed))
+        {
+            finalType = FireType.MAIN;
+        }
+
+        if (finalType == FireType.NONE && (auxFlagFire1 || auxFlagFire2))
+            finalType = m_lastFireType;
+
         m_fireType.Value = finalType;
 
         m_flagDash |= auxFlagDash; // used the | operator to keep the flag true until the next phys update call
         m_flagJump |= auxFlagJump;
         m_movDir = auxMovDir;
 
-
         m_movement.FlagDash |= m_flagDash;
         m_movement.FlagJump |= m_flagJump;
         m_movement.SetMovementDir(m_movDir);
+
+        m_fire1WasPressed = auxFlagFire1;
+        m_fire2WasPressed = auxFlagFire2;
     }
 
     void LateUpdate()
     {
+        // GfServerManager.SetTimeScale(0.1f, true, -1);
+        // GfServerManager.SetTimeScale(1, m_statsCharacter.GetCharacterType(), -1);
+
         if (IsOwner)
         {
-            float deltaTime = Time.deltaTime;
+            float deltaTime = Time.deltaTime * m_statsCharacter.GetDeltaTimeCoef();
             m_timeUntillCanScroll -= deltaTime;
 
             GetInputs(deltaTime);

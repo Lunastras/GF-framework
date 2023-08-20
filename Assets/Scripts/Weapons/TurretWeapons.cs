@@ -21,7 +21,7 @@ public class TurretWeapons : NetworkBehaviour
 
     private int m_currentPhaseIndex = 0;
 
-    private bool m_firing = false;
+    private HashSet<int> m_phasesPlaying = null;
 
     private float m_timeUntilPlay = 0;
     private int m_requestedPhase = 0;
@@ -44,6 +44,7 @@ public class TurretWeapons : NetworkBehaviour
     void Start()
     {
         if (m_statsCharacter == null) m_statsCharacter = GetComponent<StatsCharacter>();
+        m_phasesPlaying = new(m_turretPhases.Length);
 
         for (int i = 0; i < m_turretPhases.Length; ++i)
         {
@@ -88,7 +89,7 @@ public class TurretWeapons : NetworkBehaviour
             }
             else
             {
-                if (m_autoPlay && m_firing)
+                if (m_autoPlay && 0 < m_phasesPlaying.Count)
                 {
                     if (!IsFiring(true))
                     { //phase ended
@@ -114,18 +115,69 @@ public class TurretWeapons : NetworkBehaviour
         }
     }
 
-    public void Stop(bool killBullets)
+    public void Stop(bool killBullets, bool allPhases = true)
     {
-        if (m_firing && m_turretPhases.Length > 0)
+        if (GfServerManager.HasAuthority)
         {
-            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
+            InternalStop(-1, killBullets, allPhases);
+            StopClientRpc(-1, killBullets, allPhases);
+        }
+        else if (!IsSpawned)
+        {
+            InternalStop(-1, killBullets, allPhases);
+        }
+    }
+
+    public void Stop(int phaseToStop, bool killBullets)
+    {
+        if (GfServerManager.HasAuthority)
+        {
+            InternalStop(phaseToStop, killBullets, false);
+            StopClientRpc(phaseToStop, killBullets, false);
+        }
+        else if (!IsSpawned)
+        {
+            InternalStop(phaseToStop, killBullets, false);
+        }
+    }
+
+    [ClientRpc]
+    protected void StopClientRpc(int phaseToStop, bool killBullets, bool allPhases)
+    {
+        if (!NetworkManager.IsHost && !NetworkManager.IsServer) InternalStop(phaseToStop, killBullets, allPhases);
+    }
+
+    protected void InternalStop(int phaseToStop, bool killBullets, bool allPhases)
+    {
+        if (allPhases)
+        {
+            for (int i = 0; i < m_turretPhases.Length; ++i)
+            {
+                InternalStop(i, killBullets);
+            }
+        }
+        else
+        {
+            if (phaseToStop == -1)
+                phaseToStop = m_currentPhaseIndex;
+
+            InternalStop(phaseToStop, killBullets);
+        }
+    }
+
+    protected void InternalStop(int phaseToStop, bool killBullets)
+    {
+        if (null != m_phasesPlaying && m_phasesPlaying.Count > 0 && m_turretPhases.Length > 0)
+        {
+            WeaponGeneric[] systems = m_turretPhases[phaseToStop].weapons;
 
             for (int i = systems.Length - 1; i >= 0; --i)
                 systems[i].StopFiring(killBullets);
 
-            m_firing = false;
+            m_phasesPlaying.Remove(phaseToStop);
         }
     }
+
 
     public bool IsFiring(bool onlyCurentPhase = false)
     {
@@ -198,7 +250,7 @@ public class TurretWeapons : NetworkBehaviour
 
     public void SetFireType(FireType fireType)
     {
-        if (m_firing && m_fireType != fireType)
+        if (m_phasesPlaying.Count > 0 && m_fireType != fireType)
         {
             m_fireType = fireType;
             Play(true, m_currentPhaseIndex);
@@ -210,12 +262,6 @@ public class TurretWeapons : NetworkBehaviour
     public FireType GetFireType()
     {
         return m_fireType;
-    }
-
-    public void SetCurrentPhase(int phase)
-    {
-        m_currentPhaseIndex = phase;
-        if (m_firing) Play(false, phase);
     }
 
     public int GetCurrentPhase()
@@ -270,86 +316,45 @@ public class TurretWeapons : NetworkBehaviour
         }
     }
 
-
-    /*
-
-    public void Pause(float duration = float.MaxValue)
-    {
-        if (duration > 0)
-        {
-            m_timeUntilUnpause = duration;
-
-            if (m_turretPhases.Length > 0)
-            {
-                WeaponParticle[] systems = m_turretPhases[m_currentPhaseIndex].weaponParticles;
-
-                foreach (ParticleSingleHit system in systems)
-                {
-                    system.m_particleSystem.Pause(true);
-                }
-            }
-        }
-    }
-
-    public void UnPause()
-    {
-        if (m_timeUntilUnpause > 0 && m_turretPhases.Length > 0)
-        {
-            m_timeUntilUnpause = 0;
-
-            ParticleSingleHit[] systems = m_turretPhases[m_currentPhaseIndex].weaponParticles;
-            int length = systems.Length;
-            for (int i = 0; i < length; ++i)
-                systems[i].m_particleSystem.Play();
-        }
-    }*/
-
-    /*
-    public void Play(bool forcePlay, float delay, int phase)
-    {
-        m_currentPhaseIndex = phase;
-        m_timeUntilPlay = delay;
-        m_requestedPhase = phase;
-        m_delayForcePlay = forcePlay;
-    }*/
-
-    public void Play(bool forcePlay = false, int phase = -1)
+    public void Play(bool forcePlay = false, int phase = -1, bool stopPlayingPhases = true)
     {
         if (GfServerManager.HasAuthority)
         {
-            InternalPlay(forcePlay, phase);
-            PlayClientRpc(forcePlay, phase);
+            InternalPlay(forcePlay, phase, stopPlayingPhases);
+            PlayClientRpc(forcePlay, phase, stopPlayingPhases);
         }
         else if (!IsSpawned)
         {
-            InternalPlay(forcePlay, phase);
+            InternalPlay(forcePlay, phase, stopPlayingPhases);
         }
     }
 
     [ClientRpc]
-    protected void PlayClientRpc(bool forcePlay, int phase)
+    protected void PlayClientRpc(bool forcePlay, int phase, bool stopPlayingPhases)
     {
-        if (!NetworkManager.IsHost && !NetworkManager.IsServer) InternalPlay(forcePlay, phase);
+        if (!NetworkManager.IsHost && !NetworkManager.IsServer) InternalPlay(forcePlay, phase, stopPlayingPhases);
     }
 
-    protected void InternalPlay(bool forcePlay, int phase)
+    protected void InternalPlay(bool forcePlay, int phase, bool stopPlayingPhases)
     {
         bool phaseChanged = phase != m_currentPhaseIndex;
         if (m_turretPhases.Length > 0)
             phase %= m_turretPhases.Length;
 
-        m_firing &= !forcePlay;
+        bool phaseAlreadyPlaying = m_phasesPlaying.Contains(phase);
 
-        if (phaseChanged)
+        phaseAlreadyPlaying &= !forcePlay;
+
+        if (phaseChanged && stopPlayingPhases)
         {
             Stop(false);
-            m_firing = false;
+            phaseAlreadyPlaying = false;
         }
 
         m_currentPhaseIndex = phase;
-        if (!m_firing && m_turretPhases.Length > 0)
+        if (!phaseAlreadyPlaying && m_turretPhases.Length > 0)
         {
-            m_firing = true;
+            m_phasesPlaying.Add(phase);
             WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
 
             for (int i = 0; i < systems.Length; ++i)
@@ -410,6 +415,18 @@ public class TurretWeapons : NetworkBehaviour
         Stop(killBullets);
         obj.transform.position = DESTROY_POSITION;
         obj.transform.parent = null;
+    }
+
+    public void EraseAllBullets(StatsCharacter characterResponsible)
+    {
+        for (int i = 0; i < m_turretPhases.Length; ++i)
+        {
+            WeaponGeneric[] systems = m_turretPhases[i].weapons;
+            int length = systems.Length;
+
+            for (int j = 0; j < length; ++j)
+                systems[j].EraseAllBullets(characterResponsible);
+        }
     }
 
     public virtual PriorityValue<float> GetSpeedMultiplier() { return m_speedMultiplier; }

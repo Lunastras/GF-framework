@@ -61,6 +61,8 @@ public abstract class WeaponGeneric : DamageSource
         m_damageMultiplier = multiplier;
     }
 
+    public virtual void EraseAllBullets(StatsCharacter characterResponsible) { }
+
     public virtual float GetSpeedMultiplier() { return m_speedMultiplier; }
     public virtual void SetSpeedMultiplier(float multiplier)
     {

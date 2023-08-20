@@ -69,7 +69,7 @@ public class OdamaBehaviour : MonoBehaviour
 
         if (parentMovement)
         {
-            m_transform.rotation = parentMovement.GetCurrentRotation();
+            //m_shadowProjector.transform.rotation = parentMovement.GetCurrentRotation();
             if (m_shadowProjector) m_shadowProjector.m_parentMovement = parentMovement;
             if (m_followCameraScript) m_followCameraScript.m_defaultUpvec = parentMovement.GetUpvecRotation();
         }

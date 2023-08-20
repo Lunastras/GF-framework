@@ -162,8 +162,6 @@ public class StatsPlayer : StatsCharacter
     protected override void Deinit()
     {
         base.Deinit();
-        Debug.Log("UNSUBBED");
-
         CheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;
         GfLevelManager.OnLevelEnd -= OnLevelEnd;
     }
@@ -171,7 +169,6 @@ public class StatsPlayer : StatsCharacter
     protected override void Init()
     {
         base.Init();
-        Debug.Log("I subscribbed");
         CheckpointManager.OnHardCheckpoint += OnHardCheckpoint;
     }
 

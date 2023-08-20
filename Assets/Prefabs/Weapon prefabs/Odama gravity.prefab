@@ -58,6 +58,7 @@ MonoBehaviour:
   m_acceleration: 0
   m_deacceleration: 0
   m_maxSpeed: 1e+15
+  m_minimumSpeed: 0
   m_maxSpeedHoming: 1e+15
   m_targetRadius: 0.4
   m_gravity: 25
@@ -104,7 +105,7 @@ MonoBehaviour:
     MaxDistance: 500
     SpatialBlend: 0
     MaxInstances: 12
-  m_weapon: {fileID: 4752404752914725046}
+  m_weapon: {fileID: 0}
   m_highestIndexAllowed: 6
 --- !u!199 &7744653069361825300
 ParticleSystemRenderer:
@@ -191,7 +192,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  ParentDamageSource: {fileID: 4752404752914725046}
+  ParentDamageSource: {fileID: 4342309028675492298}
   m_damage: 6
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
@@ -5054,7 +5055,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3395991133157087371}
-  - component: {fileID: 4752404752914725046}
+  - component: {fileID: 4342309028675492298}
   - component: {fileID: -7948004761801618205}
   - component: {fileID: 3395991133157087367}
   - component: {fileID: 1618777149106552399}
@@ -5086,7 +5087,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4752404752914725046
+--- !u!114 &4342309028675492298
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5095,7 +5096,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3395991133157087368}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8620df240f161b4bbcf58a8f2dca513, type: 3}
+  m_Script: {fileID: 11500000, guid: 644b4045c0cc0fa44875757a203ccfcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
@@ -5105,18 +5106,19 @@ MonoBehaviour:
   m_target: {fileID: 0}
   m_audioSource: {fileID: 0}
   m_turret: {fileID: 0}
-  m_chargeBeginSound: []
-  m_chargeEndSound: []
-  m_levelFireSounds: []
-  m_levelReleaseFireSounds: []
+  m_chargePointsSpeed: 50
+  m_dischargePointsSpeed: 50
   m_expRequiredForLevels:
   - array:
     - 50
     - 100
   - array:
-    - 40
-    - 120
-  m_chargePointsSpeed: 10
+    - 50
+    - 100
+  m_chargeBeginSound: []
+  m_chargeEndSound: []
+  m_levelFireSounds: []
+  m_levelReleaseFireSounds: []
 --- !u!114 &-7948004761801618205
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5343,6 +5345,7 @@ MonoBehaviour:
   m_acceleration: 0
   m_deacceleration: 0
   m_maxSpeed: 1e+15
+  m_minimumSpeed: 0
   m_maxSpeedHoming: 1e+15
   m_targetRadius: 0.4
   m_gravity: 25
@@ -5389,7 +5392,7 @@ MonoBehaviour:
     MaxDistance: 500
     SpatialBlend: 0
     MaxInstances: 12
-  m_weapon: {fileID: 4752404752914725046}
+  m_weapon: {fileID: 0}
   m_highestIndexAllowed: 6
 --- !u!199 &1010220587024413334
 ParticleSystemRenderer:
@@ -5476,7 +5479,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  ParentDamageSource: {fileID: 4752404752914725046}
+  ParentDamageSource: {fileID: 4342309028675492298}
   m_damage: 6
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
@@ -10472,6 +10475,7 @@ MonoBehaviour:
   m_acceleration: 0
   m_deacceleration: 0
   m_maxSpeed: 1e+15
+  m_minimumSpeed: 0
   m_maxSpeedHoming: 1e+15
   m_targetRadius: 0.4
   m_gravity: 25
@@ -10518,7 +10522,7 @@ MonoBehaviour:
     MaxDistance: 500
     SpatialBlend: 0
     MaxInstances: 12
-  m_weapon: {fileID: 4752404752914725046}
+  m_weapon: {fileID: 0}
   m_highestIndexAllowed: 6
 --- !u!199 &5926700302337153296
 ParticleSystemRenderer:
@@ -10605,7 +10609,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
-  ParentDamageSource: {fileID: 4752404752914725046}
+  ParentDamageSource: {fileID: 4342309028675492298}
   m_damage: 6
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}

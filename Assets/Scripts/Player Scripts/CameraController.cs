@@ -73,6 +73,8 @@ public class CameraController : MonoBehaviour
 
     public static CameraController Instance;
 
+    public Camera Camera { get { return m_camera; } }
+
     public Vector3 m_upvec = Vector3.up;
 
     private static readonly Vector3 UPDIR = Vector3.up;

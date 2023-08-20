@@ -29,6 +29,8 @@ public class FiringWeapons : NetworkBehaviour
 
     private List<WeaponGeneric> m_weapons = null;
 
+    protected float m_timeUntilPhys = 0;
+
     public void SetAimTransform(Transform transform)
     {
         m_aimTransform = transform;
@@ -41,7 +43,7 @@ public class FiringWeapons : NetworkBehaviour
 
     private RaycastHit m_lastRayHit;
 
-    private double m_timeOflastCheck = 0;
+    private double m_timeUntilNextCheck = 0;
 
     protected NetworkVariable<Vector3> m_lastPoint = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     protected NetworkVariable<Vector3> m_lastNormal = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -81,19 +83,16 @@ public class FiringWeapons : NetworkBehaviour
         return m_weapons;
     }
 
-    // Update is called once per frame
-    public void Fire(FireType fireType = FireType.MAIN)
+    public void FixedUpdate()
     {
-        IsFiring = true;
-
         if (IsOwner)
         {
             Vector3 fireTargetDir = m_aimTransform.forward;
-            double currentTime = Time.timeAsDouble;
+            m_timeUntilNextCheck -= Time.deltaTime;
 
-            if ((currentTime - m_timeOflastCheck) >= m_distanceUpdateInterval)
+            if (m_timeUntilNextCheck <= 0)
             {
-                m_timeOflastCheck = Time.timeAsDouble;
+                m_timeUntilNextCheck = m_distanceUpdateInterval;
 
                 RaycastHit[] rayHits = GfPhysics.GetRaycastHits();
                 Ray ray = new(m_aimTransform.position, fireTargetDir);
@@ -132,10 +131,20 @@ public class FiringWeapons : NetworkBehaviour
             }
 
             m_lastRayHit.point = m_aimTransform.position + fireTargetDir * m_lastRayHit.distance;
-
             m_lastPoint.Value = m_lastRayHit.point;
             m_lastNormal.Value = m_lastRayHit.normal;
         }
+
+        for (int i = 0; null != m_weapons && i < m_weapons.Count; ++i)
+        {
+            m_weapons[i].transform.rotation = Quaternion.LookRotation((m_lastRayHit.point - m_weapons[i].transform.position).normalized);
+        }
+    }
+
+    // Update is called once per frame
+    public void Fire(FireType fireType = FireType.MAIN)
+    {
+        IsFiring = true;
 
         FireHit hit = new FireHit
         {

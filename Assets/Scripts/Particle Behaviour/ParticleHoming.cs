@@ -26,6 +26,9 @@ public class ParticleHoming : JobChild
     protected float m_maxSpeed = 50;
 
     [SerializeField]
+    protected float m_minimumSpeed = 0;
+
+    [SerializeField]
     protected float m_maxSpeedHoming = 100;
 
     [SerializeField]
@@ -165,7 +168,7 @@ public class ParticleHoming : JobChild
                     targetPositions = m_effectiveTargetPositions.AsReadOnly();
                 }
 
-                ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPositions, timeSinceLastCheck, m_maxSpeed, m_maxSpeedHoming
+                ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPositions, timeSinceLastCheck, m_maxSpeed, m_minimumSpeed, m_maxSpeedHoming
                 , m_acceleration, m_gravity, m_deacceleration, m_drag, m_targetRadius * m_targetRadius, gravity3, null != m_sphericalParent);
 
                 handle = jobStruct.Schedule(m_numActiveParticles, min(16, m_numActiveParticles));
@@ -304,6 +307,8 @@ public struct ParticleHomingJob : IJobParallelFor
     public float m_deacceleration;
     public float m_drag;
     public float m_targetRadiusSquared;
+
+    public float m_minimumSpeed;
     float3 m_gravity3;
 
     float m_gravity;
@@ -313,7 +318,7 @@ public struct ParticleHomingJob : IJobParallelFor
     NativeArray<float3>.ReadOnly m_targetPositions;
 
     public ParticleHomingJob(NativeArray<ParticleSystem.Particle> particleList, NativeArray<float3>.ReadOnly targetPositions
-    , float deltaTime, float maxSpeed, float maxSpeedHoming, float acceleration, float gravity, float deacceleration
+    , float deltaTime, float maxSpeed, float minimumSpeed, float maxSpeedHoming, float acceleration, float gravity, float deacceleration
     , float drag, float targetRadiusSquared, float3 gravity3, bool hasParent)
     {
         m_targetPositions = targetPositions;
@@ -328,6 +333,7 @@ public struct ParticleHomingJob : IJobParallelFor
         m_drag = drag;
         m_gravity = gravity;
         m_maxSpeedHoming = maxSpeedHoming;
+        m_minimumSpeed = minimumSpeed;
     }
 
     public void Execute(int i)
@@ -377,7 +383,6 @@ public struct ParticleHomingJob : IJobParallelFor
         if (movDirLengthSq > 0.00001F)
             movDir /= sqrt(movDirLengthSq);
 
-
         float dotMovementVelDir = 0;
         if (currentSpeed > 0.00001F)
             dotMovementVelDir = dot(movDir, velocity / currentSpeed);
@@ -396,6 +401,9 @@ public struct ParticleHomingJob : IJobParallelFor
 
         velocity += movDir * accMagn;
         velocity -= unwantedVelocity * deaccMagn;
+
+        float velocityLength = length(velocity);
+        velocity = velocity / velocityLength * max(velocityLength, m_minimumSpeed);
 
         particle.velocity = velocity;
         m_particleList[i] = particle;

@@ -136,6 +136,26 @@ public class HostilityManager : MonoBehaviour
         return GetEnemiesList((int)self, (int)enemy);
     }
 
+    public static void EraseAllEnemyBullets(StatsCharacter characterResponsible)
+    {
+        for (int i = 0; i < (int)CharacterTypes.NUM_CHARACTER_TYPES; ++i)
+        {
+            if (HostilityManager.EnemyWith(characterResponsible.GetCharacterType(), (CharacterTypes)i))
+            {
+                HostilityManager.EraseAllBullets((CharacterTypes)i, characterResponsible);
+            }
+        }
+    }
+
+    public static void EraseAllBullets(CharacterTypes type, StatsCharacter characterResponsible)
+    {
+        var list = Instance.m_instantiatedCharacters[(int)type];
+        for (int i = 0; i < list.Count; ++i)
+        {
+            list[i].EraseAllBullets(characterResponsible);
+        }
+    }
+
     public static List<StatsCharacter> GetEnemiesList(int self, int enemy)
     {
         if (Instance.m_typesEnemiesWith[self].array[enemy])

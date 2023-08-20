@@ -416,6 +416,11 @@ public class GfLevelManager : MonoBehaviour
         return Instance.m_player;
     }
 
+    public static Vector3 GetPlayerPositionOnScreen()
+    {
+        return GfGameManager.Camera.WorldToScreenPoint(Instance.m_player.position);
+    }
+
     public static void SetPlayer(Transform player)
     {
         Instance.m_player = player;

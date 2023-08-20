@@ -131,7 +131,6 @@ public class StatsNpc : StatsCharacter
         m_npcController.SetDestination(null);
         m_turret.Stop(true);
         m_isDead = checkpointStateNpc.IsDead;
-        m_turret.SetCurrentPhase(0);
         m_movement.SetVelocity(checkpointStateNpc.Velocity);
         m_movement.SetParentTransform(checkpointStateNpc.MovementParent, checkpointStateNpc.MovementParentPriority, true);
         OnKilled = checkpointStateNpc.OnKilled;
@@ -173,6 +172,11 @@ public class StatsNpc : StatsCharacter
             CheckpointState state = m_checkpointStateNpc;
             CheckpointManager.AddCheckpointState(state);
         }
+    }
+
+    public override void EraseAllBullets(StatsCharacter characterResponsible)
+    {
+        m_turret?.EraseAllBullets(characterResponsible);
     }
 
     public override void SetPitch(float pitch) { m_pitch = pitch; }
