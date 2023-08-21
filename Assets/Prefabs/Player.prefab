@@ -743,7 +743,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_weaponFiring: {fileID: 148854930636548514}
   m_movement: {fileID: 148854930636548537}
-  m_statsCharacter: {fileID: 0}
+  m_statsCharacter: {fileID: 6390946529941703449}
   m_loadoutManager: {fileID: 0}
   m_cameraController: {fileID: 0}
   m_usesRigidBody: 0
