@@ -41,7 +41,7 @@ public class GfLevelManager : MonoBehaviour
 
     [SerializeField] private float m_actionCalmBlendTime = 1;
 
-    [SerializeField] private int[] m_requiredScenesIndeces = null;
+    [SerializeField] private string[] m_requiredSceneNames = null;
 
     [SerializeField]
     private GfPathfinding[] m_pathfindingSystems = null;
@@ -116,11 +116,12 @@ public class GfLevelManager : MonoBehaviour
 
     void OnEnable()
     {
-        for (int i = 0; i < m_requiredScenesIndeces.Length; ++i)
+        for (int i = 0; i < m_requiredSceneNames.Length; ++i)
         {
-            if (!SceneManager.GetSceneByBuildIndex(m_requiredScenesIndeces[i]).isLoaded)
+            int sceneBuildIndex = LoadingScreenManager.GetSceneBuildIndexByName(m_requiredSceneNames[i]);
+            if (!SceneManager.GetSceneByBuildIndex(sceneBuildIndex).isLoaded)
             {
-                SceneManager.LoadScene(m_requiredScenesIndeces[i], LoadSceneMode.Additive);
+                SceneManager.LoadScene(sceneBuildIndex, LoadSceneMode.Additive);
             }
         }
     }
@@ -130,8 +131,6 @@ public class GfLevelManager : MonoBehaviour
     {
         if (Instance != this) Destroy(Instance);
         Instance = this;
-
-
 
         Instance = this;
         Cursor.visible = false;

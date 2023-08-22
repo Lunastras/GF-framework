@@ -46,7 +46,6 @@ public class CheckpointManager : MonoBehaviour
     {
         if (Instance != this && !GfGameManager.IsMultiplayer && m_canTriggerHardCheckpoints)
         {
-            Debug.LogError("Another CheckpointManager Instance that can trigger hard checkpoints was found (" + Instance.name + "), destroying it now...");
             Destroy(Instance);
         }
 

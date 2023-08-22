@@ -28,9 +28,10 @@ public class MainMenuBehaviour : MonoBehaviour
         Cursor.lockState = CursorLockMode.Confined;
         Cursor.visible = true;
 
-        if (!SceneManager.GetSceneByBuildIndex(4).isLoaded)
+        int mainSceneIndex = LoadingScreenManager.GfGameManagerSceneIndex;
+        if (!SceneManager.GetSceneByBuildIndex(mainSceneIndex).isLoaded)
         {
-            SceneManager.LoadScene(4, LoadSceneMode.Additive);
+            SceneManager.LoadScene(mainSceneIndex, LoadSceneMode.Additive);
         }
     }
 

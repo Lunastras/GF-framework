@@ -212,6 +212,7 @@ public class StatsPlayer : StatsCharacter
 
     public override void SetCheckpointState(CheckpointState state)
     {
+        if(gameObject) {
         gameObject.SetActive(true);
         CheckpointStatePlayer checkpointState = state as CheckpointStatePlayer;
         Start();
@@ -232,6 +233,7 @@ public class StatsPlayer : StatsCharacter
             m_movement.SetParentSpherical(checkpointState.MovementParentSpherical, checkpointState.MovementGravityPriority, true);
         else
             m_movement.SetUpVec(checkpointState.UpVec, checkpointState.MovementGravityPriority, true);
+        }
     }
 
     public override void OnHardCheckpoint()

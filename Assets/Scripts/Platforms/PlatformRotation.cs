@@ -9,7 +9,7 @@ public class PlatformRotation : MonoBehaviour
     public float SpeedMultiplier = 1;
     public bool RotatesLocally = false;
     [SerializeField]
-    protected bool PlayOnAwake = false;
+    protected bool PlayOnAwake = true;
     public bool Playing { get; protected set; } = false;
 
     private Rigidbody m_rb;

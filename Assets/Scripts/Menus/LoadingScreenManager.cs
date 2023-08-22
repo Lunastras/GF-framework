@@ -37,9 +37,17 @@ public class LoadingScreenManager : NetworkBehaviour
     // If loading additive, link to the cameras audio listener, to avoid multiple active audio listeners
     public AudioListener audioListener;
 
-    const int LoadingSceneIndex = 1;
+    public static int GfGameManagerSceneIndex {
+        get {
+            return GetSceneBuildIndexByName("GfGameManagerScene");
+        }
+    }
 
-    const int ContainerScene = 4;
+    public static int LoadingSceneIndex {
+        get {
+            return GetSceneBuildIndexByName("LoadingScreen");
+        }
+    }
 
     public static bool CurrentlyLoading
     {
@@ -123,7 +131,7 @@ public class LoadingScreenManager : NetworkBehaviour
     public static int GetSceneBuildIndexByName(string name)
     {
         int countScenes = SceneManager.sceneCountInBuildSettings;
-        int index = 0; //return first index if no scene is found
+        int index = -1; 
         for (int i = 0; i < countScenes; ++i)
         {
             string scenePath = UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i);
@@ -140,11 +148,13 @@ public class LoadingScreenManager : NetworkBehaviour
     public static void UnloadAllScenes()
     {
         int countScenes = SceneManager.sceneCount;
+        int managerSceneIndex = GfGameManagerSceneIndex;
+        int loadSceneIndex = LoadingSceneIndex;
         for (int i = 0; i < countScenes; ++i)
         {
             Scene scene = SceneManager.GetSceneAt(i);
             int buildIndex = scene.buildIndex;
-            if (buildIndex != ContainerScene && buildIndex != LoadingSceneIndex)
+            if (buildIndex != managerSceneIndex && buildIndex != loadSceneIndex)
             {
                 ScenesToUnload.Add(scene.buildIndex);
                 SceneManager.UnloadSceneAsync(scene);

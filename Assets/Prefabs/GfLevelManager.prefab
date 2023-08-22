@@ -3606,7 +3606,8 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxInstances: 12
   m_actionCalmBlendTime: 1
-  m_requiredScenesIndeces: 04000000
+  m_requiredSceneNames:
+  - GfGameManagerScene
   m_pathfindingSystems: []
   CanPause: 1
 --- !u!1 &7328347786992939031

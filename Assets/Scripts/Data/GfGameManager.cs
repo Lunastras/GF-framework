@@ -132,11 +132,9 @@ public class GfGameManager : MonoBehaviour
 
     public static void StartGame()
     {
-        SpawnGameAssets();
-
         if (!GameInitialised)
         {
-            CheckpointManager.OnHardCheckpoint = null;
+            SpawnGameAssets();
 
             switch (GameType)
             {

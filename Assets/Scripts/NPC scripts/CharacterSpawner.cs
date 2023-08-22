@@ -47,6 +47,8 @@ public class CharacterSpawner : MonoBehaviour
     public Action OnFinish = null;
     public Action OnCharactersKilled = null;
 
+    public bool m_interruptCoroutine = false;
+
     protected bool m_coroutineIsRunning;
 
     CheckpointStateCharacterSpawner m_checkpointState = null;
@@ -79,6 +81,8 @@ public class CharacterSpawner : MonoBehaviour
         m_charactersSpawnedAlive = state.CharactersSpawnedAlive;
         m_currentSpawnIndex = state.CurrentSpawnIndex;
         m_timeUntilNextPhase = state.TimeUntilPlayPhase;
+        m_coroutineIsRunning = false;
+        m_interruptCoroutine = true;
     }
 
     protected void OnDestroy()
@@ -100,12 +104,13 @@ public class CharacterSpawner : MonoBehaviour
 
     protected IEnumerator<float> _SpawnCharacters(CharacterSpawnerPhase phase)
     {
+        m_interruptCoroutine = false;
         m_coroutineIsRunning = true;
 
-        for (; m_currentSpawnIndex < phase.Spawns.Length && IsPlaying; ++m_currentSpawnIndex)
+        for (; m_currentSpawnIndex < phase.Spawns.Length && !m_interruptCoroutine && IsPlaying; ++m_currentSpawnIndex)
         {
             yield return Timing.WaitForSeconds(phase.Spawns[m_currentSpawnIndex].Delay);
-            if (IsPlaying)
+            if (!m_interruptCoroutine && IsPlaying)
             {
                 var spawnDetails = phase.Spawns[m_currentSpawnIndex];
                 GameObject obj = GfPooling.PoolInstantiate(spawnDetails.Object);
@@ -130,7 +135,7 @@ public class CharacterSpawner : MonoBehaviour
             }
         }
 
-        if (m_currentSpawnIndex == phase.Spawns.Length) //if we spawned all characters in the phase
+        if (!m_interruptCoroutine && m_currentSpawnIndex == phase.Spawns.Length) //if we spawned all characters in the phase
         {
             m_currentPhase++;
             m_currentSpawnIndex = 0;
