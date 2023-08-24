@@ -94,7 +94,7 @@ public class OdamaManager : LoadoutManager
             float dstCoef = 1;
             float rotationCoef = 1;
             float desiredBopCoef = 1;
-            float deltaTime = Time.deltaTime;
+            float deltaTime = Time.deltaTime * m_statsCharacter.GetDeltaTimeCoef();
             Vector3 upVec = m_parentMovement.GetUpvecRotation();
 
             if (m_weaponFiring && m_weaponFiring.IsFiring)
@@ -104,8 +104,8 @@ public class OdamaManager : LoadoutManager
                 rotationCoef = m_rotationSpeedCoefOnFire;
             }
 
-            m_bopCoef = Mathf.SmoothDamp(m_bopCoef, desiredBopCoef, ref m_bopSmoothRef, m_bopValueSmoothTime);
-            m_currentRotationSpeed = Mathf.SmoothDamp(m_currentRotationSpeed, m_rotationSpeed * rotationCoef, ref m_rotationSmoothRef, m_rotationSpeedSmoothTime);
+            m_bopCoef = Mathf.SmoothDamp(m_bopCoef, desiredBopCoef, ref m_bopSmoothRef, m_bopValueSmoothTime, int.MaxValue, deltaTime);
+            m_currentRotationSpeed = Mathf.SmoothDamp(m_currentRotationSpeed, m_rotationSpeed * rotationCoef, ref m_rotationSmoothRef, m_rotationSpeedSmoothTime, int.MaxValue, deltaTime);
 
             if (IsOwner)
             {

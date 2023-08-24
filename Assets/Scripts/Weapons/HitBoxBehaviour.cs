@@ -15,6 +15,9 @@ public class HitBoxBehaviour : HitBoxGeneric
     }
 
     [SerializeField]
+    protected DamageType m_damageType = DamageType.NORMAL;
+
+    [SerializeField]
     protected float m_damage = 5;
 
     [SerializeField]
@@ -81,7 +84,7 @@ public class HitBoxBehaviour : HitBoxGeneric
 
     protected virtual bool HitTarget(StatsCharacter target, float damageMultiplier)
     {
-        target.Damage(m_damage * damageMultiplier, characterStats.NetworkObjectId);
+        target.Damage(m_damage * damageMultiplier, m_damageType, characterStats.NetworkObjectId);
 
         return true;
     }

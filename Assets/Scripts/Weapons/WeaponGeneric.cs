@@ -6,6 +6,12 @@ using System;
 public abstract class WeaponGeneric : DamageSource
 {
     [SerializeField]
+    protected bool m_automatic = true;
+
+    [SerializeField]
+    protected DamageType m_damageType = DamageType.NORMAL;
+
+    [SerializeField]
     protected float m_damage;
 
     [SerializeField]
@@ -110,6 +116,10 @@ public abstract class WeaponGeneric : DamageSource
     public virtual void WasSwitchedOn() { }
 
     public virtual void Initialize() { }
+
+    public virtual bool GetIsAutomatic() { return m_automatic; }
+
+    public virtual void SetIsAutomatic(bool isAutomatic) { m_automatic = isAutomatic; }
 
     public virtual bool IsFiring()
     {

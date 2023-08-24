@@ -15,7 +15,7 @@ using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using MEC;
 
-public class LoadingScreenManager : NetworkBehaviour
+public class LoadingScreenManager : MonoBehaviour
 {
     protected static LoadingScreenManager Instance = null;
     [SerializeField]
@@ -37,14 +37,18 @@ public class LoadingScreenManager : NetworkBehaviour
     // If loading additive, link to the cameras audio listener, to avoid multiple active audio listeners
     public AudioListener audioListener;
 
-    public static int GfGameManagerSceneIndex {
-        get {
+    public static int GfGameManagerSceneIndex
+    {
+        get
+        {
             return GetSceneBuildIndexByName("GfGameManagerScene");
         }
     }
 
-    public static int LoadingSceneIndex {
-        get {
+    public static int LoadingSceneIndex
+    {
+        get
+        {
             return GetSceneBuildIndexByName("LoadingScreen");
         }
     }
@@ -56,6 +60,8 @@ public class LoadingScreenManager : NetworkBehaviour
             return Instance && Instance.m_isLoading;
         }
     }
+
+    protected static GameMultiplayerType GameTypeToLoad = GameMultiplayerType.NONE;
 
     public static int SceneBuildIndexToLoad = -1;
 
@@ -88,7 +94,7 @@ public class LoadingScreenManager : NetworkBehaviour
         SceneManager.sceneUnloaded += OnSceneUnloaded;
     }
 
-    public override void OnDestroy()
+    protected void OnDestroy()
     {
         Instance = null;
     }
@@ -101,16 +107,15 @@ public class LoadingScreenManager : NetworkBehaviour
         }
     }
 
-    public static void LoadScene(int sceneBuildIndex, ServerLoadingMode loadingMode)
+    public static void LoadScene(int sceneBuildIndex, ServerLoadingMode loadingMode, GameMultiplayerType gameType)
     {
         Debug.Log("Starting to load scene with build index " + sceneBuildIndex);
         Application.backgroundLoadingPriority = ThreadPriority.High;
-        GfGameManager.SetAllowGameTypeOverride(false);
-        GfGameManager.SetStartGameAutomatically(false);
         Cursor.visible = false;
         ServerLoadingMode = loadingMode;
         int originalSceneIndexLoading = SceneBuildIndexToLoad;
         SceneBuildIndexToLoad = sceneBuildIndex;
+        GameTypeToLoad = gameType;
 
         if (!CurrentlyLoading)
         {
@@ -123,15 +128,15 @@ public class LoadingScreenManager : NetworkBehaviour
         }
     }
 
-    public static void LoadScene(string levelName, ServerLoadingMode loadingMode)
+    public static void LoadScene(string levelName, ServerLoadingMode loadingMode, GameMultiplayerType gameType)
     {
-        LoadScene(GetSceneBuildIndexByName(levelName), loadingMode);
+        LoadScene(GetSceneBuildIndexByName(levelName), loadingMode, gameType);
     }
 
     public static int GetSceneBuildIndexByName(string name)
     {
         int countScenes = SceneManager.sceneCountInBuildSettings;
-        int index = -1; 
+        int index = -1;
         for (int i = 0; i < countScenes; ++i)
         {
             string scenePath = UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i);
@@ -229,7 +234,7 @@ public class LoadingScreenManager : NetworkBehaviour
 
         if (mustHaveGame)
         {
-            GfGameManager.StartGame();
+            GfGameManager.StartGame(GameTypeToLoad);
             while (!GfGameManager.GameInitialised || !(GfServerManager.HostReady || GfServerManager.HasAuthority))
                 yield return Timing.WaitForSeconds(0.02f);
         }

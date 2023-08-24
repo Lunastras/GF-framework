@@ -291,7 +291,7 @@ public class GfTools
     }
 
     //https://gist.github.com/maxattack/4c7b4de00f5c1b95a33b
-    public static Quaternion QuatSmoothDamp(Quaternion rot, Quaternion target, ref Quaternion deriv, float time)
+    public static Quaternion QuatSmoothDamp(Quaternion rot, Quaternion target, ref Quaternion deriv, float time, float deltaTime)
     {
         if (Time.deltaTime < Mathf.Epsilon) return rot;
         // account for double-cover
@@ -303,10 +303,10 @@ public class GfTools
         target.w *= Multi;
         // smooth damp (nlerp approx)
         var Result = new Vector4(
-            Mathf.SmoothDamp(rot.x, target.x, ref deriv.x, time),
-            Mathf.SmoothDamp(rot.y, target.y, ref deriv.y, time),
-            Mathf.SmoothDamp(rot.z, target.z, ref deriv.z, time),
-            Mathf.SmoothDamp(rot.w, target.w, ref deriv.w, time)
+            Mathf.SmoothDamp(rot.x, target.x, ref deriv.x, time, int.MaxValue, deltaTime),
+            Mathf.SmoothDamp(rot.y, target.y, ref deriv.y, time, int.MaxValue, deltaTime),
+            Mathf.SmoothDamp(rot.z, target.z, ref deriv.z, time, int.MaxValue, deltaTime),
+            Mathf.SmoothDamp(rot.w, target.w, ref deriv.w, time, int.MaxValue, deltaTime)
         ).normalized;
 
         // ensure deriv is tangent

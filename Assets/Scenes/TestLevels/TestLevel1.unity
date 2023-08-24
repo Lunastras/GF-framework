@@ -280,6 +280,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: -50, z: 0}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!114 &131261304
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1033,7 +1034,7 @@ Transform:
   - {fileID: 1168500293}
   - {fileID: 922721308}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &419213595
 GameObject:
@@ -1086,6 +1087,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 200, z: 0}
   SpeedMultiplier: -1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!54 &419213598
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1235,6 +1237,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: -50, z: 0}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!65 &490748252
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1384,6 +1387,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 0, z: 200}
   SpeedMultiplier: 1
   RotatesLocally: 1
+  PlayOnAwake: 1
 --- !u!54 &492890862
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1533,6 +1537,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 0, z: 200}
   SpeedMultiplier: 1
   RotatesLocally: 1
+  PlayOnAwake: 1
 --- !u!54 &526826708
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1895,6 +1900,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 50, z: 0}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!65 &592731256
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2113,6 +2119,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 0, z: 80}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!54 &662620633
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3739,6 +3746,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 0, z: 200}
   SpeedMultiplier: 1
   RotatesLocally: 1
+  PlayOnAwake: 1
 --- !u!54 &802117010
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3930,7 +3938,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!114 &809428415
 MonoBehaviour:
@@ -4570,6 +4578,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: -50, z: 0}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!114 &1059862599
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4738,6 +4747,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: -50, z: 0}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!114 &1090728575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5806,6 +5816,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 80, z: 0}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!54 &1341731555
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6745,7 +6756,7 @@ PrefabInstance:
     - target: {fileID: 388770633809942869, guid: 6f3528384207d0648aacf46f65a32cb0,
         type: 3}
       propertyPath: m_RootOrder
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 388770633809942869, guid: 6f3528384207d0648aacf46f65a32cb0,
         type: 3}
@@ -7162,7 +7173,7 @@ Transform:
   m_Children:
   - {fileID: 1858038154}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1528244491
 GameObject:
@@ -7438,7 +7449,7 @@ Transform:
   - {fileID: 2002005519}
   - {fileID: 1884130232}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1741801635
 GameObject:
@@ -7495,6 +7506,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 0, z: 50}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!65 &1741801638
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7644,6 +7656,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 200, z: 0}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!54 &1786311440
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7771,7 +7784,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1858038153
 GameObject:
@@ -8208,6 +8221,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 120, z: 0}
   SpeedMultiplier: 2
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!54 &2002005521
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -8358,6 +8372,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: -50, z: 0}
   SpeedMultiplier: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!114 &2096920215
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8525,6 +8540,7 @@ MonoBehaviour:
   Rotation: {x: 0, y: 0, z: 200}
   SpeedMultiplier: 1
   RotatesLocally: 1
+  PlayOnAwake: 1
 --- !u!54 &2136856384
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -5,6 +5,9 @@ using UnityEngine;
 public abstract class WeaponParticle : WeaponGeneric
 {
     [SerializeField]
+    protected float m_fireRateInterval = 0.1f;
+
+    [SerializeField]
     protected bool m_eraseParticlesAfterOwnerKilled = true;
 
     [SerializeField]
@@ -13,13 +16,47 @@ public abstract class WeaponParticle : WeaponGeneric
     private int m_particleTriggerDamageListIndex = -1;
     protected ParticleSystem m_particleSystem;
 
-    protected float m_initialRateOverTimeMultiplier;
+    protected Transform m_transform;
 
-    protected void InitWeaponParticle()
+    [SerializeField]
+    protected bool m_aimsAtTarget = true;
+
+    protected float m_timeUntilCanFire = 0;
+
+    protected bool m_fireReleased = true;
+
+    protected void Awake()
     {
+        m_transform = transform;
         m_particleSystem = GetComponent<ParticleSystem>();
-        var emission = m_particleSystem.emission;
-        m_initialRateOverTimeMultiplier = emission.rateOverTimeMultiplier;
+        if (GetStatsCharacter() == null)
+            SetStatsCharacter(GetComponent<StatsCharacter>());
+    }
+
+    private void FixedUpdate()
+    {
+        m_timeUntilCanFire -= Time.deltaTime * m_fireRateMultiplier;
+        LookAtTarget();
+
+        if ((DisableWhenDone || DestroyWhenDone) && !IsAlive())
+        {
+            if (DestroyWhenDone)
+                GfPooling.Destroy(gameObject);
+            else
+                gameObject.SetActive(false);
+        }
+    }
+
+
+    protected void LookAtTarget()
+    {
+        if (m_aimsAtTarget && m_target && m_isFiring)
+        {
+            if (m_movementParent)
+                m_transform.LookAt(m_target, m_movementParent.GetUpvecRotation());
+            else
+                m_transform.LookAt(m_target);
+        }
     }
 
     public virtual ParticleSystem GetParticleSystem()
@@ -46,6 +83,7 @@ public abstract class WeaponParticle : WeaponGeneric
 
     public override void StopFiring(bool killBullets)
     {
+        m_fireReleased = true;
         m_isFiring = false;
 
         ParticleSystemStopBehavior stopBehaviour = ParticleSystemStopBehavior.StopEmitting;
@@ -59,8 +97,20 @@ public abstract class WeaponParticle : WeaponGeneric
         switch (fireType)
         {
             case (FireType.MAIN):
-                m_isFiring = true;
-                m_particleSystem.Play();
+                if (m_timeUntilCanFire <= 0 && (m_automatic || m_fireReleased))
+                {
+                    m_fireReleased = false;
+                    m_timeUntilCanFire = m_fireRateInterval;
+
+                    if (!m_isFiring)
+                    {
+                        m_isFiring = true;
+                        LookAtTarget();
+                    }
+
+                    m_isFiring = true;
+                    m_particleSystem.Play();
+                }
                 break;
             case (FireType.SECONDARY):
                 break;
@@ -105,7 +155,21 @@ public abstract class WeaponParticle : WeaponGeneric
 
     public int GetParticleTriggerDamageIndex() { return m_particleTriggerDamageListIndex; }
 
-    public override void ReleasedFire(FireHit hit = default, FireType fireType = FireType.MAIN) { }
+    public override void ReleasedFire(FireHit hit = default, FireType fireType = FireType.MAIN)
+    {
+        switch (fireType)
+        {
+            case (FireType.MAIN):
+                m_fireReleased = false;
+                StopFiring(false);
+                break;
+            case (FireType.SECONDARY):
+                break;
+            case (FireType.SPECIAL):
+                break;
+
+        }
+    }
 
     public override bool IsAlive() { return m_particleSystem.IsAlive(true); }
 
@@ -118,9 +182,23 @@ public abstract class WeaponParticle : WeaponGeneric
 
     public override void SetFireRateMultiplier(float multiplier)
     {
+        float previousMultiplier = m_fireRateMultiplier;
         base.SetFireRateMultiplier(multiplier);
+
         var emission = m_particleSystem.emission;
-        emission.rateOverTimeMultiplier = m_initialRateOverTimeMultiplier * multiplier;
+        float initialRateOverTimeMultiplier = emission.rateOverTimeMultiplier / previousMultiplier;
+        emission.rateOverTimeMultiplier = initialRateOverTimeMultiplier * multiplier;
+
+        int burstCount = emission.burstCount;
+        for (int i = 0; i < burstCount; ++i)
+        {
+            var burstModule = m_particleSystem.emission.GetBurst(i);
+
+            initialRateOverTimeMultiplier = burstModule.repeatInterval / previousMultiplier;
+            emission.rateOverTimeMultiplier = initialRateOverTimeMultiplier * multiplier;
+
+            m_particleSystem.emission.SetBurst(i, burstModule);
+        }
     }
 
     public override void SetMovementParent(GfMovementGeneric parent)
@@ -130,8 +208,4 @@ public abstract class WeaponParticle : WeaponGeneric
             particleHoming.MovementGravityReference = parent;
         m_movementParent = parent;
     }
-
-    public virtual float GetInitialRateOverTimeMultiplier() { return m_initialRateOverTimeMultiplier; }
-    public virtual void SetInitialRateOverTimeMultiplier(float initialRateOverTime) { initialRateOverTime = m_initialRateOverTimeMultiplier; }
-
 }

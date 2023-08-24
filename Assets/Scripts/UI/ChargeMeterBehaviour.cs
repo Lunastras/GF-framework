@@ -80,26 +80,26 @@ public class ChargeMeterBehaviour : MonoBehaviour
             WeaponChargeLevels weapon = weapons[0] as WeaponChargeLevels;
             if (weapon)
             {
-                float nextLevelProgress = weapon.NextLevelProgress(1);
-                int level = weapon.CurrentLevel(1);
+                float nextLevelProgress = weapon.GetNextLevelProgress(1);
+                int level = weapon.GetCurrentLevel(1);
                 bool showChargeMeter = level > 0 || nextLevelProgress > 0;
 
                 if (showChargeMeter != m_wasShowingMeterLastFrame)
                 {
                     float opacity = 0;
                     if (showChargeMeter) opacity = 1;
-                    GfUiTools.CrossFadeAlphaGroup(m_canvasGroup, opacity, m_opacityFadeSmoothtime);
+                    GfUiTools.CrossFadeAlphaGroup(m_canvasGroup, opacity, m_opacityFadeSmoothtime, true);
                 }
 
                 m_wasShowingMeterLastFrame = showChargeMeter;
 
                 Vector2 screenPosPlayer = GfLevelManager.GetPlayerPositionOnScreen();
                 GfTools.Add2(ref screenPosPlayer, m_chargePositionOffset);
-                m_currentPosition = Vector2.SmoothDamp(m_currentPosition, screenPosPlayer, ref m_positionSmoothRef, m_positionSmoothTime);
+                float deltaTime = Time.deltaTime * StatsPlayer.LocalPlayer.GetDeltaTimeCoef();
+                m_currentPosition = Vector2.SmoothDamp(m_currentPosition, screenPosPlayer, ref m_positionSmoothRef, m_positionSmoothTime, int.MaxValue, deltaTime);
 
                 if (m_canvasGroup.alpha > 0.02f)
                 {
-
                     m_transform.position = m_currentPosition;
                     m_sliderCharge.value = nextLevelProgress;
                     if (m_chargeText && m_lastLevel != level)

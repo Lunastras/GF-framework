@@ -33,7 +33,8 @@ public class GfClientBehaviour : NetworkBehaviour
             GfServerManager.Instance.OnPlayerUnready += OnPlayerUnready;
         }
 
-        if (GfGameManager.StartGameAutomatically) GfServerManager.SetPlayerIsReady(true, OwnerClientId);
+        if (!LoadingScreenManager.CurrentlyLoading)
+            GfServerManager.SetPlayerIsReady(true, OwnerClientId);
 
         DontDestroyOnLoad(gameObject);
     }

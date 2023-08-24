@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &148854929551912263
 Transform:
   m_ObjectHideFlags: 0
@@ -104,7 +104,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &148854929583485742
 Transform:
   m_ObjectHideFlags: 0
@@ -434,7 +434,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &148854930295164460
 Transform:
   m_ObjectHideFlags: 0
@@ -583,6 +583,7 @@ MonoBehaviour:
   m_smoothTimeOpacity: 0.08
   m_smoothTimeSize: 0.08
   m_overrideZaxisRotation: 1
+  m_deltaTimeCoef: 1
   m_upDir: {x: 0, y: 1, z: 0}
 --- !u!1 &148854930636548520
 GameObject:

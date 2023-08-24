@@ -137,7 +137,7 @@ public class CameraController : MonoBehaviour
         m_lastAppliedRot = m_lastAppliedRot * Quaternion.AngleAxis(m_pitch, desiredRot * Vector3.right);
 
         desiredRot = m_lastAppliedRot * desiredRot;
-        m_transform.rotation = GfTools.QuatSmoothDamp(m_transform.rotation, desiredRot, ref m_rotVel, m_rotationSmoothTime);
+        m_transform.rotation = GfTools.QuatSmoothDamp(m_transform.rotation, desiredRot, ref m_rotVel, m_rotationSmoothTime, deltaTime);
 
         m_previousDesiredRot = desiredRot;
     }
@@ -148,7 +148,7 @@ public class CameraController : MonoBehaviour
         Quaternion upvecCorrection = Quaternion.FromToRotation(UPDIR, m_upvec);
 
         Vector3 desiredTargetPos = m_mainTarget.position + upvecCorrection * m_positionOffset;
-        m_currentTargetPos = Vector3.SmoothDamp(m_currentTargetPos, desiredTargetPos, ref m_refTargetPosVelocity, m_movementSmoothTime);
+        m_currentTargetPos = Vector3.SmoothDamp(m_currentTargetPos, desiredTargetPos, ref m_refTargetPosVelocity, m_movementSmoothTime, int.MaxValue, deltaTime);
 
         m_timeUntilPhysCheck -= deltaTime;
 
@@ -179,10 +179,10 @@ public class CameraController : MonoBehaviour
                 m_currentSmoothTimeDistance = System.MathF.Max(m_minimumDistanceSmoothTime, m_distanceSmoothTime * (System.MathF.Max(0, System.MathF.Abs(currentDistance - m_desiredDst) - 2f) / m_dstFromtarget));
         }
 
-        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_desiredDst * m_distanceMultiplier, ref m_refDistanceVel, m_currentSmoothTimeDistance);
+        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_desiredDst * m_distanceMultiplier, ref m_refDistanceVel, m_currentSmoothTimeDistance, int.MaxValue, deltaTime);
 
         m_transform.position = m_currentTargetPos - forward * m_currentTargetDst;
-        m_camera.fieldOfView = Mathf.SmoothDamp(m_camera.fieldOfView, m_fovMultiplier * m_targetFov, ref m_fovRefSpeed, m_fovSmoothTime);
+        m_camera.fieldOfView = Mathf.SmoothDamp(m_camera.fieldOfView, m_fovMultiplier * m_targetFov, ref m_fovRefSpeed, m_fovSmoothTime, int.MaxValue, deltaTime);
     }
 
     public PriorityValue<float> GetDistanceMultiplier() { return m_distanceMultiplier; }

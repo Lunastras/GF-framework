@@ -57,6 +57,8 @@ public class ShadowProjectorManipulator : MonoBehaviour
 
     private float m_projectionDepthCurrent;
 
+    public float m_deltaTimeCoef = 1;
+
     [SerializeField]
     private Vector3 m_upDir = new Vector3(0, 1, 0);
 
@@ -85,7 +87,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
             m_transform.rotation = m_parentMovement.GetCurrentRotation() * QUAT_90_DEG_RIGHT;
         }
 
-        float deltaTime = Time.deltaTime;
+        float deltaTime = Time.deltaTime * m_deltaTimeCoef;
         m_timeUntilObjCheck -= deltaTime;
         m_timeUntilDistanceCheck -= deltaTime;
 
@@ -127,11 +129,11 @@ public class ShadowProjectorManipulator : MonoBehaviour
             UpdateValues(hitSomething, hitInfo, m_lastCollisionDistance);
         }
 
-        m_projector.fadeFactor = Mathf.SmoothDamp(m_projector.fadeFactor, m_desiredOpacity, ref m_smoothRefOpacity, m_smoothTimeOpacity);
+        m_projector.fadeFactor = Mathf.SmoothDamp(m_projector.fadeFactor, m_desiredOpacity, ref m_smoothRefOpacity, m_smoothTimeOpacity, int.MaxValue, deltaTime);
 
         Vector3 projSize = m_projector.size;
         Vector2 widthHeight = new Vector2(projSize.x, projSize.y);
-        widthHeight = Vector2.SmoothDamp(widthHeight, m_sizeDesired, ref m_smoothRefSize, m_smoothTimeSize);
+        widthHeight = Vector2.SmoothDamp(widthHeight, m_sizeDesired, ref m_smoothRefSize, m_smoothTimeSize, int.MaxValue, deltaTime);
 
         projSize.x = widthHeight.x;
         projSize.y = widthHeight.y;

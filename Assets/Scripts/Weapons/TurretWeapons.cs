@@ -21,8 +21,6 @@ public class TurretWeapons : NetworkBehaviour
 
     private int m_currentPhaseIndex = 0;
 
-    private HashSet<int> m_phasesPlaying = null;
-
     private float m_timeUntilPlay = 0;
     private int m_requestedPhase = 0;
 
@@ -44,7 +42,6 @@ public class TurretWeapons : NetworkBehaviour
     void Start()
     {
         if (m_statsCharacter == null) m_statsCharacter = GetComponent<StatsCharacter>();
-        m_phasesPlaying = new(m_turretPhases.Length);
 
         for (int i = 0; i < m_turretPhases.Length; ++i)
         {
@@ -89,21 +86,18 @@ public class TurretWeapons : NetworkBehaviour
             }
             else
             {
-                if (m_autoPlay && 0 < m_phasesPlaying.Count)
-                {
-                    if (!IsFiring(true))
-                    { //phase ended
-                        ++m_currentPhaseIndex;
+                if (m_autoPlay && !IsPlaying(true))
+                { //phase ended
+                    ++m_currentPhaseIndex;
 
-                        bool playNext = m_currentPhaseIndex < m_turretPhases.Length;
+                    bool playNext = m_currentPhaseIndex < m_turretPhases.Length;
 
-                        if (m_currentPhaseIndex >= m_turretPhases.Length)
-                            m_currentPhaseIndex = 0;
-                        else
-                            playNext = false;
+                    if (m_currentPhaseIndex >= m_turretPhases.Length)
+                        m_currentPhaseIndex = 0;
+                    else
+                        playNext = false;
 
-                        if (playNext) Play();
-                    }
+                    if (playNext) Play();
                 }
 
                 if (m_timeUntilPlay > 0)
@@ -167,40 +161,43 @@ public class TurretWeapons : NetworkBehaviour
 
     protected void InternalStop(int phaseToStop, bool killBullets)
     {
-        if (null != m_phasesPlaying && m_phasesPlaying.Count > 0 && m_turretPhases.Length > 0)
+        if (m_turretPhases.Length > 0)
         {
             WeaponGeneric[] systems = m_turretPhases[phaseToStop].weapons;
 
             for (int i = systems.Length - 1; i >= 0; --i)
                 systems[i].StopFiring(killBullets);
-
-            m_phasesPlaying.Remove(phaseToStop);
         }
     }
 
 
-    public bool IsFiring(bool onlyCurentPhase = false)
+    public bool IsPlaying(bool onlyCurentPhase = false)
     {
         bool isPlaying = false;
 
         if (onlyCurentPhase && m_turretPhases.Length > 0)
         {
-            WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
-            int length = systems.Length;
-            for (int i = 0; i < length && !isPlaying; ++i)
-                isPlaying |= systems[i].IsFiring();
+            isPlaying = IsPlayingPhase(m_currentPhaseIndex);
         }
         else
         {
             for (int i = 0; i < m_turretPhases.Length && !isPlaying; ++i)
             {
-                WeaponGeneric[] systems = m_turretPhases[i].weapons;
-                int length = systems.Length;
-
-                for (int j = 0; j < length && !isPlaying; ++j)
-                    isPlaying |= systems[j].IsFiring();
+                isPlaying |= IsPlayingPhase(i);
             }
         }
+
+        return isPlaying;
+    }
+
+    protected bool IsPlayingPhase(int phase)
+    {
+        bool isPlaying = false;
+        WeaponGeneric[] systems = m_turretPhases[phase].weapons;
+        int length = systems.Length;
+
+        for (int j = 0; j < length && !isPlaying; ++j)
+            isPlaying |= systems[j].IsFiring();
 
         return isPlaying;
     }
@@ -250,7 +247,7 @@ public class TurretWeapons : NetworkBehaviour
 
     public void SetFireType(FireType fireType)
     {
-        if (m_phasesPlaying.Count > 0 && m_fireType != fireType)
+        if (m_fireType != fireType)
         {
             m_fireType = fireType;
             Play(true, m_currentPhaseIndex);
@@ -341,7 +338,7 @@ public class TurretWeapons : NetworkBehaviour
         if (m_turretPhases.Length > 0)
             phase %= m_turretPhases.Length;
 
-        bool phaseAlreadyPlaying = m_phasesPlaying.Contains(phase);
+        bool phaseAlreadyPlaying = IsPlayingPhase(phase);
 
         phaseAlreadyPlaying &= !forcePlay;
 
@@ -352,9 +349,9 @@ public class TurretWeapons : NetworkBehaviour
         }
 
         m_currentPhaseIndex = phase;
+
         if (!phaseAlreadyPlaying && m_turretPhases.Length > 0)
         {
-            m_phasesPlaying.Add(phase);
             WeaponGeneric[] systems = m_turretPhases[m_currentPhaseIndex].weapons;
 
             for (int i = 0; i < systems.Length; ++i)

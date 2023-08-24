@@ -191,7 +191,7 @@ public class StatsNpc : StatsCharacter
             if (spawnBehaviour) spawnBehaviour.SetPitch(m_pitch);
         }
     }
-    protected override void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
+    protected override void InternalKill(DamageType damageType, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
         if (isServerCall)
         {
@@ -199,7 +199,10 @@ public class StatsNpc : StatsCharacter
 
             Vector3 currentPos = m_transform.position;
             GameParticles.PlayDeathDust(currentPos);
-            GameParticles.SpawnPowerItems(currentPos, m_powerItemsToDrop, m_movement.GetGravityReference());
+
+            if (damageType != DamageType.NO_EXPERIENCE_DROPS)
+                GameParticles.SpawnPowerItems(currentPos, m_powerItemsToDrop, m_movement.GetGravityReference());
+
             GameParticles.SpawnGrave(currentPos, m_movement.GetGravityReference());
 
             for (int i = 0; i < m_itemDropsAfterDeath.Length; i++)
@@ -259,7 +262,7 @@ public class StatsNpc : StatsCharacter
         return ret;
     }
 
-    protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
+    protected override void InternalDamage(float damage, DamageType damageType, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
         if (!m_isDead)
         {
@@ -294,7 +297,7 @@ public class StatsNpc : StatsCharacter
 
                 if (m_currentHealth.Value <= 0)
                 {
-                    Kill(enemyNetworkId, weaponLoadoutIndex, weaponIndex);
+                    Kill(damageType, enemyNetworkId, weaponLoadoutIndex, weaponIndex);
                 }
                 else if (null != m_npcController && enemy && damage > 0)
                 {

@@ -47,6 +47,8 @@ public class StatsPlayer : StatsCharacter
 
     protected CheckpointStatePlayer m_checkpointState = null;
 
+    public static StatsPlayer LocalPlayer { get; protected set; } = null;
+
     new protected void Start()
     {
         base.Start();
@@ -101,6 +103,7 @@ public class StatsPlayer : StatsCharacter
             }
 
             GfLevelManager.SetPlayer(transform);
+            LocalPlayer = this;
         }
 
         if (IsOwner)
@@ -118,7 +121,7 @@ public class StatsPlayer : StatsCharacter
         m_loadoutManager.enabled = false;
     }
 
-    protected override void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
+    protected override void InternalDamage(float damage, DamageType damageType, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
         if (!m_isDead)
         {
@@ -153,7 +156,7 @@ public class StatsPlayer : StatsCharacter
                 if (m_currentHealth.Value == 0)
                 {
                     m_isDead = true;
-                    Kill(enemyNetworkId, weaponLoadoutIndex, weaponIndex);
+                    Kill(damageType, enemyNetworkId, weaponLoadoutIndex, weaponIndex);
                 }
             }
         }
@@ -183,7 +186,7 @@ public class StatsPlayer : StatsCharacter
         return ret;
     }
 
-    protected override void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
+    protected override void InternalKill(DamageType damageType, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
     {
         if (isServerCall)
         {
@@ -212,33 +215,34 @@ public class StatsPlayer : StatsCharacter
 
     public override void SetCheckpointState(CheckpointState state)
     {
-        if(gameObject) {
-        gameObject.SetActive(true);
-        CheckpointStatePlayer checkpointState = state as CheckpointStatePlayer;
-        Start();
-        m_movement.ReturnToDefaultValues();
-        transform.position = checkpointState.Position;
-        transform.localScale = checkpointState.Scale;
-        m_currentHealth.Value = checkpointState.CurrentHp;
-        m_isDead = checkpointState.IsDead;
-        m_movement.SetVelocity(checkpointState.Velocity);
-        m_loadoutManager.Respawned();
-        m_checkpointState = checkpointState;
-        m_movement.OrientToUpVecForced();
+        if (gameObject)
+        {
+            gameObject.SetActive(true);
+            CheckpointStatePlayer checkpointState = state as CheckpointStatePlayer;
+            Start();
+            m_movement.ReturnToDefaultValues();
+            transform.position = checkpointState.Position;
+            transform.localScale = checkpointState.Scale;
+            m_currentHealth.Value = checkpointState.CurrentHp;
+            m_isDead = checkpointState.IsDead;
+            m_movement.SetVelocity(checkpointState.Velocity);
+            m_loadoutManager.Respawned();
+            m_checkpointState = checkpointState;
+            m_movement.OrientToUpVecForced();
 
-        m_movement.SetParentTransform(checkpointState.MovementParent, checkpointState.MovementParentPriority, true);
-        OnKilled = checkpointState.OnKilled;
+            m_movement.SetParentTransform(checkpointState.MovementParent, checkpointState.MovementParentPriority, true);
+            OnKilled = checkpointState.OnKilled;
 
-        if (checkpointState.MovementParentSpherical)
-            m_movement.SetParentSpherical(checkpointState.MovementParentSpherical, checkpointState.MovementGravityPriority, true);
-        else
-            m_movement.SetUpVec(checkpointState.UpVec, checkpointState.MovementGravityPriority, true);
+            if (checkpointState.MovementParentSpherical)
+                m_movement.SetParentSpherical(checkpointState.MovementParentSpherical, checkpointState.MovementGravityPriority, true);
+            else
+                m_movement.SetUpVec(checkpointState.UpVec, checkpointState.MovementGravityPriority, true);
         }
     }
 
     public override void OnHardCheckpoint()
     {
-        if (IsCheckpointable())
+        if (gameObject && IsCheckpointable())
         {
             if (null == m_checkpointState) m_checkpointState = new();
             m_transform = transform;

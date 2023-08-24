@@ -15,13 +15,10 @@ public class ParticleSingleHit : WeaponParticle
 
     public static List<ParticleCollisionEvent> m_collisionEvents;
 
-    protected void Awake()
+    protected new void Awake()
     {
-        if (GetStatsCharacter() == null)
-            SetStatsCharacter(GetComponent<StatsCharacter>());
-
+        base.Awake();
         m_collisionEvents = new(8);
-        InitWeaponParticle();
     }
 
     private void OnEnable()
@@ -78,7 +75,7 @@ public class ParticleSingleHit : WeaponParticle
         //  Debug.Log("GONNA DAMAJE IT " + target.name);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
         GfAudioManager.PlayAudio(m_damageSound, collisionEvent.intersection);
-        target.Damage(m_damage * damageMultiplier, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex);
+        target.Damage(m_damage * damageMultiplier, m_damageType, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex);
 
         return true;
     }

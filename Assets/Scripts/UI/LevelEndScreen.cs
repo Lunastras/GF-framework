@@ -37,6 +37,6 @@ public class LevelEndScreen : MonoBehaviour
         m_timeSecondsText.text = levelMinutes + ":" + levelSeconds.ToString(TWO_DECIMAL_PRECISSION);
         m_resetsText.text = resetsCount.ToString();
 
-        GfUiTools.CrossFadeAlphaGroup(m_levelEndGroup, 1, m_fadeInTime);
+        GfUiTools.CrossFadeAlphaGroup(m_levelEndGroup, 1, m_fadeInTime, true);
     }
 }

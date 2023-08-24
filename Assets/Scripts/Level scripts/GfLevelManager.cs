@@ -22,6 +22,8 @@ public class GfLevelManager : MonoBehaviour
 
     private Transform m_player = null;
 
+    [SerializeField] private GameMultiplayerType m_autoStartGameType = GameMultiplayerType.SINGLEPLAYER;
+
     [SerializeField]
     private HudManager m_hudManager = null;
 
@@ -45,6 +47,9 @@ public class GfLevelManager : MonoBehaviour
 
     [SerializeField]
     private GfPathfinding[] m_pathfindingSystems = null;
+
+
+
 
     private bool m_isPaused = false;
 
@@ -174,6 +179,11 @@ public class GfLevelManager : MonoBehaviour
     {
         m_calmMusic.LoadAudioClip();
         m_actionMusic.LoadAudioClip();
+
+        if (!LoadingScreenManager.CurrentlyLoading)
+        {
+            GfGameManager.StartGame(m_autoStartGameType);
+        }
 
         if (null != m_calmMusic && null != m_calmMusic.Clip)
         {

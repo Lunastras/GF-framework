@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Diagnostics;
+using Unity.Mathematics;
 
 public class AngleDegTestSpeed : MonoBehaviour
 {
@@ -23,44 +24,51 @@ public class AngleDegTestSpeed : MonoBehaviour
         float angle = 0;
         Vector3 upVec = Vector3.up;
         Vector3 rightVec = Vector3.right;
+        Vector3 aux;
+
+        float3 up3 = new float3(0, 1, 0);
+        aux = Vector3.zero;
+        float3 aux3 = new(0, 0, 0);
 
         m_watch.Reset();
         m_watch.Start();
 
         for (int i = 0; i < NumLoops; ++i)
         {
-            //angle = GfTools.AngleDeg(upVec, rightVec);
+            aux3 += up3;
         }
 
         m_watch.Stop();
         miliseconds = m_watch.Elapsed.TotalMilliseconds;
 
-        //  UnityEngine.Debug.Log(miliseconds + " miliseconds have passed for test 1, angle is: " + angle);
+        UnityEngine.Debug.Log(miliseconds + " miliseconds have passed for test 1");
 
         m_watch.Reset();
         m_watch.Start();
 
         for (int i = 0; i < NumLoops; ++i)
         {
-            angle = GfTools.AngleDegNorm(upVec, rightVec);
+            aux += upVec;
         }
 
         m_watch.Stop();
         miliseconds = m_watch.Elapsed.TotalMilliseconds;
 
-        UnityEngine.Debug.Log(miliseconds + " miliseconds have passed for test 1, angle is: " + angle);
+        UnityEngine.Debug.Log(miliseconds + " miliseconds have passed for test 2");
+
+        aux = Vector3.zero;
 
         m_watch.Reset();
         m_watch.Start();
 
         for (int i = 0; i < NumLoops; ++i)
         {
-            angle = Vector3.Angle(upVec, rightVec);
+            GfTools.Add3(ref aux, upVec);
         }
 
         m_watch.Stop();
         miliseconds = m_watch.Elapsed.TotalMilliseconds;
 
-        UnityEngine.Debug.Log(miliseconds + " miliseconds have passed for test 2, angle is: " + angle);
+        UnityEngine.Debug.Log(miliseconds + " miliseconds have passed for test 3");
     }
 }

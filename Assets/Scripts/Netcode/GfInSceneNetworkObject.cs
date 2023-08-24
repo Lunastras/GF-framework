@@ -45,8 +45,14 @@ public class GfInSceneNetworkObject : NetworkBehaviour
 
     public override void OnDestroy()
     {
-        if (NetworkManager.Singleton && m_subscribedToOnServerStarted)
-            NetworkManager.Singleton.OnServerStarted -= OnServerStartedFunc;
+        if (NetworkManager.Singleton)
+        {
+            NetworkManager.Singleton.PrefabHandler.RemoveHandler(m_globalObjectIdHash);
+            NetworkManager.Singleton.PrefabHandler.RemoveNetworkPrefab(gameObject);
+
+            if (m_subscribedToOnServerStarted)
+                NetworkManager.Singleton.OnServerStarted -= OnServerStartedFunc;
+        }
     }
 }
 
@@ -76,7 +82,6 @@ public class GfInScenePrefabHandler : INetworkPrefabInstanceHandler
 
     public void Destroy(NetworkObject networkObject)
     {
-        NetworkManager.Singleton.PrefabHandler.RemoveHandler(m_globalObjectIdHash);
-        NetworkManager.Singleton.PrefabHandler.RemoveNetworkPrefab(m_networkObject.gameObject);
+
     }
 }

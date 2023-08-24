@@ -11,10 +11,6 @@ public class WeaponParticleTrigger : WeaponParticle
     [SerializeField]
     protected bool m_canDamageSelf;
 
-    [SerializeField]
-    protected bool m_aimsAtTarget = true;
-
-    protected Transform m_transform;
 
     //whether or not it reads the damage source and stats character from the red index of a particle's start colour. 
     //The value will be the index of the character found in ReuableParticleSystemManager's list
@@ -24,15 +20,10 @@ public class WeaponParticleTrigger : WeaponParticle
 
     protected static readonly Vector3 DESTROY_POS = new(100000000, -100000000, 100000000);
 
-    protected void Awake()
+    protected new void Awake()
     {
-        m_transform = transform;
+        base.Awake();
         m_particlesList = new(16);
-
-        if (GetStatsCharacter() == null)
-            SetStatsCharacter(GetComponent<StatsCharacter>());
-
-        InitWeaponParticle();
 
         var triggerModule = m_particleSystem.trigger;
         triggerModule.enabled = true;
@@ -43,22 +34,6 @@ public class WeaponParticleTrigger : WeaponParticle
         ParticleTriggerDamageManager.AddParticleSystem(this);
         m_damageSound.LoadAudioClip();
         m_collisionSound.LoadAudioClip();
-    }
-
-    private void FixedUpdate()
-    {
-        LookAtTarget();
-    }
-
-    protected void LookAtTarget()
-    {
-        if (m_aimsAtTarget && m_target && m_isFiring)
-        {
-            if (m_movementParent)
-                m_transform.LookAt(m_target, m_movementParent.GetUpvecRotation());
-            else
-                m_transform.LookAt(m_target);
-        }
     }
 
     void OnParticleTrigger()
@@ -126,34 +101,11 @@ public class WeaponParticleTrigger : WeaponParticle
         }
     }
 
-    public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)
-    {
-        switch (fireType)
-        {
-            case (FireType.MAIN):
-                if (!m_isFiring)
-                {
-                    m_isFiring = true;
-                    LookAtTarget();
-                }
-
-                m_isFiring = true;
-                m_particleSystem.Play();
-
-                break;
-            case (FireType.SECONDARY):
-                break;
-            case (FireType.SPECIAL):
-                break;
-
-        }
-    }
-
     protected virtual void HitTarget(ref ParticleSystem.Particle particle, StatsCharacter self, StatsCharacter target, float damageMultiplier, DamageSource damageSource)
     {
         m_damageSound.Play(particle.position);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
-        target.Damage(GetDamage() * damageMultiplier, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex);
+        target.Damage(GetDamage() * damageMultiplier, m_damageType, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex);
         particle.remainingLifetime = 0;
     }
 

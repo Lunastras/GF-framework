@@ -150,8 +150,8 @@ public class HudManager : MonoBehaviour
             if (weapon)
             {
                 //Debug.Log("yeee we are level" + i);
-                weaponSlider.SetLevel(weapon.CurrentLevel(0));
-                weaponSlider.SetProgress(weapon.NextLevelProgress(0));
+                weaponSlider.SetLevel(weapon.GetCurrentLevel(0));
+                weaponSlider.SetProgress(weapon.GetNextLevelProgress(0));
             }
             else
             {
@@ -165,7 +165,7 @@ public class HudManager : MonoBehaviour
     public static void ToggleDeathScreen(bool active)
     {
         if (active) //enable deathscreen
-            GfUiTools.CrossFadeAlphaGroup(Instance.m_deathScreenGroup, 1, Instance.m_deathScreenFadeInTime);
+            GfUiTools.CrossFadeAlphaGroup(Instance.m_deathScreenGroup, 1, Instance.m_deathScreenFadeInTime, true);
         else //disable deathscreen
         {
             //GfUITools.CrossFadeAlphaGroup(Instance.m_deathScreenGroup, 0, Instance.m_deathScreenFadeOutTime);

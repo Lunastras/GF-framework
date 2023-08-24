@@ -91,9 +91,9 @@ public class OdamaBehaviour : MonoBehaviour
                 m_desiredTargetDst = raycastHits[0].distance;
         }
 
-        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_desiredTargetDst * distanceCoef, ref m_distanceSmoothRef, m_distanceSmoothTime);
+        m_currentTargetDst = Mathf.SmoothDamp(m_currentTargetDst, m_desiredTargetDst * distanceCoef, ref m_distanceSmoothRef, m_distanceSmoothTime, int.MaxValue, deltaTime);
         m_desiredPos = m_currentTargetDst * dirFromPlayer + parentPosition;
-        m_transform.position = Vector3.SmoothDamp(m_transform.position, m_desiredPos, ref m_distanceSmoothVelocity, m_movementSmoothTime);
+        m_transform.position = Vector3.SmoothDamp(m_transform.position, m_desiredPos, ref m_distanceSmoothVelocity, m_movementSmoothTime, int.MaxValue, deltaTime);
     }
 
     public float GetDesiredDst()

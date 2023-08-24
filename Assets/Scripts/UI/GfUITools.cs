@@ -108,18 +108,24 @@ public class GfUiTools : MonoBehaviour
         return EventSystem.current.IsPointerOverGameObject();
     }
 
-    public static void CrossFadeAlphaGroup(CanvasGroup group, float targetAlpha, float smoothTime)
+    public static void CrossFadeAlphaGroup(CanvasGroup group, float targetAlpha, float smoothTime, bool ignoreTimeScale)
     {
-        Timing.RunCoroutine(_CrossFadeAlphaGroup(group, targetAlpha, smoothTime, group.alpha));
+        Timing.RunCoroutine(_CrossFadeAlphaGroup(group, targetAlpha, smoothTime, group.alpha, ignoreTimeScale));
     }
 
-    private static IEnumerator<float> _CrossFadeAlphaGroup(CanvasGroup group, float targetAlpha, float smoothTime, float currentAlpha)
+    private static IEnumerator<float> _CrossFadeAlphaGroup(CanvasGroup group, float targetAlpha, float smoothTime, float currentAlpha, bool ignoreTimeScale)
     {
         float refSmooth = 0;
         group.alpha = currentAlpha;
+        float deltaTime;
+
         while (group && MathF.Abs(currentAlpha - targetAlpha) > 0.001f && group.alpha == currentAlpha) //stop coroutine if alpha is modified by somebody else
         {
-            currentAlpha = Mathf.SmoothDamp(currentAlpha, targetAlpha, ref refSmooth, smoothTime);
+            deltaTime = Time.deltaTime;
+            if (ignoreTimeScale)
+                deltaTime = Time.unscaledDeltaTime;
+
+            currentAlpha = Mathf.SmoothDamp(currentAlpha, targetAlpha, ref refSmooth, smoothTime, int.MaxValue, deltaTime);
             group.alpha = currentAlpha;
             yield return Timing.WaitForOneFrame;
         }

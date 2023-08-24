@@ -5,6 +5,9 @@ using UnityEngine;
 public class WeaponChargeLevels : WeaponGeneric
 {
     [SerializeField]
+    protected float m_fireRateInterval = 0.1f;
+
+    [SerializeField]
     protected AudioSource m_audioSource = null;
 
     [SerializeField]
@@ -15,6 +18,21 @@ public class WeaponChargeLevels : WeaponGeneric
 
     [SerializeField]
     protected float m_dischargePointsSpeed = 50;
+
+    [SerializeField]
+    protected int m_bombPhase = 6;
+
+    [SerializeField]
+    protected int m_bombAltMainFirePhase = -1;
+
+    [SerializeField]
+    protected bool m_eraseEnemyBulletsOnBomb = true;
+
+    [SerializeField]
+    protected int m_expPointsRequiredForBomb = 100;
+
+    [SerializeField]
+    protected int m_expPointsAfterBomb = 0;
 
     [SerializeField]
     public StructArray<float>[] m_expRequiredForLevels = new StructArray<float>[2];
@@ -31,22 +49,26 @@ public class WeaponChargeLevels : WeaponGeneric
     [SerializeField]
     public GfSound[] m_levelReleaseFireSounds = null;
 
-    public float CurrentExp(int index = 0)
+    protected bool m_fireReleased = false;
+
+    protected float m_timeUntilCanFire = 0;
+
+    public float GetCurrentExp(int index = 0)
     {
         return m_currentExps[index];
     }
 
-    public int CurrentLevel(int index = 0)
+    public int GetCurrentLevel(int index = 0)
     {
         return m_currentLevels[index];
     }
 
-    public float NextLevelProgress(int index = 0)
+    public float GetNextLevelProgress(int index = 0)
     {
         return m_nextLevelProgress[index];
     }
 
-    public bool IsCharging { get { return m_isCharging; } }
+    public bool GetIsCharging { get { return m_isCharging; } }
 
     protected float[] m_currentExps = new float[(int)WeaponPointsTypes.NUMBER_OF_TYPES];
 
@@ -75,10 +97,13 @@ public class WeaponChargeLevels : WeaponGeneric
 
     protected void Update()
     {
+        float deltaTime = Time.deltaTime * GetStatsCharacter().GetDeltaTimeCoef();
+        m_timeUntilCanFire -= Time.deltaTime * m_fireRateMultiplier;
+
         if (m_isCharging || m_isDischarging)
         {
             int chargeIndex = 1;
-            float pointsToAdd = Time.deltaTime;
+            float pointsToAdd = deltaTime;
 
             if (m_isCharging)
                 pointsToAdd *= m_chargePointsSpeed;
@@ -151,6 +176,7 @@ public class WeaponChargeLevels : WeaponGeneric
 
     public override void StopFiring(bool killBullets)
     {
+        m_fireReleased = true;
         m_isFiring = false;
         m_turret.Stop(killBullets);
     }
@@ -160,7 +186,7 @@ public class WeaponChargeLevels : WeaponGeneric
         m_turret.SetMovementParent(parent);
     }
 
-    public override bool IsFiring() { return m_turret.IsFiring(); }
+    public override bool IsFiring() { return m_turret.IsPlaying(); }
 
     public override bool IsAlive()
     {
@@ -183,7 +209,6 @@ public class WeaponChargeLevels : WeaponGeneric
         {
             case (FireType.MAIN):
                 OnMainFire(hit, fireType, forceFire);
-
                 if (m_isCharging)//used to give players a way to not activate the bomb
                     OnDischargeStart(false);
                 break;
@@ -196,20 +221,32 @@ public class WeaponChargeLevels : WeaponGeneric
         }
     }
 
-    protected void OnMainFire(FireHit hit, FireType fireType, bool forceFire)
+    protected virtual void OnMainFire(FireHit hit, FireType fireType, bool forceFire)
     {
-        m_isFiring = true;
-
-        if (m_levelFireSounds.Length > 0)
+        if (m_timeUntilCanFire <= 0 && (m_automatic || m_fireReleased))
         {
-            GetFireSound().Play(m_audioSource);
+            m_fireReleased = false;
+            m_timeUntilCanFire = m_fireRateInterval;
+
+            m_isFiring = true;
+
+            int phaseToPlay = m_currentLevels[0];
+            if (m_isDischarging && m_dischargeLevel == m_bombPhase && 0 <= m_bombAltMainFirePhase)
+            {
+                phaseToPlay = m_bombAltMainFirePhase;
+            }
+
+            if (m_levelFireSounds.Length > 0)
+            {
+                GetFireSound().Play(m_audioSource);
+            }
+
+            if (phaseToPlay != m_previousExpLevelPlayed)
+                m_turret.Stop(m_previousExpLevelPlayed, false);
+
+            m_turret.Play(forceFire, phaseToPlay, false);
+            m_previousExpLevelPlayed = phaseToPlay;
         }
-
-        if (m_currentLevels[0] != m_previousExpLevelPlayed)
-            m_turret.Stop(m_previousExpLevelPlayed, false);
-
-        m_turret.Play(forceFire, m_currentLevels[0], false);
-        m_previousExpLevelPlayed = m_currentLevels[0];
     }
 
     protected virtual void OnChargeStart()
@@ -222,31 +259,47 @@ public class WeaponChargeLevels : WeaponGeneric
         m_isCharging = false;
     }
 
+    public virtual void FireBomb()
+    {
+        SetPoints(WeaponPointsTypes.EXPERIENCE, m_expPointsRequiredForBomb);
+        m_isDischarging = true;
+        m_dischargeLevel = m_bombPhase;
+        if (m_bombPhase >= 0)
+            m_turret.Play(false, m_bombPhase);
+        SetPoints(WeaponPointsTypes.EXPERIENCE, 0);
+        if (m_eraseEnemyBulletsOnBomb)
+        {
+            m_eraseEnemyBullets = true;
+            HostilityManager.EraseAllEnemyBullets(GetStatsCharacter());
+        }
+    }
 
     protected virtual void OnDischargeStart(bool canBomb)
     {
         OnChargeEnd();
         m_dischargeLevel = 1 + m_currentLevels[(int)WeaponPointsTypes.CHARGE] + m_expRequiredForLevels[(int)WeaponPointsTypes.EXPERIENCE].array.Length;
-        if (canBomb && IsMaxLevel(WeaponPointsTypes.EXPERIENCE) && IsMaxLevel(WeaponPointsTypes.CHARGE))
+        if (canBomb && GetCurrentExp(0) == m_expPointsRequiredForBomb && IsMaxLevel(WeaponPointsTypes.CHARGE))
+        { //play the bomb, the special phase
+            FireBomb();
+            SetPoints(WeaponPointsTypes.EXPERIENCE, m_expPointsAfterBomb);
+        }
+        else
         {
-            //play the bomb, the special phase
-            m_dischargeLevel++;
-            SetPoints(WeaponPointsTypes.EXPERIENCE, 0);
-            Debug.Log("BOMBING THESE GUYS");
-            m_eraseEnemyBullets = true;
-            StatsCharacter selfStats = GetStatsCharacter();
-
-            HostilityManager.EraseAllEnemyBullets(GetStatsCharacter());
+            m_turret.Play(false, m_dischargeLevel);
         }
 
-        m_turret.Play(false, m_dischargeLevel);
         m_isDischarging = true;
     }
 
     protected virtual void OnDischargeOver()
     {
+        if (m_dischargeLevel >= 0)
+            m_turret.Stop(m_dischargeLevel, false);
+
+        if (m_bombAltMainFirePhase >= 0)
+            m_turret.Stop(m_bombAltMainFirePhase, false);
+
         m_eraseEnemyBullets = false;
-        m_turret.Stop(m_dischargeLevel, false);
         m_isDischarging = false;
     }
 
@@ -255,10 +308,11 @@ public class WeaponChargeLevels : WeaponGeneric
         switch (fireType)
         {
             case (FireType.MAIN):
+                m_fireReleased = true;
                 if (m_levelReleaseFireSounds.Length > 0)
                     GetReleaseFireSound().Play(m_audioSource);
                 m_isFiring = false;
-                m_turret.Stop(false);
+                m_turret.Stop(m_previousExpLevelPlayed, false);
                 break;
             case (FireType.SECONDARY):
                 if (m_isCharging)
@@ -370,5 +424,4 @@ public class WeaponChargeLevels : WeaponGeneric
     {
         return m_currentLevels[(int)type] >= m_expRequiredForLevels[(int)type].array.Length;
     }
-
 }

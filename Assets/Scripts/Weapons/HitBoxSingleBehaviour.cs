@@ -5,6 +5,9 @@ using UnityEngine;
 public class HitBoxSingleBehaviour : HitBoxGeneric
 {
     [SerializeField]
+    protected DamageType m_damageType = DamageType.NORMAL;
+
+    [SerializeField]
     protected SingleHitBoxValues hitBoxValues = null;
 
     private float timeUntilDisable = 0;
@@ -32,7 +35,7 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
     protected virtual bool HitTarget(StatsCharacter target, float damageMultiplier)
     {
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
-        target.Damage(hitBoxValues.damage * damageMultiplier, GetStatsCharacter().NetworkObjectId);
+        target.Damage(hitBoxValues.damage * damageMultiplier, m_damageType, GetStatsCharacter().NetworkObjectId);
         GfPooling.Destroy(gameObject);
 
         return true;

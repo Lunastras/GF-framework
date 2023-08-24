@@ -18,17 +18,33 @@ public class GfGameManager : MonoBehaviour
 
     [SerializeField] private GameObject m_gameAssetsPrefab = null;
 
-    [SerializeField] private bool m_startGameAutomatically = false;
+    protected float m_initialFixedDeltaTime = 0.02f;
 
-    [SerializeField] private bool m_overrideGameTypeMode = false;
+    public static float GetInitialFixedDeltaTime
+    {
+        get
+        {
+            return Instance.m_initialFixedDeltaTime;
+        }
+    }
 
-    [SerializeField] private GameMultiplayerType m_gameTypeOverride = GameMultiplayerType.SINGLEPLAYER;
+    public static GameMultiplayerType GameType
+    {
+        get
+        {
+            GameMultiplayerType gameType = GameMultiplayerType.NONE;
+            if (Instance)
+                gameType = Instance.m_gameType;
 
-    public static GameMultiplayerType GameType { get; set; } = GameMultiplayerType.SINGLEPLAYER;
+            return gameType;
+        }
+    }
 
     protected GameObject m_gameAssetsInstance = null;
 
     public bool m_isMultiplayer { get; protected set; } = false;
+
+    protected GameMultiplayerType m_gameType = GameMultiplayerType.NONE;
 
     public static bool IsMultiplayer
     {
@@ -52,6 +68,9 @@ public class GfGameManager : MonoBehaviour
             Destroy(Instance);
 
         Instance = this;
+
+        m_initialFixedDeltaTime = Time.fixedDeltaTime;
+
         SpawnGameAssets();
     }
 
@@ -62,12 +81,7 @@ public class GfGameManager : MonoBehaviour
 
         m_currentTimeScale = Time.timeScale;
 
-        if (m_overrideGameTypeMode)
-        {
-            GameType = m_gameTypeOverride;
-        }
 
-        if (m_startGameAutomatically) StartGame();
 
         DontDestroyOnLoad(gameObject);
 
@@ -120,6 +134,10 @@ public class GfGameManager : MonoBehaviour
         if (Instance.m_gameAssetsInstance)
             Destroy(Instance.m_gameAssetsInstance);
         Instance.m_gameAssetsInstance = null;
+        Instance.m_gameType = GameMultiplayerType.NONE;
+        CheckpointManager.OnHardCheckpoint = null;
+        Time.fixedDeltaTime = Instance.m_initialFixedDeltaTime;
+        Time.timeScale = 1;
     }
 
     public static void SpawnGameAssets()
@@ -130,10 +148,11 @@ public class GfGameManager : MonoBehaviour
         }
     }
 
-    public static void StartGame()
+    public static void StartGame(GameMultiplayerType gameType)
     {
         if (!GameInitialised)
         {
+            Instance.m_gameType = gameType;
             SpawnGameAssets();
 
             switch (GameType)
@@ -174,24 +193,6 @@ public class GfGameManager : MonoBehaviour
 
     public static Camera Camera { get { return CameraController.Instance.Camera; } }
 
-    public static bool StartGameAutomatically
-    {
-        get
-        {
-            return Instance.m_startGameAutomatically;
-        }
-    }
-
-    public static void SetStartGameAutomatically(bool value)
-    {
-        Instance.m_startGameAutomatically = value;
-    }
-
-    public static void SetAllowGameTypeOverride(bool value)
-    {
-        Instance.m_overrideGameTypeMode = value;
-    }
-
     public static bool Initialised()
     {
         return Instance.m_initialised;
@@ -217,7 +218,7 @@ public class GfGameManager : MonoBehaviour
         if (GfLevelManager.IsPaused())
             GfLevelManager.PauseToggle();
 
-        LoadingScreenManager.LoadScene(0, ServerLoadingMode.SHUTDOWN);
+        LoadingScreenManager.LoadScene(0, ServerLoadingMode.SHUTDOWN, GameMultiplayerType.NONE);
     }
 
     public static void QuitGame()

@@ -107,60 +107,60 @@ public abstract class StatsCharacter : NetworkBehaviour
     }
 
     [ClientRpc]
-    protected virtual void DamageClientRpc(float damage, ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    protected virtual void DamageClientRpc(float damage, DamageType damageType, ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
-        InternalDamage(damage, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
+        InternalDamage(damage, damageType, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
     }
 
     [ClientRpc]
-    protected virtual void DamageClientRpc(float damage)
+    protected virtual void DamageClientRpc(float damage, DamageType damageType)
     {
-        if (!IsServer) InternalDamage(damage, 0, false, -1, -1, true);
+        if (!IsServer) InternalDamage(damage, damageType, 0, false, -1, -1, true);
     }
 
-    public virtual void Damage(float damage, ulong enemyNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
+    public virtual void Damage(float damage, DamageType damageType, ulong enemyNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
     {
         /*We call InternalDamage() before calling the DamageClientRpc() because InternalDamage() can call the Kill rpc function.
         The problem with this is that Unity has a bug where clientRpcs called from ClientRpcs are only called on the host.*/
 
-        InternalDamage(damage, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
+        InternalDamage(damage, damageType, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
         if (HasAuthority)
-            DamageClientRpc(damage, enemyNetworkId, weaponLoadoutIndex, weaponIndex);
+            DamageClientRpc(damage, damageType, enemyNetworkId, weaponLoadoutIndex, weaponIndex);
     }
 
-    public virtual void Damage(float damage)
+    public virtual void Damage(float damage, DamageType damageType = DamageType.NORMAL)
     {
         if (HasAuthority)
-            DamageClientRpc(damage);
+            DamageClientRpc(damage, damageType);
         else
-            InternalDamage(damage, 0, false, -1, -1, false);
+            InternalDamage(damage, damageType, 0, false, -1, -1, false);
     }
 
     public virtual void SetCheckpointState(CheckpointState state) { }
 
     public virtual void OnHardCheckpoint() { }
 
-    protected abstract void InternalDamage(float damage, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall);
+    protected abstract void InternalDamage(float damage, DamageType damageType, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall);
 
 
     [ClientRpc]
-    protected void KillClientRpc(ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    protected void KillClientRpc(DamageType damageType, ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
-        InternalKill(enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
+        InternalKill(damageType, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
     }
 
     [ClientRpc]
-    protected void KillClientRpc()
+    protected void KillClientRpc(DamageType damageType)
     {
-        InternalKill(0, false, -1, -1, true);
+        InternalKill(damageType, 0, false, -1, -1, true);
     }
 
-    public void Kill(ulong killerNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
+    public void Kill(DamageType damageType, ulong killerNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
     {
         if (HasAuthority)
-            KillClientRpc(killerNetworkId, weaponLoadoutIndex, weaponIndex);
+            KillClientRpc(damageType, killerNetworkId, weaponLoadoutIndex, weaponIndex);
         else
-            InternalKill(killerNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
+            InternalKill(damageType, killerNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
     }
 
 
@@ -218,13 +218,16 @@ public abstract class StatsCharacter : NetworkBehaviour
         if (m_enemiesEngagingCount < 0) m_enemiesEngagingCount = 0;
     }
 
-    public virtual void Kill()
+    public virtual void Kill(DamageType damageType = DamageType.NORMAL)
     {
         if (HasAuthority)
-            KillClientRpc();
+            KillClientRpc(damageType);
         else
-            InternalKill(0, false, -1, -1, false);
+            InternalKill(damageType, 0, false, -1, -1, false);
     }
+
+    protected abstract void InternalKill(DamageType damageType, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall);
+
 
     public virtual float GetDeltaTimeCoef() { return GfServerManager.GetDeltaTimeCoef(m_characterType.Value); }
 
@@ -233,7 +236,6 @@ public abstract class StatsCharacter : NetworkBehaviour
         return m_isDead;
     }
 
-    protected abstract void InternalKill(ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall);
 
     public CharacterTypes GetCharacterType()
     {

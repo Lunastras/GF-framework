@@ -9,12 +9,11 @@ public class FpsTracker : MonoBehaviour
     private Text textFps = null;
 
     [SerializeField]
-    private int refreshesPerSecond = 5;
+    private float m_refreshRateInterval = 0.1f;
 
-    private uint updateCalls;
-    private uint totalFrames;
-    private float intervalBetweenRefresh;
-    private float lastRefreshTime;
+    private uint m_updateCalls;
+    private uint m_totalFrames;
+    private float m_timeUntilRefresh;
     // Start is called before the first frame update
     void Start()
     {
@@ -22,9 +21,6 @@ public class FpsTracker : MonoBehaviour
         {
             textFps = GetComponent<Text>();
         }
-
-        intervalBetweenRefresh = 1.0f / (float)refreshesPerSecond;
-        lastRefreshTime = Time.unscaledTime;
     }
 
     //Displays the average FPS between the refreshes
@@ -32,17 +28,18 @@ public class FpsTracker : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float currentTime = Time.unscaledTime;
-        float timeSinceLastRefresh = currentTime - lastRefreshTime;
-        uint currentFps = (uint)(1.0f / Time.deltaTime);
-        totalFrames += currentFps;
-        updateCalls++;
+        float deltaTime = Time.unscaledDeltaTime;
+        uint currentFps = (uint)(1.0f / deltaTime);
 
-        if (timeSinceLastRefresh > intervalBetweenRefresh)
+        m_totalFrames += currentFps;
+        m_updateCalls++;
+        m_timeUntilRefresh -= deltaTime;
+
+        if (m_timeUntilRefresh <= 0)
         {
-            textFps.text = (totalFrames / updateCalls).ToString();
-            lastRefreshTime = currentTime;
-            updateCalls = totalFrames = 0;
+            textFps.text = (m_totalFrames / m_updateCalls).ToString();
+            m_timeUntilRefresh = m_refreshRateInterval;
+            m_updateCalls = m_totalFrames = 0;
         }
     }
 }

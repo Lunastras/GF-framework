@@ -178,7 +178,7 @@ public class PlayerController : NetworkBehaviour
             float physDelta = Time.fixedDeltaTime * m_statsCharacter.GetDeltaTimeCoef();
             GetInputs(physDelta);
 
-            m_movement.UpdatePhysics(physDelta, true, physDelta); //actually the current deltatime   
+            m_movement.UpdatePhysics(physDelta, physDelta); //actually the current deltatime   
             m_flagDash = m_flagJump = false;
         }
     }
@@ -237,9 +237,6 @@ public class PlayerController : NetworkBehaviour
 
     void LateUpdate()
     {
-        // GfServerManager.SetTimeScale(0.1f, true, -1);
-        // GfServerManager.SetTimeScale(1, m_statsCharacter.GetCharacterType(), -1);
-
         if (IsOwner)
         {
             float deltaTime = Time.deltaTime * m_statsCharacter.GetDeltaTimeCoef();
@@ -247,14 +244,14 @@ public class PlayerController : NetworkBehaviour
 
             GetInputs(deltaTime);
 
-            m_movement.Move(deltaTime);
+            m_movement.Move(Time.deltaTime);
 
             if (!m_usesRigidBody && !m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
             {
                 float physDelta = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks - m_timeUntilPhysChecks);
                 m_timeUntilPhysChecks += m_timeBetweenPhysChecks;
                 float timeUntilNextUpdate = System.MathF.Max(deltaTime, m_timeUntilPhysChecks);
-                m_movement.UpdatePhysics(physDelta, false, timeUntilNextUpdate);
+                m_movement.UpdatePhysics(physDelta, timeUntilNextUpdate);
 
                 m_flagDash = m_flagJump = false;
             }

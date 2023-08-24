@@ -142,7 +142,7 @@ public class NpcController : NetworkBehaviour
             m_timeUntilNextStateUpdate = m_updateInterval * UnityEngine.Random.Range(0.9f, 1.1f);
 
             stateDelta = System.MathF.Max(deltaTime, stateDelta);
-            StateUpdate(stateDelta);
+            StateUpdate(stateDelta, m_timeUntilNextStateUpdate);
         }
     }
 
@@ -154,7 +154,7 @@ public class NpcController : NetworkBehaviour
 
     protected virtual void BeforeStateUpdate(float deltaTime) { }
 
-    protected void StateUpdate(float deltaTime)
+    protected void StateUpdate(float deltaTime, float timeUntilNextUpdate)
     {
         m_timeUntilUnpause -= deltaTime;
         m_timeUntilLosetarget -= deltaTime;
@@ -179,7 +179,7 @@ public class NpcController : NetworkBehaviour
                 NoDestinationsBehaviour(deltaTime);
             }
 
-            m_movement.UpdatePhysics(deltaTime, true, -1, m_updatePhysicsValuesAutomatically);
+            m_movement.UpdatePhysics(deltaTime, timeUntilNextUpdate, false, m_updatePhysicsValuesAutomatically);
             AfterStateUpdate(deltaTime);
         }
     }

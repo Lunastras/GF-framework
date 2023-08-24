@@ -6,6 +6,10 @@ using Unity.Netcode;
 public abstract class GfMovementGeneric : MonoBehaviour
 {
     #region Variables
+
+    [SerializeField]
+    protected StatsCharacter m_statsCharacter;
+
     [SerializeField]
     public bool CanFly;
 
@@ -93,6 +97,8 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     private float m_timeBetweenPhysChecks = 0.02f;
 
+    private double m_timeOfLastPhysCheck = 0;
+
     private float m_previousLerpAlpha;
 
     private float m_accumulatedTimefactor = 0;
@@ -107,11 +113,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
     [SerializeField]
 
     private float m_maxCasts = 4;
-
-
-    // private float m_timeUntilPhysChecks = 0;
-
-    private double m_timeOfLastPhysCheck;
 
     private bool m_interpolateThisFrame = false;
 
@@ -142,6 +143,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         m_lastRotation = m_transform.rotation;
         ValidateCollisionArchetype();
         m_archetypeCollision.UpdateValues();
+        if (null == m_statsCharacter) m_statsCharacter = GetComponent<StatsCharacter>();
     }
 
     protected virtual void BeforePhysChecks(float deltaTime) { }
@@ -242,7 +244,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         if (m_interpolateThisFrame)
         {
-            float timeSincePhysCheck = (float)(currentTime - m_timeOfLastPhysCheck);
+            float timeSincePhysCheck = GetDeltaTimeCoef() * (float)(currentTime - m_timeOfLastPhysCheck);
             float timeBetweenChecks = System.MathF.Max(deltaTime, m_timeBetweenPhysChecks);
             float alpha = System.MathF.Min(1.0f, timeSincePhysCheck / timeBetweenChecks);
             float timefactor = alpha - m_previousLerpAlpha;
@@ -264,13 +266,13 @@ public abstract class GfMovementGeneric : MonoBehaviour
             }
         }
 
-        UpdateSphericalOrientation(true);
+        UpdateSphericalOrientation(true, deltaTime);
 
         m_transform.position += movementThisFrame;
         m_lastRotation = m_transform.rotation;
     }
 
-    public bool UpdatePhysics(float deltaTime, bool updateParentMovement = true, float timeUntilNextUpdate = -1, bool verifyCollisionArchetype = true, bool ignorePhysics = false)
+    public bool UpdatePhysics(float deltaTime, float timeUntilNextUpdate, bool ignorePhysics = false, bool verifyCollisionArchetype = true)
     {
         if (m_interpolateThisFrame)
         {
@@ -284,18 +286,13 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
         double currentTime = Time.timeAsDouble;
 
-        if (timeUntilNextUpdate < 0)
-            timeUntilNextUpdate = (float)(currentTime - m_timeOfLastPhysCheck);
-
-        m_timeBetweenPhysChecks = timeUntilNextUpdate;
-        m_timeOfLastPhysCheck = currentTime;
+        m_timeOfLastPhysCheck = Time.timeAsDouble;
         m_lastPhysDeltaTime = deltaTime;
+        m_timeBetweenPhysChecks = timeUntilNextUpdate;
 
-        UpdateSphericalOrientation(false);
+        UpdateSphericalOrientation(false, deltaTime);
 
-        if (updateParentMovement)
-            m_transform.position += GetParentMovement(m_transform.position, deltaTime, currentTime);
-
+        m_transform.position += GetParentMovement(m_transform.position, deltaTime, currentTime);
         Quaternion initialRot = m_transform.rotation;
         Vector3 initialPos = m_transform.position;
 
@@ -350,7 +347,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         else
         {
             m_transform.position = position;
-            UpdateSphericalOrientation(false);
+            UpdateSphericalOrientation(false, deltaTime);
         }
 
 
@@ -568,7 +565,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     private const float INV_180 = 0.005555555555f;
 
-    private void UpdateSphericalOrientation(bool rotateOrientation)
+    private void UpdateSphericalOrientation(bool rotateOrientation, float deltaTime)
     {
         if (m_parentSpherical.Value)
         {
@@ -583,7 +580,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
             if (m_rotationSmoothProgress < 0.9999f)
             {
-                m_rotationSmoothProgress = Mathf.SmoothDamp(m_rotationSmoothProgress, 1, ref m_refUpVecSmoothRot, m_rotationSmoothSeconds);
+                m_rotationSmoothProgress = Mathf.SmoothDamp(m_rotationSmoothProgress, 1, ref m_refUpVecSmoothRot, m_rotationSmoothSeconds, int.MaxValue, deltaTime);
                 Vector3 auxVec = Vector3.Lerp(m_initialUpVec, m_upVec, m_rotationSmoothProgress);
                 GfTools.Normalize(ref auxVec);
                 upVecRotCorrection = Quaternion.FromToRotation(m_rotationUpVec, auxVec);
@@ -807,6 +804,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                 parentVelocity.x += m_upVec.x * verticalFallSpeed;
                 parentVelocity.y += m_upVec.y * verticalFallSpeed;
                 parentVelocity.z += m_upVec.z * verticalFallSpeed;
+                GfTools.Div3(ref parentVelocity, GetDeltaTimeCoef());
 
                 GfTools.Add3(ref m_interpolationMovement, parentVelocity * m_lastPhysDeltaTime); //TODO
                 GfTools.Add3(ref m_velocity, parentVelocity);
@@ -871,7 +869,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public void OrientToUpVecForced()
     {
         m_rotationSmoothProgress = 1;
-        UpdateSphericalOrientation(true);
+        UpdateSphericalOrientation(true, 0);
     }
 
     public void ReturnToDefaultValues()
@@ -998,6 +996,25 @@ public abstract class GfMovementGeneric : MonoBehaviour
     public Quaternion GetCurrentRotation()
     {
         return m_currentRotation;
+    }
+
+    public StatsCharacter GetStatsCharacter()
+    {
+        return m_statsCharacter;
+    }
+
+    public void SetStatsCharacter(StatsCharacter statsCharacter)
+    {
+        m_statsCharacter = statsCharacter;
+    }
+
+    public float GetDeltaTimeCoef()
+    {
+        float coef = 1;
+        if (m_statsCharacter)
+            coef = m_statsCharacter.GetDeltaTimeCoef();
+
+        return coef;
     }
 
     public void SetCurrentRotation(Quaternion currentRotation)

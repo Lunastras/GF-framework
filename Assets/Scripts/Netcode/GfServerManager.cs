@@ -26,6 +26,8 @@ public class GfServerManager : NetworkBehaviour
 
     protected NetworkList<float> m_characterTimeScales = new();
 
+    protected NetworkVariable<float> m_targetFixedTimestep = new(0.02f);
+
     public static bool HostReady
     {
         get
@@ -41,12 +43,43 @@ public class GfServerManager : NetworkBehaviour
             return !NetworkManager.Singleton || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer || !GfGameManager.IsMultiplayer;
         }
     }
+
+    protected void OnTimeScaleChanged(float previousValue, float newValue)
+    {
+        Time.fixedDeltaTime = newValue * m_targetFixedTimestep.Value;
+        Time.timeScale = newValue;
+    }
+
+    protected void OnTargetFixedTimestepChanged(float previousValue, float newValue)
+    {
+        Time.fixedDeltaTime = Time.timeScale / newValue;
+    }
+
+    public static void SetFixedDeltaTime(float value)
+    {
+        if (HasAuthority)
+            Instance.m_targetFixedTimestep.Value = value;
+    }
+
+    public static float GetFixedDeltaTime()
+    {
+        return Instance.m_targetFixedTimestep.Value;
+    }
+
     // Start is called before the first frame update
     void Awake()
     {
         if (Instance != this)
         {
             Destroy(Instance);
+        }
+
+        m_timeScale.OnValueChanged += OnTimeScaleChanged;
+        m_targetFixedTimestep.OnValueChanged += OnTargetFixedTimestepChanged;
+
+        if (HasAuthority)
+        {
+            m_targetFixedTimestep.Value = GfGameManager.GetInitialFixedDeltaTime;
         }
 
         DontDestroyOnLoad(gameObject);
@@ -99,7 +132,7 @@ public class GfServerManager : NetworkBehaviour
     {
         if (HasAuthority)
         {
-            LoadingScreenManager.LoadScene(sceneBuildIndex, loadingMode);
+            LoadingScreenManager.LoadScene(sceneBuildIndex, loadingMode, GfGameManager.GameType);
             Instance.LevelChangeClientRpc(sceneBuildIndex, ServerLoadingMode.RECONNECT);
         }
     }
@@ -113,10 +146,10 @@ public class GfServerManager : NetworkBehaviour
     protected virtual void LevelChangeClientRpc(int sceneBuildIndex, ServerLoadingMode loadingMode)
     {
         if (!HasAuthority)
-            LoadingScreenManager.LoadScene(sceneBuildIndex, loadingMode);
+            LoadingScreenManager.LoadScene(sceneBuildIndex, loadingMode, GfGameManager.GameType);
     }
 
-    protected new void OnDestroy()
+    public override void OnDestroy()
     {
         Instance = null;
         SetTimeScale(1);
@@ -224,7 +257,7 @@ public class GfServerManager : NetworkBehaviour
 
         while (null != m_characterTimeScales && MathF.Abs(currentScale - targetScale) > 0.001f && m_characterTimeScales[typeIndex] == currentScale) //stop coroutine if alpha is modified by somebody else
         {
-            currentScale = Mathf.SmoothDamp(currentScale, targetScale, ref refSmooth, smoothTime);
+            currentScale = Mathf.SmoothDamp(currentScale, targetScale, ref refSmooth, smoothTime, int.MaxValue, Time.unscaledDeltaTime);
             m_characterTimeScales[typeIndex] = currentScale;
             yield return Timing.WaitForOneFrame;
         }
@@ -237,20 +270,17 @@ public class GfServerManager : NetworkBehaviour
     {
         float currentScale = m_timeScale.Value;
         float refSmooth = 0;
-        Time.timeScale = currentScale;
 
         while (null != m_characterTimeScales && MathF.Abs(currentScale - targetScale) > 0.001f && m_timeScale.Value == currentScale) //stop coroutine if alpha is modified by somebody else
         {
-            currentScale = Mathf.SmoothDamp(currentScale, targetScale, ref refSmooth, smoothTime);
+            currentScale = Mathf.SmoothDamp(currentScale, targetScale, ref refSmooth, smoothTime, int.MaxValue, Time.unscaledDeltaTime);
             m_timeScale.Value = currentScale;
-            Time.timeScale = currentScale;
             yield return Timing.WaitForOneFrame;
         }
 
         if (null != m_characterTimeScales && m_timeScale.Value == currentScale)
         {
             m_timeScale.Value = targetScale;
-            Time.timeScale = m_timeScale.Value;
         }
     }
 
