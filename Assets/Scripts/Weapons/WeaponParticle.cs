@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
+[RequireComponent(typeof(ParticleEraser))]
 public abstract class WeaponParticle : WeaponGeneric
 {
     [SerializeField]
@@ -12,6 +14,9 @@ public abstract class WeaponParticle : WeaponGeneric
 
     [SerializeField]
     protected float m_particlesEraseFromCenterSpeed = 10f;
+
+    [SerializeField]
+    protected ParticleEraser m_particleEraser = null;
 
     private int m_particleTriggerDamageListIndex = -1;
     protected ParticleSystem m_particleSystem;
@@ -31,11 +36,14 @@ public abstract class WeaponParticle : WeaponGeneric
         m_particleSystem = GetComponent<ParticleSystem>();
         if (GetStatsCharacter() == null)
             SetStatsCharacter(GetComponent<StatsCharacter>());
+
+        if (m_particleEraser == null)
+            m_particleEraser = GetComponent<ParticleEraser>();
     }
 
-    private void FixedUpdate()
+    protected void FixedUpdate()
     {
-        m_timeUntilCanFire -= Time.deltaTime * m_fireRateMultiplier;
+        m_timeUntilCanFire -= Time.deltaTime * m_weaponMultipliers[(int)WeaponMultiplierTypes.FIRE_RATE];
         LookAtTarget();
 
         if ((DisableWhenDone || DestroyWhenDone) && !IsAlive())
@@ -69,16 +77,16 @@ public abstract class WeaponParticle : WeaponGeneric
         return ps;
     }
 
-    public override void EraseAllBullets(StatsCharacter characterResponsible)
+    public override void EraseAllBullets(StatsCharacter characterResponsible, float3 centerOfErase, float speedFromCenter, float eraseRadius)
     {
-        base.EraseAllBullets(characterResponsible);
-        ParticleEraser.EraseParticlesFromCenter(m_particleSystem, characterResponsible.transform.position, m_particlesEraseFromCenterSpeed);
+        base.EraseAllBullets(characterResponsible, centerOfErase, speedFromCenter, eraseRadius);
+        m_particleEraser.EraseParticles(centerOfErase, speedFromCenter, eraseRadius);
     }
 
     protected void OnOwnerKilled(StatsCharacter character, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex)
     {
         if (m_eraseParticlesAfterOwnerKilled)
-            ParticleEraser.EraseParticlesFromCenter(m_particleSystem, character.transform.position, m_particlesEraseFromCenterSpeed);
+            m_particleEraser.EraseParticles(character.transform.position, m_particlesEraseFromCenterSpeed, 100000);
     }
 
     public override void StopFiring(bool killBullets)
@@ -173,32 +181,42 @@ public abstract class WeaponParticle : WeaponGeneric
 
     public override bool IsAlive() { return m_particleSystem.IsAlive(true); }
 
-    public override void SetSpeedMultiplier(float multiplier)
+    public override bool SetMultiplier(WeaponMultiplierTypes multiplierType, float multiplier)
     {
-        base.SetSpeedMultiplier(multiplier);
-        var main = m_particleSystem.main;
-        main.simulationSpeed = multiplier;
-    }
+        float previousMultiplier = m_weaponMultipliers[(int)multiplierType];
 
-    public override void SetFireRateMultiplier(float multiplier)
-    {
-        float previousMultiplier = m_fireRateMultiplier;
-        base.SetFireRateMultiplier(multiplier);
-
-        var emission = m_particleSystem.emission;
-        float initialRateOverTimeMultiplier = emission.rateOverTimeMultiplier / previousMultiplier;
-        emission.rateOverTimeMultiplier = initialRateOverTimeMultiplier * multiplier;
-
-        int burstCount = emission.burstCount;
-        for (int i = 0; i < burstCount; ++i)
+        bool changedValue = base.SetMultiplier(multiplierType, multiplier);
+        if (changedValue)
         {
-            var burstModule = m_particleSystem.emission.GetBurst(i);
+            switch (multiplierType)
+            {
+                case (WeaponMultiplierTypes.FIRE_RATE):
+                    var emission = m_particleSystem.emission;
+                    float initialRateOverTimeMultiplier = emission.rateOverTimeMultiplier / previousMultiplier;
+                    emission.rateOverTimeMultiplier = initialRateOverTimeMultiplier * multiplier;
 
-            initialRateOverTimeMultiplier = burstModule.repeatInterval / previousMultiplier;
-            emission.rateOverTimeMultiplier = initialRateOverTimeMultiplier * multiplier;
+                    int burstCount = emission.burstCount;
+                    for (int i = 0; i < burstCount; ++i)
+                    {
+                        var burstModule = m_particleSystem.emission.GetBurst(i);
 
-            m_particleSystem.emission.SetBurst(i, burstModule);
+                        initialRateOverTimeMultiplier = burstModule.repeatInterval / previousMultiplier;
+                        emission.rateOverTimeMultiplier = initialRateOverTimeMultiplier * multiplier;
+
+                        m_particleSystem.emission.SetBurst(i, burstModule);
+                    }
+                    break;
+
+                case (WeaponMultiplierTypes.SPEED):
+                    var main = m_particleSystem.main;
+                    main.simulationSpeed = multiplier;
+                    break;
+                case (WeaponMultiplierTypes.SPREAD):
+                    break;
+            }
         }
+
+        return changedValue;
     }
 
     public override void SetMovementParent(GfMovementGeneric parent)

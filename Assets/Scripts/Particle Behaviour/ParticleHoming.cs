@@ -14,9 +14,6 @@ public class ParticleHoming : JobChild
     protected ParticleSystem m_particleSystem;
 
     [SerializeField]
-    protected float m_physInterval = 0.1f;
-
-    [SerializeField]
     protected float m_acceleration = 5;
 
     [SerializeField]
@@ -55,13 +52,9 @@ public class ParticleHoming : JobChild
 
     protected List<Transform> m_targetsOverride = new(0);
 
-    protected int m_numActiveParticles = 0;
-
     protected bool m_initialised = false;
 
     protected bool m_hasAJob = false;
-
-    protected float m_timeUntilPhysUpdate = 0;
 
     protected NativeArray<float3>.ReadOnly m_targetPositions;
 
@@ -70,8 +63,6 @@ public class ParticleHoming : JobChild
     protected NativeArray<float3> m_effectiveTargetPositions;
 
     protected bool m_mustDisposeEffectivePositions = false;
-
-    public Action OnJobSchedule = null;
 
     // Start is called before the first frame update
     protected void Awake()
@@ -101,11 +92,6 @@ public class ParticleHoming : JobChild
             ResetToDefault();
     }
 
-    protected void OnDestroy()
-    {
-        DeinitJobChild();
-    }
-
     public void ResetToDefault()
     {
         m_targetsOverride.Clear();
@@ -120,15 +106,11 @@ public class ParticleHoming : JobChild
         m_hasAJob = false;
         handle = default;
 
-        m_timeUntilPhysUpdate -= deltaTime;
-
-        if (0 >= m_timeUntilPhysUpdate)
+        if (JobParent.CanSchedule(JobScheduleTypes.PARTICLE_HOMING))
         {
-            float timeSinceLastCheck = System.MathF.Max(deltaTime, System.MathF.Min(2 * m_physInterval, m_physInterval - m_timeUntilPhysUpdate));
-            m_timeUntilPhysUpdate += m_physInterval;
-            m_numActiveParticles = m_particleSystem.particleCount;
+            int numActiveParticles = m_particleSystem.particleCount;
             //Debug.Log("The num of particles i have is: " + m_numActiveParticles + " name is: " + gameObject.name);
-            if (m_numActiveParticles > 0)
+            if (numActiveParticles > 0)
             {
                 OnJobSchedule?.Invoke();
 
@@ -139,8 +121,8 @@ public class ParticleHoming : JobChild
                     MovementGravityReference = auxMovement;
                 }
 
-                m_particleList = new(m_numActiveParticles, Allocator.TempJob);
-                m_particleSystem.GetParticles(m_particleList, m_numActiveParticles);
+                m_particleList = new(numActiveParticles, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+                m_particleSystem.GetParticles(m_particleList, numActiveParticles);
 
                 Vector3 gravity3 = m_defaultGravityDir;
                 if (m_sphericalParent)
@@ -168,10 +150,11 @@ public class ParticleHoming : JobChild
                     targetPositions = m_effectiveTargetPositions.AsReadOnly();
                 }
 
+                float timeSinceLastCheck = JobParent.GetScheduleInterval(JobScheduleTypes.PARTICLE_HOMING);
                 ParticleHomingJob jobStruct = new ParticleHomingJob(m_particleList, targetPositions, timeSinceLastCheck, m_maxSpeed, m_minimumSpeed, m_maxSpeedHoming
                 , m_acceleration, m_gravity, m_deacceleration, m_drag, m_targetRadius * m_targetRadius, gravity3, null != m_sphericalParent);
 
-                handle = jobStruct.Schedule(m_numActiveParticles, min(16, m_numActiveParticles));
+                handle = jobStruct.Schedule(numActiveParticles, min(16, numActiveParticles));
                 m_hasAJob = true;
             }
         }
@@ -202,9 +185,15 @@ public class ParticleHoming : JobChild
                 m_effectiveTargetPositions.Dispose();
 
             m_mustDisposeEffectivePositions = false;
-            m_particleSystem.SetParticles(m_particleList, m_numActiveParticles);
+            m_particleSystem.SetParticles(m_particleList);
             m_particleList.Dispose();
         }
+    }
+
+
+    protected void OnDestroy()
+    {
+        if (m_particleList.IsCreated) m_particleList.Dispose();
     }
 
     public List<Transform> GetTargetList()
@@ -403,7 +392,10 @@ public struct ParticleHomingJob : IJobParallelFor
         velocity -= unwantedVelocity * deaccMagn;
 
         float velocityLength = length(velocity);
-        velocity = velocity / velocityLength * max(velocityLength, m_minimumSpeed);
+        if (velocityLength > 0)
+        {
+            velocity = velocity / velocityLength * max(velocityLength, m_minimumSpeed);
+        }
 
         particle.velocity = velocity;
         m_particleList[i] = particle;

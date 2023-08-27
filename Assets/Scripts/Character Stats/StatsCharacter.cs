@@ -4,6 +4,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using System.Linq;
 using System;
+using Unity.Mathematics;
 
 
 public abstract class StatsCharacter : NetworkBehaviour
@@ -30,7 +31,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected NetworkTransform m_networkTransform;
 
-    private int[] m_characterIndexes = Enumerable.Repeat(-1, (int)CharacterIndexType.COUNT_TYPES).ToArray();
+    protected int[] m_characterIndexes = Enumerable.Repeat(-1, (int)CharacterIndexType.COUNT_TYPES).ToArray();
 
     protected bool m_initialised = false;
 
@@ -98,7 +99,7 @@ public abstract class StatsCharacter : NetworkBehaviour
         return m_threatLevel;
     }
 
-    public virtual void EraseAllBullets(StatsCharacter characterResponsible) { }
+    public virtual void EraseAllBullets(StatsCharacter characterResponsible, float3 centerOfErase, float speedFromCenter, float eraseRadius) { }
 
     protected void OnEnable()
     {

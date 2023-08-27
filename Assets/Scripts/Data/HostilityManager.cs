@@ -136,23 +136,23 @@ public class HostilityManager : MonoBehaviour
         return GetEnemiesList((int)self, (int)enemy);
     }
 
-    public static void EraseAllEnemyBullets(StatsCharacter characterResponsible)
+    public static void EraseAllEnemyBullets(StatsCharacter characterResponsible, float3 centerOfErase, float speedFromCenter, float eraseRadius)
     {
         for (int i = 0; i < (int)CharacterTypes.NUM_CHARACTER_TYPES; ++i)
         {
             if (HostilityManager.EnemyWith(characterResponsible.GetCharacterType(), (CharacterTypes)i))
             {
-                HostilityManager.EraseAllBullets((CharacterTypes)i, characterResponsible);
+                HostilityManager.EraseAllBullets((CharacterTypes)i, characterResponsible, centerOfErase, speedFromCenter, eraseRadius);
             }
         }
     }
 
-    public static void EraseAllBullets(CharacterTypes type, StatsCharacter characterResponsible)
+    public static void EraseAllBullets(CharacterTypes type, StatsCharacter characterResponsible, float3 centerOfErase, float speedFromCenter, float eraseRadius)
     {
         var list = Instance.m_instantiatedCharacters[(int)type];
         for (int i = 0; i < list.Count; ++i)
         {
-            list[i].EraseAllBullets(characterResponsible);
+            list[i].EraseAllBullets(characterResponsible, centerOfErase, speedFromCenter, eraseRadius);
         }
     }
 

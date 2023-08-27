@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7405310194208069712}
   - component: {fileID: 1764824237114222956}
   - component: {fileID: 5883916538646038486}
+  - component: {fileID: 4559055922491876575}
   m_Layer: 2
   m_Name: Weapon Bomb alt
   m_TagString: Untagged
@@ -58,6 +59,7 @@ MonoBehaviour:
   m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
@@ -5076,6 +5078,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &4559055922491876575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 400304651990219882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 0
+  m_particleSystem: {fileID: 0}
 --- !u!1 &2489547340042857279
 GameObject:
   m_ObjectHideFlags: 0
@@ -5090,6 +5109,7 @@ GameObject:
   - component: {fileID: 7744653069361825300}
   - component: {fileID: 6523449390834420665}
   - component: {fileID: 441820245106828894}
+  - component: {fileID: 3784227235072950439}
   m_Layer: 2
   m_Name: level12
   m_TagString: Untagged
@@ -5135,6 +5155,7 @@ MonoBehaviour:
   m_fireRateInterval: 0.2
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
@@ -10153,6 +10174,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &3784227235072950439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2489547340042857279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 0
+  m_particleSystem: {fileID: 0}
 --- !u!1 &3395991133157087368
 GameObject:
   m_ObjectHideFlags: 0
@@ -10224,6 +10262,8 @@ MonoBehaviour:
   m_eraseEnemyBulletsOnBomb: 1
   m_expPointsRequiredForBomb: 100
   m_expPointsAfterBomb: 0
+  m_bombParticleEraseSpeed: 30
+  m_bombParticleEraseRadius: 10000
   m_expRequiredForLevels:
   - array:
     - 50
@@ -10534,6 +10574,7 @@ GameObject:
   - component: {fileID: 1638450552534292890}
   - component: {fileID: 1186662995166101396}
   - component: {fileID: 514817051387650966}
+  - component: {fileID: 3588015548010767519}
   m_Layer: 2
   m_Name: level 3 sub
   m_TagString: Untagged
@@ -10579,6 +10620,7 @@ MonoBehaviour:
   m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
@@ -15597,6 +15639,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &3588015548010767519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4865454288407746487}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 0
+  m_particleSystem: {fileID: 0}
 --- !u!1 &5132835839131514857
 GameObject:
   m_ObjectHideFlags: 0
@@ -15611,6 +15670,7 @@ GameObject:
   - component: {fileID: 7859347979329334379}
   - component: {fileID: 3924416827735945468}
   - component: {fileID: 770649486340667414}
+  - component: {fileID: 1366958308116104112}
   m_Layer: 2
   m_Name: level3
   m_TagString: Untagged
@@ -15656,6 +15716,7 @@ MonoBehaviour:
   m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
@@ -20616,6 +20677,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1366958308116104112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5132835839131514857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 0
+  m_particleSystem: {fileID: 0}
 --- !u!1 &6031253177525513681
 GameObject:
   m_ObjectHideFlags: 0
@@ -20630,6 +20708,7 @@ GameObject:
   - component: {fileID: 8644734743808449361}
   - component: {fileID: 2725528262528807711}
   - component: {fileID: 2071420066874088902}
+  - component: {fileID: 8784388398395497163}
   m_Layer: 2
   m_Name: level 3 sub sub
   m_TagString: Untagged
@@ -20674,6 +20753,7 @@ MonoBehaviour:
   m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
@@ -25692,6 +25772,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &8784388398395497163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6031253177525513681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 0
+  m_particleSystem: {fileID: 0}
 --- !u!1 &6837194676884130114
 GameObject:
   m_ObjectHideFlags: 0
@@ -25706,6 +25803,7 @@ GameObject:
   - component: {fileID: 981797349918530597}
   - component: {fileID: 4889910516480590814}
   - component: {fileID: 8877665244729247670}
+  - component: {fileID: 1411822957145703175}
   m_Layer: 2
   m_Name: level 3 sub sub
   m_TagString: Untagged
@@ -25750,6 +25848,7 @@ MonoBehaviour:
   m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
@@ -30768,6 +30867,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1411822957145703175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6837194676884130114}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 0
+  m_particleSystem: {fileID: 0}
 --- !u!1 &7676475427907906785
 GameObject:
   m_ObjectHideFlags: 0
@@ -30899,6 +31015,7 @@ GameObject:
   - component: {fileID: 3999870053741568248}
   - component: {fileID: 5956151932896379881}
   - component: {fileID: 1768153765648447346}
+  - component: {fileID: 7870525624892384651}
   m_Layer: 2
   m_Name: weapon alt
   m_TagString: Untagged
@@ -30944,6 +31061,7 @@ MonoBehaviour:
   m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
@@ -35904,6 +36022,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &7870525624892384651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7754792797623585810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 0
+  m_particleSystem: {fileID: 0}
 --- !u!1 &7781337801192719315
 GameObject:
   m_ObjectHideFlags: 0
@@ -35918,6 +36053,7 @@ GameObject:
   - component: {fileID: 1859102154082545067}
   - component: {fileID: 3225638588331867261}
   - component: {fileID: 5206048726597114018}
+  - component: {fileID: 6366092621985339998}
   m_Layer: 2
   m_Name: level 3 sub
   m_TagString: Untagged
@@ -35963,6 +36099,7 @@ MonoBehaviour:
   m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
@@ -40981,6 +41118,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6366092621985339998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7781337801192719315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 0
+  m_particleSystem: {fileID: 0}
 --- !u!1 &8815110266114857674
 GameObject:
   m_ObjectHideFlags: 0
@@ -40995,6 +41149,7 @@ GameObject:
   - component: {fileID: 788687449870927687}
   - component: {fileID: 9213472292012518251}
   - component: {fileID: 892777910194147763}
+  - component: {fileID: 4259259968859093211}
   m_Layer: 2
   m_Name: level 12 sub
   m_TagString: Untagged
@@ -41039,6 +41194,7 @@ MonoBehaviour:
   m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
@@ -46057,3 +46213,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &4259259968859093211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8815110266114857674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    update: 0
+    lateUpdate: 0
+    fixedUpdate: 0
+  m_particleSystem: {fileID: 0}

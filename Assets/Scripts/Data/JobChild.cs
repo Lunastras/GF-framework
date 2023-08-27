@@ -11,26 +11,28 @@ using Unity.Mathematics;
 
 public abstract class JobChild : MonoBehaviour
 {
+    public Action OnJobSchedule = null;
+
     public class JobParentIndexes
     {
         public JobParentIndexes(int updateIndex = -1, int lateUpdateIndex = -1, int fixedUpdateIndex = -1)
         {
-            this.updateIndex = updateIndex;
-            this.lateUpdateIndex = updateIndex;
-            this.fixedUpdateIndex = fixedUpdateIndex;
+            this.UpdateIndex = updateIndex;
+            this.LateUpdateIndex = updateIndex;
+            this.FixedUpdateIndex = fixedUpdateIndex;
         }
 
-        public int updateIndex = -1;
-        public int lateUpdateIndex = -1;
-        public int fixedUpdateIndex = -1;
+        public int UpdateIndex = -1;
+        public int LateUpdateIndex = -1;
+        public int FixedUpdateIndex = -1;
     }
 
     [System.Serializable]
-    public struct JobParentSubscriberData
+    public class JobParentSubscriberData
     {
-        public bool update;
-        public bool lateUpdate;
-        public bool fixedUpdate;
+        public bool Update;
+        public bool LateUpdate;
+        public bool FixedUpdate = true;
     }
 
     [SerializeField]
@@ -42,13 +44,13 @@ public abstract class JobChild : MonoBehaviour
         switch (updateType)
         {
             case (UpdateTypes.LATE_UPDATE):
-                return m_jobParentIndexes.lateUpdateIndex;
+                return m_jobParentIndexes.LateUpdateIndex;
 
             case (UpdateTypes.FIXED_UPDATE):
-                return m_jobParentIndexes.fixedUpdateIndex;
+                return m_jobParentIndexes.FixedUpdateIndex;
 
             case (UpdateTypes.UPDATE):
-                return m_jobParentIndexes.updateIndex;
+                return m_jobParentIndexes.UpdateIndex;
         }
 
         return -1;
@@ -59,16 +61,16 @@ public abstract class JobChild : MonoBehaviour
         switch (updateType)
         {
             case (UpdateTypes.LATE_UPDATE):
-                m_jobParentIndexes.lateUpdateIndex = index;
+                m_jobParentIndexes.LateUpdateIndex = index;
 
                 break;
 
             case (UpdateTypes.FIXED_UPDATE):
-                m_jobParentIndexes.fixedUpdateIndex = index;
+                m_jobParentIndexes.FixedUpdateIndex = index;
                 break;
 
             case (UpdateTypes.UPDATE):
-                m_jobParentIndexes.updateIndex = index;
+                m_jobParentIndexes.UpdateIndex = index;
                 break;
         }
     }
@@ -76,13 +78,13 @@ public abstract class JobChild : MonoBehaviour
     protected void InitJobChild()
     {
         Type type = GetType();
-        if (m_jobSubscriberType.fixedUpdate)
+        if (m_jobSubscriberType.FixedUpdate)
             JobParent.AddChild(this, type, UpdateTypes.FIXED_UPDATE);
 
-        if (m_jobSubscriberType.update)
+        if (m_jobSubscriberType.Update)
             JobParent.AddChild(this, type, UpdateTypes.UPDATE);
 
-        if (m_jobSubscriberType.lateUpdate)
+        if (m_jobSubscriberType.LateUpdate)
             JobParent.AddChild(this, type, UpdateTypes.LATE_UPDATE);
     }
 
@@ -94,7 +96,11 @@ public abstract class JobChild : MonoBehaviour
         JobParent.RemoveChild(this, type, UpdateTypes.LATE_UPDATE);
     }
 
+    public virtual void OnOperationStart(float deltaTime, UpdateTypes updateType) { }
+
     public abstract bool GetJob(out JobHandle handle, float deltaTime, UpdateTypes updateType, int batchSize = 512);
 
     public abstract void OnJobFinished(float deltaTime, UpdateTypes updateType);
+
+    public virtual void OnOperationFinished(float deltaTime, UpdateTypes updateType) { }
 }

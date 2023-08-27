@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Linq;
 using Unity.Netcode;
 using Unity.Collections;
 
@@ -33,9 +34,8 @@ public class LoadoutManager : NetworkBehaviour
     protected int m_currentLoadOutIndex = 0; // = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     protected PriorityValue<float> m_weaponCapacityMultiplier = new(1);
-    protected PriorityValue<float> m_speedMultiplier = new(1);
-    protected PriorityValue<float> m_damageMultiplier = new(1);
-    protected PriorityValue<float> m_fireRateMultiplier = new(1);
+    protected float[] m_weaponMultipliers = Enumerable.Repeat(1f, (int)WeaponMultiplierTypes.COUNT_TYPES).ToArray();
+
 
     protected List<WeaponGeneric> m_weapons = new(4);
 
@@ -420,9 +420,6 @@ public class LoadoutManager : NetworkBehaviour
                 weapon.Initialize();
                 weapon.StopFiring(false);
                 weapon.SetMovementParent(m_parentMovement);
-                weapon.SetSpeedMultiplier(m_speedMultiplier);
-                weapon.SetFireRateMultiplier(m_fireRateMultiplier);
-                weapon.SetDamageMultiplier(m_damageMultiplier);
                 weapon.SetLoadoutCount(weaponsCount);
                 weapon.SetLoadoutWeaponIndex(i);
                 weapon.SetLoadoutIndex(m_currentLoadOutIndex);
@@ -432,6 +429,11 @@ public class LoadoutManager : NetworkBehaviour
                 weapon.DisableWhenDone = false;
                 weapon.DestroyWhenDone = false;
                 weapon.transform.position = m_parentMovement.transform.position;
+
+                for (int j = 0; j < (int)WeaponMultiplierTypes.COUNT_TYPES; ++j)
+                {
+                    weapon.SetMultiplier((WeaponMultiplierTypes)j, m_weaponMultipliers[j]);
+                }
 
                 m_weaponFiring.SetWeapon(weapon, i);
                 OnWeaponSet(weapon);
@@ -675,9 +677,8 @@ public class LoadoutManager : NetworkBehaviour
 
     public virtual void Respawned()
     {
-        SetSpeedMultiplier(1, 0, true);
-        SetDamageMultiplier(1, 0, true);
-        SetFireRateMultiplier(1, 0, true);
+        for (int i = 0; i < (int)WeaponMultiplierTypes.COUNT_TYPES; ++i)
+            SetMultiplier((WeaponMultiplierTypes)i, 1);
     }
 
     public void RemoveLoadout(int index)
@@ -756,124 +757,41 @@ public class LoadoutManager : NetworkBehaviour
         return m_weapons;
     }
 
-    #region SPEED_MULTIPLIER_REGION
 
-    public virtual PriorityValue<float> GetSpeedMultiplier() { return m_speedMultiplier; }
+    public virtual float GetMultiplier(WeaponMultiplierTypes type) { return m_weaponMultipliers[(int)type]; }
 
-    protected virtual bool InternalSetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
-    {
-        float oldMultiplier = m_fireRateMultiplier.Value;
-        bool changedValue = m_speedMultiplier.SetValue(multiplier, priority, overridePriority) && multiplier != oldMultiplier;
-        if (changedValue)
-        {
-            int weaponCount = m_weapons.Count;
-            for (int i = 0; i < weaponCount; ++i)
-            {
-                m_weapons[i].SetSpeedMultiplier(multiplier);
-            }
-        }
-
-        return changedValue;
-    }
-
-    public virtual bool SetSpeedMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    public virtual bool SetMultiplier(WeaponMultiplierTypes type, float multiplier)
     {
         bool changedValue = false;
         if (HasAuthority)
         {
-            changedValue = InternalSetSpeedMultiplier(multiplier, priority, overridePriority);
-            if (changedValue) SetSpeedMultiplierClientRpc(multiplier, priority);
+            changedValue = InternalSetMultiplier(type, multiplier);
+            if (changedValue) SetMultiplierClientRpc(type, multiplier);
         }
 
         return changedValue;
     }
 
     [ClientRpc]
-    protected virtual void SetSpeedMultiplierClientRpc(float multiplier, uint priority = 0)
+    protected virtual void SetMultiplierClientRpc(WeaponMultiplierTypes type, float multiplier)
     {
-        InternalSetSpeedMultiplier(multiplier, priority, true); //override regardless of priority
+        InternalSetMultiplier(type, multiplier); //override regardless of priority
     }
 
-    #endregion //SPEED_MULTIPLIER_REGION
-
-    #region FIRE_RATE_MULTIPLIER_REGION
-
-    public virtual PriorityValue<float> GetFireRateMultiplier() { return m_fireRateMultiplier; }
-
-    protected virtual bool InternalSetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
+    protected virtual bool InternalSetMultiplier(WeaponMultiplierTypes type, float multiplier)
     {
-        float oldMultiplier = m_fireRateMultiplier.Value;
-        bool changedValue = m_fireRateMultiplier.SetValue(multiplier, priority, overridePriority) && oldMultiplier != multiplier;
+        bool changedValue = multiplier != m_weaponMultipliers[(int)type];
         if (changedValue)
         {
             int weaponCount = m_weapons.Count;
             for (int i = 0; i < weaponCount; ++i)
             {
-                m_weapons[i].SetFireRateMultiplier(multiplier);
+                m_weapons[i].SetMultiplier(type, multiplier);
             }
         }
 
         return changedValue;
     }
-
-    public virtual bool SetFireRateMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
-    {
-        bool changedValue = false;
-        if (HasAuthority)
-        {
-            changedValue = InternalSetFireRateMultiplier(multiplier, priority, overridePriority);
-            if (changedValue) SetFireRateMultiplierClientRpc(multiplier, priority);
-        }
-
-        return changedValue;
-    }
-
-    [ClientRpc]
-    protected virtual void SetFireRateMultiplierClientRpc(float multiplier, uint priority = 0)
-    {
-        InternalSetFireRateMultiplier(multiplier, priority, true); //override regardless of priority
-    }
-
-    #endregion //FIRE_RATE_MULTIPLIER_REGION
-
-    #region DAMAGE_MULTIPLIER_REGION
-    public virtual PriorityValue<float> GetDamageMultiplier() { return m_damageMultiplier; }
-
-    protected virtual bool InternalSetDamageMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
-    {
-        float oldMultiplier = m_damageMultiplier.Value;
-        bool changedValue = m_damageMultiplier.SetValue(multiplier, priority, overridePriority) && oldMultiplier != multiplier;
-        if (changedValue)
-        {
-            int weaponCount = m_weapons.Count;
-            for (int i = 0; i < weaponCount; ++i)
-            {
-                m_weapons[i].SetDamageMultiplier(multiplier);
-            }
-        }
-
-        return changedValue;
-    }
-
-    public virtual bool SetDamageMultiplier(float multiplier, uint priority = 0, bool overridePriority = false)
-    {
-        bool changedValue = false;
-        if (HasAuthority)
-        {
-            changedValue = InternalSetDamageMultiplier(multiplier, priority, overridePriority);
-            if (changedValue) SetDamageMultiplierClientRpc(multiplier, priority);
-        }
-
-        return changedValue;
-    }
-
-    [ClientRpc]
-    protected virtual void SetDamageMultiplierClientRpc(float multiplier, uint priority = 0)
-    {
-        InternalSetDamageMultiplier(multiplier, priority, true); //override regardless of priority
-    }
-
-    #endregion //DAMAGE_MULTIPLIER_REGION
 
     #region WEAPON_CAPACITY_MULTIPLIER
     public virtual PriorityValue<float> GetWeaponCapacityMultiplier() { return m_weaponCapacityMultiplier; }

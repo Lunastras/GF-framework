@@ -12,6 +12,11 @@ using Unity.Mathematics;
 
 public class JobParent : MonoBehaviour
 {
+    [SerializeField]
+    protected float[] m_updateIntervalForScheduleTypes = new float[(int)JobScheduleTypes.NUM_TYPES];
+
+    protected float[] m_timeUntilScheduleTypeUpdate = new float[(int)JobScheduleTypes.NUM_TYPES];
+
     private struct UpdateTypesLists
     {
         public UpdateTypesLists(int empty = 0)
@@ -26,21 +31,102 @@ public class JobParent : MonoBehaviour
     }
 
     private static JobParent Instance = null;
-    private Dictionary<Type, List<JobChild>[]> m_inheritedMembers = null;
+    private Dictionary<Type, List<JobChild>[]> m_jobChildren = null;
     private List<Type> m_inheritedTypes = null;
 
     private NativeList<JobHandle> m_jobHandles;
 
+
+    protected void Awake()
+    {
+        Array.Resize<float>(ref m_updateIntervalForScheduleTypes, (int)JobScheduleTypes.NUM_TYPES);
+
+        if (Instance != this) Destroy(Instance);
+        Instance = this;
+
+        int countChildren = 0;
+
+        var inheritedTypes = Assembly.GetAssembly(typeof(JobChild)).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(JobChild)));
+
+        foreach (Type type in inheritedTypes)
+            countChildren++;
+
+        m_jobChildren = new(countChildren);
+        m_inheritedTypes = new(countChildren);
+        m_jobHandles = new(128, Allocator.Persistent);
+    }
+
+    public static bool CanSchedule(JobScheduleTypes type)
+    {
+        return Instance && 0 >= Instance.m_timeUntilScheduleTypeUpdate[(int)type];
+    }
+
+    public static float GetScheduleInterval(JobScheduleTypes type)
+    {
+        return System.MathF.Max(Time.deltaTime, Instance.m_updateIntervalForScheduleTypes[(int)type]);
+    }
+
+    void FixedUpdate()
+    {
+        int countTypes = (int)JobScheduleTypes.NUM_TYPES;
+        float deltaTime = Time.deltaTime;
+        for (int i = 0; i < countTypes; ++i)
+        {
+            if (m_timeUntilScheduleTypeUpdate[i] <= 0)
+                m_timeUntilScheduleTypeUpdate[i] = m_updateIntervalForScheduleTypes[i];
+
+            m_timeUntilScheduleTypeUpdate[i] -= deltaTime;
+        }
+
+        RunJobs(UpdateTypes.FIXED_UPDATE);
+    }
+
+    void Update()
+    {
+        RunJobs(UpdateTypes.UPDATE);
+    }
+
+    void LateUpdate()
+    {
+        RunJobs(UpdateTypes.LATE_UPDATE);
+    }
+
+    protected void OnDestroy()
+    {
+        if (m_jobHandles.IsCreated)
+            m_jobHandles.Dispose();
+
+        for (int i = 0; i < (int)UpdateTypes.TYPES_COUNT; ++i)
+        {
+            foreach (Type type in m_inheritedTypes)
+            {
+                List<JobChild> list = m_jobChildren[type][i];
+                if (null != list)
+                {
+                    int count = list.Count;
+
+                    for (int j = 0; j < count; ++j)
+                    {
+                        list[j].SetJobParentIndex(-1, (UpdateTypes)i);
+                    }
+                }
+            }
+        }
+
+        Instance = null;
+    }
+
+
     public static void AddChild(JobChild child, Type type, UpdateTypes updateType, bool checkExistence = false)
     {
-        if (!Instance.m_inheritedMembers.ContainsKey(type))
+        if (!Instance.m_jobChildren.ContainsKey(type))
         {
-            Instance.m_inheritedMembers.Add(type, new List<JobChild>[3]);
+            Instance.m_jobChildren.Add(type, new List<JobChild>[3]);
             Instance.m_inheritedTypes.Add(type);
         }
 
         int updateTypeIndex = (int)updateType;
-        List<JobChild>[] lists = Instance.m_inheritedMembers[type];
+        List<JobChild>[] lists = Instance.m_jobChildren[type];
 
         if (null == lists[updateTypeIndex])
             lists[updateTypeIndex] = new(4);
@@ -65,7 +151,7 @@ public class JobParent : MonoBehaviour
     {
         List<JobChild>[] lists;
         int indexToRemove = child.GetJobParentIndex(updateType);
-        if (indexToRemove >= 0 && Instance.m_inheritedMembers.TryGetValue(type, out lists))
+        if (indexToRemove >= 0 && Instance.m_jobChildren.TryGetValue(type, out lists))
         {
             List<JobChild> list = lists[(int)updateType];
             int lastIndex = list.Count - 1;
@@ -77,51 +163,6 @@ public class JobParent : MonoBehaviour
         }
     }
 
-    void Awake()
-    {
-        if (Instance != this) Destroy(Instance);
-        Instance = this;
-
-        int countChildren = 0;
-
-        var inheritedTypes = Assembly.GetAssembly(typeof(JobChild)).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(JobChild)));
-
-        foreach (Type type in inheritedTypes)
-            countChildren++;
-
-        m_inheritedMembers = new(countChildren);
-        m_inheritedTypes = new(countChildren);
-        m_jobHandles = new(128, Allocator.Persistent);
-        InternalStart();
-    }
-
-    protected void OnDestroy()
-    {
-        if (m_jobHandles.IsCreated)
-            m_jobHandles.Dispose();
-
-        for (int i = 0; i < (int)UpdateTypes.TYPES_COUNT; ++i)
-        {
-            foreach (Type type in m_inheritedTypes)
-            {
-                List<JobChild> list = m_inheritedMembers[type][i];
-                if (null != list)
-                {
-                    int count = list.Count;
-
-                    for (int j = 0; j < count; ++j)
-                    {
-                        list[j].SetJobParentIndex(-1, (UpdateTypes)i);
-                    }
-                }
-            }
-        }
-
-        Instance = null;
-    }
-
-    protected virtual void InternalStart() { }
-
     // Update is called once per frame
 
     protected void RunJobs(UpdateTypes updateType)
@@ -129,10 +170,14 @@ public class JobParent : MonoBehaviour
         float deltaTime = Time.deltaTime;
         foreach (Type type in m_inheritedTypes)
         {
-            List<JobChild> list = m_inheritedMembers[type][(int)updateType];
+            List<JobChild> list = m_jobChildren[type][(int)updateType];
             if (null != list)
             {
                 int i, count = list.Count;
+
+                for (i = 0; i < count; ++i)
+                    list[i].OnOperationStart(deltaTime, updateType);
+
                 JobHandle handle;
                 m_jobHandles.Clear();
                 int jobCount = 0;
@@ -151,22 +196,16 @@ public class JobParent : MonoBehaviour
 
                 for (i = 0; i < count; ++i)
                     list[i].OnJobFinished(deltaTime, updateType);
+
+                for (i = 0; i < count; ++i)
+                    list[i].OnOperationFinished(deltaTime, updateType);
             }
         }
     }
-    void FixedUpdate()
-    {
-        RunJobs(UpdateTypes.FIXED_UPDATE);
-    }
 
-    void Update()
+    public static List<JobChild> GetJobChildren(Type type, UpdateTypes updateTypes)
     {
-        RunJobs(UpdateTypes.UPDATE);
-    }
-
-    void LateUpdate()
-    {
-        RunJobs(UpdateTypes.LATE_UPDATE);
+        return Instance.m_jobChildren[type][(int)updateTypes];
     }
 }
 

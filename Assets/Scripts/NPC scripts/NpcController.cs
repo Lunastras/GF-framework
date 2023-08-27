@@ -111,7 +111,7 @@ public class NpcController : NetworkBehaviour
     {
         bool scheduleJob = m_pathFindingManager
                         && (m_currentState == NpcState.SEARCHING_TARGET || m_currentState == NpcState.ENGAGING_TARGET)
-                        && GfPathfindingScheduler.CanSchedule()
+                        && JobParent.CanSchedule(JobScheduleTypes.PATHFINDING)
                         && m_destination.HasDestination;
 
         if (scheduleJob)

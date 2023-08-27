@@ -1,0 +1,8 @@
+public enum JobScheduleTypes
+{
+    PATHFINDING,
+    PARTICLE_HOMING,
+    PARTICLE_ERASE,
+    PARTICLE_COLLISION,
+    NUM_TYPES
+}

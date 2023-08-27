@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: 1592614145677993329}
   - component: {fileID: 3021618983913466220}
   - component: {fileID: 2215200664246144962}
-  - component: {fileID: 4760543506616191465}
   m_Layer: 0
   m_Name: GfGameAssets
   m_TagString: Untagged
@@ -173,6 +172,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35255993c83a4bd4da922ab94cd654dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_updateIntervalForScheduleTypes:
+  - 0.1
+  - 0.05
+  - 0.05
+  - 0.05
 --- !u!114 &3021618983913466220
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,19 +201,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f94d4dc2b90a4784d9271dd053a5727b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &4760543506616191465
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1197799841981835568}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e8bb9dac34c7b944926784c1fa3cd35, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_pathfindingCooldown: 0.3
 --- !u!1 &1889245141776436124
 GameObject:
   m_ObjectHideFlags: 0

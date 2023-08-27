@@ -9,11 +9,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5481653673954920927}
+  - component: {fileID: 45925212140485860}
   - component: {fileID: 110439690657272210}
   - component: {fileID: 9840865696446420}
   - component: {fileID: 7744653069361825300}
   - component: {fileID: 6523449390834420665}
   - component: {fileID: 441820245106828894}
+  - component: {fileID: 3784227235072950439}
   m_Layer: 2
   m_Name: level1
   m_TagString: Untagged
@@ -37,6 +39,29 @@ Transform:
   m_Father: {fileID: 3395991133157087371}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &45925212140485860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2489547340042857279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cde560314c88b2641bf358eb7103e3c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
+  m_particleSystem: {fileID: 0}
+  m_callbackOnFirstCollision: 0
+  m_collidesWithOwnParticles: 0
+  m_minimumParticleDistanceSq: 25
+  m_priority: 1
+  m_selfEvent: 0
+  m_otherEvent: 2
 --- !u!114 &110439690657272210
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51,11 +76,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   ParentDamageSource: {fileID: 4243270664609174227}
+  m_automatic: 1
+  m_damageType: 0
   m_damage: 6
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
+  m_aimsAtTarget: 0
   m_damageSound:
     Clip: {fileID: 0}
     MixerType: 0
@@ -83,7 +113,6 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxInstances: 12
   m_canDamageSelf: 0
-  m_aimsAtTarget: 0
   m_getDamageSourceFromColor: 0
 --- !u!114 &9840865696446420
 MonoBehaviour:
@@ -1034,7 +1063,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 8
+      scalar: 0
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -1137,8 +1166,66 @@ ParticleSystem:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
-    m_BurstCount: 0
-    m_Bursts: []
+    m_BurstCount: 1
+    m_Bursts:
+    - serializedVersion: 2
+      time: 0
+      countCurve:
+        serializedVersion: 2
+        minMaxState: 0
+        scalar: 30
+        minScalar: 30
+        maxCurve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        minCurve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+      cycleCount: 0
+      repeatInterval: 0.1
+      probability: 1
   SizeModule:
     enabled: 0
     curve:
@@ -5016,6 +5103,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &3784227235072950439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2489547340042857279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
+  m_particleSystem: {fileID: 0}
 --- !u!1 &3395991133157087368
 GameObject:
   m_ObjectHideFlags: 0
@@ -5070,13 +5174,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   ParentDamageSource: {fileID: 0}
+  m_automatic: 1
+  m_damageType: 0
   m_damage: 0
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_fireRateInterval: 0.1
   m_audioSource: {fileID: 0}
   m_turret: {fileID: 0}
   m_chargePointsSpeed: 50
   m_dischargePointsSpeed: 50
+  m_bombPhase: 6
+  m_bombAltMainFirePhase: -1
+  m_eraseEnemyBulletsOnBomb: 1
+  m_expPointsRequiredForBomb: 100
+  m_expPointsAfterBomb: 0
+  m_bombParticleEraseSpeed: 30
+  m_bombParticleEraseRadius: 10000
   m_expRequiredForLevels:
   - array:
     - 50
@@ -5101,59 +5215,55 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_turretPhases:
-  - weapons:
+  - Weapons:
     - {fileID: 110439690657272210}
-    DamageMultipliers: []
-    SpeedMultipliers: []
-    FireRateMultipliers: []
-  - weapons:
-    - {fileID: 110439690657272210}
-    DamageMultipliers:
-    - 1.2
-    SpeedMultipliers:
-    - 1.5
-    FireRateMultipliers:
-    - 1.5
-  - weapons:
-    - {fileID: 110439690657272210}
-    DamageMultipliers:
-    - 1.5
-    SpeedMultipliers:
-    - 2
-    FireRateMultipliers:
-    - 2
-  - weapons:
-    - {fileID: 6612106260095241416}
-    DamageMultipliers:
-    - 1.5
-    SpeedMultipliers:
-    - 2
-    FireRateMultipliers:
-    - 0.8
-  - weapons:
-    - {fileID: 6612106260095241416}
-    DamageMultipliers:
-    - 1.5
-    SpeedMultipliers:
-    - 1.2
-    FireRateMultipliers:
+    WeaponMultipliers:
     - 1
-  - weapons:
-    - {fileID: 6612106260095241416}
-    DamageMultipliers:
+    - 1
+    - 1
+    - 1
+  - Weapons:
+    - {fileID: 110439690657272210}
+    WeaponMultipliers:
+    - 1
+    - 1.7
     - 1.5
-    SpeedMultipliers:
-    - 2
-    FireRateMultipliers:
+    - 1
+  - Weapons:
+    - {fileID: 110439690657272210}
+    WeaponMultipliers:
+    - 1
+    - 3.4
     - 3
-  - weapons:
+    - 1
+  - Weapons:
     - {fileID: 6612106260095241416}
-    DamageMultipliers:
-    - 1.5
-    SpeedMultipliers:
-    - 2
-    FireRateMultipliers:
-    - 5
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
+  - Weapons:
+    - {fileID: 6612106260095241416}
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
+  - Weapons:
+    - {fileID: 6612106260095241416}
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
+  - Weapons:
+    - {fileID: 6612106260095241416}
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
   m_autoPlay: 0
   m_statsCharacter: {fileID: 0}
   DestoryWhenDone: 0
@@ -5377,6 +5487,7 @@ MonoBehaviour:
   m_smoothTimeOpacity: 0.1
   m_smoothTimeSize: 0.1
   m_overrideZaxisRotation: 1
+  m_deltaTimeCoef: 1
   m_upDir: {x: 0, y: 1, z: 0}
 --- !u!1 &6676931357724582795
 GameObject:
@@ -5394,6 +5505,7 @@ GameObject:
   - component: {fileID: 7570220818345139505}
   - component: {fileID: 859847728643921297}
   - component: {fileID: 374887716909258982}
+  - component: {fileID: 251859493757070571}
   m_Layer: 2
   m_Name: level1 sub
   m_TagString: Untagged
@@ -5430,11 +5542,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   ParentDamageSource: {fileID: 4243270664609174227}
+  m_automatic: 1
+  m_damageType: 0
   m_damage: 1
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
+  m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
     MixerType: 0
@@ -5462,7 +5579,6 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxInstances: 12
   m_canDamageSelf: 0
-  m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
 --- !u!114 &7136935681562507388
 MonoBehaviour:
@@ -5477,11 +5593,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
-  m_physInterval: 0.02
   m_acceleration: 140
   m_deacceleration: 140
   m_maxSpeed: 60
@@ -10440,6 +10555,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &251859493757070571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6676931357724582795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
+  m_particleSystem: {fileID: 0}
 --- !u!1 &7096222313252895398
 GameObject:
   m_ObjectHideFlags: 0
@@ -10456,6 +10588,7 @@ GameObject:
   - component: {fileID: 1240779852517102709}
   - component: {fileID: 5727281797447621093}
   - component: {fileID: 1806092715089093994}
+  - component: {fileID: 159033054687441091}
   m_Layer: 2
   m_Name: Secondary 1
   m_TagString: Untagged
@@ -10492,11 +10625,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   ParentDamageSource: {fileID: 4243270664609174227}
+  m_automatic: 1
+  m_damageType: 0
   m_damage: 1
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
+  m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
+  m_particleEraser: {fileID: 0}
+  m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 0}
     MixerType: 0
@@ -10524,7 +10662,6 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxInstances: 12
   m_canDamageSelf: 0
-  m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
 --- !u!114 &7324640816264405434
 MonoBehaviour:
@@ -10539,11 +10676,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
-  m_physInterval: 0.02
   m_acceleration: 140
   m_deacceleration: 140
   m_maxSpeed: 60
@@ -15502,6 +15638,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &159033054687441091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7096222313252895398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
+  m_particleSystem: {fileID: 0}
 --- !u!1 &7676475427907906785
 GameObject:
   m_ObjectHideFlags: 0

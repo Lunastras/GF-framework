@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Components;
+using Unity.Mathematics;
 
 public class StatsNpc : StatsCharacter
 {
@@ -174,9 +175,9 @@ public class StatsNpc : StatsCharacter
         }
     }
 
-    public override void EraseAllBullets(StatsCharacter characterResponsible)
+    public override void EraseAllBullets(StatsCharacter characterResponsible, float3 centerOfErase, float speedFromCenter, float eraseRadius)
     {
-        m_turret?.EraseAllBullets(characterResponsible);
+        m_turret?.EraseAllBullets(characterResponsible, centerOfErase, speedFromCenter, eraseRadius);
     }
 
     public override void SetPitch(float pitch) { m_pitch = pitch; }

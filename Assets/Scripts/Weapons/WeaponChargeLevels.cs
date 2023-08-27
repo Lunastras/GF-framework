@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Mathematics;
 
 public class WeaponChargeLevels : WeaponGeneric
 {
@@ -33,6 +34,12 @@ public class WeaponChargeLevels : WeaponGeneric
 
     [SerializeField]
     protected int m_expPointsAfterBomb = 0;
+
+    [SerializeField]
+    protected int m_bombParticleEraseSpeed = 30;
+
+    [SerializeField]
+    protected float m_bombParticleEraseRadius = float.MaxValue;
 
     [SerializeField]
     public StructArray<float>[] m_expRequiredForLevels = new StructArray<float>[2];
@@ -98,7 +105,7 @@ public class WeaponChargeLevels : WeaponGeneric
     protected void Update()
     {
         float deltaTime = Time.deltaTime * GetStatsCharacter().GetDeltaTimeCoef();
-        m_timeUntilCanFire -= Time.deltaTime * m_fireRateMultiplier;
+        m_timeUntilCanFire -= Time.deltaTime * m_weaponMultipliers[(int)WeaponMultiplierTypes.FIRE_RATE];
 
         if (m_isCharging || m_isDischarging)
         {
@@ -116,7 +123,8 @@ public class WeaponChargeLevels : WeaponGeneric
                 if (m_timeUntilNextBulletsErase <= 0)
                 {
                     m_timeUntilNextBulletsErase = 0.5f;
-                    HostilityManager.EraseAllEnemyBullets(GetStatsCharacter());
+                    var statsCharacter = GetStatsCharacter();
+                    HostilityManager.EraseAllEnemyBullets(statsCharacter, statsCharacter.transform.position, m_bombParticleEraseSpeed, m_bombParticleEraseRadius);
                 }
             }
 
@@ -270,7 +278,8 @@ public class WeaponChargeLevels : WeaponGeneric
         if (m_eraseEnemyBulletsOnBomb)
         {
             m_eraseEnemyBullets = true;
-            HostilityManager.EraseAllEnemyBullets(GetStatsCharacter());
+            var statsCharacter = GetStatsCharacter();
+            HostilityManager.EraseAllEnemyBullets(statsCharacter, statsCharacter.transform.position, m_bombParticleEraseSpeed, m_bombParticleEraseRadius);
         }
     }
 
@@ -396,27 +405,17 @@ public class WeaponChargeLevels : WeaponGeneric
         currentLevel = auxCurrentLevel;
     }
 
-    public override void SetSpeedMultiplier(float multiplier)
+    public override bool SetMultiplier(WeaponMultiplierTypes weaponMultiplier, float multiplier)
     {
-        base.SetSpeedMultiplier(multiplier);
-        m_turret.SetSpeedMultiplier(multiplier, 0, true);
+        bool changedValue = base.SetMultiplier(weaponMultiplier, multiplier);
+        m_turret.SetMultiplier(weaponMultiplier, multiplier);
+
+        return changedValue;
     }
 
-    public override void SetDamageMultiplier(float multiplier)
+    public override void EraseAllBullets(StatsCharacter characterResponsible, float3 centerOfErase, float speedFromCenter, float eraseRadius)
     {
-        base.SetSpeedMultiplier(multiplier);
-        m_turret.SetDamageMultiplier(multiplier, 0, true);
-    }
-
-    public override void EraseAllBullets(StatsCharacter characterResponsible)
-    {
-        m_turret.EraseAllBullets(characterResponsible);
-    }
-
-    public override void SetFireRateMultiplier(float multiplier)
-    {
-        base.SetSpeedMultiplier(multiplier);
-        m_turret.SetFireRateMultiplier(multiplier, 0, true);
+        m_turret.EraseAllBullets(characterResponsible, centerOfErase, speedFromCenter, eraseRadius);
     }
 
 

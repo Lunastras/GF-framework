@@ -175,6 +175,12 @@ public class CheckpointManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        Instance = null;
+        OnHardCheckpoint = null;
+    }
+
 
     private IEnumerator<float> _ExecuteCheckpointsInNextFrame()
     {

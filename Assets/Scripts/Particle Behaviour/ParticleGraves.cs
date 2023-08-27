@@ -17,11 +17,12 @@ public class ParticleGraves : ParticleHoming
         if (null == m_checkpointState)
             m_checkpointState = new();
 
-        m_particleList = new(m_numActiveParticles, Allocator.TempJob);
-        m_particleSystem.GetParticles(m_particleList, m_numActiveParticles);
+        int numActiveParticles = m_particleSystem.particleCount;
+        m_particleList = new(numActiveParticles, Allocator.TempJob);
+        m_particleSystem.GetParticles(m_particleList, numActiveParticles);
         m_particlePositions.Clear();
 
-        for (int i = 0; i < m_numActiveParticles; ++i)
+        for (int i = 0; i < numActiveParticles; ++i)
         {
             m_particlePositions.Add(m_particleList[i].position);
         }
@@ -44,10 +45,5 @@ public class ParticleGraves : ParticleHoming
     {
         base.OnDisable();
         CheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;
-    }
-
-    new protected void OnDestroy()
-    {
-        base.OnDestroy();
     }
 }
