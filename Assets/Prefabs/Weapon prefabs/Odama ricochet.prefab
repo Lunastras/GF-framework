@@ -5091,9 +5091,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &2489547340042857279
 GameObject:
@@ -10187,9 +10187,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &3395991133157087368
 GameObject:
@@ -10290,51 +10290,55 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_turretPhases:
-  - weapons:
+  - Weapons:
     - {fileID: 110439690657272210}
-    DamageMultipliers: []
-    SpeedMultipliers: []
-    FireRateMultipliers:
+    WeaponMultipliers:
     - 1
-  - weapons:
+    - 1
+    - 1
+    - 1
+  - Weapons:
     - {fileID: 110439690657272210}
-    DamageMultipliers:
-    - 1.2
-    SpeedMultipliers:
-    - 1.2
-    FireRateMultipliers:
-    - 1.2
-  - weapons:
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
+  - Weapons:
     - {fileID: 269537702137775165}
-    DamageMultipliers: []
-    SpeedMultipliers: []
-    FireRateMultipliers: []
-  - weapons:
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
+  - Weapons:
     - {fileID: 7042655720711255593}
-    DamageMultipliers: []
-    SpeedMultipliers: []
-    FireRateMultipliers: []
-  - weapons:
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
+  - Weapons:
     - {fileID: 7042655720711255593}
-    DamageMultipliers:
+    WeaponMultipliers:
     - 1
-    SpeedMultipliers:
     - 1
-    FireRateMultipliers:
-    - 1.5
-  - weapons:
+    - 1
+    - 1
+  - Weapons:
     - {fileID: 7042655720711255593}
-    DamageMultipliers:
+    WeaponMultipliers:
     - 1
-    SpeedMultipliers:
     - 1
-    FireRateMultipliers:
-    - 2
-  - weapons:
+    - 1
+    - 1
+  - Weapons:
     - {fileID: 6617212966202786910}
-    DamageMultipliers: []
-    SpeedMultipliers: []
-    FireRateMultipliers: []
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
   m_autoPlay: 0
   m_statsCharacter: {fileID: 0}
   DestoryWhenDone: 0
@@ -15652,9 +15656,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &5132835839131514857
 GameObject:
@@ -20690,9 +20694,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &6031253177525513681
 GameObject:
@@ -25785,9 +25789,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &6837194676884130114
 GameObject:
@@ -30880,9 +30884,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &7676475427907906785
 GameObject:
@@ -36035,9 +36039,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &7781337801192719315
 GameObject:
@@ -41131,9 +41135,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &8815110266114857674
 GameObject:
@@ -46226,7 +46230,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}

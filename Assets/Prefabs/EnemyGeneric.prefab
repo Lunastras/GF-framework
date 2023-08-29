@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 8334912748930156530}
   - component: {fileID: 1608161839850249133}
   - component: {fileID: 4724734998477987241}
+  - component: {fileID: 4455487300613904957}
   m_Layer: 6
   m_Name: FiringSource
   m_TagString: Untagged
@@ -310,11 +311,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 7866579364068057338}
   ParentDamageSource: {fileID: 0}
+  m_automatic: 1
+  m_damageType: 0
   m_damage: 10
   m_movementParent: {fileID: 432613321654859549}
   m_target: {fileID: 0}
+  m_fireRateInterval: 0.1
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 30
+  m_particleEraser: {fileID: 0}
+  m_aimsAtTarget: 1
   m_damageSound:
     Clip: {fileID: 8300000, guid: 14c31c6cf8f59fd43883ea2d75667ec2, type: 3}
     MixerType: 6
@@ -342,7 +348,6 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxInstances: 12
   m_canDamageSelf: 0
-  m_aimsAtTarget: 1
   m_getDamageSourceFromColor: 0
 --- !u!198 &1608161839850249133
 ParticleSystem:
@@ -5164,6 +5169,23 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &4455487300613904957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4547767586303620511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d476545c88f444e40b9fa78d79070fe5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
+  m_particleSystem: {fileID: 0}
 --- !u!1 &4759944753111975130
 GameObject:
   m_ObjectHideFlags: 0
@@ -5253,11 +5275,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_turretPhases:
-  - weapons:
+  - Weapons:
     - {fileID: 8334912748930156530}
-    DamageMultipliers: []
-    SpeedMultipliers: []
-    FireRateMultipliers: []
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
   m_autoPlay: 0
   m_statsCharacter: {fileID: 7866579364068057338}
   DestoryWhenDone: 0
@@ -5331,6 +5355,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20e2ae2ae88333a46905526272233837, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
   CanFly: 1
   m_useInterpolation: 1
   m_speed: 7
@@ -5420,9 +5445,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
 --- !u!82 &1810723438
 AudioSource:
   m_ObjectHideFlags: 0

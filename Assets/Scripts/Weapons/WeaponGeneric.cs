@@ -97,6 +97,8 @@ public abstract class WeaponGeneric : DamageSource
     //called when the loadout changes a weapon to this one
     public virtual void WasSwitchedOn() { }
 
+    public virtual bool CanBeSwitchedOff() { return true; }
+
     public virtual void Initialize() { }
 
     public virtual bool GetIsAutomatic() { return m_automatic; }

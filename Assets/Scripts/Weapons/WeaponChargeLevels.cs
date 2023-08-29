@@ -189,6 +189,8 @@ public class WeaponChargeLevels : WeaponGeneric
         m_turret.Stop(killBullets);
     }
 
+    public override bool CanBeSwitchedOff() { return !m_isDischarging; }
+
     public override void SetMovementParent(GfMovementGeneric parent)
     {
         m_turret.SetMovementParent(parent);
@@ -302,6 +304,7 @@ public class WeaponChargeLevels : WeaponGeneric
 
     protected virtual void OnDischargeOver()
     {
+        SetPoints(WeaponPointsTypes.CHARGE, 0);
         if (m_dischargeLevel >= 0)
             m_turret.Stop(m_dischargeLevel, false);
 
@@ -370,6 +373,13 @@ public class WeaponChargeLevels : WeaponGeneric
     {
         base.SetSeed(seed);
         m_turret.SetSeed(seed);
+    }
+
+    public override void WasSwitchedOff()
+    {
+        base.WasSwitchedOff();
+        if (m_isDischarging)
+            OnDischargeOver();
     }
 
     protected static void GetExpLevels(float[] expArray, ref float currentExp, ref int currentLevel, ref float nextLevelProgress)

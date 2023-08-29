@@ -146,13 +146,18 @@ public abstract class WeaponParticle : WeaponGeneric
     public override void WasSwitchedOn()
     {
         base.WasSwitchedOn();
-        GetStatsCharacter().OnKilled += OnOwnerKilled;
+        var statsCharacter = GetStatsCharacter();
+        if (statsCharacter)
+            statsCharacter.OnKilled += OnOwnerKilled;
     }
 
     public override void WasSwitchedOff()
     {
         base.WasSwitchedOff();
-        GetStatsCharacter().OnKilled -= OnOwnerKilled;
+
+        var statsCharacter = GetStatsCharacter();
+        if (statsCharacter)
+            statsCharacter.OnKilled -= OnOwnerKilled;
     }
 
     public override uint GetSeed() { return 0; }

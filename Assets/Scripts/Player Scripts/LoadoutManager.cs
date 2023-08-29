@@ -396,51 +396,63 @@ public class LoadoutManager : NetworkBehaviour
     {
         if (null != m_loadouts && 0 < m_loadouts.Count)
         {
-            GetPointsFromWeapons();
-            m_currentLoadOutIndex = GfTools.Mod(indexLoadout, m_loadouts.Count);
+            int i = 0;
+            int weaponsCount = m_weapons.Count;
+            bool canChangeWeapon = true;
 
-            int i = m_weapons.Count;
-            while (--i >= 0) // destroy all current weapons
+            for (i = 0; i < weaponsCount && canChangeWeapon; ++i)
             {
-                DestroyWeapon(m_weapons[i]);
-                m_weapons.RemoveAt(i);
+                canChangeWeapon &= m_weapons[i].CanBeSwitchedOff();
             }
 
-            OnWeaponsCleared();
-            m_weaponFiring.ClearWeapons();
-
-            int weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
-
-            for (i = 0; i < weaponsCount; ++i)
+            if (canChangeWeapon)
             {
-                GameObject desiredWeapon = ManagerWeapons.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].Weapon);
-                m_weapons.Add(GetWeapon(desiredWeapon, i));
 
-                WeaponGeneric weapon = m_weapons[i];
-                weapon.Initialize();
-                weapon.StopFiring(false);
-                weapon.SetMovementParent(m_parentMovement);
-                weapon.SetLoadoutCount(weaponsCount);
-                weapon.SetLoadoutWeaponIndex(i);
-                weapon.SetLoadoutIndex(m_currentLoadOutIndex);
-                weapon.SetSeed((uint)i);
-                weapon.SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
-                weapon.WasSwitchedOn();
-                weapon.DisableWhenDone = false;
-                weapon.DestroyWhenDone = false;
-                weapon.transform.position = m_parentMovement.transform.position;
+                GetPointsFromWeapons();
+                m_currentLoadOutIndex = GfTools.Mod(indexLoadout, m_loadouts.Count);
 
-                for (int j = 0; j < (int)WeaponMultiplierTypes.COUNT_TYPES; ++j)
+                i = m_weapons.Count;
+                while (--i >= 0) // destroy all current weapons
                 {
-                    weapon.SetMultiplier((WeaponMultiplierTypes)j, m_weaponMultipliers[j]);
+                    DestroyWeapon(m_weapons[i]);
+                    m_weapons.RemoveAt(i);
                 }
 
-                m_weaponFiring.SetWeapon(weapon, i);
-                OnWeaponSet(weapon);
-            }
+                OnWeaponsCleared();
+                m_weaponFiring.ClearWeapons();
 
-            //refresh the levelweapons
-            RefreshPointsForWeapons();
+                weaponsCount = m_loadouts[m_currentLoadOutIndex].Count;
+                for (i = 0; i < weaponsCount; ++i)
+                {
+                    GameObject desiredWeapon = ManagerWeapons.GetWeapon(m_loadouts[m_currentLoadOutIndex][i].Weapon);
+                    m_weapons.Add(GetWeapon(desiredWeapon, i));
+
+                    WeaponGeneric weapon = m_weapons[i];
+                    weapon.Initialize();
+                    weapon.StopFiring(false);
+                    weapon.SetMovementParent(m_parentMovement);
+                    weapon.SetLoadoutCount(weaponsCount);
+                    weapon.SetLoadoutWeaponIndex(i);
+                    weapon.SetLoadoutIndex(m_currentLoadOutIndex);
+                    weapon.SetSeed((uint)i);
+                    weapon.SetStatsCharacter(m_weaponFiring.GetStatsCharacter());
+                    weapon.WasSwitchedOn();
+                    weapon.DisableWhenDone = false;
+                    weapon.DestroyWhenDone = false;
+                    weapon.transform.position = m_parentMovement.transform.position;
+
+                    for (int j = 0; j < (int)WeaponMultiplierTypes.COUNT_TYPES; ++j)
+                    {
+                        weapon.SetMultiplier((WeaponMultiplierTypes)j, m_weaponMultipliers[j]);
+                    }
+
+                    m_weaponFiring.SetWeapon(weapon, i);
+                    OnWeaponSet(weapon);
+                }
+
+                //refresh the levelweapons
+                RefreshPointsForWeapons();
+            }
         }
     }
 
