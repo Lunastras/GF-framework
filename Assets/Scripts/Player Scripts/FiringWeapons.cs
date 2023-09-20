@@ -6,6 +6,10 @@ using UnityEngine.UI;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 
+using System;
+using System.Diagnostics;
+using System.Threading;
+
 
 public class FiringWeapons : NetworkBehaviour
 {
@@ -83,6 +87,8 @@ public class FiringWeapons : NetworkBehaviour
         return m_weapons;
     }
 
+    List<ParticleRayHit> particleHits = new(28);
+
     public void FixedUpdate()
     {
         if (IsOwner)
@@ -138,6 +144,19 @@ public class FiringWeapons : NetworkBehaviour
         for (int i = 0; null != m_weapons && i < m_weapons.Count; ++i)
         {
             m_weapons[i].transform.rotation = Quaternion.LookRotation((m_lastRayHit.point - m_weapons[i].transform.position).normalized);
+        }
+
+        Stopwatch timePerParse = Stopwatch.StartNew();
+
+        Ray ray1 = new(m_aimTransform.position, m_aimTransform.forward);
+        int collisionMask1 = GfPhysics.TargetableCollisions();
+        ParticleInterCollision.Raycast(ray1, collisionMask1, particleHits);
+
+        timePerParse.Stop();
+
+        if (particleHits.Count > 0)
+        {
+            UnityEngine.Debug.Log("I hit " + particleHits.Count + " particles, elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
         }
     }
 

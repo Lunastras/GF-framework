@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 6523449390834420665}
   - component: {fileID: 441820245106828894}
   - component: {fileID: 3784227235072950439}
-  m_Layer: 2
+  m_Layer: 7
   m_Name: level1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -56,6 +56,7 @@ MonoBehaviour:
     LateUpdate: 0
     FixedUpdate: 1
   m_particleSystem: {fileID: 0}
+  m_dynamicRadius: 0
   m_callbackOnFirstCollision: 0
   m_collidesWithOwnParticles: 0
   m_minimumParticleDistanceSq: 25
@@ -5506,7 +5507,7 @@ GameObject:
   - component: {fileID: 859847728643921297}
   - component: {fileID: 374887716909258982}
   - component: {fileID: 251859493757070571}
-  m_Layer: 2
+  m_Layer: 7
   m_Name: level1 sub
   m_TagString: Untagged
   m_Icon: {fileID: 0}
