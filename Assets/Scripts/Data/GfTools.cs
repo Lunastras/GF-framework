@@ -95,6 +95,31 @@ public class GfTools
         return RotationTo(initial, final, Vector3.forward);
     }
 
+    public static bool RayIntersectsBound(Ray ray, Bounds bounds) {
+
+        /*
+        Vector3 L1 = Ray.origin;
+        Vector3 L2 = L1;
+        Add3(ref L2, ray.direction);    
+
+        if (L2.x < B1.x && L1.x < B1.x) return false;
+        if (L2.x > B2.x && L1.x > B2.x) return false;
+        if (L2.y < B1.y && L1.y < B1.y) return false;
+        if (L2.y > B2.y && L1.y > B2.y) return false;
+        if (L2.z < B1.z && L1.z < B1.z) return false;
+        if (L2.z > B2.z && L1.z > B2.z) return false;
+
+        if (L1.x > B1.x && L1.x < B2.x &&
+        L1.y > B1.y && L1.y < B2.y &&
+        L1.z > B1.z && L1.z < B2.z) 
+        {
+            return true;
+        }*/
+
+        return false;
+    } 
+
+
     //inlining these functions makes it slower by a considerable ammount from the local tests performed
     public static void Minus3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x -= rightHand.x; leftHand.y -= rightHand.y; leftHand.z -= rightHand.z; }
 

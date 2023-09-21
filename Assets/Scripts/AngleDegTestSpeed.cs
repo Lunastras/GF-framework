@@ -21,7 +21,7 @@ public class AngleDegTestSpeed : MonoBehaviour
         UnityEngine.Debug.Log("Starting tests!");
 
         double miliseconds;
-        float angle = 0;
+       // float angle;
         Vector3 upVec = Vector3.up;
         Vector3 rightVec = Vector3.right;
         Vector3 aux;
