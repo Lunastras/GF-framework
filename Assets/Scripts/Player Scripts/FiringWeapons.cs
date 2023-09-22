@@ -154,10 +154,7 @@ public class FiringWeapons : NetworkBehaviour
 
         timePerParse.Stop();
 
-        if (particleHits.Count > 0)
-        {
-            UnityEngine.Debug.Log("I hit " + particleHits.Count + " particles, elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
-        }
+        UnityEngine.Debug.Log("I hit " + particleHits.Count + " particles, elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
     }
 
     // Update is called once per frame

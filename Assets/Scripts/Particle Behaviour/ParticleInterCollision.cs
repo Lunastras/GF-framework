@@ -50,6 +50,7 @@ public class ParticleInterCollision : JobChild
     protected bool m_hasAJob = false;
 
     protected NativeArray<ParticleSystem.Particle> m_particlesList;
+    
 
     protected static NativeArray<ParticleSystem.Particle> AllParticlesTemp;
 
@@ -81,7 +82,7 @@ public class ParticleInterCollision : JobChild
         if (null == m_particleSystem) m_particleSystem = GetComponent<ParticleSystem>();
 
         if (!TempParticles.IsCreated) TempParticles = new(128, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-        if (!AllParticlesTemp.IsCreated) TempParticles = new(128, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+        if (!AllParticlesTemp.IsCreated) AllParticlesTemp = new(128, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
 
     }
 
@@ -307,16 +308,46 @@ public class ParticleInterCollision : JobChild
         int currentArrayLength = TempParticles.Length;
         if (countParticles > currentArrayLength)
         {
-            TempParticles.Dispose();
             currentArrayLength = max(currentArrayLength, 1);
 
             while (countParticles > currentArrayLength)
                 currentArrayLength <<= 1; //double the size until we can fit the particles
 
+            if(TempParticles.IsCreated)
+                TempParticles.Dispose();
+
             TempParticles = new(currentArrayLength, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
         }
 
         system.GetParticles(TempParticles);
+    }
+
+    private static void StoreParticlesToAllArray(ParticleSystem system, int countParticles)
+    {
+        int desiredLength = AllParticlesTempCount + countParticles;
+        int currentArrayLength = AllParticlesTemp.Length;
+
+        if (desiredLength > currentArrayLength)
+        {
+            currentArrayLength = max(currentArrayLength, 1);
+
+            while (desiredLength > currentArrayLength)
+                currentArrayLength <<= 1; //double the size until we can fit the particles
+
+            var currentParticles = AllParticlesTemp;
+            AllParticlesTemp = new(currentArrayLength, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+
+            for(int i = 0; i < AllParticlesTempCount; ++i) {
+                    AllParticlesTemp[i] = currentParticles[i];
+            }
+
+            if(currentParticles.IsCreated)
+                currentParticles.Dispose();
+        }
+
+        var subParticleArray = AllParticlesTemp.GetSubArray(AllParticlesTempCount, countParticles);
+        system.GetParticles(subParticleArray, countParticles);
+        AllParticlesTempCount += countParticles;
     }
 
     private static void CopyTempParticlesToAllArray(int countParticles)
@@ -331,10 +362,15 @@ public class ParticleInterCollision : JobChild
             while (desiredLength > currentArrayLength)
                 currentArrayLength <<= 1; //double the size until we can fit the particles
 
-            NativeArray<ParticleSystem.Particle> currentParticles = AllParticlesTemp;
+            var currentParticles = AllParticlesTemp;
             AllParticlesTemp = new(currentArrayLength, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            AllParticlesTemp.CopyFrom(currentParticles);
-            currentParticles.Dispose();
+
+            for(int i = 0; i < AllParticlesTempCount; ++i) {
+                    AllParticlesTemp[i] = currentParticles[i];
+            }
+
+            if(currentParticles.IsCreated)
+                currentParticles.Dispose();
         }
 
         for (int i = 0; i < countParticles; ++i)
@@ -359,7 +395,7 @@ public class ParticleInterCollision : JobChild
             ParticleInterCollision system;
             ParticleSystem particleSystem;
 
-            Stopwatch timePerParse = Stopwatch.StartNew();
+            //Stopwatch timePerParse = Stopwatch.StartNew();
 
             for (int i = 0; i < countBrothers; ++i)
             {
@@ -370,27 +406,24 @@ public class ParticleInterCollision : JobChild
                     countParticles = particleSystem.particleCount;
                     if (countParticles > 0)
                     {
-                        StoreParticlesToTempArray(particleSystem, countParticles);
-
+                        
                         allParticleSystems.Add(new ParticleCollisionSystemDataBasic()
                         {
-                            ParticleStartIndex = AllParticlesTemp.Length,
+                            ParticleStartIndex = AllParticlesTempCount,
                             ParticleSystemIndex = i,
                             CountParticles = countParticles,
                             Radius = particleSystem.collision.radiusScale,
                         });
 
-                        CopyTempParticlesToAllArray(countParticles);
-                        //AllParticlesTemp.AddRange(TempParticles.GetUnsafePtr(), countParticles);
+                        StoreParticlesToAllArray(particleSystem, countParticles);
                     }
                 }
             }
 
-            timePerParse.Stop();
-            UnityEngine.Debug.Log("PHASE 1 elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
-            timePerParse = Stopwatch.StartNew();
+          //  timePerParse.Stop();
+            //UnityEngine.Debug.Log("PHASE 1 elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
+            //timePerParse = Stopwatch.StartNew();
 
-            int AllParticlesTempCount = ParticleInterCollision.AllParticlesTempCount;
             if (AllParticlesTempCount > 0)
             {
                 NativeArray<ParticleRayCollision> particleRayCollisions = new(AllParticlesTempCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
@@ -414,16 +447,9 @@ public class ParticleInterCollision : JobChild
                     RayDirection = rayDirection,
                 }.Schedule(AllParticlesTempCount, 64).Complete();
 
-                timePerParse.Stop();
-                UnityEngine.Debug.Log("PHASE 2 elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
-                timePerParse = Stopwatch.StartNew();
-
-                hitCount = 0;
-                //making native arrays is expensive, so we first count how many elements we need to have
-                for (int i = 0; i < AllParticlesTempCount; ++i)
-                {
-                    if (particleRayCollisions[i].HasCollision) hitCount++;
-                }
+                //timePerParse.Stop();
+                //UnityEngine.Debug.Log("PHASE 2 elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
+               // timePerParse = Stopwatch.StartNew();
 
                 hitCount = 0;
                 int currentSystemIndex = 0;
@@ -453,13 +479,11 @@ public class ParticleInterCollision : JobChild
                     }
                 }
 
-
-
                 particleRayCollisions.Dispose();
 
-                timePerParse.Stop();
-                UnityEngine.Debug.Log("PHASE 3 elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
-                timePerParse = Stopwatch.StartNew();
+               // timePerParse.Stop();
+               // UnityEngine.Debug.Log("PHASE 3 elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
+                //timePerParse = Stopwatch.StartNew();
             }
 
             allParticleSystems.Dispose();
@@ -702,9 +726,7 @@ internal struct ParticlesRaycast : IJobParallelFor
 
     public int ParticleSystemsCount;
     //the a coefficient in the quadratic formula
-    public float A; //lengthsq(direction)
-
-    public float A2Inv; //a2inv = 1.0f / (2.0f * a)
+  
 
     public float RayStartLengthSq; //lengthsq(RayStart)
     public float3 RayStart;
@@ -712,6 +734,11 @@ internal struct ParticlesRaycast : IJobParallelFor
 
     //for determining the collision between the line and the sphere, we use the resources found on this website:
     //https://paulbourke.net/geometry/circlesphere/#:~:text=Intersection%20of%20a%20Line%20and%20a%20Sphere%20(or%20circle)&text=If%20this%20is%20less%20than,the%20sphere%20at%20two%20points.
+
+
+    public float A; //lengthsq(direction)
+
+    public float A2Inv; //a2inv = 1.0f / (2.0f * a)
 
     public void Execute(int i)
     {
@@ -767,8 +794,11 @@ internal struct ParticlesRaycast : IJobParallelFor
             hitData.PointEnter = pointEnter;
             hitData.PointExit = pointExit;
 
-            hitData.NormalEnter = normalizesafe(pointEnter - position);
-            hitData.NormalExit = normalizesafe(pointExit - position);
+            //if the radius is 0 and a collision happened, the magnitude between the hits and the position will be 0, so we avoid dividing by 0
+            if(radius > 0) {
+                hitData.NormalEnter = normalize(pointEnter - position);
+                hitData.NormalExit = normalize(pointExit - position);
+            }
         }
 
         AllParticleCollisions[i] = hitData;
@@ -851,4 +881,5 @@ public struct ParticleCollisionSystemDataBasic
 }
 
 
+public struct List
 
