@@ -118,6 +118,11 @@ public abstract class WeaponParticle : WeaponGeneric
 
                     m_isFiring = true;
                     m_particleSystem.Play();
+                    m_particleSystem.Simulate(0.0001f, true, false, false);
+                    m_particleSystem.Play();
+
+                    if (!m_automatic)
+                        StopFiring(false);
                 }
                 break;
             case (FireType.SECONDARY):

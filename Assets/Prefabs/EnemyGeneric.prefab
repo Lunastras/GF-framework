@@ -127,14 +127,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7669414761986027255}
-  - component: {fileID: 6377447946678387383}
+  - component: {fileID: 4136767859284462638}
   - component: {fileID: 3626822765685253527}
   - component: {fileID: 5305416706901954530}
   - component: {fileID: 8334912748930156530}
   - component: {fileID: 1608161839850249133}
   - component: {fileID: 4724734998477987241}
   - component: {fileID: 4455487300613904957}
-  m_Layer: 6
+  m_Layer: 15
   m_Name: FiringSource
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -157,7 +157,7 @@ Transform:
   m_Father: {fileID: 4759944753111975126}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6377447946678387383
+--- !u!114 &4136767859284462638
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -166,27 +166,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 4547767586303620511}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Script: {fileID: 11500000, guid: cde560314c88b2641bf358eb7103e3c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SyncPositionX: 0
-  SyncPositionY: 0
-  SyncPositionZ: 0
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 0
-  SyncScaleY: 0
-  SyncScaleZ: 0
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
-  ScaleThreshold: 0.01
-  UseQuaternionSynchronization: 0
-  UseQuaternionCompression: 0
-  UseHalfFloatPrecision: 0
-  InLocalSpace: 0
-  Interpolate: 1
-  SlerpPosition: 0
+  m_jobSubscriberType:
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
+  m_particleSystem: {fileID: 1608161839850249133}
+  m_dynamicRadius: 0
+  m_callbackOnFirstCollision: 0
+  m_collidesWithOwnParticles: 0
+  m_minimumParticleDistanceSq: 25
+  m_priority: 0
+  m_selfEvent: 0
+  m_otherEvent: 0
 --- !u!199 &3626822765685253527
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -1616,7 +1610,7 @@ ParticleSystem:
         m_RotationOrder: 4
     separateAxes: 0
   ColorModule:
-    enabled: 1
+    enabled: 0
     gradient:
       serializedVersion: 2
       minMaxState: 1
@@ -5577,6 +5571,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Death Particles
+      objectReference: {fileID: 0}
+    - target: {fileID: 2348196709725063840, guid: cfdb141e2133ff541a8a71e797603fa7,
+        type: 3}
+      propertyPath: m_Layer
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4208293916023630003, guid: cfdb141e2133ff541a8a71e797603fa7,
         type: 3}

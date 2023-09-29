@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 6666808111172159809}
   - component: {fileID: 151581397551402586}
   - component: {fileID: 3277828830583029019}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: level2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -193,7 +193,7 @@ MonoBehaviour:
   m_damage: 4
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
-  m_fireRateInterval: 0.5
+  m_fireRateInterval: 0.9
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
   m_particleEraser: {fileID: 0}
@@ -362,7 +362,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 80
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -480,7 +480,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1.4
+      scalar: 3
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -858,7 +858,7 @@ ParticleSystem:
     serializedVersion: 6
     enabled: 1
     type: 4
-    angle: 20
+    angle: 25
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
@@ -1173,7 +1173,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 15
+        scalar: 30
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -1224,7 +1224,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 0
-      repeatInterval: 5
+      repeatInterval: 0.9
       probability: 1
   SizeModule:
     enabled: 0
@@ -5136,7 +5136,7 @@ GameObject:
   - component: {fileID: 6523449390834420665}
   - component: {fileID: 441820245106828894}
   - component: {fileID: 3784227235072950439}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: level1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5313,7 +5313,7 @@ MonoBehaviour:
   m_damage: 4
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
-  m_fireRateInterval: 0.5
+  m_fireRateInterval: 0.9
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
   m_particleEraser: {fileID: 0}
@@ -5482,7 +5482,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 80
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -5600,7 +5600,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1.4
+      scalar: 3
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -5978,7 +5978,7 @@ ParticleSystem:
     serializedVersion: 6
     enabled: 1
     type: 4
-    angle: 40
+    angle: 30
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
@@ -6293,7 +6293,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 10
+        scalar: 20
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -6344,7 +6344,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 0
-      repeatInterval: 5
+      repeatInterval: 0.9
       probability: 1
   SizeModule:
     enabled: 0
@@ -10255,7 +10255,7 @@ GameObject:
   - component: {fileID: 1618777149106552399}
   - component: {fileID: -8727778355996634636}
   m_Layer: 2
-  m_Name: Odama 2 test
+  m_Name: W2 Sanae's Will
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10303,11 +10303,11 @@ MonoBehaviour:
   m_damage: 0
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
-  m_fireRateInterval: 0.1
+  m_fireRateInterval: 0
   m_audioSource: {fileID: 0}
   m_turret: {fileID: 0}
   m_chargePointsSpeed: 50
-  m_dischargePointsSpeed: 50
+  m_dischargePointsSpeed: 9999999
   m_bombPhase: 6
   m_bombAltMainFirePhase: -1
   m_eraseEnemyBulletsOnBomb: 1
@@ -10629,7 +10629,7 @@ GameObject:
   - component: {fileID: 6093291819435759544}
   - component: {fileID: 2022370160659113875}
   - component: {fileID: 2273283475469527512}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: weapon alt 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10674,7 +10674,7 @@ MonoBehaviour:
   m_minimumParticleDistanceSq: 25
   m_priority: 0
   m_selfEvent: 0
-  m_otherEvent: 2
+  m_otherEvent: 1
 --- !u!114 &4336130070376031173
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10801,12 +10801,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   ParentDamageSource: {fileID: 6263277382514363837}
-  m_automatic: 1
+  m_automatic: 0
   m_damageType: 0
   m_damage: 4
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
-  m_fireRateInterval: 0.1
+  m_fireRateInterval: 0
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
   m_particleEraser: {fileID: 0}
@@ -10975,7 +10975,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 80
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -11093,7 +11093,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1.4
+      scalar: 3
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -11471,7 +11471,7 @@ ParticleSystem:
     serializedVersion: 6
     enabled: 1
     type: 4
-    angle: 40
+    angle: 30
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
@@ -11837,7 +11837,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 0
-      repeatInterval: 1
+      repeatInterval: 0.01
       probability: 1
   SizeModule:
     enabled: 0
@@ -15749,7 +15749,7 @@ GameObject:
   - component: {fileID: 6767464831252905194}
   - component: {fileID: 7938883797261896769}
   - component: {fileID: 7164344822120418627}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: weapon alt 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15921,12 +15921,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   ParentDamageSource: {fileID: 6263277382514363837}
-  m_automatic: 1
+  m_automatic: 0
   m_damageType: 0
   m_damage: 4
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
-  m_fireRateInterval: 0.1
+  m_fireRateInterval: 0
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
   m_particleEraser: {fileID: 0}
@@ -16095,7 +16095,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 80
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -16213,7 +16213,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1.4
+      scalar: 3
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -16591,7 +16591,7 @@ ParticleSystem:
     serializedVersion: 6
     enabled: 1
     type: 4
-    angle: 40
+    angle: 35
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
@@ -16906,7 +16906,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 20
+        scalar: 30
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -16957,7 +16957,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 0
-      repeatInterval: 1
+      repeatInterval: 0.01
       probability: 1
   SizeModule:
     enabled: 0
@@ -20869,7 +20869,7 @@ GameObject:
   - component: {fileID: 3949997584537069842}
   - component: {fileID: 2219508686835423812}
   - component: {fileID: 1835592083560123458}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: level3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -21046,7 +21046,7 @@ MonoBehaviour:
   m_damage: 4
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
-  m_fireRateInterval: 0.5
+  m_fireRateInterval: 0.9
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
   m_particleEraser: {fileID: 0}
@@ -21215,7 +21215,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 80
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -21333,7 +21333,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1.4
+      scalar: 3
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -21711,7 +21711,7 @@ ParticleSystem:
     serializedVersion: 6
     enabled: 1
     type: 4
-    angle: 10
+    angle: 20
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
@@ -22026,7 +22026,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 20
+        scalar: 40
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -22077,7 +22077,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 0
-      repeatInterval: 5
+      repeatInterval: 0.9
       probability: 1
   SizeModule:
     enabled: 0
@@ -25989,7 +25989,7 @@ GameObject:
   - component: {fileID: 798588639176195808}
   - component: {fileID: 6323103162372455996}
   - component: {fileID: 985610801284173286}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: weapon alt 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -26161,12 +26161,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   ParentDamageSource: {fileID: 6263277382514363837}
-  m_automatic: 1
+  m_automatic: 0
   m_damageType: 0
   m_damage: 4
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
-  m_fireRateInterval: 0.1
+  m_fireRateInterval: 0
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
   m_particleEraser: {fileID: 0}
@@ -26335,7 +26335,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 80
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -26453,7 +26453,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1.4
+      scalar: 3
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -27197,7 +27197,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 0
-      repeatInterval: 1
+      repeatInterval: 0.01
       probability: 1
   SizeModule:
     enabled: 0

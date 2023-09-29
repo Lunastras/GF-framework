@@ -668,7 +668,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_checkpointable: 1
   m_maxHealth:
-    m_InternalValue: 100
+    m_InternalValue: 1
   m_characterType:
     m_InternalValue: 0
   m_threatLevel: 0
@@ -809,6 +809,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c170700d1da4a93468bd92039e170186, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
   CanFly: 0
   m_useInterpolation: 1
   m_speed: 9

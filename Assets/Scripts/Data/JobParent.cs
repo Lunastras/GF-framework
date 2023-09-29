@@ -207,6 +207,8 @@ public class JobParent : MonoBehaviour
     {
         return Instance.m_jobChildren[type][(int)updateTypes];
     }
+
+    public static bool HasInstance() { return null != Instance; }
 }
 
 

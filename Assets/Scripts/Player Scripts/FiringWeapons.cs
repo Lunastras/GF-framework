@@ -150,11 +150,11 @@ public class FiringWeapons : NetworkBehaviour
 
         Ray ray1 = new(m_aimTransform.position, m_aimTransform.forward);
         int collisionMask1 = GfPhysics.TargetableCollisions();
-        ParticleInterCollision.Raycast(ray1, collisionMask1, particleHits);
+        //ParticleInterCollision.Raycast(ray1, collisionMask1, particleHits);
 
         timePerParse.Stop();
 
-        UnityEngine.Debug.Log("I hit " + particleHits.Count + " particles, elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
+        //UnityEngine.Debug.Log("I hit " + particleHits.Count + " particles, elapsed time in ms: " + timePerParse.Elapsed.TotalMilliseconds);
     }
 
     // Update is called once per frame

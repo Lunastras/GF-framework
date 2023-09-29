@@ -21,10 +21,10 @@ TagManager:
   - Ground_No_Wallrun
   - Ground_No_Parenting
   - Collision_NonGround
-  - 
-  - 
-  - 
-  - 
+  - BulletsShotgun
+  - BulletsEnemyWhite
+  - BulletsPlayer
+  - BulletsPlayerGrenades
   - 
   - 
   - 

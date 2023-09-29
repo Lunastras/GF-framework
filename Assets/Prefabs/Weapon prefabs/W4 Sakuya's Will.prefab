@@ -51,12 +51,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_statsCharacter: {fileID: 0}
   ParentDamageSource: {fileID: 9173307431684072639}
-  m_automatic: 1
+  m_automatic: 0
   m_damageType: 1
   m_damage: 10
   m_movementParent: {fileID: 0}
   m_target: {fileID: 0}
-  m_fireRateInterval: 0.1
+  m_fireRateInterval: 0.01
   m_eraseParticlesAfterOwnerKilled: 1
   m_particlesEraseFromCenterSpeed: 10
   m_particleEraser: {fileID: 0}
@@ -1199,7 +1199,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 0
-      repeatInterval: 0.02
+      repeatInterval: 0.01
       probability: 1
   SizeModule:
     enabled: 0
@@ -10206,7 +10206,7 @@ GameObject:
   - component: {fileID: 1618777149106552399}
   - component: {fileID: -6589968540932027314}
   m_Layer: 2
-  m_Name: Odama ricochet
+  m_Name: W4 Sakuya's Will
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10256,7 +10256,7 @@ MonoBehaviour:
   m_audioSource: {fileID: 0}
   m_turret: {fileID: 0}
   m_chargePointsSpeed: 50
-  m_dischargePointsSpeed: 5
+  m_dischargePointsSpeed: 15
   m_bombPhase: -1
   m_bombAltMainFirePhase: 6
   m_eraseEnemyBulletsOnBomb: 1

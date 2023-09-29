@@ -6,6 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 
 using static Unity.Mathematics.math;
+using UnityEditor.ShaderGraph.Internal;
 
 
 public class GfTools
@@ -235,6 +236,30 @@ public class GfTools
         GfTools.Mult3(ref b, sqrt(a.sqrMagnitude));
         return 2 * atan2(sqrt((a - b).sqrMagnitude), sqrt((a + b).sqrMagnitude)) * Mathf.Rad2Deg;
     }*/
+
+    public static bool RayIntersectsAABB(Vector3 org, Vector3 dirNorm, Bounds bound)
+    {
+        float dirFracX = 1.0f / dirNorm.x;
+        float dirFracY = 1.0f / dirNorm.y;
+        float dirFracZ = 1.0f / dirNorm.z;
+
+        Vector3 lb = bound.min;
+        Vector3 rt = bound.max;
+        float t1 = (lb.x - org.x) * dirFracX;
+        float t2 = (rt.x - org.x) * dirFracX;
+
+        float t3 = (lb.y - org.y) * dirFracY;
+        float t4 = (rt.y - org.y) * dirFracY;
+
+        float t5 = (lb.z - org.z) * dirFracZ;
+        float t6 = (rt.z - org.z) * dirFracZ;
+
+        float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+        float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+
+
+        return !(tmax < 0 || tmin > tmax);
+    }
 
     public static float AngleDegNorm(Vector3 aNorm, Vector3 bNorm)
     {
