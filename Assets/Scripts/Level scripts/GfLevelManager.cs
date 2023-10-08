@@ -22,6 +22,8 @@ public class GfLevelManager : MonoBehaviour
 
     private Transform m_player = null;
 
+    private StatsPlayer m_statsPlayer = null;
+
     [SerializeField] private GameMultiplayerType m_autoStartGameType = GameMultiplayerType.SINGLEPLAYER;
 
     [SerializeField]
@@ -47,8 +49,6 @@ public class GfLevelManager : MonoBehaviour
 
     [SerializeField]
     private GfPathfinding[] m_pathfindingSystems = null;
-
-
 
 
     private bool m_isPaused = false;
@@ -118,9 +118,23 @@ public class GfLevelManager : MonoBehaviour
 
     public static Action OnLevelEnd;
 
+    const float DEFAULT_SMOOTHTIME_ENV = 1;
+
+    protected EnvironmentLightingColors m_envColorsDefault = default;
+
+    protected EnvironmentLightingColors m_envColorsDesired = default;
+
+    protected float m_envSmoothingProgress = 1;
+
+    protected float m_envSmoothingDuration = 0;
+
+    protected float m_envSmoothingRef = 0;
+
 
     void OnEnable()
     {
+        GfGameManager.ValidateGameManager();
+
         for (int i = 0; i < m_requiredSceneNames.Length; ++i)
         {
             int sceneBuildIndex = LoadingScreenManager.GetSceneBuildIndexByName(m_requiredSceneNames[i]);
@@ -173,6 +187,11 @@ public class GfLevelManager : MonoBehaviour
             m_levelData.paths = new GfPathfinding.NodePathSaveData[m_pathfindingSystems.Length];
             GenerateAllNodePaths();
         }
+
+        m_envColorsDefault.Sky = RenderSettings.ambientSkyColor;
+        m_envColorsDefault.Ground = RenderSettings.ambientGroundColor;
+        m_envColorsDefault.Equator = RenderSettings.ambientEquatorColor;
+        m_envColorsDesired = m_envColorsDefault;
     }
 
     public void Start()
@@ -264,7 +283,7 @@ public class GfLevelManager : MonoBehaviour
             m_isShowingDeathScreen = false;
             HudManager.ToggleDeathScreen(false);
             CheckpointManager.Instance.ResetToHardCheckpoint();
-            CameraController.SnapInstanceToTarget();
+            CameraController.SnapToTargetInstance();
             GfLevelManager.SetLevelMusicPitch(1, 0.2f);
             m_deathMusicSource?.GetAudioSource()?.Stop();
         }
@@ -290,6 +309,23 @@ public class GfLevelManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.M))
         {
             m_player.GetComponent<StatsPlayer>().Kill();
+        }
+
+        if (m_envSmoothingProgress < 0.99999f)
+        {
+            m_envSmoothingProgress = Mathf.SmoothDamp(m_envSmoothingProgress, 1, ref m_envSmoothingRef, m_envSmoothingDuration);
+
+            Color sky = RenderSettings.ambientSkyColor;
+            Color ground = RenderSettings.ambientGroundColor;
+            Color equator = RenderSettings.ambientEquatorColor;
+
+            GfTools.Blend(ref sky, m_envColorsDesired.Sky, m_envSmoothingProgress);
+            GfTools.Blend(ref ground, m_envColorsDesired.Ground, m_envSmoothingProgress);
+            GfTools.Blend(ref equator, m_envColorsDesired.Equator, m_envSmoothingProgress);
+
+            RenderSettings.ambientSkyColor = sky;
+            RenderSettings.ambientGroundColor = ground;
+            RenderSettings.ambientEquatorColor = equator;
         }
     }
 
@@ -405,7 +441,6 @@ public class GfLevelManager : MonoBehaviour
 
     public static void CheckpointStatesExecuted(CheckpointManager checkpointManager)
     {
-        GameParticles.DisableNonEmittingGraves();
     }
 
     //called when an enemy is approaching this character
@@ -425,14 +460,21 @@ public class GfLevelManager : MonoBehaviour
         return Instance.m_player;
     }
 
+    public static StatsPlayer GetPlayerStats()
+    {
+        return Instance.m_statsPlayer;
+    }
+
     public static Vector3 GetPlayerPositionOnScreen()
     {
         return GfGameManager.Camera.WorldToScreenPoint(Instance.m_player.position);
     }
 
-    public static void SetPlayer(Transform player)
+    public static void SetPlayer(StatsPlayer player)
     {
-        Instance.m_player = player;
+        Instance.m_player = player.transform;
+        Instance.m_statsPlayer = player;
+
     }
 
     public void OnCharacterKilled(StatsCharacter character)
@@ -448,9 +490,21 @@ public class GfLevelManager : MonoBehaviour
     {
         if (null == m_checkpointState) m_checkpointState = new();
 
+        EnvironmentLightingColors envColors = default;
+        envColors.Sky = RenderSettings.ambientSkyColor;
+        envColors.Ground = RenderSettings.ambientGroundColor;
+        envColors.Equator = RenderSettings.ambientEquatorColor;
+
         m_checkpointState.CurrentState = m_currentGameState;
         m_checkpointState.SecondsSinceStart = m_secondsSinceStart;
         m_checkpointState.EnemiesKilled = m_enemiesKilled;
+
+        m_checkpointState.EnvColors = envColors;
+        m_checkpointState.DesiredColors = m_envColorsDesired;
+        m_checkpointState.DefaultColors = m_envColorsDefault;
+        m_checkpointState.EnvSmoothingProgress = m_envSmoothingProgress;
+        m_checkpointState.EnvSmoothingDuration = m_envSmoothingDuration;
+        m_checkpointState.EnvSmoothingRef = m_envSmoothingRef;
 
         CheckpointManager.AddCheckpointState(m_checkpointState);
     }
@@ -460,8 +514,18 @@ public class GfLevelManager : MonoBehaviour
         CheckpointGameManager managerState = state as CheckpointGameManager;
 
         Instance.m_currentGameState = managerState.CurrentState;
-        Instance.m_enemiesKilled = managerState.EnemiesKilled;
         Instance.m_secondsSinceStart = managerState.SecondsSinceStart;
+        Instance.m_enemiesKilled = managerState.EnemiesKilled;
+
+        RenderSettings.ambientSkyColor = state.EnvColors.Sky;
+        RenderSettings.ambientGroundColor = state.EnvColors.Ground;
+        RenderSettings.ambientEquatorColor = state.EnvColors.Equator;
+
+        Instance.m_envColorsDesired = state.DesiredColors;
+        Instance.m_envColorsDefault = state.DefaultColors;
+        Instance.m_envSmoothingProgress = state.EnvSmoothingProgress;
+        Instance.m_envSmoothingDuration = state.EnvSmoothingDuration;
+        Instance.m_envSmoothingRef = state.EnvSmoothingRef;
 
         Instance.m_resetsCount++;
     }
@@ -504,6 +568,25 @@ public class GfLevelManager : MonoBehaviour
             Instance.m_desiredActionVolume = 0;
             Instance.m_desiredCalmVolume = 1;
         }
+    }
+
+    public static void ReturnToDefaultEnvironmentColors(float smoothTime = DEFAULT_SMOOTHTIME_ENV)
+    {
+        SetEnvironmentColors(Instance.m_envColorsDefault, smoothTime);
+    }
+
+    public static void SetDefaultEnvironmentColors(EnvironmentLightingColors colors, float smoothTime = DEFAULT_SMOOTHTIME_ENV)
+    {
+        Instance.m_envColorsDefault = colors;
+        SetEnvironmentColors(colors, smoothTime);
+    }
+
+    public static void SetEnvironmentColors(EnvironmentLightingColors colors, float smoothTime = DEFAULT_SMOOTHTIME_ENV)
+    {
+        Instance.m_envSmoothingRef = 0;
+        Instance.m_envSmoothingProgress = 0;
+        Instance.m_envColorsDesired = colors;
+        Instance.m_envSmoothingDuration = smoothTime;
     }
 
     public static void SetLevelMusicPitch(float desiredPitch, float smoothTime)
@@ -570,4 +653,13 @@ public class GfLevelManager : MonoBehaviour
     {
         File.WriteAllText(Instance.m_levelDataPath, JsonUtility.ToJson(Instance.m_levelData));
     }
+}
+
+
+[System.Serializable]
+public struct EnvironmentLightingColors
+{
+    public Color Sky;
+    public Color Equator;
+    public Color Ground;
 }

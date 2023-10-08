@@ -62,7 +62,6 @@ public abstract class StatsCharacter : NetworkBehaviour
     {
         if (m_initialised)
         {
-
             HostilityManager.AddCharacter(this);
 
             if (m_networkTransform) m_networkTransform.enabled = true;
@@ -77,6 +76,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected virtual void Deinit()
     {
+        OnKilled = null;
         HostilityManager.RemoveCharacter(this);
         if (HasAuthority && m_networkObject && m_networkObject.IsSpawned)
         {
@@ -163,6 +163,8 @@ public abstract class StatsCharacter : NetworkBehaviour
         else
             InternalKill(damageType, killerNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
     }
+
+    public virtual void SetTarget(StatsCharacter target) { }
 
 
     [ClientRpc]

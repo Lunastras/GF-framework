@@ -65,21 +65,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: -8427976502252461115}
-  m_physInterval: 0.02
   m_acceleration: 200
   m_deacceleration: 500
   m_maxSpeed: 400
+  m_minimumSpeed: 0
   m_maxSpeedHoming: 100
-  m_targetRadius: 3
-  m_gravity: 10
+  m_targetRadius: 2
+  m_gravity: 16
   m_drag: 300
   m_sphericalParent: {fileID: 0}
   m_defaultGravityDir: {x: 0, y: -1, z: 0}
-  m_defaultSettingsOnDisable: 1
+  m_defaultSettingsOnDisable: 0
   MovementGravityReference: {fileID: 0}
 --- !u!199 &-3817823573439088130
 ParticleSystemRenderer:

@@ -195,28 +195,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1113975553426133289, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_gameAssetsPrefab
-      value: 
-      objectReference: {fileID: 1197799841981835568, guid: 721ad96ba93f50d4d90ddf2be1901295,
-        type: 3}
-    - target: {fileID: 1113975553426133289, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_sceneAssetsPrefab
-      value: 
-      objectReference: {fileID: 1197799841981835568, guid: 721ad96ba93f50d4d90ddf2be1901295,
-        type: 3}
-    - target: {fileID: 1113975553426133289, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_overrideGameTypeMode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1113975553426133289, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_startGameAutomatically
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1981806842624467608, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
         type: 3}
       propertyPath: m_RootOrder
@@ -270,46 +248,6 @@ PrefabInstance:
     - target: {fileID: 1981806842624467608, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2965338579373297026, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2965338579373297026, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2965338579373297026, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5557980539458095895, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5557980539458095895, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5557980539458095895, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7078343455258558971, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: NetworkConfig.ForceSamePrefabs
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7078343455258558971, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,
-        type: 3}
-      propertyPath: NetworkConfig.EnsureNetworkVariableLengthSafety
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8290859788970201079, guid: 1fd50d34d3e01704fbffb2c9d8c4601e,

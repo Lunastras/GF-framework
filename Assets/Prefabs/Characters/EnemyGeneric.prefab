@@ -311,7 +311,7 @@ MonoBehaviour:
   m_movementParent: {fileID: 432613321654859549}
   m_target: {fileID: 0}
   m_fireRateInterval: 0.1
-  m_eraseParticlesAfterOwnerKilled: 1
+  m_eraseParticlesAfterOwnerKilled: 0
   m_particlesEraseFromCenterSpeed: 30
   m_particleEraser: {fileID: 0}
   m_aimsAtTarget: 1

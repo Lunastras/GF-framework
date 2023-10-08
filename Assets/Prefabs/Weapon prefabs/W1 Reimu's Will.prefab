@@ -16,7 +16,8 @@ GameObject:
   - component: {fileID: 6523449390834420665}
   - component: {fileID: 441820245106828894}
   - component: {fileID: 3784227235072950439}
-  m_Layer: 7
+  - component: {fileID: 6310706420214804658}
+  m_Layer: 16
   m_Name: level1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -60,9 +61,9 @@ MonoBehaviour:
   m_callbackOnFirstCollision: 0
   m_collidesWithOwnParticles: 0
   m_minimumParticleDistanceSq: 25
-  m_priority: 1
+  m_priority: 0
   m_selfEvent: 0
-  m_otherEvent: 2
+  m_otherEvent: 0
 --- !u!114 &110439690657272210
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5121,6 +5122,30 @@ MonoBehaviour:
     LateUpdate: 0
     FixedUpdate: 1
   m_particleSystem: {fileID: 0}
+--- !u!114 &6310706420214804658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2489547340042857279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cde560314c88b2641bf358eb7103e3c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
+  m_particleSystem: {fileID: 0}
+  m_dynamicRadius: 0
+  m_callbackOnFirstCollision: 0
+  m_collidesWithOwnParticles: 0
+  m_minimumParticleDistanceSq: 25
+  m_priority: 0
+  m_selfEvent: 0
+  m_otherEvent: 0
 --- !u!1 &3395991133157087368
 GameObject:
   m_ObjectHideFlags: 0
@@ -5135,7 +5160,7 @@ GameObject:
   - component: {fileID: 3395991133157087367}
   - component: {fileID: 1618777149106552399}
   - component: {fileID: -3917290942198474204}
-  m_Layer: 2
+  m_Layer: 16
   m_Name: W1 Reimu's Will
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5416,7 +5441,7 @@ GameObject:
   - component: {fileID: 6648590569678057886}
   - component: {fileID: 8770000690314289122}
   - component: {fileID: 7669251818279754743}
-  m_Layer: 8
+  m_Layer: 16
   m_Name: ShadowDecal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5507,7 +5532,8 @@ GameObject:
   - component: {fileID: 859847728643921297}
   - component: {fileID: 374887716909258982}
   - component: {fileID: 251859493757070571}
-  m_Layer: 7
+  - component: {fileID: 654746463018879515}
+  m_Layer: 16
   m_Name: level1 sub
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10573,6 +10599,30 @@ MonoBehaviour:
     LateUpdate: 0
     FixedUpdate: 1
   m_particleSystem: {fileID: 0}
+--- !u!114 &654746463018879515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6676931357724582795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cde560314c88b2641bf358eb7103e3c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
+  m_particleSystem: {fileID: 0}
+  m_dynamicRadius: 0
+  m_callbackOnFirstCollision: 0
+  m_collidesWithOwnParticles: 0
+  m_minimumParticleDistanceSq: 25
+  m_priority: 0
+  m_selfEvent: 0
+  m_otherEvent: 0
 --- !u!1 &7096222313252895398
 GameObject:
   m_ObjectHideFlags: 0
@@ -10590,7 +10640,8 @@ GameObject:
   - component: {fileID: 5727281797447621093}
   - component: {fileID: 1806092715089093994}
   - component: {fileID: 159033054687441091}
-  m_Layer: 2
+  - component: {fileID: 2080039715737518480}
+  m_Layer: 16
   m_Name: Secondary 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15656,6 +15707,30 @@ MonoBehaviour:
     LateUpdate: 0
     FixedUpdate: 1
   m_particleSystem: {fileID: 0}
+--- !u!114 &2080039715737518480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7096222313252895398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cde560314c88b2641bf358eb7103e3c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_jobSubscriberType:
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
+  m_particleSystem: {fileID: 0}
+  m_dynamicRadius: 0
+  m_callbackOnFirstCollision: 0
+  m_collidesWithOwnParticles: 0
+  m_minimumParticleDistanceSq: 25
+  m_priority: 0
+  m_selfEvent: 0
+  m_otherEvent: 0
 --- !u!1 &7676475427907906785
 GameObject:
   m_ObjectHideFlags: 0
@@ -15669,7 +15744,7 @@ GameObject:
   - component: {fileID: 8253857794517770388}
   - component: {fileID: 1537804147216888839}
   - component: {fileID: 5093740366177044115}
-  m_Layer: 8
+  m_Layer: 16
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}

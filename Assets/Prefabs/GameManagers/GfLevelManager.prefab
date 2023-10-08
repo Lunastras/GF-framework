@@ -3648,7 +3648,7 @@ MonoBehaviour:
     MaxInstances: 12
   m_nextMap: SampleScene
   m_calmMusic:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: 5240cda030e0aca448fbf979eeebb7db, type: 3}
     MixerType: 2
     Volume: 0.5
     VolumeVariance: 0
@@ -3661,7 +3661,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxInstances: 12
   m_actionMusic:
-    Clip: {fileID: 0}
+    Clip: {fileID: 8300000, guid: 72f10f44b88454340bf823d6ad861802, type: 3}
     MixerType: 3
     Volume: 0.5
     VolumeVariance: 0
@@ -3674,8 +3674,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxInstances: 12
   m_actionCalmBlendTime: 1
-  m_requiredSceneNames:
-  - GfGameManagerScene
+  m_requiredSceneNames: []
   m_pathfindingSystems: []
   CanPause: 1
 --- !u!1 &7328347786992939031
@@ -3712,7 +3711,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -4192,7 +4191,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2814966473872397108
 RectTransform:
   m_ObjectHideFlags: 0

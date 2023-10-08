@@ -24,6 +24,8 @@ public class CharacterSpawner : MonoBehaviour
     [SerializeField]
     protected CharacterTypes m_characterType = CharacterTypes.ENEMY;
 
+    protected StatsCharacter m_target;
+
     protected float m_timeUntilNextPhase = 0;
 
     public bool IsPlaying { get; protected set; } = false;
@@ -45,6 +47,8 @@ public class CharacterSpawner : MonoBehaviour
     public Action OnPlay = null;
     public Action OnStop = null;
     public Action OnFinish = null;
+
+    public Action OnCheckpointStateSet = null;
     public Action OnCharactersKilled = null;
 
     public bool m_interruptCoroutine = false;
@@ -83,6 +87,8 @@ public class CharacterSpawner : MonoBehaviour
         m_timeUntilNextPhase = state.TimeUntilPlayPhase;
         m_coroutineIsRunning = false;
         m_interruptCoroutine = true;
+
+        OnCheckpointStateSet?.Invoke();
     }
 
     protected void OnDestroy()
@@ -124,6 +130,8 @@ public class CharacterSpawner : MonoBehaviour
                     if (m_overrideCharacterType)
                         characterSpawned.SetCharacterType(m_characterType);
 
+
+                    // characterSpawned.SetTarget(m_target);
                     characterSpawned.SpawnBehaviour();
                 }
 

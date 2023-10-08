@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering;
 
 public class CameraController : MonoBehaviour
 {
@@ -75,7 +76,7 @@ public class CameraController : MonoBehaviour
 
     public Camera Camera { get { return m_camera; } }
 
-    public Vector3 m_upvec = Vector3.up;
+    public Vector3 Upvec = Vector3.up;
 
     private static readonly Vector3 UPDIR = Vector3.up;
 
@@ -93,7 +94,7 @@ public class CameraController : MonoBehaviour
     private float m_currentSmoothTimeDistance;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         if (Instance != this) Destroy(Instance);
         Instance = this;
@@ -105,20 +106,44 @@ public class CameraController : MonoBehaviour
         m_desiredDst = m_dstFromtarget;
     }
 
-    public static void SnapInstanceToTarget()
+    public static void SnapToTargetInstance()
     {
         Instance.SnapToTarget();
+    }
+
+    public static void LookFowardInstance(float pitchDegrees = 10, float yawOffset = 0)
+    {
+        Instance.LookForward(pitchDegrees, yawOffset);
     }
 
     public CameraController GetInstance() { return Instance; }
 
     public void SnapToTarget()
     {
+        UpdateRotation(0, true);
         m_currentTargetPos = m_mainTarget.position;
         m_transform.position = m_currentTargetPos - m_transform.forward * m_currentTargetDst;
     }
 
-    public void UpdateRotation(float deltaTime)
+    //Look towards the target's forward
+    public void LookForward(float pitchDegrees = 10, float yawOffset = 0)
+    {
+        UpdateRotation(0, false, false);
+        Vector3 cameraForward = m_previousDesiredRot * Vector3.forward;
+        GfTools.RemoveAxis(ref cameraForward, Upvec);
+        GfTools.Normalize(ref cameraForward);
+
+        Vector3 targetForward = m_mainTarget.forward;
+        GfTools.RemoveAxis(ref targetForward, Upvec);
+        GfTools.Normalize(ref targetForward);
+
+        float angle = GfTools.SignedAngleDegNorm(targetForward, cameraForward, Upvec);
+
+        m_yaw -= angle + yawOffset;
+        m_pitch = pitchDegrees;
+    }
+
+    public void UpdateRotation(float deltaTime, bool instantUpdate = false, bool updateTransform = true)
     {
         float pitchCoef = 1;
         if (m_invertedY) pitchCoef = -1;
@@ -130,14 +155,18 @@ public class CameraController : MonoBehaviour
         Quaternion mouseRot = Quaternion.Euler(m_pitch, m_yaw, 0);
         mouseRot = Quaternion.identity;
         Quaternion desiredRot = Quaternion.Inverse(m_lastAppliedRot) * m_previousDesiredRot;
-        desiredRot = Quaternion.FromToRotation(desiredRot * UPDIR, m_upvec) * desiredRot;
+        desiredRot = Quaternion.FromToRotation(desiredRot * UPDIR, Upvec) * desiredRot;
 
-
-        m_lastAppliedRot = Quaternion.AngleAxis(m_yaw, m_upvec);
+        m_lastAppliedRot = Quaternion.AngleAxis(m_yaw, Upvec);
         m_lastAppliedRot = m_lastAppliedRot * Quaternion.AngleAxis(m_pitch, desiredRot * Vector3.right);
 
         desiredRot = m_lastAppliedRot * desiredRot;
-        m_transform.rotation = GfTools.QuatSmoothDamp(m_transform.rotation, desiredRot, ref m_rotVel, m_rotationSmoothTime, deltaTime);
+
+        if (updateTransform)
+            if (instantUpdate)
+                m_transform.rotation = desiredRot;
+            else
+                m_transform.rotation = GfTools.QuatSmoothDamp(m_transform.rotation, desiredRot, ref m_rotVel, m_rotationSmoothTime, deltaTime);
 
         m_previousDesiredRot = desiredRot;
     }
@@ -145,7 +174,7 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     public void Move(float deltaTime)
     {
-        Quaternion upvecCorrection = Quaternion.FromToRotation(UPDIR, m_upvec);
+        Quaternion upvecCorrection = Quaternion.FromToRotation(UPDIR, Upvec);
 
         Vector3 desiredTargetPos = m_mainTarget.position + upvecCorrection * m_positionOffset;
         m_currentTargetPos = Vector3.SmoothDamp(m_currentTargetPos, desiredTargetPos, ref m_refTargetPosVelocity, m_movementSmoothTime, int.MaxValue, deltaTime);

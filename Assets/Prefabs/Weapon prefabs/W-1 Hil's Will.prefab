@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 6523449390834420665}
   - component: {fileID: 441820245106828894}
   - component: {fileID: 3784227235072950439}
-  m_Layer: 2
+  m_Layer: 16
   m_Name: level1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -52,9 +52,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
   m_acceleration: 100
   m_deacceleration: 100
@@ -5079,9 +5079,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &3395991133157087368
 GameObject:
@@ -5097,7 +5097,7 @@ GameObject:
   - component: {fileID: 3395991133157087367}
   - component: {fileID: 1618777149106552399}
   - component: {fileID: -6589968540932027314}
-  m_Layer: 2
+  m_Layer: 16
   m_Name: W-1 Hil's Will
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5179,21 +5179,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_turretPhases:
-  - weapons:
-    - {fileID: 3282975596894537049}
-    DamageMultipliers: []
-    SpeedMultipliers: []
-    FireRateMultipliers: []
-  - weapons:
-    - {fileID: 6801777865621905195}
-    DamageMultipliers: []
-    SpeedMultipliers: []
-    FireRateMultipliers: []
-  - weapons:
-    - {fileID: 7197855145203777846}
-    DamageMultipliers: []
-    SpeedMultipliers: []
-    FireRateMultipliers: []
+  - Weapons:
+    - {fileID: 0}
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
+  - Weapons:
+    - {fileID: 0}
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
+  - Weapons:
+    - {fileID: 0}
+    WeaponMultipliers:
+    - 1
+    - 1
+    - 1
+    - 1
   m_autoPlay: 0
   m_statsCharacter: {fileID: 0}
   DestoryWhenDone: 0
@@ -5351,7 +5357,7 @@ GameObject:
   - component: {fileID: 4151770627145505961}
   - component: {fileID: 1706637558653701475}
   - component: {fileID: 3973182202176107228}
-  m_Layer: 2
+  m_Layer: 16
   m_Name: level3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5386,9 +5392,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
   m_acceleration: 100
   m_deacceleration: 100
@@ -10413,9 +10419,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &4796379040874497763
 GameObject:
@@ -10428,7 +10434,7 @@ GameObject:
   - component: {fileID: 6648590569678057886}
   - component: {fileID: 8770000690314289122}
   - component: {fileID: 7669251818279754743}
-  m_Layer: 8
+  m_Layer: 16
   m_Name: ShadowDecal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10519,7 +10525,7 @@ GameObject:
   - component: {fileID: 5981351392966786959}
   - component: {fileID: 5091705340202023870}
   - component: {fileID: 7507670027777471304}
-  m_Layer: 2
+  m_Layer: 16
   m_Name: level2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10554,9 +10560,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
   m_acceleration: 100
   m_deacceleration: 100
@@ -15581,9 +15587,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 0
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 0}
 --- !u!1 &7676475427907906785
 GameObject:
@@ -15598,7 +15604,7 @@ GameObject:
   - component: {fileID: 8253857794517770388}
   - component: {fileID: 1537804147216888839}
   - component: {fileID: 5093740366177044115}
-  m_Layer: 8
+  m_Layer: 16
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}

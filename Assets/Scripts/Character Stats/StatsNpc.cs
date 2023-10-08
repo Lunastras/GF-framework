@@ -316,4 +316,12 @@ public class StatsNpc : StatsCharacter
             }
         }
     }
+
+    public override void SetTarget(StatsCharacter character)
+    {
+        if (null == m_npcController)
+            m_npcController = GetComponent<NpcController>();
+
+        m_npcController.SetDestination(character.transform, true, false);
+    }
 }

@@ -13,6 +13,15 @@ public class GfUiTools : MonoBehaviour
     [SerializeField]
     private CanvasGroup m_colourOverlayCanvsGroup = null;
 
+    [SerializeField]
+    private CanvasGroup m_blackBarsCanvsGroup = null;
+
+    [SerializeField]
+    private RectTransform m_blackBarUpper = null;
+
+    [SerializeField]
+    private RectTransform m_blackBarLower = null;
+
     private static GfUiTools Instance;
     private static List<RaycastResult> m_raycastResults = new(1);
     private static PointerEventData m_pointerEventData;
@@ -28,6 +37,8 @@ public class GfUiTools : MonoBehaviour
         m_colourOverlay.gameObject.SetActive(true);
         m_colourOverlay.CrossFadeAlpha(0, 0, true);
 
+        SetBlackBars(false);
+
         m_pointerEventData = new PointerEventData(EventSystem.current);
     }
 
@@ -38,6 +49,19 @@ public class GfUiTools : MonoBehaviour
 
     void Start()
     {
+    }
+
+    public static void SetBlackBars(bool turnOn, float delay = 0, bool constantOpacity = false, bool constantAnchors = false, bool ignoreTimeScale = false)
+    {
+        if (delay == 0 || true)
+        {
+            Instance.m_blackBarsCanvsGroup.alpha = turnOn ? 1 : 0;
+            float lowerMaxYAnchor = turnOn ? 0.125f : 0;
+            float upperMinYAnchor = turnOn ? 0.875f : 1;
+
+            Instance.m_blackBarLower.anchorMax = new Vector2(1, lowerMaxYAnchor);
+            Instance.m_blackBarUpper.anchorMin = new Vector2(0, upperMinYAnchor);
+        }
     }
 
     public static bool IsMouseOverUICollision(GameObject ui)

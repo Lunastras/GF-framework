@@ -58,8 +58,6 @@ public class ParticleInterCollision : JobChild
 
     protected static bool ProcedureOngoing = false;
 
-    protected static bool TracksCallbacks = false;
-
     protected int m_selfSystemIndex = -1;
 
     protected float m_scheduleIntervalVariance = 0.1f;
@@ -90,30 +88,35 @@ public class ParticleInterCollision : JobChild
     {
         if (m_initialised)
             InitJobChild();
+
+        //  UnityEngine.Debug.Log("Enable!");
     }
 
     protected void OnDisable()
     {
-        DeinitJobChild();
-
-        bool hasInstance = JobParent.HasInstance();
-        int countBrothers = 0;
-
-        if (hasInstance)
+        if (m_initialised)
         {
-            var brotherSystems = JobParent.GetJobChildren(typeof(ParticleInterCollision), UpdateTypes.FIXED_UPDATE);
-            countBrothers = brotherSystems.Count;
-        }
+            DeinitJobChild();
 
-        //UnityEngine.Debug.Log("Count brothers is: " + countBrothers);
-        //uninitialize everything if there are no more systems
-        if (countBrothers == 0)
-        {
-            //UnityEngine.Debug.Log("trying to destroy everything ");
+            bool hasInstance = JobParent.HasInstance();
+            int countBrothers = 0;
 
-            if (AllParticles.IsCreated) AllParticles.Dispose();
-            if (ParticleCallbacks.IsCreated) ParticleCallbacks.Dispose();
-            if (AllParticleSystems.IsCreated) AllParticleSystems.Dispose();
+            if (hasInstance)
+            {
+                var brotherSystems = JobParent.GetJobChildren(typeof(ParticleInterCollision), UpdateTypes.FIXED_UPDATE);
+                countBrothers = brotherSystems.Count;
+            }
+
+            //UnityEngine.Debug.Log("Count brothers is: " + countBrothers);
+            //uninitialize everything if there are no more systems
+            if (countBrothers == 0)
+            {
+                //UnityEngine.Debug.Log("trying to destroy everything ");
+                ProcedureOngoing = false;
+                if (AllParticles.IsCreated) AllParticles.Dispose();
+                if (ParticleCallbacks.IsCreated) ParticleCallbacks.Dispose();
+                if (AllParticleSystems.IsCreated) AllParticleSystems.Dispose();
+            }
         }
     }
 
@@ -132,7 +135,6 @@ public class ParticleInterCollision : JobChild
                     AllParticleSystems = new(16, Allocator.Persistent);
 
                 AllParticleSystems.Clear();
-                TracksCallbacks = false;
                 ProcedureOngoing = true;
             }
 
@@ -170,8 +172,6 @@ public class ParticleInterCollision : JobChild
                 OtherEvent = m_otherEvent,
                 ParticleStartIndex = m_particleStartIndex
             });
-
-            TracksCallbacks |= m_callbackOnFirstCollision;
         }
     }
 
@@ -184,7 +184,7 @@ public class ParticleInterCollision : JobChild
         {
             int countAllParticles = AllParticlesCount;
 
-            if (TracksCallbacks && ParticleCallbacks.Length < countAllParticles)
+            if (!ParticleCallbacks.IsCreated || ParticleCallbacks.Length < countAllParticles)
             {
                 if (ParticleCallbacks.IsCreated)
                     ParticleCallbacks.Dispose();
@@ -206,7 +206,6 @@ public class ParticleInterCollision : JobChild
                 AllParticles = AllWorkingParticles,
                 ParticleCallbacks = ParticleCallbacks,
                 AllParticleSystems = AllParticleSystems.AsArray().AsReadOnly(),
-                TracksCallbacks = TracksCallbacks
             };
 
             ParticleSystemBoundsJob boundsJob = new()
@@ -454,8 +453,6 @@ internal struct ParticleInterCollisionJob : IJobParallelFor
 
     public NativeArray<ParticleCollisionCallbackData> ParticleCallbacks;
 
-    public bool TracksCallbacks;
-
     public int ParticleSystemsCount;
 
     public void Execute(int i)
@@ -623,9 +620,7 @@ internal struct ParticleInterCollisionJob : IJobParallelFor
             totalParticlesFromPreviousSystem += systemParticleCount;
         }
 
-        if (TracksCallbacks)
-            ParticleCallbacks[i] = callbackData;
-
+        ParticleCallbacks[i] = callbackData;
         AllParticles[i] = selfParticle;
     }
 }

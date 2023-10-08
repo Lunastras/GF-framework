@@ -7,6 +7,7 @@ using Unity.Mathematics;
 
 using static Unity.Mathematics.math;
 using UnityEditor.ShaderGraph.Internal;
+using UnityEngine.Rendering.PostProcessing;
 
 
 public class GfTools
@@ -185,6 +186,15 @@ public class GfTools
         lhs.y = lhsw * rhs.y + lhsy * rhs.w + lhsz * rhs.x - lhsx * rhs.z;
         lhs.z = lhsw * rhs.z + lhsz * rhs.w + lhsx * rhs.y - lhsy * rhs.x;
         lhs.w = lhsw * rhs.w - lhsx * rhs.x - lhsy * rhs.y - lhsz * rhs.z;
+    }
+
+    public static void Blend(ref Color a, Color b, float coef)
+    {
+        float aCoef = 1f - coef;
+        a.r = a.r * aCoef + b.r * coef;
+        a.g = a.g * aCoef + b.g * coef;
+        a.b = a.b * aCoef + b.b * coef;
+        a.a = a.a * aCoef + b.a * coef;
     }
 
     public static Vector3 RemoveAxis(Vector3 leftHand, Vector3 rightHand) { RemoveAxis(ref leftHand, rightHand); return leftHand; }

@@ -81,8 +81,6 @@ public class GfGameManager : MonoBehaviour
 
         m_currentTimeScale = Time.timeScale;
 
-
-
         DontDestroyOnLoad(gameObject);
 
         m_spawnManager = NetworkManager.Singleton.SpawnManager;
@@ -112,6 +110,15 @@ public class GfGameManager : MonoBehaviour
         if (!response.Approved)
         {
             QuitToMenu();
+        }
+    }
+
+    public static void ValidateGameManager()
+    {
+        int sceneBuildIndex = LoadingScreenManager.GfGameManagerSceneIndex;
+        if (!SceneManager.GetSceneByBuildIndex(sceneBuildIndex).isLoaded)
+        {
+            SceneManager.LoadScene(sceneBuildIndex, LoadSceneMode.Additive);
         }
     }
 

@@ -4,6 +4,7 @@ using System;
 using Unity.Netcode;
 using System.Collections.Generic;
 using MEC;
+using System.Diagnostics;
 
 public class CheckpointManager : MonoBehaviour
 {
@@ -40,24 +41,39 @@ public class CheckpointManager : MonoBehaviour
         {
             Instance = this;
         }
-    }
 
-    private void Start()
-    {
         if (Instance != this && !GfGameManager.IsMultiplayer && m_canTriggerHardCheckpoints)
         {
             Destroy(Instance);
         }
 
-        GameObject respawnTransform = GameObject.Find("Spawnpoint");
-        if (respawnTransform) m_respawnPoint = respawnTransform.transform.position;
-
         if (null == m_movementGeneric) m_movementGeneric = GetComponent<GfMovementGeneric>();
         if (null == m_statsCharacter) m_statsCharacter = GetComponent<StatsCharacter>();
         m_transform = m_statsCharacter.transform;
+
+        GameObject respawnGameobject = GameObject.Find("Spawnpoint");
+        if (respawnGameobject)
+        {
+            Transform respawnTransform = respawnGameobject.transform;
+            Vector3 upVec = respawnTransform.up;
+
+            m_movementGeneric.Initialize();
+            m_movementGeneric.SetUpVec(upVec);
+            m_movementGeneric.OrientToUpVecForced();
+            m_transform.rotation = Quaternion.LookRotation(respawnTransform.forward, upVec);
+            m_respawnPoint = respawnTransform.position;
+        }
+        else
+        {
+            UnityEngine.Debug.Log("No spawnpoint found.");
+        }
+
         m_initialPos = m_respawnPoint;
         m_transform.position = m_respawnPoint;
+    }
 
+    private void Start()
+    {
         m_checkpointStates.Clear();
         OnHardCheckpoint?.Invoke();
     }
@@ -130,11 +146,14 @@ public class CheckpointManager : MonoBehaviour
             m_transform.position = m_initialPos;
         }
 
-        if (m_canTriggerHardCheckpoints) CameraController.SnapInstanceToTarget();
+        if (m_canTriggerHardCheckpoints)
+        {
+            CameraController.LookFowardInstance();
+            CameraController.SnapToTargetInstance();
+        }
 
         m_isSoftReseting = false;
         m_movementGeneric.SetVelocity(Vector3.zero);
-        GfLevelManager.CheckpointStatesExecuted(this);
     }
 
     protected void ExecuteCheckpointStates()
@@ -143,6 +162,8 @@ public class CheckpointManager : MonoBehaviour
 
         for (int i = 0; i < stateCount; ++i)
             m_checkpointStates[i].ExecuteCheckpointState();
+
+        GfLevelManager.CheckpointStatesExecuted(this);
     }
 
     public void ResetToHardCheckpoint()

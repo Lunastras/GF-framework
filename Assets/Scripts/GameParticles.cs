@@ -117,14 +117,30 @@ public class GameParticles : MonoBehaviour
 
             if (null == spawnedEmitter)
             {
+                Debug.Log("I created my own system for this");
                 GfPooling.Pool(particleSystemPrefab, 1);
                 emitters = GfPooling.GetPoolList(particleSystemPrefab);
                 spawnedEmitter = emitters[emitters.Count - 1].GetComponent<ParticleHoming>();
                 spawnedEmitter.CopyGravity(gravityReference);
             }
 
+            ParticleSystem ps = spawnedEmitter.GetParticleSystem();
+
+
             if (!spawnedEmitter.gameObject.activeSelf)
+            {
                 spawnedEmitter.gameObject.SetActive(true);
+
+                //there is a weird bug that happens when a particle is spawned right after the object is activated
+                //where the sprite of the particle will just spin. I only noticed this with my shaders, and it only applies to the first particle (and its not even consistent, sometimes the first particle will be ok)
+                //emiting a particle randomly like we do here seems to fix the problem
+                ParticleSystem.EmitParams emitParamsAux = new();
+                emitParamsAux.startLifetime = 0;
+                emitParamsAux.position = new Vector3(9999, 9999, 9999);
+
+                ps.Emit(emitParamsAux, 1);
+                Debug.Log("Just activated");
+            }
 
 
             ParticleSystem.EmitParams emitParams = new();
@@ -133,7 +149,6 @@ public class GameParticles : MonoBehaviour
             if (null != positions)
             {
                 int countPositions = positions.Count;
-                ParticleSystem ps = spawnedEmitter.GetParticleSystem();
                 for (int i = 0; i < countPositions; ++i)
                 {
                     emitParams.position = positions[i];
@@ -143,9 +158,8 @@ public class GameParticles : MonoBehaviour
             else
             {
                 emitParams.position = position;
-                spawnedEmitter.GetParticleSystem().Emit(emitParams, numberToEmit);
+                ps.Emit(emitParams, numberToEmit);
             }
-
         }
     }
 
@@ -154,13 +168,17 @@ public class GameParticles : MonoBehaviour
         EmitHomingParticleSystem(Instance.m_powerItemsPrefab, position, numberToEmit, gravityReference);
     }
 
-    protected static void ClearParticleSystems(GameObject ps)
+    protected static void ClearParticleSystems(GameObject ps, bool disable = true)
     {
         List<GameObject> emitters = GfPooling.GetPoolList(ps);
         int count = emitters.Count;
         for (int i = 0; i < count; ++i)
         {
             emitters[i].GetComponent<ParticleSystem>().Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            if (disable && emitters[i].activeSelf)
+            {
+                emitters[i].SetActive(false);
+            }
         }
     }
 
@@ -182,16 +200,6 @@ public class GameParticles : MonoBehaviour
         Instance.m_deathDustInstance.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         Instance.m_particleDmgNumbersInstance.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         Instance.m_particleDmgNumbersInstance.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-    }
-
-    public static void DisableNonEmittingGraves()
-    {
-        List<GameObject> emitters = GfPooling.GetPoolList(Instance.m_gravesParticlesPrefab);
-        int count = emitters.Count;
-        for (int i = 0; i < count; ++i)
-        {
-            emitters[i].SetActive(emitters[i].GetComponent<ParticleSystem>().IsAlive(true));
-        }
     }
 
     public static void SpawnGraves(List<Vector3> positions, GravityReference gravityReference = default)

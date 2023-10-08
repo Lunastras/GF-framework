@@ -134,16 +134,26 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
     protected MgCollisionStruct m_currentGroundCollision;
 
+    private bool m_initialisedMovementGeneric = false;
 
     #endregion
 
     private void Awake()
     {
-        m_transform = transform;
-        m_lastRotation = m_transform.rotation;
-        ValidateCollisionArchetype();
-        m_archetypeCollision.UpdateValues();
-        if (null == m_statsCharacter) m_statsCharacter = GetComponent<StatsCharacter>();
+        Initialize();
+    }
+
+    public void Initialize()
+    {
+        if (!m_initialisedMovementGeneric)
+        {
+            m_initialisedMovementGeneric = true;
+            m_transform = transform;
+            m_lastRotation = m_transform.rotation;
+            ValidateCollisionArchetype();
+            m_archetypeCollision.UpdateValues();
+            if (null == m_statsCharacter) m_statsCharacter = GetComponent<StatsCharacter>();
+        }
     }
 
     protected virtual void BeforePhysChecks(float deltaTime) { }
@@ -616,14 +626,12 @@ public abstract class GfMovementGeneric : MonoBehaviour
         if (collision.isGrounded) m_currentGroundCollision = collision;
         Vector3 normal = collision.selfNormal;
 
-        //not perfect TODO
         //Check for stair, if no stair is found, then perform normal velocity calculations
-        if (!collision.isGrounded && false)
+        if (!collision.isGrounded)
         {
             float stepHeight = GetStepHeight(collision.GetPoint(), collision.selfPosition);
-            if (stepHeight <= m_stepOffset && stepHeight > 0.0001f) //todo randomly walks up walls
+            if (stepHeight <= m_stepOffset && stepHeight > 0.001f) //todo it randomly walks up walls
             {
-
                 bool stairIsGrounded = CheckGround(ref collision, collision.GetHitUpVecAngle());
 
                 if (stairIsGrounded)
@@ -637,6 +645,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
                     collision.isGrounded = true;
                 }
             }
+            //else Debug.Log("The height is: " + stepHeight + " The offset is: " + m_stepOffset);
         }
 
         if (recalculateVelocity)
@@ -755,6 +764,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
     protected virtual bool CheckGround(ref MgCollisionStruct collision, float normalAngle)
     {
         return m_slopeLimit >= normalAngle
+        //&& 1 == collision.selfNormal.sqrMagnitude
         && GfPhysics.LayerIsInMask(collision.collider.gameObject.layer, GfPhysics.GroundLayers());
     }
 
@@ -800,13 +810,14 @@ public abstract class GfMovementGeneric : MonoBehaviour
 
                 //remove velocity that is going down
                 float verticalFallSpeed = System.MathF.Max(0, -Vector3.Dot(m_upVec, parentVelocity));
+                float deltaTImeCoef = GetDeltaTimeCoef();
 
                 parentVelocity.x += m_upVec.x * verticalFallSpeed;
                 parentVelocity.y += m_upVec.y * verticalFallSpeed;
                 parentVelocity.z += m_upVec.z * verticalFallSpeed;
-                GfTools.Div3(ref parentVelocity, GetDeltaTimeCoef());
+                GfTools.Div3(ref parentVelocity, deltaTImeCoef);
 
-                GfTools.Add3(ref m_interpolationMovement, parentVelocity * m_lastPhysDeltaTime); //TODO
+                GfTools.Add3(ref m_interpolationMovement, parentVelocity * m_lastPhysDeltaTime); //TODO, not sure why i put todo here, probably because this doesn't work well with time stop, but last Phys delta time should be affected by the time stop delta coef, so i dunno
                 GfTools.Add3(ref m_velocity, parentVelocity);
             }
 
@@ -848,11 +859,6 @@ public abstract class GfMovementGeneric : MonoBehaviour
         return changedGravity;
     }
 
-    protected void OnEnable()
-    {
-        ReturnToDefaultValues();
-    }
-
     public bool CopyGravityFrom(GfMovementGeneric movement, bool overridePriority = false)
     {
         Transform sphericalParent = movement.GetParentSpherical();//todo
@@ -881,6 +887,7 @@ public abstract class GfMovementGeneric : MonoBehaviour
         m_interpolationMovement = Vector3.zero;
         m_interpolationRotation = Quaternion.identity;
         m_currentGroundCollision.collider = null;
+        OrientToUpVecForced();
     }
 
     public bool DetachFromParentSpherical(uint priority, Vector3 newUpVec, bool overridePriority = false)

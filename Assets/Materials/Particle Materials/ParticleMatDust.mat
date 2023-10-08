@@ -130,7 +130,7 @@ Material:
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0.1
     - _DitherIntensity: 1
-    - _DitherScale: 1
+    - _DitherScale: 1.5
     - _DstBlend: 0
     - _EnableExternalAlpha: 0
     - _EnvironmentReflections: 0

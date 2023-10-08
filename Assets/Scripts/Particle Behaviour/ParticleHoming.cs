@@ -44,7 +44,7 @@ public class ParticleHoming : JobChild
     protected Vector3 m_defaultGravityDir = DOWNDIR;
 
     [SerializeField]
-    protected bool m_defaultSettingsOnDisable = true;
+    protected bool m_defaultSettingsOnDisable = false;
 
     protected static readonly Vector3 DOWNDIR = Vector3.down;
 
@@ -133,7 +133,7 @@ public class ParticleHoming : JobChild
                     customData.SetVector(ParticleSystemCustomData.Custom1, 0, gravity3.x);
                     customData.SetVector(ParticleSystemCustomData.Custom1, 1, gravity3.y);
                     customData.SetVector(ParticleSystemCustomData.Custom1, 2, gravity3.z);
-                    customData.SetVector(ParticleSystemCustomData.Custom1, 3, 1); //1, position
+                    customData.SetVector(ParticleSystemCustomData.Custom1, 3, 1); //1 = position, 0 = direction
                 }
 
                 NativeArray<float3>.ReadOnly targetPositions = m_targetPositions;
@@ -143,9 +143,19 @@ public class ParticleHoming : JobChild
                 if (!targetPositions.IsCreated || countTargets > 0)
                 {
                     m_mustDisposeEffectivePositions = true;
-                    m_effectiveTargetPositions = new(countTargets, Allocator.TempJob);
+                    int realCountTargets = 0;
                     for (int i = 0; i < countTargets; ++i)
-                        m_effectiveTargetPositions[i] = m_targetsOverride[i].position;
+                    {
+                        if (m_targetsOverride[i].gameObject.activeSelf)
+                            realCountTargets++;
+                    }
+
+                    m_effectiveTargetPositions = new(realCountTargets, Allocator.TempJob);
+                    for (int i = 0; i < countTargets; ++i)
+                    {
+                        if (m_targetsOverride[i].gameObject.activeSelf)
+                            m_effectiveTargetPositions[i] = m_targetsOverride[i].position;
+                    }
 
                     targetPositions = m_effectiveTargetPositions.AsReadOnly();
                 }

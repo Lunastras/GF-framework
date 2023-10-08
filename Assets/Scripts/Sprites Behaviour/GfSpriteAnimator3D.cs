@@ -81,7 +81,7 @@ public class GfSpriteAnimator3D : MonoBehaviour
 
             float degreesBetweenSteps = 360.0f / (float)numberSides;
 
-            Vector3 upVec = null != cameraController ? cameraController.m_upvec : m_defaultCameraUpvec;
+            Vector3 upVec = null != cameraController ? cameraController.Upvec : m_defaultCameraUpvec;
             Vector3 mainCameraForward = cameraController.transform.forward;
             Vector3 transForward = m_objectTransform.forward;
             GfTools.RemoveAxis(ref mainCameraForward, upVec);

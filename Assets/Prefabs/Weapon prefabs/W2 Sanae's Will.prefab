@@ -10254,7 +10254,7 @@ GameObject:
   - component: {fileID: 3395991133157087367}
   - component: {fileID: 1618777149106552399}
   - component: {fileID: -8727778355996634636}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: W2 Sanae's Will
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10539,7 +10539,7 @@ GameObject:
   - component: {fileID: 6648590569678057886}
   - component: {fileID: 8770000690314289122}
   - component: {fileID: 7669251818279754743}
-  m_Layer: 8
+  m_Layer: 14
   m_Name: ShadowDecal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -31106,7 +31106,7 @@ GameObject:
   - component: {fileID: 8253857794517770388}
   - component: {fileID: 1537804147216888839}
   - component: {fileID: 5093740366177044115}
-  m_Layer: 8
+  m_Layer: 14
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}

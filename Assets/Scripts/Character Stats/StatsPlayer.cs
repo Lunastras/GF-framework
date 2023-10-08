@@ -102,7 +102,7 @@ public class StatsPlayer : StatsCharacter
                 m_healthUI.SetHealthPoints(m_currentHealth.Value);
             }
 
-            GfLevelManager.SetPlayer(transform);
+            GfLevelManager.SetPlayer(this);
             LocalPlayer = this;
         }
 
@@ -228,7 +228,8 @@ public class StatsPlayer : StatsCharacter
             m_movement.SetVelocity(checkpointState.Velocity);
             m_loadoutManager.Respawned();
             m_checkpointState = checkpointState;
-            m_movement.OrientToUpVecForced();
+            //m_movement.d();
+            transform.rotation = checkpointState.Rotation;
 
             m_movement.SetParentTransform(checkpointState.MovementParent, checkpointState.MovementParentPriority, true);
             OnKilled = checkpointState.OnKilled;
@@ -237,6 +238,9 @@ public class StatsPlayer : StatsCharacter
                 m_movement.SetParentSpherical(checkpointState.MovementParentSpherical, checkpointState.MovementGravityPriority, true);
             else
                 m_movement.SetUpVec(checkpointState.UpVec, checkpointState.MovementGravityPriority, true);
+
+            CameraController.LookFowardInstance();
+            CameraController.SnapToTargetInstance();
         }
     }
 
@@ -247,7 +251,7 @@ public class StatsPlayer : StatsCharacter
             if (null == m_checkpointState) m_checkpointState = new();
             m_transform = transform;
             m_checkpointState.Position = m_transform.position;
-            //m_checkpointState.Rotation = m_transform.rotation;
+            m_checkpointState.Rotation = m_transform.rotation;
             m_checkpointState.Scale = m_transform.localScale;
             m_checkpointState.CurrentHp = m_currentHealth.Value;
             m_checkpointState.Velocity = m_movement.GetVelocity();

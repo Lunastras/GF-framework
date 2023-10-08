@@ -215,7 +215,7 @@ public class GfPooling : MonoBehaviour
     {
         bool destroyObject = true;
 
-        if (Instance.m_pools.TryGetValue(objectToDestroy.name, out PoolStruct pool) && null != pool.list)
+        if (Instance.isActiveAndEnabled && Instance.m_pools.TryGetValue(objectToDestroy.name, out PoolStruct pool) && null != pool.list)
         {
             var currentPool = pool.list;
             bool alreadyInPool = objectToDestroy.transform.position.Equals(DESTROY_POSITION);

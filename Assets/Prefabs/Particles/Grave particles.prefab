@@ -47,11 +47,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 3542749855723907730}
-  m_physInterval: 0.05
   m_acceleration: 0
   m_deacceleration: 0
   m_maxSpeed: 40
@@ -62,7 +61,7 @@ MonoBehaviour:
   m_drag: 100
   m_sphericalParent: {fileID: 0}
   m_defaultGravityDir: {x: 0, y: -1, z: 0}
-  m_defaultSettingsOnDisable: 1
+  m_defaultSettingsOnDisable: 0
   MovementGravityReference: {fileID: 0}
 --- !u!199 &3542749855723907731
 ParticleSystemRenderer:

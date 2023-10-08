@@ -60,7 +60,6 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsOwner)
         {
-            GfLevelManager.SetPlayer(transform);
             if (null == m_movement)
             {
                 m_movement = GetComponent<GfMovementGeneric>();
@@ -70,19 +69,16 @@ public class PlayerController : NetworkBehaviour
 
             if (null == m_statsCharacter) m_statsCharacter = GetComponent<StatsCharacter>();
 
-            if (null == m_cameraController)
-            {
-                m_playerCamera = Camera.main.transform;
-                m_cameraController = m_playerCamera.GetComponent<CameraController>();
-            }
-            else m_playerCamera = m_cameraController.transform;
+            m_cameraController = CameraController.Instance;
+            m_playerCamera = m_cameraController.transform;
 
-            m_cameraController = m_playerCamera.GetComponent<CameraController>();
             if (null == m_cameraController)
                 Debug.LogError("ERROR: The main camera does not have a CameraController component. Please add it to the main camera.");
             else
                 m_cameraController.SetMainTarget(m_movement.transform);
 
+            m_cameraController.LookForward();
+            m_cameraController.SnapToTarget();
         }
 
         if (null == m_loadoutManager)
@@ -194,7 +190,7 @@ public class PlayerController : NetworkBehaviour
         if (!GfLevelManager.IsPaused()) //get inputs
         {
             Vector3 upVec = m_movement.GetUpvecRotation();
-            m_cameraController.m_upvec = m_movement.GetUpvecRotation();
+            m_cameraController.Upvec = m_movement.GetUpvecRotation();
             m_cameraController.UpdateRotation(deltaTime);
 
             auxFlagFire1 = Input.GetAxisRaw("Fire1") > 0.5f;
