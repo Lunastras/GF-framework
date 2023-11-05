@@ -197,6 +197,7 @@ public class StatsNpc : StatsCharacter
         if (isServerCall)
         {
             OnKilled?.Invoke(this, killerNetworkId, hasKillerNetworkId, weaponLoadoutIndex, weaponIndex);
+            OnKilledUnique?.Invoke(this, killerNetworkId, hasKillerNetworkId, weaponLoadoutIndex, weaponIndex);
 
             Vector3 currentPos = m_transform.position;
             GameParticles.PlayDeathDust(currentPos);

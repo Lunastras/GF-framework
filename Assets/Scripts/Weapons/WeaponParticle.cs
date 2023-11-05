@@ -153,7 +153,7 @@ public abstract class WeaponParticle : WeaponGeneric
         base.WasSwitchedOn();
         var statsCharacter = GetStatsCharacter();
         if (statsCharacter)
-            statsCharacter.OnKilled += OnOwnerKilled;
+            statsCharacter.OnKilledUnique += OnOwnerKilled;
     }
 
     public override void WasSwitchedOff()
@@ -162,7 +162,7 @@ public abstract class WeaponParticle : WeaponGeneric
 
         var statsCharacter = GetStatsCharacter();
         if (statsCharacter)
-            statsCharacter.OnKilled -= OnOwnerKilled;
+            statsCharacter.OnKilledUnique -= OnOwnerKilled;
     }
 
     public override uint GetSeed() { return 0; }

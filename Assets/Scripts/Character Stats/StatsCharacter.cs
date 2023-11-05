@@ -39,7 +39,12 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     protected int m_enemiesEngagingCount = 0;
 
+    //used for external callbacks
     public Action<StatsCharacter, ulong, bool, int, int> OnKilled = null;
+
+    //only valid for this specific entity (e.g. its own weapons)
+    public Action<StatsCharacter, ulong, bool, int, int> OnKilledUnique = null;
+
 
     protected bool HasAuthority
     {

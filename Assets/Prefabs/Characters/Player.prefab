@@ -812,7 +812,7 @@ MonoBehaviour:
   m_statsCharacter: {fileID: 0}
   CanFly: 0
   m_useInterpolation: 1
-  m_speed: 9
+  m_speed: 10
   m_mass: 50
   m_stepOffset: 0.4
   m_slopeLimit: 44
@@ -825,8 +825,8 @@ MonoBehaviour:
   FlagDash: 0
   m_maxOverlaps: 4
   m_maxCasts: 4
-  m_acceleration: 40
-  m_deacceleration: 35
+  m_acceleration: 35
+  m_deacceleration: 40
   m_midAirAcceleration: 20
   m_midAirDeacceleration: 10
   m_maxFallSpeed: 50
