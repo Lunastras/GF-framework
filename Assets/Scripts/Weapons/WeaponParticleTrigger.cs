@@ -16,14 +16,13 @@ public class WeaponParticleTrigger : WeaponParticle
     //The value will be the index of the character found in ReuableParticleSystemManager's list
     public bool m_getDamageSourceFromColor = false;
 
-    private List<ParticleSystem.Particle> m_particlesList = null;
+    private List<ParticleSystem.Particle> m_particlesList = new(16);
 
     protected static readonly Vector3 DESTROY_POS = new(100000000, -100000000, 100000000);
 
     protected new void Awake()
     {
         base.Awake();
-        m_particlesList = new(16);
 
         var triggerModule = m_particleSystem.trigger;
         triggerModule.enabled = true;
@@ -55,8 +54,6 @@ public class WeaponParticleTrigger : WeaponParticle
             }
             m_particleSystem.SetTriggerParticles(ParticleSystemTriggerEventType.Enter, m_particlesList);
         }
-
-
     }
 
     protected void CollisionBehaviour(ref ParticleSystem.Particle particle, GameObject hitObject)
@@ -89,6 +86,7 @@ public class WeaponParticleTrigger : WeaponParticle
                     Debug.LogWarning("ParticleTriggerDamageSelf: stats of self are null");
 
                 float damageMultiplier = HostilityManager.DamageMultiplier(selfStats, collisionStats);
+                Debug.Log("Damage multiplier is: " + damageMultiplier);
 
                 //check if it can damage target
                 if (!hitSelf || (hitSelf && m_canDamageSelf))
@@ -104,8 +102,8 @@ public class WeaponParticleTrigger : WeaponParticle
     protected virtual void HitTarget(ref ParticleSystem.Particle particle, StatsCharacter self, StatsCharacter target, float damageMultiplier, DamageSource damageSource)
     {
         m_damageSound.Play(particle.position);
-        // Debug.Log("I AM HIT, DESTROY BULLET NOW");
-        target.Damage(GetDamage() * damageMultiplier, m_damageType, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex);
+        Debug.Log("I AM HIT, DESTROY BULLET NOW");
+        target.Damage(new(GetDamage() * damageMultiplier, particle.position, particle.velocity.normalized, m_damageType, true, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex));
         particle.remainingLifetime = 0;
     }
 

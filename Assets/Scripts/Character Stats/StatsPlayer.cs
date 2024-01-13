@@ -63,7 +63,7 @@ public class StatsPlayer : StatsCharacter
         m_audioObjectDamageReceived = objDamageReceived.GetAudioSource();
 
         if (HasAuthority)
-            m_currentHealth.Value = m_maxHealth.Value;
+            m_currentHealth.Value = GetMaxHealthEffective();
 
         if (null == m_playerGun)
             m_playerGun = FindObjectOfType<FiringWeapons>();
@@ -98,7 +98,7 @@ public class StatsPlayer : StatsCharacter
 
             if (m_healthUI)
             {
-                m_healthUI.SetMaxHealth(m_maxHealth.Value);
+                m_healthUI.SetMaxHealth(m_maxHealth);
                 m_healthUI.SetHealthPoints(m_currentHealth.Value);
             }
 
@@ -121,21 +121,21 @@ public class StatsPlayer : StatsCharacter
         m_loadoutManager.enabled = false;
     }
 
-    protected override void InternalDamage(float damage, DamageType damageType, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
+    protected override void InternalDamage(DamageData aDamageData, bool isServerCall)
     {
         if (!m_isDead)
         {
-            damage *= m_receivedDamageMultiplier.Value;
+            float damage = m_receivedDamageMultiplier.Value * aDamageData.Damage;
 
             StatsCharacter enemy = null;
-            if (hasEnemyNetworkId)
+            if (aDamageData.HasEnemyNetworkId)
             {
-                enemy = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(enemyNetworkId);
+                enemy = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
                 if (enemy)
                 {
-                    DamageSource damageSource = enemy.GetWeaponDamageSource(weaponLoadoutIndex, weaponIndex);
+                    DamageSource damageSource = enemy.GetWeaponDamageSource(aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
                     if (damageSource) damageSource.OnDamageDealt(damage, this, isServerCall);
-                    enemy.OnDamageDealt(damage, NetworkObjectId, weaponLoadoutIndex, weaponIndex, isServerCall);
+                    enemy.OnDamageDealt(damage, NetworkObjectId, aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex, isServerCall);
                 }
             }
 
@@ -156,7 +156,7 @@ public class StatsPlayer : StatsCharacter
                 if (m_currentHealth.Value == 0)
                 {
                     m_isDead = true;
-                    Kill(damageType, enemyNetworkId, weaponLoadoutIndex, weaponIndex);
+                    Kill(aDamageData);
                 }
             }
         }
@@ -186,17 +186,17 @@ public class StatsPlayer : StatsCharacter
         return ret;
     }
 
-    protected override void InternalKill(DamageType damageType, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
+    protected override void InternalKill(DamageData aDamageData, bool aIsServerCall)
     {
-        if (isServerCall)
+        if (aIsServerCall)
         {
-            StatsCharacter killerStats = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(killerNetworkId);
+            StatsCharacter killerStats = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
             //killerStats.Getwea
             if (killerStats)
             {
-                DamageSource damageSource = killerStats.GetWeaponDamageSource(weaponLoadoutIndex, weaponIndex);
-                if (damageSource) damageSource.OnCharacterKilled(this, isServerCall);
-                killerStats.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+                DamageSource damageSource = killerStats.GetWeaponDamageSource(aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
+                if (damageSource) damageSource.OnCharacterKilled(this, aIsServerCall);
+                killerStats.OnCharacterKilled(NetworkObjectId, aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
             }
 
 
@@ -204,7 +204,7 @@ public class StatsPlayer : StatsCharacter
             Vector3 currentPos = m_transform.position;
             GameParticles.PlayDeathDust(currentPos);
             GfAudioManager.PlayAudio(m_deathSound, m_transform.position);
-            OnKilled?.Invoke(this, killerNetworkId, hasKillerNetworkId, weaponLoadoutIndex, weaponIndex);
+            OnKilled?.Invoke(this, aDamageData);
             OnKilled = null;
             gameObject.SetActive(false);
 
@@ -248,6 +248,7 @@ public class StatsPlayer : StatsCharacter
     {
         if (gameObject && IsCheckpointable())
         {
+            m_movement.Initialize();
             if (null == m_checkpointState) m_checkpointState = new();
             m_transform = transform;
             m_checkpointState.Position = m_transform.position;
@@ -270,18 +271,16 @@ public class StatsPlayer : StatsCharacter
 
     public override void SetMaxHealthRaw(float maxHealth)
     {
-        if (!IsClient)
-        {
-            m_maxHealth.Value = maxHealth;
-            if (m_healthUI) m_healthUI.SetMaxHealth(m_maxHealth.Value * m_maxHealthMultiplier.Value);
-        }
+        m_maxHealth = maxHealth;
+        if (m_healthUI) m_healthUI.SetMaxHealth(GetMaxHealthEffective());
     }
 
     public override void SetMaxHealthMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
     {
-        if (!IsClient && m_maxHealthMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority) && m_healthUI)
+        if (m_maxHealthMultiplier.SetValue(maxHealthMultiplier, priority, overridePriority)
+            && m_healthUI)
         {
-            m_healthUI.SetMaxHealth(m_maxHealth.Value * m_maxHealthMultiplier.Value);
+            m_healthUI.SetMaxHealth(GetMaxHealthEffective());
         }
     }
 

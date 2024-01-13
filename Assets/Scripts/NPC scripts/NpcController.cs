@@ -9,7 +9,7 @@ using Unity.Netcode;
 
 using GfPathFindingNamespace;
 
-public class NpcController : NetworkBehaviour
+public class NpcController : MonoBehaviour
 {
 
     [SerializeField]
@@ -91,7 +91,7 @@ public class NpcController : NetworkBehaviour
         //if m_transform is null, that means Initialize() was not called. If so, do not initialize the job
     }
 
-    public override void OnDestroy()
+    protected void OnDestroy()
     {
         if (m_pathToDestination.IsCreated) m_pathToDestination.Dispose();
         m_destination.RemoveDestination();
@@ -136,7 +136,7 @@ public class NpcController : NetworkBehaviour
         float deltaTime = Time.deltaTime;
         m_timeUntilNextStateUpdate -= deltaTime;
 
-        if (0 >= m_timeUntilNextStateUpdate && IsServer)
+        if (0 >= m_timeUntilNextStateUpdate && GfServerManager.HasAuthority)
         {
             float stateDelta = m_updateInterval - m_timeUntilNextStateUpdate;
             m_timeUntilNextStateUpdate = m_updateInterval * UnityEngine.Random.Range(0.9f, 1.1f);
@@ -148,8 +148,8 @@ public class NpcController : NetworkBehaviour
 
     void LateUpdate()
     {
-        if (IsServer)
-            m_movement.Move(Time.deltaTime);
+        if (GfServerManager.HasAuthority)
+            m_movement.LateUpdateBehaviour(Time.deltaTime);
     }
 
     protected virtual void BeforeStateUpdate(float deltaTime) { }
@@ -286,12 +286,12 @@ public class NpcController : NetworkBehaviour
     protected virtual void EngageEnemyBehaviour(float deltaTime, Vector3 dirToTarget)
     {
 
-        m_movement.SetMovementDir(dirToTarget.normalized);
+        m_movement.GetRunnerTemplate().SetMovementDir(dirToTarget.normalized);
     }
 
     protected virtual void LowLifeBehaviour(float deltaTime, Vector3 dirToTarget)
     {
-        m_movement.SetMovementDir(-dirToTarget.normalized);
+        m_movement.GetRunnerTemplate().SetMovementDir(-dirToTarget.normalized);
     }
 
     /** TODO
@@ -332,25 +332,25 @@ public class NpcController : NetworkBehaviour
     protected virtual void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
         Debug.Log("finding the target");
-        m_movement.SetMovementDir(GetPathDirection(dirToTarget));
+        m_movement.GetRunnerTemplate().SetMovementDir(GetPathDirection(dirToTarget));
     }
 
     protected virtual void ArrivedAtDestinationBehaviour(float deltaTime)
     {
         m_destination.RemoveDestination();
-        m_movement.SetMovementDir(Vector3.zero);
+        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
     }
 
     protected virtual void LostTargetBehaviour(float deltaTime)
     {
-        m_movement.SetMovementDir(Vector3.zero);
+        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
         m_destination.RemoveDestination();
     }
 
     protected virtual void DestinationDestroyedBehaviour(float deltaTime)
     {
         PauseMovement(1);
-        m_movement.SetMovementDir(Vector3.zero);
+        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
         m_destination.RemoveDestination();
     }
 
@@ -395,7 +395,7 @@ public class NpcController : NetworkBehaviour
 
     public void PauseMovement(float durationInSeconds = float.MaxValue)
     {
-        m_movement.SetMovementDir(Vector3.zero);
+        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
 
         /*
          * if a value is not given or is something like 0

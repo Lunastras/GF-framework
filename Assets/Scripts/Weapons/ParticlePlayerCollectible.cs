@@ -27,19 +27,23 @@ public class ParticlePlayerCollectible : ParticleTrigger
 
     private void FixedUpdate()
     {
-        if (m_particleHoming && GfGameManager.Instance && m_player != GfLevelManager.GetPlayer() && !GfLevelManager.GetPlayerStats().IsDead())
+        StatsCharacter statsPlayer = GfLevelManager.GetPlayerStats();
+        if (statsPlayer)
         {
-            if (m_player) m_particleSystem.trigger.RemoveCollider(m_player);
+            if (m_particleHoming && GfGameManager.Instance && m_player != GfLevelManager.GetPlayer() && !statsPlayer.IsDead())
+            {
+                if (m_player) m_particleSystem.trigger.RemoveCollider(m_player);
 
-            m_player = GfLevelManager.GetPlayer();
-            m_particleHoming.AddTarget(m_player);
-            m_particleSystem.trigger.AddCollider(m_player);
-        }
-        else if (GfLevelManager.GetPlayerStats().IsDead() && m_player)
-        {
-            m_particleHoming.ClearTargets();
-            m_particleSystem.trigger.RemoveCollider(m_player);
-            m_player = null;
+                m_player = GfLevelManager.GetPlayer();
+                m_particleHoming.AddTarget(m_player);
+                m_particleSystem.trigger.AddCollider(m_player);
+            }
+            else if (statsPlayer.IsDead() && m_player)
+            {
+                m_particleHoming.ClearTargets();
+                m_particleSystem.trigger.RemoveCollider(m_player);
+                m_player = null;
+            }
         }
     }
 

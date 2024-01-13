@@ -99,17 +99,7 @@ public class GfPooling : MonoBehaviour
         if (spawnedObject)
         {
             spawnedObject.transform.SetParent(parent);
-
-            if (instantiateInWorldSpace)
-            {
-                spawnedObject.transform.position = position;
-                spawnedObject.transform.rotation = rotation;
-            }
-            else
-            {
-                spawnedObject.transform.localPosition = position;
-                spawnedObject.transform.localRotation = rotation;
-            }
+            locSetObjectPositionAndRotation(spawnedObject.transform, position, rotation, !instantiateInWorldSpace);
         }
         else
         {
@@ -211,6 +201,56 @@ public class GfPooling : MonoBehaviour
         Instance = null;
     }
 
+    protected static void locSetObjectPosition(Transform obj, Vector3 position, bool local)
+    {
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb)
+        {
+            if (local)
+            {
+                Transform parent = obj.parent;
+                if (parent)
+                    GfTools.Add3(ref position, parent.position);
+            }
+
+            rb.position = position;
+        }
+        else if (local)
+            obj.localPosition = position;
+        else
+            obj.position = position;
+    }
+
+    protected static void locSetObjectPositionAndRotation(Transform obj, Vector3 position, Quaternion rotation, bool local)
+    {
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb)
+        {
+            if (local)
+            {
+                Transform parent = obj.parent;
+                if (parent)
+                {
+                    GfTools.Add3(ref position, parent.position);
+                    rotation = parent.rotation * rotation;
+                }
+            }
+
+            rb.position = position;
+            rb.rotation = rotation;
+        }
+        else if (local)
+        {
+            obj.localPosition = position;
+            obj.localRotation = rotation;
+        }
+        else
+        {
+            obj.position = position;
+            obj.rotation = rotation;
+        }
+    }
+
     private static void InternalDestroy(GameObject objectToDestroy, bool keepActive, bool goOverCapacity)
     {
         bool destroyObject = true;
@@ -225,7 +265,7 @@ public class GfPooling : MonoBehaviour
             if (!alreadyInPool && (goOverCapacity || currentPool.Count < currentPool.Capacity))
             {
                 Timing.RunCoroutine(_AddObjectToPool(objectToDestroy, currentPool));
-                objectToDestroy.transform.position = DESTROY_POSITION;
+                locSetObjectPosition(objectToDestroy.transform, DESTROY_POSITION, false);
                 destroyObject = false;
                 alreadyInPool = true;
             }

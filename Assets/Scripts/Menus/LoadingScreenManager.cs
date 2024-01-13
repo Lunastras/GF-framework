@@ -140,6 +140,7 @@ public class LoadingScreenManager : MonoBehaviour
         for (int i = 0; i < countScenes; ++i)
         {
             string scenePath = UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i);
+
             if (scenePath.Contains(name))
             {
                 index = i;

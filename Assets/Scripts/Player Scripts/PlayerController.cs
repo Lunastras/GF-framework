@@ -38,6 +38,8 @@ public class PlayerController : NetworkBehaviour
     //misc
     private float m_scrollCooldown = 0.02f;
 
+    protected GfRunnerTemplate m_runner;
+
     private float m_timeUntillCanScroll = 0;
 
     private float m_timeUntilPhysChecks = 0;
@@ -96,6 +98,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         m_weaponFiring.SetAimTransform(m_playerCamera);
+        m_runner = m_movement.GetRunnerTemplate();
     }
 
 
@@ -116,7 +119,7 @@ public class PlayerController : NetworkBehaviour
             Vector3 cameraRight = m_playerCamera.right;
             GfTools.Mult3(ref cameraRight, input.x);
 
-            if (!m_movement.CanFly)
+            if (!m_runner.CanFly)
             {
                 GfTools.Minus3(ref cameraForward, upVec * Vector3.Dot(upVec, cameraForward));
                 GfTools.Normalize(ref cameraForward);
@@ -223,9 +226,9 @@ public class PlayerController : NetworkBehaviour
         m_flagJump |= auxFlagJump;
         m_movDir = auxMovDir;
 
-        m_movement.FlagDash |= m_flagDash;
-        m_movement.FlagJump |= m_flagJump;
-        m_movement.SetMovementDir(m_movDir);
+        m_runner.FlagDash |= m_flagDash;
+        m_runner.FlagJump |= m_flagJump;
+        m_runner.SetMovementDir(m_movDir);
 
         m_fire1WasPressed = auxFlagFire1;
         m_fire2WasPressed = auxFlagFire2;
@@ -240,7 +243,7 @@ public class PlayerController : NetworkBehaviour
 
             GetInputs(deltaTime);
 
-            m_movement.Move(Time.deltaTime);
+            m_movement.LateUpdateBehaviour(Time.deltaTime);
 
             if (!m_usesRigidBody && !m_fixedUpdatePhysics && (m_timeUntilPhysChecks -= deltaTime) <= 0)
             {

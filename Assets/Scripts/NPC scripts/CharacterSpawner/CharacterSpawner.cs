@@ -40,7 +40,7 @@ public class CharacterSpawner : MonoBehaviour
 
     protected int m_currentSpawnIndex = 0;
 
-    protected int m_currentThreatLevel = 0;
+    protected uint m_currentThreatLevel = 0;
 
     protected int m_threadLevelCreatedByPhase = 0;
 
@@ -124,7 +124,7 @@ public class CharacterSpawner : MonoBehaviour
                 if (characterSpawned)
                 {
                     characterSpawned.OnKilled += OnCharacterKilled;
-                    m_currentThreatLevel += characterSpawned.GetThreatLevel();
+                    m_currentThreatLevel += (uint)characterSpawned.GetThreatDetails().ThreatLevel;
                     ++m_charactersSpawnedAlive;
                     characterSpawned.SetPitch(GfAudioManager.GetPitchFromNote(spawnDetails.Octave, spawnDetails.PianoNote));
                     if (m_overrideCharacterType)
@@ -163,10 +163,10 @@ public class CharacterSpawner : MonoBehaviour
         m_coroutineIsRunning = false;
     }
 
-    protected void OnCharacterKilled(StatsCharacter character, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    protected void OnCharacterKilled(StatsCharacter character, DamageData aDamageData)
     {
         m_charactersSpawnedAlive--;
-        m_currentThreatLevel -= character.GetThreatLevel();
+        m_currentThreatLevel -= (uint)character.GetThreatDetails().ThreatLevel;
 
         if (m_charactersSpawnedAlive == 0 && IsFinished)
         {

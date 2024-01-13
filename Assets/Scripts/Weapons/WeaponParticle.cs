@@ -83,7 +83,7 @@ public abstract class WeaponParticle : WeaponGeneric
         m_particleEraser.EraseParticles(centerOfErase, speedFromCenter, eraseRadius);
     }
 
-    protected void OnOwnerKilled(StatsCharacter character, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex)
+    protected void OnOwnerKilled(StatsCharacter character, DamageData aDamageData)
     {
         if (m_eraseParticlesAfterOwnerKilled)
             m_particleEraser.EraseParticles(character.transform.position, m_particlesEraseFromCenterSpeed, 100000);

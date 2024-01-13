@@ -2245,26 +2245,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_onlyForPlayer: 0
-  m_speedMultiplier:
-    m_value: 1
-    m_priority: 0
-    m_overridePriority: 0
-    m_ignore: 0
-  m_damageMultiplier:
-    m_value: 1
-    m_priority: 0
-    m_overridePriority: 0
-    m_ignore: 0
-  m_fireRateMultiplier:
-    m_value: 1
-    m_priority: 0
-    m_overridePriority: 0
-    m_ignore: 0
-  m_weaponCapacityMultiplier:
-    m_value: 4
-    m_priority: 0
-    m_overridePriority: 0
-    m_ignore: 0
+  m_multiplier: 1
+  m_multiplierType: 0
 --- !u!1 &632103380
 GameObject:
   m_ObjectHideFlags: 0
@@ -2911,6 +2893,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: LevelManager
       objectReference: {fileID: 0}
+    - target: {fileID: 7511369865852499974, guid: 6f3528384207d0648aacf46f65a32cb0,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7511369865852499974, guid: 6f3528384207d0648aacf46f65a32cb0,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2968,7 +2960,7 @@ MonoBehaviour:
   startsOnInitialisation: 1
   loops: 1
   returnsToFirstPosition: 0
-  speed: 10
+  speed: 50
   smoothingDistance: 4
   canMove: 0
   isWaiting: 0
@@ -3973,9 +3965,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61f3fc9dcbcd75e498afd4f1edc24b18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Rotation: {x: 10, y: 10, z: 0}
   SpeedMultiplier: 1
+  WaitOnPhaseEnd: 0
+  Loop: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!54 &1077035193
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4620,9 +4614,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61f3fc9dcbcd75e498afd4f1edc24b18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Rotation: {x: 0, y: 20, z: 0}
   SpeedMultiplier: 1
+  WaitOnPhaseEnd: 0
+  Loop: 1
   RotatesLocally: 0
+  PlayOnAwake: 1
 --- !u!65 &1157863713
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -18307,14 +18303,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_jobSubscriberType:
-    update: 0
-    lateUpdate: 0
-    fixedUpdate: 1
+    Update: 0
+    LateUpdate: 0
+    FixedUpdate: 1
   m_particleSystem: {fileID: 1935218835895810425}
-  m_physInterval: 0.02
   m_acceleration: 200
   m_deacceleration: 500
   m_maxSpeed: 400
+  m_minimumSpeed: 0
   m_maxSpeedHoming: 100
   m_targetRadius: 3
   m_gravity: 10

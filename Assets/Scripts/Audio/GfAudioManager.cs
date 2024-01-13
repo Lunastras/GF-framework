@@ -104,7 +104,7 @@ public class GfAudioManager : MonoBehaviour
 
     public static GfAudioSource GetAudioObject(Transform parent = null)
     {
-        var src = GfPooling.PoolInstantiate(Instance.m_audioObjectPrefab).GetComponent<GfAudioSource>();
+        GfAudioSource src = GfPooling.PoolInstantiate(Instance.m_audioObjectPrefab).GetComponent<GfAudioSource>();
         src.SetParent(parent);
         return src;
     }

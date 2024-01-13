@@ -1,11 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using System;
 using System.Linq;
 using Unity.Netcode;
 using Unity.Collections;
-
 using System.Runtime.InteropServices;
 
 public class LoadoutManager : NetworkBehaviour

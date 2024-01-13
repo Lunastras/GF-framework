@@ -162,7 +162,7 @@ public class TurretWeapons : NetworkBehaviour
 
     protected void InternalStop(int phaseToStop, bool killBullets)
     {
-        if (m_turretPhases.Length > 0)
+        if (m_turretPhases.Length > 0 && phaseToStop < m_turretPhases.Length)
         {
             WeaponGeneric[] systems = m_turretPhases[phaseToStop].Weapons;
 

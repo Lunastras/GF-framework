@@ -1,0 +1,20 @@
+public enum ThreatLevel
+{
+    WISP,
+
+    LESSER_FAIRY,
+    ORNERY_FAIRY,
+    GREATER_FAIRY,
+
+    LOWLY_YOUKAI,
+    PRODIGIOUS_YOUKAI,
+    FORMIDABLE_YOUKAI,
+
+    INDOMITABLE_SPIRIT,
+    REVERED_DIETY,
+    GODDESS,
+
+    YUKKURI, //meme tier
+    GHOSTLY_FIELD_CLUB_MEMBER, //dev
+    GHOSTLY_FIELD_CLUB_FOUNDER, //only ME
+}

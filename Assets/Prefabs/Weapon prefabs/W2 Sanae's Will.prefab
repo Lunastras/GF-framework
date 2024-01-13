@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8239503108858728715}
   - component: {fileID: 8715156278414432946}
-  - component: {fileID: 7981823552812150497}
   - component: {fileID: 4471065003757902167}
   - component: {fileID: 7149643641757833315}
   - component: {fileID: 6666808111172159809}
@@ -62,46 +61,6 @@ MonoBehaviour:
   m_priority: 0
   m_selfEvent: 2
   m_otherEvent: 2
---- !u!114 &7981823552812150497
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1890219947479833554}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5f08159336fdc47af1dd926c1ef453, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_spawnSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_deathSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_weapon: {fileID: 0}
-  m_highestIndexAllowed: 6
 --- !u!199 &4471065003757902167
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -5130,7 +5089,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5481653673954920927}
   - component: {fileID: 7894564690441854804}
-  - component: {fileID: 9840865696446420}
   - component: {fileID: 7744653069361825300}
   - component: {fileID: 3282975596894537049}
   - component: {fileID: 6523449390834420665}
@@ -5182,46 +5140,6 @@ MonoBehaviour:
   m_priority: 0
   m_selfEvent: 2
   m_otherEvent: 2
---- !u!114 &9840865696446420
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2489547340042857279}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5f08159336fdc47af1dd926c1ef453, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_spawnSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_deathSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_weapon: {fileID: 0}
-  m_highestIndexAllowed: 6
 --- !u!199 &7744653069361825300
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -10525,7 +10443,6 @@ MonoBehaviour:
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
 --- !u!1 &4796379040874497763
@@ -10623,7 +10540,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3764685499954689366}
   - component: {fileID: 1838501868890555373}
-  - component: {fileID: 4336130070376031173}
   - component: {fileID: 4935371692448520046}
   - component: {fileID: 444174108170303476}
   - component: {fileID: 6093291819435759544}
@@ -10675,46 +10591,6 @@ MonoBehaviour:
   m_priority: 0
   m_selfEvent: 0
   m_otherEvent: 1
---- !u!114 &4336130070376031173
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5501640179479773754}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5f08159336fdc47af1dd926c1ef453, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_spawnSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_deathSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_weapon: {fileID: 0}
-  m_highestIndexAllowed: 6
 --- !u!199 &4935371692448520046
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -15743,7 +15619,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2839560574246060489}
   - component: {fileID: 4117404494460242514}
-  - component: {fileID: 5062707094012703247}
   - component: {fileID: 8274188352726872741}
   - component: {fileID: 3758614104479560029}
   - component: {fileID: 6767464831252905194}
@@ -15795,46 +15670,6 @@ MonoBehaviour:
   m_priority: 0
   m_selfEvent: 0
   m_otherEvent: 2
---- !u!114 &5062707094012703247
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6105745168181027840}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5f08159336fdc47af1dd926c1ef453, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_spawnSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_deathSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_weapon: {fileID: 0}
-  m_highestIndexAllowed: 6
 --- !u!199 &8274188352726872741
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -20863,7 +20698,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1903709294522070969}
   - component: {fileID: 7930281307380615167}
-  - component: {fileID: 7444505041511987080}
   - component: {fileID: 7015407606343186343}
   - component: {fileID: 2022527480276341626}
   - component: {fileID: 3949997584537069842}
@@ -20915,46 +20749,6 @@ MonoBehaviour:
   m_priority: 0
   m_selfEvent: 2
   m_otherEvent: 2
---- !u!114 &7444505041511987080
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6907922873464596197}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5f08159336fdc47af1dd926c1ef453, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_spawnSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_deathSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_weapon: {fileID: 0}
-  m_highestIndexAllowed: 6
 --- !u!199 &7015407606343186343
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -25983,7 +25777,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4128842535264275528}
   - component: {fileID: 8926867590231069876}
-  - component: {fileID: 394575244279766515}
   - component: {fileID: 8588013272532579572}
   - component: {fileID: 4041421598433889212}
   - component: {fileID: 798588639176195808}
@@ -26035,46 +25828,6 @@ MonoBehaviour:
   m_priority: 0
   m_selfEvent: 0
   m_otherEvent: 2
---- !u!114 &394575244279766515
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7166321893328667621}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5f08159336fdc47af1dd926c1ef453, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_spawnSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_deathSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_weapon: {fileID: 0}
-  m_highestIndexAllowed: 6
 --- !u!199 &8588013272532579572
 ParticleSystemRenderer:
   serializedVersion: 6

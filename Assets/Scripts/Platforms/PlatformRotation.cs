@@ -97,7 +97,7 @@ public class PlatformRotation : MonoBehaviour
         float deltaTime = Time.deltaTime;
         m_timeUntilUnpause -= deltaTime;
 
-        if (m_timeUntilUnpause <= 0)
+        if (m_timeUntilUnpause <= 0 && null != RotationPhases && RotationPhases.Length > 0)
         {
             m_timeUntilStart -= deltaTime;
             if (m_timeUntilStart <= 0)

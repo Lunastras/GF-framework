@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 7723473585036922337}
   - component: {fileID: 7030582727377606901}
   - component: {fileID: 3784227235072950439}
-  - component: {fileID: 9840865696446420}
   - component: {fileID: 7744653069361825300}
   - component: {fileID: 3282975596894537049}
   - component: {fileID: 6523449390834420665}
@@ -109,46 +108,6 @@ MonoBehaviour:
     LateUpdate: 0
     FixedUpdate: 1
   m_particleSystem: {fileID: 0}
---- !u!114 &9840865696446420
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2489547340042857279}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5f08159336fdc47af1dd926c1ef453, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_spawnSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_deathSound:
-    Clip: {fileID: 0}
-    MixerType: 0
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
-  m_weapon: {fileID: 0}
-  m_highestIndexAllowed: 6
 --- !u!199 &7744653069361825300
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -5344,7 +5303,6 @@ MonoBehaviour:
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
 --- !u!1 &4796379040874497763

@@ -64,6 +64,9 @@ public class StatsNpc : StatsCharacter
     {
         if (!m_initialised)
         {
+            if (HasAuthority && m_maxHealth == 0)
+                m_currentHealth.Value = m_maxHealthMultiplier * TiersThreatsBalancingStats.GetTierHp(m_threatDetails.Tier, m_threatDetails.ThreatLevel);
+
             base.Start();
             if (null == m_objectCollider)
                 m_objectCollider = GetComponent<Collider>();
@@ -192,17 +195,17 @@ public class StatsNpc : StatsCharacter
             if (spawnBehaviour) spawnBehaviour.SetPitch(m_pitch);
         }
     }
-    protected override void InternalKill(DamageType damageType, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
+    protected override void InternalKill(DamageData aDamageData, bool isServerCall)
     {
         if (isServerCall)
         {
-            OnKilled?.Invoke(this, killerNetworkId, hasKillerNetworkId, weaponLoadoutIndex, weaponIndex);
-            OnKilledUnique?.Invoke(this, killerNetworkId, hasKillerNetworkId, weaponLoadoutIndex, weaponIndex);
+            OnKilled?.Invoke(this, aDamageData);
+            OnKilledUnique?.Invoke(this, aDamageData);
 
             Vector3 currentPos = m_transform.position;
             GameParticles.PlayDeathDust(currentPos);
 
-            if (damageType != DamageType.NO_EXPERIENCE_DROPS)
+            if (aDamageData.DamageType != DamageType.NO_EXPERIENCE_DROPS)
                 GameParticles.SpawnPowerItems(currentPos, m_powerItemsToDrop, m_movement.GetGravityReference());
 
             GameParticles.SpawnGrave(currentPos, m_movement.GetGravityReference());
@@ -220,14 +223,14 @@ public class StatsNpc : StatsCharacter
 
             GfAudioManager.PlayAudio(m_deathSound, m_transform.position);
 
-            if (hasKillerNetworkId)
+            if (aDamageData.HasEnemyNetworkId)
             {
-                StatsCharacter statsKiller = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(killerNetworkId);
+                StatsCharacter statsKiller = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
                 if (statsKiller)
                 {
-                    DamageSource damageSource = statsKiller.GetWeaponDamageSource(weaponLoadoutIndex, weaponIndex);
+                    DamageSource damageSource = statsKiller.GetWeaponDamageSource(aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
                     if (damageSource) damageSource.OnCharacterKilled(this, isServerCall);
-                    statsKiller.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
+                    statsKiller.OnCharacterKilled(NetworkObjectId, aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
                 }
             }
 
@@ -264,42 +267,50 @@ public class StatsNpc : StatsCharacter
         return ret;
     }
 
-    protected override void InternalDamage(float damage, DamageType damageType, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
+    protected override void InternalDamage(DamageData aDamageData, bool aIsServerCall)
     {
+        Debug.Log("Damage 1");
         if (!m_isDead)
         {
-            damage *= m_receivedDamageMultiplier.Value;
+            float damage = m_receivedDamageMultiplier.Value * aDamageData.Damage;
+            Debug.Log("Damage 2 raw damage is: " + aDamageData.Damage);
 
             StatsCharacter enemy = null;
-            if (hasEnemyNetworkId)
+            if (aDamageData.HasEnemyNetworkId)
             {
-                enemy = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(enemyNetworkId);
+                enemy = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
                 if (enemy)
                 {
-                    DamageSource damageSource = enemy.GetWeaponDamageSource(weaponLoadoutIndex, weaponIndex);
-                    if (damageSource) damageSource.OnDamageDealt(damage, this, isServerCall);
-                    enemy.OnDamageDealt(damage, NetworkObjectId, weaponLoadoutIndex, weaponIndex, isServerCall);
+                    DamageSource damageSource = enemy.GetWeaponDamageSource(aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
+                    if (damageSource) damageSource.OnDamageDealt(damage, this, aIsServerCall);
+                    enemy.OnDamageDealt(damage, NetworkObjectId, aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex, aIsServerCall);
                 }
             }
 
             float simulatedHealth = m_currentHealth.Value - damage;
 
-            if (!isServerCall || HasAuthority) //only play sound and damage numbers locally. This will be called once for the server, and twice for clients
+            if (!aIsServerCall || HasAuthority) //only play sound and damage numbers locally. This will be called once for the server, and twice for clients
             {
+                Debug.Log("Damage 4");
+
                 GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.GetUpVecRaw());
                 if (simulatedHealth <= GetMaxHealthEffective() * m_lowHealthThreshold)
                     m_damageSound.Play(m_audioSource, 1.5f, 2);
                 else
                     m_damageSound.Play(m_audioSource);
             }
+            Debug.Log("Damage 5");
 
             if (HasAuthority)
             {
+
                 m_currentHealth.Value = simulatedHealth;
+
+                Debug.Log("Damage 6 hp left is: " + simulatedHealth + " damage is: " + damage);
 
                 if (m_currentHealth.Value <= 0)
                 {
-                    Kill(damageType, enemyNetworkId, weaponLoadoutIndex, weaponIndex);
+                    Kill(aDamageData);
                 }
                 else if (null != m_npcController && enemy && damage > 0)
                 {

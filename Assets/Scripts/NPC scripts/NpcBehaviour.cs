@@ -70,7 +70,7 @@ public class NpcBehaviour : NpcController
         m_spawnPos = m_transform.position;
 
         float randomRadian = GfRandom.Range(0, Mathf.PI * 2.0f);
-        m_movement.SetMovementDir(-new Vector3(Mathf.Cos(randomRadian), 0, Mathf.Sin(randomRadian)).normalized);
+        m_movement.GetRunnerTemplate().SetMovementDir(-new Vector3(Mathf.Cos(randomRadian), 0, Mathf.Sin(randomRadian)).normalized);
 
         if (null == m_statsNpc)
             m_statsNpc = GetComponent<StatsNpc>();
@@ -166,7 +166,7 @@ public class NpcBehaviour : NpcController
                 break;
         }
 
-        m_movement.SetMovementDir(dirToTarget);
+        m_movement.GetRunnerTemplate().SetMovementDir(dirToTarget);
     }
 
 
@@ -179,11 +179,11 @@ public class NpcBehaviour : NpcController
         {
             m_timeUntilNextWalkChange = m_intervalBetweenWalkPhases * (1 - GfRandom.Range(-m_varianceRate, m_varianceRate));
 
-            float movementDirMagnitude = m_movement.MovementDirRaw.magnitude;
+            float movementDirMagnitude = m_movement.GetRunnerTemplate().MovementDirRaw.magnitude;
 
             if (movementDirMagnitude > 0.9f) //if currently walking, stop
             {
-                m_movement.SetMovementDir(Vector3.zero);
+                m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
             }
             else //if not idle, start walking
             {
@@ -194,11 +194,11 @@ public class NpcBehaviour : NpcController
                 if (distanceFromSpawn >= m_maxDstFromSpawnWalk)
                 {
                     GfTools.Div3(ref dirToSpawn, distanceFromSpawn);
-                    m_movement.SetMovementDir(dirToSpawn);
+                    m_movement.GetRunnerTemplate().SetMovementDir(dirToSpawn);
                 }
                 else
                 {
-                    m_movement.SetMovementDir(Random.insideUnitSphere);
+                    m_movement.GetRunnerTemplate().SetMovementDir(Random.insideUnitSphere);
                 }
             }
         }
@@ -216,13 +216,13 @@ public class NpcBehaviour : NpcController
     {
         //Debug.Log("i am searching for the bastard heeeehee");
         m_turret.Stop(false);
-        m_movement.SetMovementDir(GetPathDirection(dirToTarget));
+        m_movement.GetRunnerTemplate().SetMovementDir(GetPathDirection(dirToTarget));
     }
 
     protected override void LowLifeBehaviour(float deltaTime, Vector3 dirToTarget)
     {
         //   Debug.Log("i have low life");
-        m_movement.SetMovementDir(-dirToTarget.normalized);
+        m_movement.GetRunnerTemplate().SetMovementDir(-dirToTarget.normalized);
         m_turret.Stop(false);
     }
 
@@ -233,7 +233,7 @@ public class NpcBehaviour : NpcController
     {
         Debug.Log("i lost the target");
         PauseMovement(1);
-        m_movement.SetMovementDir(Vector3.zero);
+        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
         m_turret.Stop(false);
         m_currentState = NpcState.NO_DESTINATION;
         m_destination.RemoveDestination();
@@ -241,7 +241,7 @@ public class NpcBehaviour : NpcController
 
     protected override void DestinationDestroyedBehaviour(float deltaTime)
     {
-        m_movement.SetMovementDir(Vector3.zero);
+        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
         m_turret.Stop(false);
         m_currentState = NpcState.NO_DESTINATION;
         m_destination.RemoveDestination();

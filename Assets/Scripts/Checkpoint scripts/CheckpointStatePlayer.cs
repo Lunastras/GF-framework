@@ -23,7 +23,7 @@ public class CheckpointStatePlayer : CheckpointState
 
     public bool IsDead = false;
 
-    public Action<StatsCharacter, ulong, bool, int, int> OnKilled = null;
+    public Action<StatsCharacter, DamageData> OnKilled = null;
 
     public override void ExecuteCheckpointState()
     {

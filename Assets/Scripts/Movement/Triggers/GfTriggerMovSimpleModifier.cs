@@ -14,12 +14,12 @@ public class GfTriggerMovSimpleModifier : GfTriggerMovGenericModifier
         if (!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform)
         {
             if (!m_massMultiplier.m_ignore)
-                movement.SetMassMultiplier(m_massMultiplier, m_massMultiplier.m_priority, m_massMultiplier.m_overridePriority);
+                movement.GetRunnerTemplate().SetMassMultiplier(m_massMultiplier, m_massMultiplier.m_priority, m_massMultiplier.m_overridePriority);
 
             if (!m_speedMultiplier.m_ignore)
-                movement.SetSpeedMultiplier(m_speedMultiplier, m_speedMultiplier.m_priority, m_speedMultiplier.m_overridePriority);
+                movement.GetRunnerTemplate().SetSpeedMultiplier(m_speedMultiplier, m_speedMultiplier.m_priority, m_speedMultiplier.m_overridePriority);
 
-            GfMovementSimple simpleMovement = movement as GfMovementSimple;
+            GfRunnerSimple simpleMovement = movement.GetRunnerTemplate() as GfRunnerSimple;
             if (simpleMovement)
             {
                 if (!m_accelerationMultiplier.m_ignore)

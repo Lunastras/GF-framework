@@ -414,7 +414,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_animationIndexIdle: 0
   m_animationIndexRunning: 1
-  m_movement: {fileID: 148854930636548537}
+  m_movement: {fileID: 0}
   m_spriteAnimator: {fileID: 0}
   m_defaultSpeed: 8
 --- !u!1 &148854930295164461
@@ -570,13 +570,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_projector: {fileID: 148854930600805462}
-  m_parentMovement: {fileID: 148854930636548537}
+  m_parentMovement: {fileID: -8909031113794034727}
   m_selfCollider: {fileID: 148854930636548512}
   m_intervalObjCheck: 0.1
   m_intervalDistanceCheck: 0.02
   m_updateVariance: 0
   m_maxProjectionDistance: 40
-  m_extraDepth: 1
+  m_extraDepth: 2
   m_opacityStartEnd: {x: 0.5, y: 0}
   m_sizeStart: {x: 1, y: 1}
   m_sizeEnd: {x: 0, y: 0}
@@ -596,15 +596,15 @@ GameObject:
   - component: {fileID: 148854930636548524}
   - component: {fileID: 148854930636548512}
   - component: {fileID: 6390946529941703449}
+  - component: {fileID: -8909031113794034727}
+  - component: {fileID: -2224145417773401838}
   - component: {fileID: 148854930636548526}
   - component: {fileID: 148854930636548514}
   - component: {fileID: 5290595944128658304}
   - component: {fileID: 148854930636548515}
-  - component: {fileID: 148854930636548537}
   - component: {fileID: 3072452865096101450}
-  - component: {fileID: -1934781534553659541}
-  - component: {fileID: 5733648712073414754}
   - component: {fileID: 7947996244895237058}
+  - component: {fileID: -1934781534553659541}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -638,7 +638,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 148854930636548520}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: de735816fda935a4db71732e599313fe, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -672,6 +672,7 @@ MonoBehaviour:
   m_characterType:
     m_InternalValue: 0
   m_threatLevel: 0
+  m_sendDamageRpc: 0
   m_playerGun: {fileID: 0}
   m_loadoutManager: {fileID: 0}
   m_playerControler: {fileID: 0}
@@ -730,6 +731,68 @@ MonoBehaviour:
     MaxDistance: 500
     SpatialBlend: 0
     MaxInstances: 12
+--- !u!114 &-8909031113794034727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f97285d21813d144a06a8de7d7588f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_statsCharacter: {fileID: 0}
+  m_useInterpolation: 1
+  m_stepOffset: 0.3
+  m_slopeLimit: 45
+  m_upperSlopeLimit: 130
+  m_queryTrigger: 0
+  m_fullRotationSeconds: 1
+  m_useSimpleCollision: 0
+  m_maxOverlaps: 4
+  m_maxCasts: 4
+--- !u!114 &-2224145417773401838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c170700d1da4a93468bd92039e170186, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CanFly: 0
+  m_speed: 10
+  m_mass: 50
+  FlagJump: 0
+  FlagDash: 0
+  m_acceleration: 35
+  m_deacceleration: 40
+  m_midAirAcceleration: 20
+  m_midAirDeacceleration: 10
+  m_maxFallSpeed: 50
+  m_jumpForce: 14
+  m_jumpExtensionMassCoef: 0.6
+  m_turnSpeed: 400
+  m_requireJumpRelease: 1
+  m_maxJumps: 2
+  m_breakWhenUnparent: 0
+  m_moveFwdSecondsAfterWallDetach: 0.22
+  m_attachSecondsAfterWallDetach: 0.5
+  m_wallRunJumpForce: 27
+  m_wallrunJumpAngle: 55
+  m_wallRunDetachForce: 17
+  m_maxWallRunSpeed: 17
+  m_maxWallSlideSpeed: 10
+  m_wallrunNormalMinDot: 0.8
+  m_wallrunSpeedRequired: 9
+  m_maxWallRunDistance: 11
+  m_wallrunJumpCooldownSeconds: 0.07
+  m_dashVelocity: 15
 --- !u!114 &148854930636548526
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -743,7 +806,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_weaponFiring: {fileID: 148854930636548514}
-  m_movement: {fileID: 148854930636548537}
+  m_movement: {fileID: 0}
   m_statsCharacter: {fileID: 6390946529941703449}
   m_loadoutManager: {fileID: 0}
   m_cameraController: {fileID: 0}
@@ -797,57 +860,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_checkpointManager: {fileID: 0}
   m_respawnYCoord: -40
---- !u!114 &148854930636548537
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148854930636548520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c170700d1da4a93468bd92039e170186, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_statsCharacter: {fileID: 0}
-  CanFly: 0
-  m_useInterpolation: 1
-  m_speed: 10
-  m_mass: 50
-  m_stepOffset: 0.4
-  m_slopeLimit: 44
-  m_upperSlopeLimit: 130
-  m_queryTrigger: 2
-  m_fullRotationSeconds: 1
-  m_useSimpleCollision: 0
-  m_maxAngleNoSmoothDeg: 5
-  FlagJump: 0
-  FlagDash: 0
-  m_maxOverlaps: 4
-  m_maxCasts: 4
-  m_acceleration: 35
-  m_deacceleration: 40
-  m_midAirAcceleration: 20
-  m_midAirDeacceleration: 10
-  m_maxFallSpeed: 50
-  m_jumpForce: 14
-  m_jumpExtensionMassCoef: 0.6
-  m_turnSpeed: 400
-  m_requireJumpRelease: 1
-  m_maxJumps: 100
-  m_breakWhenUnparent: 0
-  m_moveFwdSecondsAfterWallDetach: 0.22
-  m_attachSecondsAfterWallDetach: 0.5
-  m_wallRunJumpForce: 28
-  m_wallrunJumpAngle: 55
-  m_wallRunDetachForce: 17
-  m_maxWallRunSpeed: 17
-  m_maxWallSlideSpeed: 10
-  m_wallrunNormalMinDot: 0.8
-  m_wallrunSpeedRequired: 9
-  m_maxWallRunDistance: 11
-  m_wallrunJumpCooldownSeconds: 0.07
-  m_dashVelocity: 15
 --- !u!114 &3072452865096101450
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -874,6 +886,19 @@ MonoBehaviour:
   m_rotationSpeedSmoothTime: 0.2
   m_bopValueSmoothTime: 0.2
   m_positionOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &7947996244895237058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ca159a631006524d87e2d7a5dc2f542, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_enemy: {fileID: 4759944753111975130, guid: 6df6120ef64359346a9967a4589f3b71, type: 3}
 --- !u!114 &-1934781534553659541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -891,49 +916,5 @@ MonoBehaviour:
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &5733648712073414754
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148854930636548520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df2868252ab5c4d1da357e8f11f1b524, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
-  ScaleThreshold: 0.01
-  UseQuaternionSynchronization: 0
-  UseQuaternionCompression: 0
-  UseHalfFloatPrecision: 0
-  InLocalSpace: 0
-  Interpolate: 1
-  SlerpPosition: 0
---- !u!114 &7947996244895237058
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148854930636548520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ca159a631006524d87e2d7a5dc2f542, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_enemy: {fileID: 4759944753111975130, guid: 6df6120ef64359346a9967a4589f3b71, type: 3}

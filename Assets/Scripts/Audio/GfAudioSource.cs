@@ -27,7 +27,7 @@ public class GfAudioSource : MonoBehaviour
     void LateUpdate()
     {
         if (m_parent) m_transform.position = m_parent.position;
-        if (m_destroyWhenFinished && !m_audioSource.isPlaying) GfPooling.Destroy(gameObject);
+        if (m_destroyWhenFinished && !m_audioSource.isPlaying) GfPooling.DestroyInsert(gameObject);
     }
 
     public AudioSource GetAudioSource()

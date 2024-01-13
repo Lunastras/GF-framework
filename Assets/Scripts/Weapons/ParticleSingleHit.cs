@@ -75,7 +75,7 @@ public class ParticleSingleHit : WeaponParticle
         //  Debug.Log("GONNA DAMAJE IT " + target.name);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
         GfAudioManager.PlayAudio(m_damageSound, collisionEvent.intersection);
-        target.Damage(m_damage * damageMultiplier, m_damageType, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex);
+        target.Damage(new(m_damage * damageMultiplier, collisionEvent.intersection, collisionEvent.normal, m_damageType, true, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex));
 
         return true;
     }

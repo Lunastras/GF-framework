@@ -134,16 +134,16 @@ public class CheckpointManager : MonoBehaviour
                 damage = currentHp - 1;
             }
 
-            m_statsCharacter.Damage(damage);
+            m_statsCharacter.Damage(new(damage, m_statsCharacter.transform.position, Vector3.zero));
         }
 
         if (m_currentSoftCheckpoint)
         {
-            m_transform.position = m_currentSoftCheckpoint.Checkpoint.position;
+            m_movementGeneric.SetPosition(m_currentSoftCheckpoint.Checkpoint.position);
         }
         else
         {
-            m_transform.position = m_initialPos;
+            m_movementGeneric.SetPosition(m_initialPos);
         }
 
         if (m_canTriggerHardCheckpoints)
@@ -174,12 +174,12 @@ public class CheckpointManager : MonoBehaviour
 
             if (m_currentHardCheckpoint)
             {
-                m_transform.position = m_currentHardCheckpoint.Checkpoint.position;
+                m_movementGeneric.SetPosition(m_currentHardCheckpoint.Checkpoint.position);
 
             }
             else
             {
-                m_transform.position = m_initialPos;
+                m_movementGeneric.SetPosition(m_initialPos);
             }
 
             HostilityManager.DestroyAllCharacters(false);

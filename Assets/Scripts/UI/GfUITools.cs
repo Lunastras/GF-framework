@@ -23,8 +23,8 @@ public class GfUiTools : MonoBehaviour
     private RectTransform m_blackBarLower = null;
 
     private static GfUiTools Instance;
-    private static List<RaycastResult> m_raycastResults = new(1);
-    private static PointerEventData m_pointerEventData;
+    private static List<RaycastResult> RaycastResults = new(1);
+    private static PointerEventData PointerEventData;
 
 
     // Start is called before the first frame update
@@ -33,13 +33,19 @@ public class GfUiTools : MonoBehaviour
         if (Instance) Destroy(Instance);
         Instance = this;
 
-        m_colourOverlayCanvsGroup.alpha = 1;
-        m_colourOverlay.gameObject.SetActive(true);
-        m_colourOverlay.CrossFadeAlpha(0, 0, true);
+        PointerEventData = new PointerEventData(EventSystem.current);
 
-        SetBlackBars(false);
+        if (m_colourOverlayCanvsGroup)
+            m_colourOverlayCanvsGroup.alpha = 1;
 
-        m_pointerEventData = new PointerEventData(EventSystem.current);
+        if (m_colourOverlay)
+        {
+            m_colourOverlay.gameObject.SetActive(true);
+            m_colourOverlay.CrossFadeAlpha(0, 0, true);
+        }
+
+        if (m_blackBarsCanvsGroup)
+            SetBlackBars(false);
     }
 
     void OnDestroy()
@@ -103,16 +109,16 @@ public class GfUiTools : MonoBehaviour
 
     public static GameObject GetUIObjectUnderMouse(Vector3 mousePosition)
     {
-        m_pointerEventData.position = mousePosition;
-        EventSystem.current.RaycastAll(m_pointerEventData, m_raycastResults);
+        PointerEventData.position = mousePosition;
+        EventSystem.current.RaycastAll(PointerEventData, RaycastResults);
 
-        int count = m_raycastResults.Count;
+        int count = RaycastResults.Count;
         int lowestIndex = -1;
         float lowestDepth = int.MaxValue;
 
         for (int i = 0; i < count; ++i)
         {
-            float depth = m_raycastResults[i].distance;
+            float depth = RaycastResults[i].distance;
             if (depth < lowestDepth)
             {
                 lowestDepth = depth;
@@ -122,7 +128,7 @@ public class GfUiTools : MonoBehaviour
 
         GameObject obj = null;
         if (lowestIndex != -1)
-            obj = m_raycastResults[lowestIndex].gameObject;
+            obj = RaycastResults[lowestIndex].gameObject;
 
         return obj;
     }

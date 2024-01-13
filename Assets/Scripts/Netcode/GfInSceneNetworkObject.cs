@@ -48,7 +48,7 @@ public class GfInSceneNetworkObject : NetworkBehaviour
         if (NetworkManager.Singleton)
         {
             NetworkManager.Singleton.PrefabHandler.RemoveHandler(m_globalObjectIdHash);
-            NetworkManager.Singleton.PrefabHandler.RemoveNetworkPrefab(gameObject);
+            //NetworkManager.Singleton.PrefabHandler.RemoveNetworkPrefab(gameObject);
 
             if (m_subscribedToOnServerStarted)
                 NetworkManager.Singleton.OnServerStarted -= OnServerStartedFunc;

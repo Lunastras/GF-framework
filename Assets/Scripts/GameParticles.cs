@@ -37,7 +37,7 @@ public class GameParticles : MonoBehaviour
         m_transDmgNumbersInstance = m_particleDmgNumbersInstance.transform;
     }
 
-    public static void PlayDamageNumbers(Vector3 position, float value, Vector3 upVec)
+    public static void PlayDamageNumbers(Vector3 position, float value, Vector3 upVec, float emissionRadius = 1)
     {
         if (value > 0)
         {
@@ -53,6 +53,8 @@ public class GameParticles : MonoBehaviour
             emitParams.ResetStartSize();
             //emitParams.ResetVelocity();
 
+            emissionRadius *= 0.5f;
+            GfTools.Add3(ref position, Random.onUnitSphere * emissionRadius);
             emitParams.velocity = Random.insideUnitSphere.normalized * value;
             emitParams.position = position;
             emitParams.axisOfRotation = upVec;
@@ -126,7 +128,6 @@ public class GameParticles : MonoBehaviour
 
             ParticleSystem ps = spawnedEmitter.GetParticleSystem();
 
-
             if (!spawnedEmitter.gameObject.activeSelf)
             {
                 spawnedEmitter.gameObject.SetActive(true);
@@ -139,7 +140,6 @@ public class GameParticles : MonoBehaviour
                 emitParamsAux.position = new Vector3(9999, 9999, 9999);
 
                 ps.Emit(emitParamsAux, 1);
-                Debug.Log("Just activated");
             }
 
 

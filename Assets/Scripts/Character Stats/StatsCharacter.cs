@@ -13,17 +13,20 @@ public abstract class StatsCharacter : NetworkBehaviour
     protected bool m_checkpointable = true;
 
     [SerializeField]
-    protected NetworkVariable<float> m_maxHealth = new(100);
+    protected float m_maxHealth = 100;
 
     [SerializeField]
-    private NetworkVariable<CharacterTypes> m_characterType = new(default);
+    private CharacterTypes m_characterType;
 
     [SerializeField]
-    protected int m_threatLevel = 0;
+    protected ThreatDetails m_threatDetails;
 
-    protected NetworkVariable<PriorityValue<float>> m_maxHealthMultiplier = new(new(1));
+    [SerializeField]
+    protected bool m_sendDamageRpc = false;
 
-    protected NetworkVariable<PriorityValue<float>> m_receivedDamageMultiplier = new(new(1));
+    protected PriorityValue<float> m_maxHealthMultiplier = new(1);
+
+    protected PriorityValue<float> m_receivedDamageMultiplier = new(1);
 
     protected bool m_isDead = false;
 
@@ -40,17 +43,16 @@ public abstract class StatsCharacter : NetworkBehaviour
     protected int m_enemiesEngagingCount = 0;
 
     //used for external callbacks
-    public Action<StatsCharacter, ulong, bool, int, int> OnKilled = null;
+    public Action<StatsCharacter, DamageData> OnKilled = null;
 
     //only valid for this specific entity (e.g. its own weapons)
-    public Action<StatsCharacter, ulong, bool, int, int> OnKilledUnique = null;
-
+    public Action<StatsCharacter, DamageData> OnKilledUnique = null;
 
     protected bool HasAuthority
     {
         get
         {
-            return NetworkManager.Singleton && NetworkManager.Singleton.IsServer;
+            return GfServerManager.HasAuthority;
         }
     }
 
@@ -68,13 +70,14 @@ public abstract class StatsCharacter : NetworkBehaviour
         if (m_initialised)
         {
             HostilityManager.AddCharacter(this);
+            if (!HasAuthority) RequestCharacterTypeServerRpc();
 
             if (m_networkTransform) m_networkTransform.enabled = true;
 
             if (HasAuthority && m_networkObject && !m_networkObject.IsSpawned)
                 m_networkObject.Spawn();
 
-            if (HasAuthority) m_currentHealth.Value = GetMaxHealthEffective();
+            if (HasAuthority && m_currentHealth.Value == 0) m_currentHealth.Value = GetMaxHealthEffective();
             m_isDead = false;
         }
     }
@@ -99,9 +102,9 @@ public abstract class StatsCharacter : NetworkBehaviour
         Deinit();
     }
 
-    public int GetThreatLevel()
+    public ThreatDetails GetThreatDetails()
     {
-        return m_threatLevel;
+        return m_threatDetails;
     }
 
     public virtual void EraseAllBullets(StatsCharacter characterResponsible, float3 centerOfErase, float speedFromCenter, float eraseRadius) { }
@@ -112,61 +115,41 @@ public abstract class StatsCharacter : NetworkBehaviour
             Init();
     }
 
-    [ClientRpc]
-    protected virtual void DamageClientRpc(float damage, DamageType damageType, ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
-    {
-        InternalDamage(damage, damageType, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
-    }
+    protected abstract void InternalDamage(DamageData aDamageData, bool aIsServerCall);
 
     [ClientRpc]
-    protected virtual void DamageClientRpc(float damage, DamageType damageType)
+    protected virtual void DamageClientRpc(DamageData damageData)
     {
-        if (!IsServer) InternalDamage(damage, damageType, 0, false, -1, -1, true);
+        if (!HasAuthority) InternalDamage(damageData, true);
     }
 
-    public virtual void Damage(float damage, DamageType damageType, ulong enemyNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
+    public virtual void Damage(DamageData damageData)
     {
         /*We call InternalDamage() before calling the DamageClientRpc() because InternalDamage() can call the Kill rpc function.
         The problem with this is that Unity has a bug where clientRpcs called from ClientRpcs are only called on the host.*/
-
-        InternalDamage(damage, damageType, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
-        if (HasAuthority)
-            DamageClientRpc(damage, damageType, enemyNetworkId, weaponLoadoutIndex, weaponIndex);
-    }
-
-    public virtual void Damage(float damage, DamageType damageType = DamageType.NORMAL)
-    {
-        if (HasAuthority)
-            DamageClientRpc(damage, damageType);
-        else
-            InternalDamage(damage, damageType, 0, false, -1, -1, false);
+        InternalDamage(damageData, HasAuthority);
+        if (HasAuthority && m_sendDamageRpc)
+            DamageClientRpc(damageData);
     }
 
     public virtual void SetCheckpointState(CheckpointState state) { }
 
     public virtual void OnHardCheckpoint() { }
 
-    protected abstract void InternalDamage(float damage, DamageType damageType, ulong enemyNetworkId, bool hasEnemyNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall);
 
-
-    [ClientRpc]
-    protected void KillClientRpc(DamageType damageType, ulong enemyNetworkId, int weaponLoadoutIndex, int weaponIndex)
-    {
-        InternalKill(damageType, enemyNetworkId, true, weaponLoadoutIndex, weaponIndex, true);
-    }
+    protected abstract void InternalKill(DamageData aDamageData, bool isServerCall);
 
     [ClientRpc]
-    protected void KillClientRpc(DamageType damageType)
+    protected void KillClientRpc(DamageData aDamageData)
     {
-        InternalKill(damageType, 0, false, -1, -1, true);
+        if (!HasAuthority) InternalKill(aDamageData, true);
     }
 
-    public void Kill(DamageType damageType, ulong killerNetworkId, int weaponLoadoutIndex = -1, int weaponIndex = -1)
+    public void Kill(DamageData aDamageData = default)
     {
+        InternalKill(aDamageData, HasAuthority);
         if (HasAuthority)
-            KillClientRpc(damageType, killerNetworkId, weaponLoadoutIndex, weaponIndex);
-        else
-            InternalKill(damageType, killerNetworkId, true, weaponLoadoutIndex, weaponIndex, false);
+            KillClientRpc(aDamageData);
     }
 
     public virtual void SetTarget(StatsCharacter target) { }
@@ -175,14 +158,11 @@ public abstract class StatsCharacter : NetworkBehaviour
     [ClientRpc]
     protected void NotifyEnemyEngagingClientRpc(ulong enemyNetworkId)
     {
-        if (!IsServer) InternalNotifyEnemyEngaging(enemyNetworkId);
+        if (HasAuthority) InternalNotifyEnemyEngaging(enemyNetworkId);
     }
 
     public void NotifyEnemyEngaging(ulong enemyNetworkId)
     {
-        /*We call InternalDamage() before calling the DamageClientRpc() because InternalDamage() can call the Kill rpc function.
-        The problem with this is that Unity has a bug where clientRpcs called from ClientRpcs are only called on the host.*/
-
         InternalNotifyEnemyEngaging(enemyNetworkId);
         if (HasAuthority)
             NotifyEnemyEngagingClientRpc(enemyNetworkId);
@@ -199,14 +179,11 @@ public abstract class StatsCharacter : NetworkBehaviour
     [ClientRpc]
     protected void NotifyEnemyDisengagingClientRpc(ulong enemyNetworkId)
     {
-        if (!IsServer) InternalNotifyEnemyDisengaging(enemyNetworkId);
+        if (HasAuthority) InternalNotifyEnemyDisengaging(enemyNetworkId);
     }
 
     public void NotifyEnemyDisengaging(ulong enemyNetworkId)
     {
-        /*We call InternalDamage() before calling the DamageClientRpc() because InternalDamage() can call the Kill rpc function.
-        The problem with this is that Unity has a bug where clientRpcs called from ClientRpcs are only called on the host.*/
-
         InternalNotifyEnemyDisengaging(enemyNetworkId);
         if (HasAuthority)
             NotifyEnemyDisengagingClientRpc(enemyNetworkId);
@@ -226,18 +203,7 @@ public abstract class StatsCharacter : NetworkBehaviour
         if (m_enemiesEngagingCount < 0) m_enemiesEngagingCount = 0;
     }
 
-    public virtual void Kill(DamageType damageType = DamageType.NORMAL)
-    {
-        if (HasAuthority)
-            KillClientRpc(damageType);
-        else
-            InternalKill(damageType, 0, false, -1, -1, false);
-    }
-
-    protected abstract void InternalKill(DamageType damageType, ulong killerNetworkId, bool hasKillerNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall);
-
-
-    public virtual float GetDeltaTimeCoef() { return GfServerManager.GetDeltaTimeCoef(m_characterType.Value); }
+    public virtual float GetDeltaTimeCoef() { return GfServerManager.GetDeltaTimeCoef(m_characterType); }
 
     public virtual bool IsDead()
     {
@@ -247,7 +213,7 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public CharacterTypes GetCharacterType()
     {
-        return m_characterType.Value;
+        return m_characterType;
     }
 
     public bool IsCheckpointable()
@@ -257,12 +223,33 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public void SetCheckpointable(bool checkpointable) { m_checkpointable = checkpointable; }
 
+    [ServerRpc]
+    private void RequestCharacterTypeServerRpc()
+    {
+        SetCharacterType(m_characterType);
+    }
+
     public void SetCharacterType(CharacterTypes type)
     {
-        if (m_characterType.Value != type && HasAuthority)
+        if (m_characterType != type && HasAuthority)
+        {
+            InternalSetCharacterType(type);
+            SetCharacterTypeClientRpc(type);
+        }
+    }
+
+    [ClientRpc]
+    private void SetCharacterTypeClientRpc(CharacterTypes type)
+    {
+        if (!HasAuthority) InternalSetCharacterType(type);
+    }
+
+    private void InternalSetCharacterType(CharacterTypes type)
+    {
+        if (m_characterType != type && HasAuthority)
         {
             HostilityManager.RemoveCharacter(this);
-            m_characterType.Value = type;
+            m_characterType = type;
             HostilityManager.AddCharacter(this);
         }
     }
@@ -287,29 +274,30 @@ public abstract class StatsCharacter : NetworkBehaviour
         m_characterIndexes[(int)type] = index;
     }
 
-    public virtual float GetMaxHealthRaw() { return m_maxHealth.Value; }
-    public virtual float GetMaxHealthEffective() { return m_maxHealth.Value * m_maxHealthMultiplier.Value; }
+    public virtual float GetMaxHealthRaw() { return m_maxHealth; }
+    public virtual float GetMaxHealthEffective() { return m_maxHealth * m_maxHealthMultiplier; }
     public virtual float GetCurrentHealth() { return m_currentHealth.Value; }
+
     public virtual void SetMaxHealthRaw(float maxHealth)
     {
-        if (HasAuthority)
-            m_maxHealth.Value = maxHealth;
+        if (HasAuthority || IsOwner)
+            m_maxHealth = maxHealth;
     }
 
-    public virtual PriorityValue<float> GetMaxHealthMultiplier() { return m_maxHealthMultiplier.Value; }
+    public virtual PriorityValue<float> GetMaxHealthMultiplier() { return m_maxHealthMultiplier; }
 
     public virtual void SetMaxHealthMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
     {
-        if (HasAuthority)
-            m_maxHealthMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority);
+        if (HasAuthority || IsOwner)
+            m_maxHealthMultiplier.SetValue(maxHealthMultiplier, priority, overridePriority);
     }
 
-    public virtual PriorityValue<float> GetReceivedDamageMultiplier() { return m_receivedDamageMultiplier.Value; }
+    public virtual PriorityValue<float> GetReceivedDamageMultiplier() { return m_receivedDamageMultiplier; }
 
     public virtual void SetReceivedDamageMultiplier(float maxHealthMultiplier, uint priority = 0, bool overridePriority = false)
     {
-        if (HasAuthority)
-            m_receivedDamageMultiplier.Value.SetValue(maxHealthMultiplier, priority, overridePriority);
+        if (HasAuthority || IsOwner)
+            m_receivedDamageMultiplier.SetValue(maxHealthMultiplier, priority, overridePriority);
     }
 
     public virtual void AddHp(float hp, bool clampToMaxHealth = true)
@@ -321,14 +309,18 @@ public abstract class StatsCharacter : NetworkBehaviour
 
     public virtual void RefillHp()
     {
-        m_currentHealth.Value = GetMaxHealthEffective();
+        if (HasAuthority || IsOwner)
+            m_currentHealth.Value = GetMaxHealthEffective();
     }
 
     public virtual void SetHp(float hp, bool clampToMaxHealth = true)
     {
-        if (clampToMaxHealth)
-            hp = Mathf.Clamp(hp, 0, GetMaxHealthEffective());
+        if (HasAuthority || IsOwner)
+        {
+            if (clampToMaxHealth)
+                hp = Mathf.Clamp(hp, 0, GetMaxHealthEffective());
 
-        m_currentHealth.Value = hp;
+            m_currentHealth.Value = hp;
+        }
     }
 }
