@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
 using TMPro;
+using UnityEngine.Assertions;
 
 public class GfCommandConsole : MonoBehaviour
 {
@@ -57,13 +58,14 @@ public class GfCommandConsole : MonoBehaviour
     [SerializeField]
     private float m_currentYScroll = 0;
 
-    //private float m_desiredYScroll = 0;
-
-
     [SerializeField]
     private float m_fullHeight = 0;
 
     private ScalableWindow m_scalableWindow;
+
+    private int m_consoleStringBufferLength = 1023;
+
+    private string m_consoleStringBuffer = new('F', 1023);
 
     private bool m_showLogs = true;
     private bool m_showErrors = true;
@@ -151,12 +153,12 @@ public class GfCommandConsole : MonoBehaviour
 
         public float Height;
 
-        public GfConsoleLog(string text, string stackTrace, float currentHeight, float height, GfLogType type = GfLogType.LOG)
+        public GfConsoleLog(string text, string stackTrace, float startPosY, GfLogType type = GfLogType.LOG)
         {
             Text = text;
             LogType = type;
-            StartPosY = currentHeight;
-            Height = height;
+            StartPosY = startPosY;
+            Height = 0;
 
             StackTrace = stackTrace;
         }
@@ -194,7 +196,6 @@ public class GfCommandConsole : MonoBehaviour
 
         m_consoleImage = GetComponent<Image>();
         m_consoleImage.raycastTarget = m_console.activeSelf;
-        m_consoleText.text = new string(' ', 512);
     }
 
     private void InitializeLog()
@@ -211,13 +212,15 @@ public class GfCommandConsole : MonoBehaviour
         UnityEngine.Application.logMessageReceived += Log;
 
         m_logsList = new(256);
-        string initLog = "\n\n" + UnityEngine.Application.productName + " " + UnityEngine.Application.version + " LOG CONSOLE: \n";
+        string initLog = "\n\n" + UnityEngine.Application.productName + " " + UnityEngine.Application.version + " LOG CONSOLE ALPHA: \n";
         m_consoleText.text = initLog;
 
-        m_logsList.Add(new(initLog, null, 0, m_consoleText.preferredHeight, GfLogType.LOG));
-        m_fullHeight = m_consoleText.preferredHeight;
+        GfConsoleLog initialLog = new(initLog, null, 0, GfLogType.LOG);
+        initialLog.Height = m_consoleText.preferredHeight;
+        m_fullHeight = initialLog.Height;
+        m_logsList.Add(initialLog);
 
-        m_consoleText.text = new(' ', 16);
+        m_consoleText.text = m_consoleStringBuffer;
 
         WriteFromYPosition(0);
         UpdateScrollbar();
@@ -508,7 +511,9 @@ public class GfCommandConsole : MonoBehaviour
 
         m_consoleText.text = currentString;
 
-        m_logsList.Add(new(logString, stackTrace, m_fullHeight, height, gfLogType));
+        GfConsoleLog log = new(logString, stackTrace, m_fullHeight, gfLogType);
+        log.Height = height;
+        m_logsList.Add(log);
 
 
         float newFullHeight = m_fullHeight + height;
@@ -536,28 +541,35 @@ public class GfCommandConsole : MonoBehaviour
     /**
     Makes sure the string used by the console text has enough space to insert the 'str' string
     */
-    protected unsafe void ValidateConsoleStringForInsert(ref string sourceString, int sourcePosition, int insertLength)
+    protected unsafe void ResizeConsoleStringForConcatenation(int aSourcePosition, int aConcatenateLength)
     {
-        int sourceLength = sourceString.Length;
-        if (insertLength + sourcePosition >= sourceLength)
+        int requiredLength = aConcatenateLength + aSourcePosition;
+        if (requiredLength >= m_consoleStringBufferLength)
         {
             // make sure the length isn't 0, otherwise it will be stuck on the following loop
-            if (sourceLength == 0)
-                sourceLength = 512;
+            if (m_consoleStringBufferLength == 0)
+                m_consoleStringBufferLength = 1023;//not a typo, the string will have the null termination character at the end, which will make the real length 1024
 
-            while (insertLength + sourcePosition >= sourceLength)
-                sourceLength <<= 1; //multiply by two
+            while (requiredLength >= m_consoleStringBufferLength)
+                m_consoleStringBufferLength = ((m_consoleStringBufferLength + 1) << 1) - 1;
 
-            sourcePosition = 0;
-            string newString = new(' ', sourceLength);
-            FastStringInsert(newString, sourceString, ref sourcePosition);
+            aSourcePosition = 0;
+            string newString = new('F', m_consoleStringBufferLength);
+            FastStringConcatenate(newString, m_consoleStringBuffer, ref aSourcePosition);
 
-            sourceString = newString;
+            m_consoleStringBuffer = newString;
             m_consoleText.text = newString;
+        }
+
+        fixed (char* bufferPtr = m_consoleStringBuffer)
+        {
+            int* intBufferPtr = (int*)bufferPtr;
+            intBufferPtr[-1] = requiredLength;
+            bufferPtr[requiredLength] = '\0';
         }
     }
 
-    protected unsafe static void FastStringInsert(string sourceString, string insertString, ref int sourcePosition)
+    protected unsafe static void FastStringConcatenate(string sourceString, string insertString, ref int sourcePosition)
     {
         fixed (char* source = sourceString)
         {
@@ -569,7 +581,7 @@ public class GfCommandConsole : MonoBehaviour
         }
     }
 
-    protected unsafe static void FastStringInsert(string sourceString, char insertChar, ref int sourcePosition)
+    protected unsafe static void FastStringConcatenate(string sourceString, char insertChar, ref int sourcePosition)
     {
         fixed (char* source = sourceString)
         {
@@ -577,126 +589,68 @@ public class GfCommandConsole : MonoBehaviour
         }
     }
 
-    protected unsafe void ConsoleStringInsert(ref string sourceString, ref int sourcePosition, string insertString)
+    protected unsafe void ConsoleStringConcatenate(ref int aSourcePosition, string insertString)
     {
-        ValidateConsoleStringForInsert(ref sourceString, sourcePosition, insertString.Length);
-        FastStringInsert(sourceString, insertString, ref sourcePosition);
+        ResizeConsoleStringForConcatenation(aSourcePosition, insertString.Length);
+        FastStringConcatenate(m_consoleStringBuffer, insertString, ref aSourcePosition);
     }
 
-    protected unsafe void ConsoleStringInsert(ref string sourceString, ref int sourcePosition, char insertChar)
+    protected unsafe void ConsoleStringConcatenate(ref int aSourcePosition, char aInsertChar)
     {
-        ValidateConsoleStringForInsert(ref sourceString, sourcePosition, 1);
-        FastStringInsert(sourceString, insertChar, ref sourcePosition);
+        ResizeConsoleStringForConcatenation(aSourcePosition, 1);
+        FastStringConcatenate(m_consoleStringBuffer, aInsertChar, ref aSourcePosition);
     }
 
-    protected unsafe void WriteLog(int logIndex, ref string consoleString, ref int currentStringIndex)
+    protected unsafe void WriteLog(int aLogIndex, ref int aCurrentStringIndex)
     {
-        /*
         bool mustCloseColorTag = false;
-        GfConsoleLog log = m_logsList[logIndex];
-
+        GfConsoleLog log = m_logsList[aLogIndex];
 
         switch (log.LogType)
         {
             case (GfLogType.ERROR):
                 mustCloseColorTag = true;
-                m_logStringBuilder.Append(ERROR_OPEN_TAG);
+                ConsoleStringConcatenate(ref aCurrentStringIndex, ERROR_OPEN_TAG);
                 break;
 
             case (GfLogType.WARNING):
                 mustCloseColorTag = true;
-                m_logStringBuilder.Append(WARN_OPEN_TAG);
+                ConsoleStringConcatenate(ref aCurrentStringIndex, WARN_OPEN_TAG);
                 break;
 
             case (GfLogType.COMMAND):
                 mustCloseColorTag = true;
-                m_logStringBuilder.Append(COMMAND_OPEN_TAG);
-
-                break;
-        }
-
-        //m_logStringBuilder.Append('>');
-        m_logStringBuilder.Append(NO_PARSE_TAG);
-        m_logStringBuilder.Append(log.Text);
-        m_logStringBuilder.Append(NO_PARSE_CLOSE_TAG);
-        if (mustCloseColorTag)
-            m_logStringBuilder.Append(COLOR_CLOSE_TAG);
-
-        if (null != log.StackTrace && log.StackTrace.Length > 0)
-        {
-            switch (log.LogType)
-            {
-                case (GfLogType.ERROR):
-                    m_logStringBuilder.Append(STACK_ERROR_OPEN_TAG);
-                    break;
-
-                case (GfLogType.WARNING):
-                    m_logStringBuilder.Append(STACK_WARN_OPEN_TAG);
-                    break;
-
-                case (GfLogType.LOG):
-                    m_logStringBuilder.Append(STACK_LOG_OPEN_TAG);
-                    break;
-            }
-
-            m_logStringBuilder.Append('\n');
-            m_logStringBuilder.Append(log.StackTrace);
-            m_logStringBuilder.Append(COLOR_CLOSE_TAG);
-        }
-
-        int currentStringLength = m_consoleText.text.Length;
-        */
-        /////// unsafe pointers test
-
-
-        bool mustCloseColorTag = false;
-        GfConsoleLog log = m_logsList[logIndex];
-
-        switch (log.LogType)
-        {
-            case (GfLogType.ERROR):
-                mustCloseColorTag = true;
-                ConsoleStringInsert(ref consoleString, ref currentStringIndex, ERROR_OPEN_TAG);
-                break;
-
-            case (GfLogType.WARNING):
-                mustCloseColorTag = true;
-                ConsoleStringInsert(ref consoleString, ref currentStringIndex, WARN_OPEN_TAG);
-                break;
-
-            case (GfLogType.COMMAND):
-                mustCloseColorTag = true;
-                ConsoleStringInsert(ref consoleString, ref currentStringIndex, COMMAND_OPEN_TAG);
+                ConsoleStringConcatenate(ref aCurrentStringIndex, COMMAND_OPEN_TAG);
                 break;
         }
 
         // ConsoleStringInsert(ref consoleString, ref currentStringIndex, NO_PARSE_TAG);
-        ConsoleStringInsert(ref consoleString, ref currentStringIndex, log.Text);
+        ConsoleStringConcatenate(ref aCurrentStringIndex, log.Text);
         // ConsoleStringInsert(ref consoleString, ref currentStringIndex, NO_PARSE_CLOSE_TAG);
 
         if (mustCloseColorTag)
-            ConsoleStringInsert(ref consoleString, ref currentStringIndex, COLOR_CLOSE_TAG);
+            ConsoleStringConcatenate(ref aCurrentStringIndex, COLOR_CLOSE_TAG);
 
         if (null != log.StackTrace && log.StackTrace.Length > 0)
         {
             switch (log.LogType)
             {
                 case (GfLogType.ERROR):
-                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, STACK_ERROR_OPEN_TAG);
+                    ConsoleStringConcatenate(ref aCurrentStringIndex, STACK_ERROR_OPEN_TAG);
                     break;
 
                 case (GfLogType.WARNING):
-                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, STACK_WARN_OPEN_TAG);
+                    ConsoleStringConcatenate(ref aCurrentStringIndex, STACK_WARN_OPEN_TAG);
                     break;
 
                 case (GfLogType.LOG):
-                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, STACK_LOG_OPEN_TAG);
+                    ConsoleStringConcatenate(ref aCurrentStringIndex, STACK_LOG_OPEN_TAG);
                     break;
             }
 
-            ConsoleStringInsert(ref consoleString, ref currentStringIndex, '\n');
-            ConsoleStringInsert(ref consoleString, ref currentStringIndex, log.StackTrace);
-            ConsoleStringInsert(ref consoleString, ref currentStringIndex, COLOR_CLOSE_TAG);
+            ConsoleStringConcatenate(ref aCurrentStringIndex, '\n');
+            ConsoleStringConcatenate(ref aCurrentStringIndex, log.StackTrace);
+            ConsoleStringConcatenate(ref aCurrentStringIndex, COLOR_CLOSE_TAG);
         }
     }
 
@@ -716,12 +670,11 @@ public class GfCommandConsole : MonoBehaviour
             }
 
             int currentStringIndex = 0;
-            string consoleString = m_consoleText.text;
             while (++logIndex < m_logsList.Count)
             {
-                WriteLog(logIndex, ref consoleString, ref currentStringIndex);
+                WriteLog(logIndex, ref currentStringIndex);
                 if (logIndex < m_logsList.Count)
-                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, '\n');
+                    ConsoleStringConcatenate(ref currentStringIndex, '\n');
             }
 
             m_shownLogEndY = m_fullHeight;
@@ -733,16 +686,6 @@ public class GfCommandConsole : MonoBehaviour
             m_textViewport.localPosition = currentPos;
             m_textViewport.sizeDelta = new Vector2(m_textViewport.sizeDelta.x, m_shownLogsHeight);
 
-            unsafe
-            {
-                int textLength = consoleString.Length;
-                fixed (char* p = consoleString)
-                    for (; currentStringIndex < textLength; ++currentStringIndex)
-                        p[currentStringIndex] = ' ';
-            }
-
-            // m_consoleText.text = consoleString;
-            m_consoleText.text = consoleString;
             UpdateScrollbar();
         }
         else
@@ -766,21 +709,13 @@ public class GfCommandConsole : MonoBehaviour
         int secondIndex = m_logsList.Count;
         int middleIndex;
 
-        int count = 0;
-        while (1 != (secondIndex - firstIndex) && 30 > ++count) //perform a binary seach to find log closest to ddesired height
+        while (1 > (secondIndex - firstIndex)) //perform a binary seach to find log closest to desired height
         {
-            middleIndex = (firstIndex + secondIndex) / 2; //divide by two bitwise
+            middleIndex = (firstIndex + secondIndex) >> 1;
             if (m_logsList[middleIndex].StartPosY > shownLogStartY)
                 secondIndex = middleIndex;
             else
                 firstIndex = middleIndex;
-        }
-
-        float firstDistanceFromDesiredY = System.MathF.Abs(shownLogStartY);
-
-        if (count == 30)
-        {
-            Debug.LogError("UHHHHHHH NOTHING WORKED, first is: " + firstIndex + " second is: " + secondIndex);
         }
 
         if (m_bottomOnLog)
@@ -808,10 +743,10 @@ public class GfCommandConsole : MonoBehaviour
             {
                 //do not add \n on the first log
                 if (initialIndex != logIndex)
-                    ConsoleStringInsert(ref consoleString, ref currentStringIndex, '\n');
+                    ConsoleStringConcatenate(ref currentStringIndex, '\n');
 
                 m_shownLogsHeight += m_logsList[logIndex].Height;
-                WriteLog(logIndex, ref consoleString, ref currentStringIndex);
+                WriteLog(logIndex, ref currentStringIndex);
                 logIndex++;
             }
 
@@ -831,8 +766,6 @@ public class GfCommandConsole : MonoBehaviour
                         p[currentStringIndex] = ' ';
             }
 
-            // m_consoleText.text = consoleString;
-            m_consoleText.text = consoleString;
             UpdateScrollbar();
         }
         else

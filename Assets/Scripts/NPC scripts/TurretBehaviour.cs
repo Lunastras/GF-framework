@@ -127,7 +127,7 @@ public class TurretBehaviour : MonoBehaviour
             {
 
                 case (PhasesEndModes.DESTROY_GAMEOBJECT):
-                    GfPooling.Destroy(gameObject);
+                    GfcPooling.Destroy(gameObject);
                     break;
 
                 case (PhasesEndModes.DESTROY_THIS):

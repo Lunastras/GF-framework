@@ -8,13 +8,13 @@ using UnityEditor.UIElements;
 
 using GfPathFindingNamespace;
 
-[CustomEditor(typeof(GfLevelManager))]
+[CustomEditor(typeof(GfManagerLevel))]
 public class GfLevelManagerGUI : Editor
 {
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        GfLevelManager obj = (GfLevelManager)target;
+        GfManagerLevel obj = (GfManagerLevel)target;
         // Add a simple label
         if (GUILayout.Button("Generate all node paths"))
         {

@@ -36,10 +36,10 @@ public class ReusableParticleWeapon : WeaponGeneric
 
     private ParticleSystem GetTemplateParticleSystem()
     {
-        if (!GfPooling.HasPool(m_particleSystemObj))
-            GfPooling.Pool(m_particleSystemObj, 1);
+        if (!GfcPooling.HasPool(m_particleSystemObj))
+            GfcPooling.Pool(m_particleSystemObj, 1);
 
-        var objList = GfPooling.GetPoolList(m_particleSystemObj);
+        var objList = GfcPooling.GetPoolList(m_particleSystemObj);
         objList[0].SetActive(true);
         return objList[0].GetComponent<ParticleSystem>();
     }
@@ -87,8 +87,8 @@ public class ReusableParticleWeapon : WeaponGeneric
             if (m_target)
             {
                 Vector3 dirToTarget = m_target.position;
-                GfTools.Minus3(ref dirToTarget, emitParams.position);
-                GfTools.Normalize(ref dirToTarget);
+                GfcTools.Minus3(ref dirToTarget, emitParams.position);
+                GfcTools.Normalize(ref dirToTarget);
                 Vector3 upVec = Vector3.up;
                 if (m_movementParent) upVec = m_movementParent.GetUpvecRotation();
                 m_effectivePsTransform.rotation = Quaternion.LookRotation(dirToTarget, upVec);
@@ -118,7 +118,7 @@ public class ReusableParticleWeapon : WeaponGeneric
     public override void Fire(FireHit hit = default, FireType fireType = FireType.MAIN, bool forceFire = false)
     {
         Vector3 dirBullet = hit.point - m_transform.position;
-        GfTools.Normalize(ref dirBullet);
+        GfcTools.Normalize(ref dirBullet);
 
         Vector3 upVec = Vector3.up;
         if (m_movementParent) upVec = m_movementParent.GetUpvecRotation();

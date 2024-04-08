@@ -19,13 +19,13 @@ public class WeaponTimestopCharge : WeaponChargeLevels
     public override void FireBomb()
     {
         base.FireBomb();
-        GfServerManager.SetTimeScale(m_timeStopTimeScale, true, m_timeChangeSmoothTime);
-        GfServerManager.SetTimeScale(1, GetStatsCharacter().GetCharacterType(), -1);
+        GfManagerServer.SetTimeScale(m_timeStopTimeScale, true, m_timeChangeSmoothTime);
+        GfManagerServer.SetTimeScale(1, GetStatsCharacter().GetCharacterType(), -1);
     }
 
     protected override void OnDischargeOver()
     {
         base.OnDischargeOver();
-        GfServerManager.SetTimeScale(1.0f, true, m_timeChangeSmoothTime);
+        GfManagerServer.SetTimeScale(1.0f, true, m_timeChangeSmoothTime);
     }
 }

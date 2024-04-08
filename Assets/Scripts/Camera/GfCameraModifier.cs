@@ -15,7 +15,7 @@ public class GfCameraModifier : GfMovementTriggerable
 
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
-        if (GfLevelManager.GetPlayer() == movement.transform)
+        if (GfManagerLevel.GetPlayer() == movement.transform)
         {
             if (!m_targetDistanceMultiplier.m_ignore)
                 CameraController.Instance.SetDistanceMultiplier(m_targetDistanceMultiplier, m_targetDistanceMultiplier.m_priority, m_targetDistanceMultiplier.m_overridePriority);

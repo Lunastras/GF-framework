@@ -4,10 +4,10 @@ using UnityEngine;
 public class WeaponParticleTrigger : WeaponParticle
 {
     [SerializeField]
-    protected GfSound m_damageSound = null;
+    protected GfcSound m_damageSound = null;
 
     [SerializeField]
-    protected GfSound m_collisionSound = null;
+    protected GfcSound m_collisionSound = null;
     [SerializeField]
     protected bool m_canDamageSelf;
 
@@ -85,8 +85,7 @@ public class WeaponParticleTrigger : WeaponParticle
                 if ((null == selfStats))
                     Debug.LogWarning("ParticleTriggerDamageSelf: stats of self are null");
 
-                float damageMultiplier = HostilityManager.DamageMultiplier(selfStats, collisionStats);
-                Debug.Log("Damage multiplier is: " + damageMultiplier);
+                float damageMultiplier = GfcManagerCharacters.DamageMultiplier(selfStats, collisionStats);
 
                 //check if it can damage target
                 if (!hitSelf || (hitSelf && m_canDamageSelf))
@@ -102,7 +101,6 @@ public class WeaponParticleTrigger : WeaponParticle
     protected virtual void HitTarget(ref ParticleSystem.Particle particle, StatsCharacter self, StatsCharacter target, float damageMultiplier, DamageSource damageSource)
     {
         m_damageSound.Play(particle.position);
-        Debug.Log("I AM HIT, DESTROY BULLET NOW");
         target.Damage(new(GetDamage() * damageMultiplier, particle.position, particle.velocity.normalized, m_damageType, true, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex));
         particle.remainingLifetime = 0;
     }

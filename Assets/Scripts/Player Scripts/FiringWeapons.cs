@@ -100,9 +100,9 @@ public class FiringWeapons : NetworkBehaviour
             {
                 m_timeUntilNextCheck = m_distanceUpdateInterval;
 
-                RaycastHit[] rayHits = GfPhysics.GetRaycastHits();
+                RaycastHit[] rayHits = GfcPhysics.GetRaycastHits();
                 Ray ray = new(m_aimTransform.position, fireTargetDir);
-                int collisionMask = GfPhysics.TargetableCollisions();
+                int collisionMask = GfcPhysics.TargetableCollisions();
 
                 int countHits = Physics.RaycastNonAlloc(ray, rayHits, m_maxFireDistance, collisionMask, QueryTriggerInteraction.Ignore);
                 int closestIndex = -1;
@@ -149,7 +149,7 @@ public class FiringWeapons : NetworkBehaviour
         Stopwatch timePerParse = Stopwatch.StartNew();
 
         Ray ray1 = new(m_aimTransform.position, m_aimTransform.forward);
-        int collisionMask1 = GfPhysics.TargetableCollisions();
+        int collisionMask1 = GfcPhysics.TargetableCollisions();
         //ParticleInterCollision.Raycast(ray1, collisionMask1, particleHits);
 
         timePerParse.Stop();

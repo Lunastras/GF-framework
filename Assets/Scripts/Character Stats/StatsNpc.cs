@@ -42,9 +42,9 @@ public class StatsNpc : StatsCharacter
     protected AudioSource m_audioSource;
 
     [SerializeField]
-    protected GfSound m_damageSound;
+    protected GfcSound m_damageSound;
     [SerializeField]
-    protected GfSound m_deathSound;
+    protected GfcSound m_deathSound;
 
     //The damage values in total from the enemies
     protected float m_biggestDamageReceived = 0;
@@ -54,6 +54,8 @@ public class StatsNpc : StatsCharacter
 
     protected Transform m_transform;
 
+    protected GfgLootSpawner m_lootSpawner;
+
     public CheckpointStateNpc m_checkpointStateNpc = null;
 
     protected float m_pitch = 1;
@@ -62,47 +64,47 @@ public class StatsNpc : StatsCharacter
 
     new protected void Start()
     {
-        if (!m_initialised)
+        base.Start();
+
+        if (HasAuthority && m_maxHealth == 0)
+            m_currentHealth.Value = m_maxHealthMultiplier * GfgTiersThreatsBalancingStats.GetTierHp(m_threatDetails.Tier, m_threatDetails.ThreatLevel);
+
+        if (null == m_objectCollider)
+            m_objectCollider = GetComponent<Collider>();
+
+        if (null == m_movement)
+            m_movement = GetComponent<GfMovementGeneric>();
+
+        if (null == m_npcController)
+            m_npcController = GetComponent<NpcController>();
+
+        if (null == m_turret)
+            m_turret = GetComponent<TurretWeapons>();
+
+        m_lootSpawner = GetComponent<GfgLootSpawner>();
+
+        if (null == m_mainGameObject)
+            m_mainGameObject = gameObject;
+
+
+        if (null == m_audioSource)
         {
-            if (HasAuthority && m_maxHealth == 0)
-                m_currentHealth.Value = m_maxHealthMultiplier * TiersThreatsBalancingStats.GetTierHp(m_threatDetails.Tier, m_threatDetails.ThreatLevel);
-
-            base.Start();
-            if (null == m_objectCollider)
-                m_objectCollider = GetComponent<Collider>();
-
-            if (null == m_movement)
-                m_movement = GetComponent<GfMovementGeneric>();
-
-            if (null == m_npcController)
-                m_npcController = GetComponent<NpcController>();
-
-            if (null == m_turret)
-                m_turret = GetComponent<TurretWeapons>();
-
-            if (null == m_mainGameObject)
-                m_mainGameObject = gameObject;
-
-
+            m_audioSource = GetComponent<AudioSource>();
             if (null == m_audioSource)
             {
-                m_audioSource = GetComponent<AudioSource>();
-                if (null == m_audioSource)
-                {
-                    m_audioSource = gameObject.AddComponent<AudioSource>();
-                }
+                m_audioSource = gameObject.AddComponent<AudioSource>();
             }
-
-            m_damageSound.LoadAudioClip();
-            m_deathSound.LoadAudioClip();
-
-            m_transform = transform;
         }
+
+        m_damageSound.LoadAudioClip();
+        m_deathSound.LoadAudioClip();
+
+        m_transform = transform;
     }
 
-    new protected void OnEnable()
+    public override void OnNetworkSpawn()
     {
-        base.OnEnable();
+        base.OnNetworkSpawn();
         if (m_initialised)
         {
             if (null != m_graphics)
@@ -114,6 +116,9 @@ public class StatsNpc : StatsCharacter
             if (null != m_npcController)
                 m_npcController.ResumeMovement();
         }
+
+        if (HasAuthority && m_maxHealth == 0)
+            m_currentHealth.Value = m_maxHealthMultiplier * GfgTiersThreatsBalancingStats.GetTierHp(m_threatDetails.Tier, m_threatDetails.ThreatLevel);
 
         CheckpointManager.OnHardCheckpoint += OnHardCheckpoint;
     }
@@ -141,7 +146,7 @@ public class StatsNpc : StatsCharacter
         m_movement.OrientToUpVecForced();
 
         if (checkpointStateNpc.WasFollowingPlayer)
-            m_npcController.SetDestination(GfLevelManager.GetPlayer());
+            m_npcController.SetDestination(GfManagerLevel.GetPlayer());
 
         if (checkpointStateNpc.MovementParentSpherical)
             m_movement.SetParentSpherical(checkpointStateNpc.MovementParentSpherical, checkpointStateNpc.MovementGravityPriority, true);
@@ -162,7 +167,7 @@ public class StatsNpc : StatsCharacter
             m_checkpointStateNpc.Rotation = m_transform.rotation;
             m_checkpointStateNpc.Scale = m_transform.localScale;
             m_checkpointStateNpc.CurrentHp = m_currentHealth.Value;
-            m_checkpointStateNpc.Prefab = GfPooling.GetPrefab(gameObject.name);
+            m_checkpointStateNpc.Prefab = GfcPooling.GetPrefab(gameObject.name);
             m_checkpointStateNpc.Velocity = m_movement.GetVelocity();
             m_checkpointStateNpc.IsDead = m_isDead;
             m_checkpointStateNpc.MovementParent = m_movement.GetParentTransform();
@@ -170,7 +175,7 @@ public class StatsNpc : StatsCharacter
             m_checkpointStateNpc.MovementParentSpherical = m_movement.GetParentSpherical();
             m_checkpointStateNpc.MovementGravityPriority = m_movement.GetGravityPriority();
             m_checkpointStateNpc.UpVec = m_movement.GetUpVecRaw();
-            m_checkpointStateNpc.WasFollowingPlayer = GfLevelManager.GetPlayer() == m_npcController.GetDestinationTransform();
+            m_checkpointStateNpc.WasFollowingPlayer = GfManagerLevel.GetPlayer() == m_npcController.GetDestinationTransform();
             m_checkpointStateNpc.OnKilled = OnKilled;
 
             CheckpointState state = m_checkpointStateNpc;
@@ -191,69 +196,75 @@ public class StatsNpc : StatsCharacter
     {
         if (m_spawnPrefab)
         {
-            var spawnBehaviour = GfPooling.PoolInstantiate(m_spawnPrefab).GetComponent<NpcSpawnBehaviour>();
+            var spawnBehaviour = GfcPooling.PoolInstantiate(m_spawnPrefab).GetComponent<NpcSpawnBehaviour>();
             if (spawnBehaviour) spawnBehaviour.SetPitch(m_pitch);
         }
     }
     protected override void InternalKill(DamageData aDamageData, bool isServerCall)
     {
-        if (isServerCall)
+        lock (this)
         {
-            OnKilled?.Invoke(this, aDamageData);
-            OnKilledUnique?.Invoke(this, aDamageData);
-
-            Vector3 currentPos = m_transform.position;
-            GameParticles.PlayDeathDust(currentPos);
-
-            if (aDamageData.DamageType != DamageType.NO_EXPERIENCE_DROPS)
-                GameParticles.SpawnPowerItems(currentPos, m_powerItemsToDrop, m_movement.GetGravityReference());
-
-            GameParticles.SpawnGrave(currentPos, m_movement.GetGravityReference());
-
-            for (int i = 0; i < m_itemDropsAfterDeath.Length; i++)
+            if (isServerCall && !m_isDead)
             {
-                for (int j = 0; j < m_dropsToSpawn[Mathf.Min(m_dropsToSpawn[i], m_dropsToSpawn.Length - 1)]; j++)
+                m_isDead = true;
+
+                OnKilled?.Invoke(this, aDamageData);
+                OnKilledUnique?.Invoke(this, aDamageData);
+                OnKilled = null;
+
+
+                Vector3 currentPos = m_transform.position;
+                GameParticles.PlayDeathDust(currentPos);
+
+                if (aDamageData.DamageType != DamageType.NO_EXPERIENCE_DROPS)
+                    GameParticles.SpawnPowerItems(currentPos, m_powerItemsToDrop, m_movement.GetGravityReference());
+
+                GameParticles.SpawnGrave(currentPos, m_movement.GetGravityReference());
+
+                for (int i = 0; i < m_itemDropsAfterDeath.Length; i++)
                 {
-                    GameObject obj = GfPooling.Instantiate(m_itemDropsAfterDeath[i]);
-                    obj.transform.position = m_transform.position;
-                    GfMovementGeneric objMovement = obj.GetComponent<GfMovementGeneric>();
-                    if (objMovement) objMovement.CopyGravityFrom(m_movement);
+                    for (int j = 0; j < m_dropsToSpawn[Mathf.Min(m_dropsToSpawn[i], m_dropsToSpawn.Length - 1)]; j++)
+                    {
+                        GameObject obj = GfcPooling.Instantiate(m_itemDropsAfterDeath[i]);
+                        obj.transform.position = m_transform.position;
+                        GfMovementGeneric objMovement = obj.GetComponent<GfMovementGeneric>();
+                        if (objMovement) objMovement.CopyGravityFrom(m_movement);
+                    }
                 }
-            }
 
-            GfAudioManager.PlayAudio(m_deathSound, m_transform.position);
+                m_lootSpawner?.SpawnLoot();
 
-            if (aDamageData.HasEnemyNetworkId)
-            {
-                StatsCharacter statsKiller = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
-                if (statsKiller)
+                GfcManagerAudio.PlayAudio(m_deathSound, m_transform.position);
+
+                if (aDamageData.HasEnemyNetworkId)
                 {
-                    DamageSource damageSource = statsKiller.GetWeaponDamageSource(aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
-                    if (damageSource) damageSource.OnCharacterKilled(this, isServerCall);
-                    statsKiller.OnCharacterKilled(NetworkObjectId, aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
+                    StatsCharacter statsKiller = GfcManagerGame.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
+                    if (statsKiller)
+                    {
+                        DamageSource damageSource = statsKiller.GetWeaponDamageSource(aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
+                        if (damageSource) damageSource.OnCharacterKilled(this, isServerCall);
+                        statsKiller.OnCharacterKilled(aDamageData, isServerCall);
+                    }
                 }
+
+                m_npcController.WasKilled();
+
+                CheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;
+
+                if (null != m_graphics)
+                    m_graphics.SetActive(false);
+
+                if (null != m_objectCollider)
+                    m_objectCollider.enabled = false;
+
+                if (null != m_npcController)
+                    m_npcController.PauseMovement();
+
+                if (null != m_turret && HasAuthority)
+                    m_turret.DestroyWhenDone(gameObject);
+
+                GfcManagerCharacters.RemoveCharacter(this);
             }
-
-            m_npcController.WasKilled();
-
-            m_isDead = true;
-            CheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;
-
-            if (null != m_graphics)
-                m_graphics.SetActive(false);
-
-            if (null != m_objectCollider)
-                m_objectCollider.enabled = false;
-
-            if (null != m_npcController)
-                m_npcController.PauseMovement();
-
-            if (null != m_turret && HasAuthority)
-                m_turret.DestroyWhenDone(gameObject);
-
-            HostilityManager.RemoveCharacter(this);
-
-            OnKilled = null;
         }
     }
 
@@ -269,21 +280,19 @@ public class StatsNpc : StatsCharacter
 
     protected override void InternalDamage(DamageData aDamageData, bool aIsServerCall)
     {
-        Debug.Log("Damage 1");
         if (!m_isDead)
         {
             float damage = m_receivedDamageMultiplier.Value * aDamageData.Damage;
-            Debug.Log("Damage 2 raw damage is: " + aDamageData.Damage);
 
             StatsCharacter enemy = null;
             if (aDamageData.HasEnemyNetworkId)
             {
-                enemy = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
+                enemy = GfcManagerGame.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
                 if (enemy)
                 {
                     DamageSource damageSource = enemy.GetWeaponDamageSource(aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
                     if (damageSource) damageSource.OnDamageDealt(damage, this, aIsServerCall);
-                    enemy.OnDamageDealt(damage, NetworkObjectId, aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex, aIsServerCall);
+                    enemy.OnDamageDealt(aDamageData, aIsServerCall);
                 }
             }
 
@@ -291,22 +300,16 @@ public class StatsNpc : StatsCharacter
 
             if (!aIsServerCall || HasAuthority) //only play sound and damage numbers locally. This will be called once for the server, and twice for clients
             {
-                Debug.Log("Damage 4");
-
                 GameParticles.PlayDamageNumbers(m_transform.position, damage, m_movement.GetUpVecRaw());
                 if (simulatedHealth <= GetMaxHealthEffective() * m_lowHealthThreshold)
                     m_damageSound.Play(m_audioSource, 1.5f, 2);
                 else
                     m_damageSound.Play(m_audioSource);
             }
-            Debug.Log("Damage 5");
 
             if (HasAuthority)
             {
-
                 m_currentHealth.Value = simulatedHealth;
-
-                Debug.Log("Damage 6 hp left is: " + simulatedHealth + " damage is: " + damage);
 
                 if (m_currentHealth.Value <= 0)
                 {

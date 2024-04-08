@@ -29,12 +29,12 @@ public class GfClientBehaviour : NetworkBehaviour
     {
         if (HasAuthority)
         {
-            GfServerManager.Instance.OnPlayerReady += OnPlayerReady;
-            GfServerManager.Instance.OnPlayerUnready += OnPlayerUnready;
+            GfManagerServer.Instance.OnPlayerReady += OnPlayerReady;
+            GfManagerServer.Instance.OnPlayerUnready += OnPlayerUnready;
         }
 
         if (!LoadingScreenManager.CurrentlyLoading)
-            GfServerManager.SetPlayerIsReady(true, OwnerClientId);
+            GfManagerServer.SetPlayerIsReady(true, OwnerClientId);
 
         DontDestroyOnLoad(gameObject);
     }
@@ -43,21 +43,40 @@ public class GfClientBehaviour : NetworkBehaviour
     {
     }
 
-    protected void OnPlayerReady(ulong clientId)
+    protected void OnPlayerReady(ulong aClientId)
     {
-        if (clientId == OwnerClientId && !m_playerIsSpawned.Value)
+        if (aClientId == OwnerClientId && !m_playerIsSpawned.Value)
         {
             NetworkObject networkObject = Instantiate(m_playerPrefab).GetComponent<NetworkObject>();
             networkObject.SpawnWithOwnership(OwnerClientId);
             m_spawnedPlayerObjectId.Value = networkObject.NetworkObjectId;
             m_playerIsSpawned.Value = true;
             networkObject.DestroyWithScene = true;
+            SetPlayerRuntimeGameDataServerRpc(GfcManagerSaveData.GetPlayerRuntimeGameData());
         }
     }
 
-    protected void OnPlayerUnready(ulong clientId)
+    [ServerRpc]
+    protected void SetPlayerRuntimeGameDataServerRpc(PlayerRuntimeGameData aPlayerRuntimeGameData)
     {
-        if (clientId == OwnerClientId && m_playerIsSpawned.Value)
+        InternalSetPlayerRuntimeGameData(aPlayerRuntimeGameData);
+        SetPlayerRuntimeGameDataClientRpc(aPlayerRuntimeGameData);
+    }
+
+    [ClientRpc]
+    protected void SetPlayerRuntimeGameDataClientRpc(PlayerRuntimeGameData aPlayerRuntimeGameData)
+    {
+        if (!GfManagerServer.HasAuthority) InternalSetPlayerRuntimeGameData(aPlayerRuntimeGameData);
+    }
+
+    protected void InternalSetPlayerRuntimeGameData(PlayerRuntimeGameData aPlayerRuntimeGameData)
+    {
+        GfcManagerGame.GetComponentFromNetworkObject<StatsPlayer>(m_spawnedPlayerObjectId.Value).SetPlayerRuntimeGameData(aPlayerRuntimeGameData);
+    }
+
+    protected void OnPlayerUnready(ulong aClientId)
+    {
+        if (aClientId == OwnerClientId && m_playerIsSpawned.Value)
         {
             m_spawnedPlayerObjectId.Value = 0;
             m_playerIsSpawned.Value = false;
@@ -71,6 +90,6 @@ public class GfClientBehaviour : NetworkBehaviour
 
     public NetworkObject GetPlayerObject()
     {
-        return GfGameManager.GetNetworkObject(m_spawnedPlayerObjectId.Value);
+        return GfcManagerGame.GetNetworkObject(m_spawnedPlayerObjectId.Value);
     }
 }

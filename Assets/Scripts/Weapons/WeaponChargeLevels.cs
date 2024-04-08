@@ -45,16 +45,16 @@ public class WeaponChargeLevels : WeaponGeneric
     public StructArray<float>[] m_expRequiredForLevels = new StructArray<float>[2];
 
     [SerializeField]
-    public GfSound[] m_chargeBeginSound = null;
+    public GfcSound[] m_chargeBeginSound = null;
 
     [SerializeField]
-    public GfSound[] m_chargeEndSound = null;
+    public GfcSound[] m_chargeEndSound = null;
 
     [SerializeField]
-    public GfSound[] m_levelFireSounds = null;
+    public GfcSound[] m_levelFireSounds = null;
 
     [SerializeField]
-    public GfSound[] m_levelReleaseFireSounds = null;
+    public GfcSound[] m_levelReleaseFireSounds = null;
 
     protected bool m_fireReleased = false;
 
@@ -124,7 +124,7 @@ public class WeaponChargeLevels : WeaponGeneric
                 {
                     m_timeUntilNextBulletsErase = 0.5f;
                     var statsCharacter = GetStatsCharacter();
-                    HostilityManager.EraseAllEnemyBullets(statsCharacter, statsCharacter.transform.position, m_bombParticleEraseSpeed, m_bombParticleEraseRadius);
+                    GfcManagerCharacters.EraseAllEnemyBullets(statsCharacter, statsCharacter.transform.position, m_bombParticleEraseSpeed, m_bombParticleEraseRadius);
                 }
             }
 
@@ -139,7 +139,7 @@ public class WeaponChargeLevels : WeaponGeneric
         if ((DisableWhenDone || DestroyWhenDone) && !m_turret.IsAlive())
         {
             if (DestroyWhenDone)
-                GfPooling.Destroy(gameObject);
+                GfcPooling.Destroy(gameObject);
             else
                 gameObject.SetActive(false);
         }
@@ -203,12 +203,12 @@ public class WeaponChargeLevels : WeaponGeneric
         return m_turret.IsAlive();
     }
 
-    protected GfSound GetFireSound()
+    protected GfcSound GetFireSound()
     {
         return m_levelFireSounds.Length > 0 ? m_levelFireSounds[Mathf.Clamp(m_currentLevels[m_currentLevels[0]], 0, m_levelFireSounds.Length - 1)] : null;
     }
 
-    protected GfSound GetReleaseFireSound()
+    protected GfcSound GetReleaseFireSound()
     {
         return m_levelReleaseFireSounds.Length > 0 ? m_levelReleaseFireSounds[Mathf.Clamp(m_currentLevels[0], 0, m_levelReleaseFireSounds.Length - 1)] : null;
     }
@@ -281,7 +281,7 @@ public class WeaponChargeLevels : WeaponGeneric
         {
             m_eraseEnemyBullets = true;
             var statsCharacter = GetStatsCharacter();
-            HostilityManager.EraseAllEnemyBullets(statsCharacter, statsCharacter.transform.position, m_bombParticleEraseSpeed, m_bombParticleEraseRadius);
+            GfcManagerCharacters.EraseAllEnemyBullets(statsCharacter, statsCharacter.transform.position, m_bombParticleEraseSpeed, m_bombParticleEraseRadius);
         }
     }
 

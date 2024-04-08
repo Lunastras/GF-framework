@@ -69,7 +69,7 @@ public class NpcBehaviour : NpcController
         // destinations.SetDestination(GameManager.gameManager.GetPlayer(), true, true);
         m_spawnPos = m_transform.position;
 
-        float randomRadian = GfRandom.Range(0, Mathf.PI * 2.0f);
+        float randomRadian = Random.Range(0, Mathf.PI * 2.0f);
         m_movement.GetRunnerTemplate().SetMovementDir(-new Vector3(Mathf.Cos(randomRadian), 0, Mathf.Sin(randomRadian)).normalized);
 
         if (null == m_statsNpc)
@@ -92,10 +92,10 @@ public class NpcBehaviour : NpcController
 
     private GameObject CheckForEnemiesAround()
     {
-        int numTypes = HostilityManager.GetNumTypes();
+        int numTypes = GfcManagerCharacters.GetNumTypes();
         for (int i = 0; i < numTypes; ++i)
         {
-            List<StatsCharacter> enemyList = HostilityManager.GetEnemiesList((int)(m_statsNpc.GetCharacterType()), i);
+            List<StatsCharacter> enemyList = GfcManagerCharacters.GetEnemiesList((int)(m_statsNpc.GetCharacterType()), i);
             if (null != enemyList)
             {
                 int listLength = enemyList.Count;
@@ -126,15 +126,15 @@ public class NpcBehaviour : NpcController
             }
 
             m_timeUntilFireChange = m_hostileValues.m_timeBetweenAttacks
-                                * (1 + GfRandom.Range(-m_hostileValues.m_varianceInValues, m_hostileValues.m_varianceInValues));
+                                * (1 + Random.Range(-m_hostileValues.m_varianceInValues, m_hostileValues.m_varianceInValues));
         }
 
         if (0 > m_timeUntilChangePhase)
         {
             m_timeUntilChangePhase = m_hostileValues.m_timeBetweenPhases
-                                * (1.0f + GfRandom.Range(-m_hostileValues.m_varianceInValues, m_hostileValues.m_varianceInValues));
+                                * (1.0f + Random.Range(-m_hostileValues.m_varianceInValues, m_hostileValues.m_varianceInValues));
 
-            float randomNumber = GfRandom.GetRandomNum();
+            float randomNumber = Random.Range(0, 1);
 
             if (randomNumber > m_hostileValues.m_likelyHoodToCircleTarget) //approach target
             {
@@ -143,7 +143,7 @@ public class NpcBehaviour : NpcController
             else
             {
                 m_currentPhase = EngageModes.CIRLCE_CLOCKWISE;
-                if (GfRandom.GetRandomNum() >= 0.5f)
+                if (Random.Range(0, 1) >= 0.5f)
                     m_currentPhase = EngageModes.CIRCLE_COUNTER;
             }
         }
@@ -177,7 +177,7 @@ public class NpcBehaviour : NpcController
         m_currentSpeedMultiplier = m_walkSpeedMultiplyer;
         if (0 >= m_timeUntilNextWalkChange)
         {
-            m_timeUntilNextWalkChange = m_intervalBetweenWalkPhases * (1 - GfRandom.Range(-m_varianceRate, m_varianceRate));
+            m_timeUntilNextWalkChange = m_intervalBetweenWalkPhases * (1 - Random.Range(-m_varianceRate, m_varianceRate));
 
             float movementDirMagnitude = m_movement.GetRunnerTemplate().MovementDirRaw.magnitude;
 
@@ -188,12 +188,12 @@ public class NpcBehaviour : NpcController
             else //if not idle, start walking
             {
                 Vector3 dirToSpawn = m_spawnPos;
-                GfTools.Minus3(ref m_spawnPos, m_transform.position);
+                GfcTools.Minus3(ref m_spawnPos, m_transform.position);
                 float distanceFromSpawn = dirToSpawn.magnitude;
 
                 if (distanceFromSpawn >= m_maxDstFromSpawnWalk)
                 {
-                    GfTools.Div3(ref dirToSpawn, distanceFromSpawn);
+                    GfcTools.Div3(ref dirToSpawn, distanceFromSpawn);
                     m_movement.GetRunnerTemplate().SetMovementDir(dirToSpawn);
                 }
                 else
@@ -205,7 +205,7 @@ public class NpcBehaviour : NpcController
 
         if (0 >= m_timeUntilNextEnemyCheck)
         {
-            m_timeUntilNextEnemyCheck = m_intervalBetweenEnemyChecks * (1 - GfRandom.Range(-m_varianceRate, m_varianceRate));
+            m_timeUntilNextEnemyCheck = m_intervalBetweenEnemyChecks * (1 - Random.Range(-m_varianceRate, m_varianceRate));
             //  Debug.Log("I am check for enemies around me");
             GameObject target = CheckForEnemiesAround();
             if (target != null) SetDestination(target.transform, true, true);

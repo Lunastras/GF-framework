@@ -38,6 +38,8 @@ public class PlayerController : NetworkBehaviour
     //misc
     private float m_scrollCooldown = 0.02f;
 
+    public bool CanTakeInputs = true;
+
     protected GfRunnerTemplate m_runner;
 
     private float m_timeUntillCanScroll = 0;
@@ -111,22 +113,22 @@ public class PlayerController : NetworkBehaviour
         if (movementDirMagnitude > 0.001f)
         {
             //float effectiveMagnitude = System.MathF.Min(1.0f, System.MathF.Max(input.x, input.y));
-            if (movementDirMagnitude > 1) GfTools.Div2(ref input, movementDirMagnitude);
+            if (movementDirMagnitude > 1) GfcTools.Div2(ref input, movementDirMagnitude);
 
             Vector3 cameraForward = m_playerCamera.forward;
-            GfTools.Mult3(ref cameraForward, input.y);
+            GfcTools.Mult3(ref cameraForward, input.y);
 
             Vector3 cameraRight = m_playerCamera.right;
-            GfTools.Mult3(ref cameraRight, input.x);
+            GfcTools.Mult3(ref cameraRight, input.x);
 
             if (!m_runner.CanFly)
             {
-                GfTools.Minus3(ref cameraForward, upVec * Vector3.Dot(upVec, cameraForward));
-                GfTools.Normalize(ref cameraForward);
+                GfcTools.Minus3(ref cameraForward, upVec * Vector3.Dot(upVec, cameraForward));
+                GfcTools.Normalize(ref cameraForward);
             }
 
             movDir = cameraForward;
-            GfTools.Add3(ref movDir, cameraRight);
+            GfcTools.Add3(ref movDir, cameraRight);
         }
 
         return movDir;
@@ -190,7 +192,7 @@ public class PlayerController : NetworkBehaviour
         bool auxFlagJump = false;
         Vector3 auxMovDir = Vector3.zero;
 
-        if (!GfLevelManager.IsPaused()) //get inputs
+        if (!GfManagerLevel.IsPaused() && CanTakeInputs) //get inputs
         {
             Vector3 upVec = m_movement.GetUpvecRotation();
             m_cameraController.Upvec = m_movement.GetUpvecRotation();

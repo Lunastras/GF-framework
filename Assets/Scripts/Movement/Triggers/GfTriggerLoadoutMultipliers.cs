@@ -15,7 +15,7 @@ public class GfTriggerLoadoutMultipliers : GfMovementTriggerable
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
         LoadoutManager loadoutManager;
-        if ((!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform)
+        if ((!m_onlyForPlayer || GfManagerLevel.GetPlayer() == movement.transform)
         && null != (loadoutManager = movement.GetComponent<LoadoutManager>()))
         {
             loadoutManager.SetMultiplier(m_multiplierType, m_multiplier);

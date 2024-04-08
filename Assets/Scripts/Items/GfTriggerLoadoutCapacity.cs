@@ -29,7 +29,7 @@ public class GfTriggerLoadoutCapacity : GfMovementTriggerable
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
         LoadoutManager loadoutManager;
-        if ((!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform)
+        if ((!m_onlyForPlayer || GfManagerLevel.GetPlayer() == movement.transform)
         && null != (loadoutManager = movement.GetComponent<LoadoutManager>()))
         {
             bool ignore = m_ignoreIfCapacityIsHigher && loadoutManager.GetWeaponCapacity() >= m_newCapacity;
@@ -38,7 +38,7 @@ public class GfTriggerLoadoutCapacity : GfMovementTriggerable
                 loadoutManager.SetWeaponCapacity(m_newCapacity, m_repeatWeapons, m_keepSameExp);
 
             if (m_destroyOnWeaponSet)
-                GfPooling.Destroy(gameObject);
+                GfcPooling.Destroy(gameObject);
 
         }
     }

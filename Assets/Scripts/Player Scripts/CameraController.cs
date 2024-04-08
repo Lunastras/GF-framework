@@ -130,14 +130,14 @@ public class CameraController : MonoBehaviour
     {
         UpdateRotation(0, false, false);
         Vector3 cameraForward = m_previousDesiredRot * Vector3.forward;
-        GfTools.RemoveAxis(ref cameraForward, Upvec);
-        GfTools.Normalize(ref cameraForward);
+        GfcTools.RemoveAxis(ref cameraForward, Upvec);
+        GfcTools.Normalize(ref cameraForward);
 
         Vector3 targetForward = m_mainTarget.forward;
-        GfTools.RemoveAxis(ref targetForward, Upvec);
-        GfTools.Normalize(ref targetForward);
+        GfcTools.RemoveAxis(ref targetForward, Upvec);
+        GfcTools.Normalize(ref targetForward);
 
-        float angle = GfTools.SignedAngleDegNorm(targetForward, cameraForward, Upvec);
+        float angle = GfcTools.SignedAngleDegNorm(targetForward, cameraForward, Upvec);
 
         m_yaw -= angle + yawOffset;
         m_pitch = pitchDegrees;
@@ -166,7 +166,7 @@ public class CameraController : MonoBehaviour
             if (instantUpdate)
                 m_transform.rotation = desiredRot;
             else
-                m_transform.rotation = GfTools.QuatSmoothDamp(m_transform.rotation, desiredRot, ref m_rotVel, m_rotationSmoothTime, deltaTime);
+                m_transform.rotation = GfcTools.QuatSmoothDamp(m_transform.rotation, desiredRot, ref m_rotVel, m_rotationSmoothTime, deltaTime);
 
         m_previousDesiredRot = desiredRot;
     }
@@ -187,14 +187,14 @@ public class CameraController : MonoBehaviour
         {
             m_timeUntilPhysCheck = m_physCheckInterval;
 
-            int layermask = GfPhysics.NonCharacterCollisions();
+            int layermask = GfcPhysics.NonCharacterCollisions();
             float currentDistance = (m_currentTargetPos - m_transform.position).magnitude;
             float previousDesiredDistance = m_desiredDst;
             m_desiredDst = m_dstFromtarget;
 
-            RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
+            RaycastHit[] raycastHits = GfcPhysics.GetRaycastHits();
             float minDistanceOffset = m_minDstFromtarget;
-            GfTools.Add3(ref desiredTargetPos, forward * -minDistanceOffset);
+            GfcTools.Add3(ref desiredTargetPos, forward * -minDistanceOffset);
 
             m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, m_collisionRadius, -forward, raycastHits, m_dstFromtarget, layermask, QueryTriggerInteraction.Ignore);
 

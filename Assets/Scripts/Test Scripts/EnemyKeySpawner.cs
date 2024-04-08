@@ -23,7 +23,7 @@ public class EnemyKeySpawner : NetworkBehaviour
         {
             if (m_keyReleased)
             {
-                GfPooling.Instantiate(m_enemy, transform.position, Quaternion.identity);
+                GfcPooling.Instantiate(m_enemy, transform.position, Quaternion.identity);
             }
         }
         else

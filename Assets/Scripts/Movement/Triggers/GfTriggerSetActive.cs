@@ -12,7 +12,7 @@ public class GfTriggerSetActive : GfMovementTriggerable
 
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
-        if (!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform)
+        if (!m_onlyForPlayer || GfManagerLevel.GetPlayer() == movement.transform)
         {
             for (int i = 0; i < m_gameObjects.Length; ++i)
             {

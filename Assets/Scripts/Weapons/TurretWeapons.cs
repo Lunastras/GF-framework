@@ -79,11 +79,11 @@ public class TurretWeapons : NetworkBehaviour
 
     private void Update()
     {
-        if (GfServerManager.HasAuthority || !HasNetworkObject)
+        if (GfManagerServer.HasAuthority || !HasNetworkObject)
         {
             if (DestoryWhenDone && !IsAlive())
             {
-                GfPooling.Destroy(m_objectToDestroy);
+                GfcPooling.Destroy(m_objectToDestroy);
             }
             else
             {
@@ -112,7 +112,7 @@ public class TurretWeapons : NetworkBehaviour
 
     public void Stop(bool killBullets, bool allPhases = true)
     {
-        if (GfServerManager.HasAuthority)
+        if (GfManagerServer.HasAuthority)
         {
             InternalStop(-1, killBullets, allPhases);
             StopClientRpc(-1, killBullets, allPhases);
@@ -125,7 +125,7 @@ public class TurretWeapons : NetworkBehaviour
 
     public void Stop(int phaseToStop, bool killBullets)
     {
-        if (GfServerManager.HasAuthority)
+        if (GfManagerServer.HasAuthority)
         {
             InternalStop(phaseToStop, killBullets, false);
             StopClientRpc(phaseToStop, killBullets, false);
@@ -316,7 +316,7 @@ public class TurretWeapons : NetworkBehaviour
 
     public void Play(bool forcePlay = false, int phase = -1, bool stopPlayingPhases = true)
     {
-        if (GfServerManager.HasAuthority)
+        if (GfManagerServer.HasAuthority)
         {
             InternalPlay(forcePlay, phase, stopPlayingPhases);
             PlayClientRpc(forcePlay, phase, stopPlayingPhases);

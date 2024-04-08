@@ -5,9 +5,16 @@ using System;
 
 public class CheckpointStatePlayer : CheckpointState
 {
+    public List<EquipCharmData> AquiredCharms;
+
+    public List<WeaponData> AquiredWeapons;
+
     public Vector3 Position = Vector3.zero;
+
     public Quaternion Rotation = Quaternion.identity;
+
     public Vector3 Scale = new Vector3(1, 1, 1);
+
     public float CurrentHp = 100;
 
     public Transform MovementParent = null;
@@ -15,6 +22,7 @@ public class CheckpointStatePlayer : CheckpointState
     public uint MovementParentPriority = 0;
 
     public Transform MovementParentSpherical = null;
+
     public uint MovementGravityPriority = 0;
 
     public Vector3 Velocity;

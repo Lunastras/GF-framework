@@ -13,7 +13,7 @@ public class GfParentingTrigger : GfMovementTriggerable
 
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
-        if (!m_parent.m_ignore && (!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform))
+        if (!m_parent.m_ignore && (!m_onlyForPlayer || GfManagerLevel.GetPlayer() == movement.transform))
         {
             movement.SetParentTransform(m_parent, m_parent.m_priority, m_parent.m_overridePriority);
         }

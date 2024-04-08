@@ -595,16 +595,16 @@ GameObject:
   m_Component:
   - component: {fileID: 148854930636548524}
   - component: {fileID: 148854930636548512}
-  - component: {fileID: 6390946529941703449}
+  - component: {fileID: 5290595944128658304}
+  - component: {fileID: 7947996244895237058}
+  - component: {fileID: 148854930636548514}
   - component: {fileID: -8909031113794034727}
   - component: {fileID: -2224145417773401838}
-  - component: {fileID: 148854930636548526}
-  - component: {fileID: 148854930636548514}
-  - component: {fileID: 5290595944128658304}
-  - component: {fileID: 148854930636548515}
-  - component: {fileID: 3072452865096101450}
-  - component: {fileID: 7947996244895237058}
   - component: {fileID: -1934781534553659541}
+  - component: {fileID: 3072452865096101450}
+  - component: {fileID: 148854930636548515}
+  - component: {fileID: 148854930636548526}
+  - component: {fileID: 6390946529941703449}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -654,7 +654,7 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6390946529941703449
+--- !u!114 &5290595944128658304
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -663,74 +663,42 @@ MonoBehaviour:
   m_GameObject: {fileID: 148854930636548520}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07d19a7513f65af46abe5a560ef1070a, type: 3}
+  m_Script: {fileID: 11500000, guid: 2117cb80054a9ac43a969a90dcfaf219, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_checkpointable: 1
-  m_maxHealth:
-    m_InternalValue: 1
-  m_characterType:
-    m_InternalValue: 0
-  m_threatLevel: 0
-  m_sendDamageRpc: 0
-  m_playerGun: {fileID: 0}
-  m_loadoutManager: {fileID: 0}
-  m_playerControler: {fileID: 0}
-  m_movement: {fileID: 0}
-  m_odamaManager: {fileID: 0}
-  m_audioSource: {fileID: 0}
-  m_damageSound:
-    Clip: {fileID: 8300000, guid: c6533f22fdb20a944997d8048cb96b6c, type: 3}
-    MixerType: 6
-    Volume: 0.388
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 1
-    MaxInstances: 12
-  m_damageDealtSound:
-    Clip: {fileID: 8300000, guid: 6cc7a5ddce873c645b714599b960c8c6, type: 3}
-    MixerType: 6
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 1
-    MaxInstances: 12
-  m_deathSound:
-    Clip: {fileID: 8300000, guid: b63b6d75342e5204c831294d284c52e1, type: 3}
-    MixerType: 6
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 0.85
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 1
-    MaxInstances: 12
-  m_itemPickUpSound:
-    Clip: {fileID: 8300000, guid: 9bfcd935f0dda04478cb828dc0389e3c, type: 3}
-    MixerType: 6
-    Volume: 0.5
-    VolumeVariance: 0
-    Pitch: 1
-    PitchVariance: 0
-    CoolDownTime: 0.08
-    Loop: 0
-    MinDistance: 1
-    MaxDistance: 500
-    SpatialBlend: 0
-    MaxInstances: 12
+  m_canTriggerHardCheckpoints: 1
+  m_movementGeneric: {fileID: 0}
+  m_statsCharacter: {fileID: 0}
+--- !u!114 &7947996244895237058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ca159a631006524d87e2d7a5dc2f542, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_enemy: {fileID: 4759944753111975130, guid: 6df6120ef64359346a9967a4589f3b71, type: 3}
+--- !u!114 &148854930636548514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d496035f4f73024bb556a30fa04c1bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_aimTransform: {fileID: 0}
+  m_statsCharacter: {fileID: 0}
+  m_distanceUpdateInterval: 0
+  m_distanceOffset: 0
+  m_maxFireDistance: 100
 --- !u!114 &-8909031113794034727
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -793,6 +761,64 @@ MonoBehaviour:
   m_maxWallRunDistance: 11
   m_wallrunJumpCooldownSeconds: 0.07
   m_dashVelocity: 15
+--- !u!114 &-1934781534553659541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &3072452865096101450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af59d74cc089e394dbc045809df15349, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_parentMovement: {fileID: 0}
+  m_statsCharacter: {fileID: 0}
+  m_weaponFiring: {fileID: 0}
+  m_hudManager: {fileID: 0}
+  m_rotationSpeedCoefOnFire: 20
+  m_bopCoefOnFire: 0
+  m_dstFromParentCoefOnFire: 0.7
+  m_rotationSpeed: 1.5
+  m_bopSpeed: 1
+  m_bopRange: 0.7
+  m_rotationSpeedSmoothTime: 0.2
+  m_bopValueSmoothTime: 0.2
+  m_positionOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &148854930636548515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148854930636548520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e274368ecf6b6a4bb0b70589a92119e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_checkpointManager: {fileID: 0}
+  m_respawnYCoord: -40
 --- !u!114 &148854930636548526
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -814,7 +840,8 @@ MonoBehaviour:
   m_fixedUpdatePhysics: 1
   m_timeBetweenPhysChecks: 0.1
   m_scrollCooldown: 0.05
---- !u!114 &148854930636548514
+  CanTakeInputs: 1
+--- !u!114 &6390946529941703449
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -823,98 +850,71 @@ MonoBehaviour:
   m_GameObject: {fileID: 148854930636548520}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d496035f4f73024bb556a30fa04c1bd, type: 3}
+  m_Script: {fileID: 11500000, guid: 07d19a7513f65af46abe5a560ef1070a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_aimTransform: {fileID: 0}
-  m_statsCharacter: {fileID: 0}
-  m_distanceUpdateInterval: 0
-  m_distanceOffset: 0
-  m_maxFireDistance: 100
---- !u!114 &5290595944128658304
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148854930636548520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2117cb80054a9ac43a969a90dcfaf219, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_canTriggerHardCheckpoints: 1
-  m_movementGeneric: {fileID: 0}
-  m_statsCharacter: {fileID: 0}
---- !u!114 &148854930636548515
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148854930636548520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e274368ecf6b6a4bb0b70589a92119e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_checkpointManager: {fileID: 0}
-  m_respawnYCoord: -40
---- !u!114 &3072452865096101450
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148854930636548520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af59d74cc089e394dbc045809df15349, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_parentMovement: {fileID: 0}
-  m_statsCharacter: {fileID: 0}
-  m_weaponFiring: {fileID: 0}
-  m_infiniteInventory: 1
-  m_hudManager: {fileID: 0}
-  m_rotationSpeedCoefOnFire: 20
-  m_bopCoefOnFire: 0
-  m_dstFromParentCoefOnFire: 0.7
-  m_rotationSpeed: 1.5
-  m_bopSpeed: 1
-  m_bopRange: 0.7
-  m_rotationSpeedSmoothTime: 0.2
-  m_bopValueSmoothTime: 0.2
-  m_positionOffset: {x: 0, y: 0, z: 0}
---- !u!114 &7947996244895237058
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148854930636548520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ca159a631006524d87e2d7a5dc2f542, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_enemy: {fileID: 4759944753111975130, guid: 6df6120ef64359346a9967a4589f3b71, type: 3}
---- !u!114 &-1934781534553659541
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 148854930636548520}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  m_checkpointable: 1
+  m_maxHealth: 100
+  m_characterType: 0
+  m_threatDetails:
+    Tier: 0
+    ThreatLevel: 0
+  m_sendDamageRpc: 0
+  m_playerGun: {fileID: 0}
+  m_loadoutManager: {fileID: 0}
+  m_playerControler: {fileID: 0}
+  m_movement: {fileID: 0}
+  m_odamaManager: {fileID: 0}
+  m_audioSource: {fileID: 0}
+  m_damageSound:
+    Clip: {fileID: 8300000, guid: c6533f22fdb20a944997d8048cb96b6c, type: 3}
+    MixerType: 6
+    Volume: 0.388
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 1
+    MaxInstances: 12
+  m_damageDealtSound:
+    Clip: {fileID: 8300000, guid: 6cc7a5ddce873c645b714599b960c8c6, type: 3}
+    MixerType: 6
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 1
+    MaxInstances: 12
+  m_deathSound:
+    Clip: {fileID: 8300000, guid: b63b6d75342e5204c831294d284c52e1, type: 3}
+    MixerType: 6
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 0.85
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 1
+    MaxInstances: 12
+  m_itemPickUpSound:
+    Clip: {fileID: 8300000, guid: 9bfcd935f0dda04478cb828dc0389e3c, type: 3}
+    MixerType: 6
+    Volume: 0.5
+    VolumeVariance: 0
+    Pitch: 1
+    PitchVariance: 0
+    CoolDownTime: 0.08
+    Loop: 0
+    MinDistance: 1
+    MaxDistance: 500
+    SpatialBlend: 0
+    MaxInstances: 12

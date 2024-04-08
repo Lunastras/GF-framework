@@ -15,7 +15,7 @@ public class GfTriggerLevelStart : GfMovementTriggerable
 
     public override void MgOnTrigger(GfMovementGeneric character)
     {
-        if (character.transform == GfLevelManager.GetPlayer())
-            GfLevelManager.StartLevel();
+        if (character.transform == GfManagerLevel.GetPlayer())
+            GfManagerLevel.StartLevel();
     }
 }

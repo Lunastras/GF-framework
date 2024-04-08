@@ -47,7 +47,7 @@ public class NpcController : MonoBehaviour
     private float m_timeUntilLosetarget = 0;
 
     //protected DestinationManager destinations;
-    protected Destination m_destination = new(null);
+    protected GfgDestination m_destination = new(null);
 
     //public bool canSeeTarget { get; private set; } = false;
 
@@ -136,7 +136,7 @@ public class NpcController : MonoBehaviour
         float deltaTime = Time.deltaTime;
         m_timeUntilNextStateUpdate -= deltaTime;
 
-        if (0 >= m_timeUntilNextStateUpdate && GfServerManager.HasAuthority)
+        if (0 >= m_timeUntilNextStateUpdate && GfManagerServer.HasAuthority)
         {
             float stateDelta = m_updateInterval - m_timeUntilNextStateUpdate;
             m_timeUntilNextStateUpdate = m_updateInterval * UnityEngine.Random.Range(0.9f, 1.1f);
@@ -148,7 +148,7 @@ public class NpcController : MonoBehaviour
 
     void LateUpdate()
     {
-        if (GfServerManager.HasAuthority)
+        if (GfManagerServer.HasAuthority)
             m_movement.LateUpdateBehaviour(Time.deltaTime);
     }
 
@@ -198,9 +198,9 @@ public class NpcController : MonoBehaviour
             m_timeUntilNextTargetCheck = m_targetCheckCooldown;
             Vector3 currentPosition = m_transform.position;
             Vector3 dirToTarget = target.position;
-            GfTools.Minus3(ref dirToTarget, currentPosition);
+            GfcTools.Minus3(ref dirToTarget, currentPosition);
             float distanceFromTarget = dirToTarget.magnitude;
-            if (distanceFromTarget >= 0.00001f) GfTools.Div3(ref dirToTarget, distanceFromTarget);
+            if (distanceFromTarget >= 0.00001f) GfcTools.Div3(ref dirToTarget, distanceFromTarget);
 
             auxCanSeeTarget = distanceFromTarget <= lineOfSightLength
                                 && (unlimitedFov || m_cosFieldOfView <= Vector3.Dot(m_transform.forward, dirToTarget));
@@ -209,8 +209,8 @@ public class NpcController : MonoBehaviour
             if (m_targetCheckCooldown >= 0 && auxCanSeeTarget)
             {
                 Ray ray = new(currentPosition, dirToTarget);
-                RaycastHit[] hits = GfPhysics.GetRaycastHits();
-                auxCanSeeTarget = 0 == Physics.RaycastNonAlloc(ray, hits, distanceFromTarget, GfPhysics.NonCharacterCollisions());
+                RaycastHit[] hits = GfcPhysics.GetRaycastHits();
+                auxCanSeeTarget = 0 == Physics.RaycastNonAlloc(ray, hits, distanceFromTarget, GfcPhysics.NonCharacterCollisions());
                 //check if the hit's distance is within x amount of units away from the destination
                 //I was thinking of using auxCanSeeTarget|=, but as far as I know that is the OR bitwise operator ' | ', not the boolean check operator ' || ' and I am not sure if it will actually skip the second bool, || skips the second bool if the first one is true. 
                 auxCanSeeTarget = auxCanSeeTarget || hits[0].distance >= (distanceFromTarget - 0.2f);
@@ -220,14 +220,14 @@ public class NpcController : MonoBehaviour
         return auxCanSeeTarget;
     }
 
-    protected virtual void MoveTowardsDestination(float deltaTime, Destination destination)
+    protected virtual void MoveTowardsDestination(float deltaTime, GfgDestination destination)
     {
         bool canSeeTarget = CheckCanSeeTarget(destination.TransformDest, m_lineOfSightLength, NpcState.ENGAGING_TARGET == m_currentState);
         if (canSeeTarget || 0 < m_timeUntilLosetarget) destination.UpdatePosition();
 
         Vector3 targetPosition = destination.LastKnownPosition();
         Vector3 dirToTarget = targetPosition;
-        GfTools.Minus3(ref dirToTarget, m_transform.position);
+        GfcTools.Minus3(ref dirToTarget, m_transform.position);
 
         if (canSeeTarget)
         {
@@ -319,14 +319,14 @@ public class NpcController : MonoBehaviour
             }
 
             movementDir = nodePosition;
-            GfTools.Minus3(ref movementDir, position);
+            GfcTools.Minus3(ref movementDir, position);
         }
         else
         {
             movementDir = dirToTarget;
         }
 
-        GfTools.Normalize(ref movementDir);
+        GfcTools.Normalize(ref movementDir);
         return movementDir;
     }
     protected virtual void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
@@ -414,7 +414,7 @@ public class NpcController : MonoBehaviour
     private bool CheckArrivedAtDestination()
     {
         Vector3 dirToTarget = m_destination.LastKnownPosition(); ;
-        GfTools.Minus3(ref dirToTarget, transform.position);
+        GfcTools.Minus3(ref dirToTarget, transform.position);
 
         return dirToTarget.sqrMagnitude < 1f;
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using MEC;
+using System.Numerics;
 
 public class CharacterSpawner : MonoBehaviour
 {
@@ -36,13 +37,15 @@ public class CharacterSpawner : MonoBehaviour
 
     protected int m_charactersSpawnedAlive = 0;
 
-    protected int m_currentPhase = -1;
+    protected int m_currentPhase = 0;
 
     protected int m_currentSpawnIndex = 0;
 
     protected uint m_currentThreatLevel = 0;
 
     protected int m_threadLevelCreatedByPhase = 0;
+
+    private Transform m_transform;
 
     public Action OnPlay = null;
     public Action OnStop = null;
@@ -59,8 +62,19 @@ public class CharacterSpawner : MonoBehaviour
 
     void Awake()
     {
+        m_transform = transform;
         CheckpointManager.OnHardCheckpoint += OnHardCheckpoint;
-        IsPlaying = m_playOnStart && GfServerManager.HasAuthority;
+        IsPlaying = m_playOnStart && GfManagerServer.HasAuthority;
+        m_timeUntilNextPhase = CharacterSpawnPhases[0].PhaseDelay;
+
+        for (int i = 0; i < CharacterSpawnPhases.Length; i++)
+        {
+            for (int j = 0; j < CharacterSpawnPhases[i].Spawns.Length; j++)
+            {
+                if (null == CharacterSpawnPhases[i].Spawns[j])
+                    Debug.LogError("The object to spawn set in '" + gameObject.name + "' at phase " + i + " and index " + j + " is null.");
+            }
+        }
     }
 
     protected virtual void OnHardCheckpoint()
@@ -76,15 +90,15 @@ public class CharacterSpawner : MonoBehaviour
         CheckpointManager.AddCheckpointState(m_checkpointState);
     }
 
-    public void SetCheckpointState(CheckpointStateCharacterSpawner state)
+    public void SetCheckpointState(CheckpointStateCharacterSpawner aState)
     {
-        m_checkpointState = state;
-        m_currentPhase = state.CurrentPhase;
-        IsPlaying = state.IsPlaying;
-        IsFinished = state.IsFinished;
-        m_charactersSpawnedAlive = state.CharactersSpawnedAlive;
-        m_currentSpawnIndex = state.CurrentSpawnIndex;
-        m_timeUntilNextPhase = state.TimeUntilPlayPhase;
+        m_checkpointState = aState;
+        m_currentPhase = aState.CurrentPhase;
+        IsPlaying = aState.IsPlaying;
+        IsFinished = aState.IsFinished;
+        m_charactersSpawnedAlive = aState.CharactersSpawnedAlive;
+        m_currentSpawnIndex = aState.CurrentSpawnIndex;
+        m_timeUntilNextPhase = aState.TimeUntilPlayPhase;
         m_coroutineIsRunning = false;
         m_interruptCoroutine = true;
 
@@ -108,34 +122,43 @@ public class CharacterSpawner : MonoBehaviour
         }
     }
 
-    protected IEnumerator<float> _SpawnCharacters(CharacterSpawnerPhase phase)
+    protected IEnumerator<float> _SpawnCharacters(CharacterSpawnerPhase aPhase)
     {
         m_interruptCoroutine = false;
         m_coroutineIsRunning = true;
 
-        for (; m_currentSpawnIndex < phase.Spawns.Length && !m_interruptCoroutine && IsPlaying; ++m_currentSpawnIndex)
+        for (; m_currentSpawnIndex < aPhase.Spawns.Length && !m_interruptCoroutine && IsPlaying; ++m_currentSpawnIndex)
         {
-            yield return Timing.WaitForSeconds(phase.Spawns[m_currentSpawnIndex].Delay);
+            yield return Timing.WaitForSeconds(aPhase.Spawns[m_currentSpawnIndex].Delay);
             if (!m_interruptCoroutine && IsPlaying)
             {
-                var spawnDetails = phase.Spawns[m_currentSpawnIndex];
-                GameObject obj = GfPooling.PoolInstantiate(spawnDetails.Object);
+                var spawnDetails = aPhase.Spawns[m_currentSpawnIndex];
+                GameObject obj = GfcPooling.PoolInstantiate(spawnDetails.Object);
                 StatsCharacter characterSpawned = obj.GetComponent<StatsCharacter>();
+
                 if (characterSpawned)
                 {
+
                     characterSpawned.OnKilled += OnCharacterKilled;
                     m_currentThreatLevel += (uint)characterSpawned.GetThreatDetails().ThreatLevel;
                     ++m_charactersSpawnedAlive;
-                    characterSpawned.SetPitch(GfAudioManager.GetPitchFromNote(spawnDetails.Octave, spawnDetails.PianoNote));
+                    characterSpawned.SetPitch(GfcManagerAudio.GetPitchFromNote(spawnDetails.Octave, spawnDetails.PianoNote));
                     if (m_overrideCharacterType)
                         characterSpawned.SetCharacterType(m_characterType);
-
 
                     // characterSpawned.SetTarget(m_target);
                     characterSpawned.SpawnBehaviour();
                 }
 
-                obj.transform.position = phase.Spawns[m_currentSpawnIndex].Position.position;
+                UnityEngine.Vector3 spawnPosition = aPhase.Spawns[m_currentSpawnIndex].Position ? aPhase.Spawns[m_currentSpawnIndex].Position.position : m_transform.position;
+
+                Rigidbody spawnedObjectRb = obj.GetComponent<Rigidbody>();
+                if (spawnedObjectRb)
+                    spawnedObjectRb.MovePosition(spawnPosition);
+                else
+                    obj.transform.position = spawnPosition;
+
+
             }
             else
             {
@@ -143,7 +166,7 @@ public class CharacterSpawner : MonoBehaviour
             }
         }
 
-        if (!m_interruptCoroutine && m_currentSpawnIndex == phase.Spawns.Length) //if we spawned all characters in the phase
+        if (!m_interruptCoroutine && m_currentSpawnIndex == aPhase.Spawns.Length) //if we spawned all characters in the phase
         {
             m_currentPhase++;
             m_currentSpawnIndex = 0;
@@ -163,10 +186,10 @@ public class CharacterSpawner : MonoBehaviour
         m_coroutineIsRunning = false;
     }
 
-    protected void OnCharacterKilled(StatsCharacter character, DamageData aDamageData)
+    protected void OnCharacterKilled(StatsCharacter aCharacter, DamageData aDamageData)
     {
         m_charactersSpawnedAlive--;
-        m_currentThreatLevel -= (uint)character.GetThreatDetails().ThreatLevel;
+        m_currentThreatLevel -= (uint)aCharacter.GetThreatDetails().ThreatLevel;
 
         if (m_charactersSpawnedAlive == 0 && IsFinished)
         {
@@ -176,7 +199,7 @@ public class CharacterSpawner : MonoBehaviour
 
     public void Play()
     {
-        if (GfServerManager.HasAuthority && !IsPlaying && (!IsFinished || m_canReplay) && CharacterSpawnPhases.Length > 0)
+        if (GfManagerServer.HasAuthority && !IsPlaying && (!IsFinished || m_canReplay) && CharacterSpawnPhases.Length > 0)
         {
             IsFinished = false;
 

@@ -8,9 +8,9 @@ using System;
 using MEC;
 using UnityEditor.ShaderGraph.Internal;
 
-public class GfServerManager : NetworkBehaviour
+public class GfManagerServer : NetworkBehaviour
 {
-    public static GfServerManager Instance { get; private set; } = null;
+    public static GfManagerServer Instance { get; private set; } = null;
 
     protected NetworkVariable<short> m_sceneBuildIndex = new(-1);
 
@@ -24,7 +24,7 @@ public class GfServerManager : NetworkBehaviour
 
     protected NetworkVariable<float> m_timeScale = new(1);
 
-    protected NetworkList<float> m_characterTimeScales = new();
+    protected NetworkList<float> m_characterTimeScales;
 
     protected NetworkVariable<float> m_targetFixedTimestep = new(0.02f);
 
@@ -40,7 +40,7 @@ public class GfServerManager : NetworkBehaviour
     {
         get
         {
-            return !NetworkManager.Singleton || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer || !GfGameManager.IsMultiplayer;
+            return !NetworkManager.Singleton || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer || !GfcManagerGame.IsMultiplayer;
         }
     }
 
@@ -79,7 +79,8 @@ public class GfServerManager : NetworkBehaviour
 
         if (HasAuthority)
         {
-            m_targetFixedTimestep.Value = GfGameManager.GetInitialFixedDeltaTime;
+            m_characterTimeScales = new();
+            m_targetFixedTimestep.Value = GfcManagerGame.GetInitialFixedDeltaTime;
         }
 
         DontDestroyOnLoad(gameObject);
@@ -89,7 +90,7 @@ public class GfServerManager : NetworkBehaviour
     {
         if (HasAuthority)
         {
-            for (int i = 0; i < HostilityManager.GetNumTypes(); ++i)
+            for (int i = 0; i < GfcManagerCharacters.GetNumTypes(); ++i)
                 m_characterTimeScales.Add(1);
 
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
@@ -132,7 +133,7 @@ public class GfServerManager : NetworkBehaviour
     {
         if (HasAuthority)
         {
-            LoadingScreenManager.LoadScene(sceneBuildIndex, loadingMode, GfGameManager.GameType);
+            LoadingScreenManager.LoadScene(sceneBuildIndex, loadingMode, GfcManagerGame.GameType);
             Instance.LevelChangeClientRpc(sceneBuildIndex, ServerLoadingMode.RECONNECT);
         }
     }
@@ -146,7 +147,7 @@ public class GfServerManager : NetworkBehaviour
     protected virtual void LevelChangeClientRpc(int sceneBuildIndex, ServerLoadingMode loadingMode)
     {
         if (!HasAuthority)
-            LoadingScreenManager.LoadScene(sceneBuildIndex, loadingMode, GfGameManager.GameType);
+            LoadingScreenManager.LoadScene(sceneBuildIndex, loadingMode, GfcManagerGame.GameType);
     }
 
     public override void OnDestroy()
@@ -235,7 +236,7 @@ public class GfServerManager : NetworkBehaviour
 
     public static void SetTimeScale(float timeScale, CharacterTypes characterType, float smoothingTime = 1)
     {
-        if (HasAuthority)
+        if (Instance && HasAuthority)
         {
             if (smoothingTime <= 0)
             {
@@ -286,7 +287,7 @@ public class GfServerManager : NetworkBehaviour
 
     public static float GetDeltaTimeCoef(CharacterTypes characterType)
     {
-        return Instance.m_characterTimeScales[(int)characterType] / Instance.m_timeScale.Value;
+        return Instance ? Instance.m_characterTimeScales[(int)characterType] / Instance.m_timeScale.Value : 1;
     }
 
     public static float GetTimeScale() { return Instance.m_timeScale.Value; }

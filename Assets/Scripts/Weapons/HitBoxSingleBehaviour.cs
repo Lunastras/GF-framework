@@ -28,7 +28,7 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
 
         if (0 >= timeUntilDisable && hitBoxValues.destroysObjectWhenDone)
         {
-            GfPooling.Destroy(gameObject);
+            GfcPooling.Destroy(gameObject);
         }
     }
 
@@ -36,14 +36,14 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
     {
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
         target.Damage(new(hitBoxValues.damage * damageMultiplier, target.transform.position, Vector3.zero, m_damageType, true, GetStatsCharacter().NetworkObjectId));
-        GfPooling.Destroy(gameObject);
+        GfcPooling.Destroy(gameObject);
 
         return true;
     }
 
     protected virtual void HitCollision(Collider other)
     {
-        GfPooling.Destroy(gameObject);
+        GfcPooling.Destroy(gameObject);
     }
 
     protected virtual void OnDestroyBehaviour(bool hitEnemy) { }
@@ -58,7 +58,7 @@ public class HitBoxSingleBehaviour : HitBoxGeneric
         if (collisionStats != null)
         {
             bool hitSelf = characterStats == collisionStats;
-            float damageMultiplier = HostilityManager.DamageMultiplier(characterStats, collisionStats);
+            float damageMultiplier = GfcManagerCharacters.DamageMultiplier(characterStats, collisionStats);
 
             //check if it can damage target
             if (!hitSelf || (hitSelf && hitBoxValues.canDamageSelf))

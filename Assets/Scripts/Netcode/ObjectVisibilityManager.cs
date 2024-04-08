@@ -14,7 +14,7 @@ public class ObjectVisibilityManager : MonoBehaviour
 
     private void Awake()
     {
-        if (!GfServerManager.HasAuthority)
+        if (!GfManagerServer.HasAuthority)
             Destroy(this);
         if (this != Instance)
             Destroy(Instance);
@@ -24,7 +24,7 @@ public class ObjectVisibilityManager : MonoBehaviour
 
     public static void AddExceptionObject(NetworkObject obj)
     {
-        if (GfServerManager.HasAuthority)
+        if (GfManagerServer.HasAuthority)
         {
             if (null == Instance.m_exceptionObjects) Instance.m_exceptionObjects = new(16);
             Instance.m_exceptionObjects.Add(obj);
@@ -44,7 +44,7 @@ public class ObjectVisibilityManager : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (GfServerManager.HasAuthority)
+        if (GfManagerServer.Instance && GfManagerServer.HasAuthority)
         {
             foreach (var client in NetworkManager.Singleton.ConnectedClients)
             {
@@ -53,7 +53,7 @@ public class ObjectVisibilityManager : MonoBehaviour
                 foreach (var networkObject in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
                 {
                     var clientTransform = client.Value.PlayerObject.transform;
-                    bool clientIsReady = GfServerManager.GetPlayerIsReady(client.Value);
+                    bool clientIsReady = GfManagerServer.GetPlayerIsReady(client.Value);
                     bool isVisible = clientIsReady && Vector3.Distance(clientTransform.position, networkObject.transform.position) < m_minimumDistance;
 
                     if ((null == m_exceptionObjects || !m_exceptionObjects.Contains(networkObject)) && networkObject.IsNetworkVisibleTo(client.Key) != isVisible)

@@ -49,7 +49,7 @@ public abstract class WeaponParticle : WeaponGeneric
         if ((DisableWhenDone || DestroyWhenDone) && !IsAlive())
         {
             if (DestroyWhenDone)
-                GfPooling.Destroy(gameObject);
+                GfcPooling.Destroy(gameObject);
             else
                 gameObject.SetActive(false);
         }

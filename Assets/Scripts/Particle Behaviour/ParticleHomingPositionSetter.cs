@@ -23,11 +23,11 @@ public class ParticleHomingPositionSetter : MonoBehaviour
     {
         if (m_HomeOnAllCharacters)
         {
-            m_particleHomingSystem.SetTargetPositions(HostilityManager.GetAllCharacterPositions());
+            m_particleHomingSystem.SetTargetPositions(GfcManagerCharacters.GetAllCharacterPositions());
         }
         else
         {
-            m_particleHomingSystem.SetTargetPositions(HostilityManager.GetCharacterPositions(m_characterTypeToHomeOn));
+            m_particleHomingSystem.SetTargetPositions(GfcManagerCharacters.GetCharacterPositions(m_characterTypeToHomeOn));
         }
     }
 }

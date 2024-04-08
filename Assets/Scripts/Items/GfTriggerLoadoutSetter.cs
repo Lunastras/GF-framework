@@ -14,7 +14,7 @@ public class GfTriggerLoadoutSetter : GfMovementTriggerable
     protected int m_weaponIndex = 0; //the index of the weapon in the loadout
 
     [SerializeField]
-    protected int m_weapon = 0; //the value of the weapon to be used
+    protected WeaponData m_weapon;
 
     [SerializeField]
     protected bool m_fillToCapacity = false; //Fill the loadout with the given weapon. Ignores m_weaponIndex
@@ -29,7 +29,7 @@ public class GfTriggerLoadoutSetter : GfMovementTriggerable
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
         LoadoutManager loadoutManager;
-        if ((!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform)
+        if ((!m_onlyForPlayer || GfManagerLevel.GetPlayer() == movement.transform)
         && null != (loadoutManager = movement.GetComponent<LoadoutManager>()))
         {
             if (m_fillToCapacity)
@@ -38,7 +38,7 @@ public class GfTriggerLoadoutSetter : GfMovementTriggerable
                 loadoutManager.SetLoadoutWeapon(m_loadoutIndex, m_weaponIndex, m_weapon, m_switchToLoadout);
 
             if (m_destroyOnWeaponSet)
-                GfPooling.Destroy(gameObject);
+                GfcPooling.Destroy(gameObject);
 
         }
     }

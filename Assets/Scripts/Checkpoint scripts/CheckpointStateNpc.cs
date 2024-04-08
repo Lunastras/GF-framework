@@ -10,7 +10,7 @@ public class CheckpointStateNpc : CheckpointStatePlayer
 
     public override void ExecuteCheckpointState()
     {
-        StatsNpc statsNpc = GfPooling.Instantiate(Prefab).GetComponent<StatsNpc>();
+        StatsNpc statsNpc = GfcPooling.Instantiate(Prefab).GetComponent<StatsNpc>();
         statsNpc.SetCheckpointState(this);
     }
 

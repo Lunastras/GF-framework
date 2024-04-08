@@ -7,7 +7,6 @@ public class CheckpointGameManager : CheckpointState
 
     public int EnemiesKilled = 0;
 
-
     public EnvironmentLightingColors EnvColors;
 
     public EnvironmentLightingColors DesiredColors;
@@ -22,6 +21,6 @@ public class CheckpointGameManager : CheckpointState
 
     public override void ExecuteCheckpointState()
     {
-        GfLevelManager.SetCheckpointState(this);
+        GfManagerLevel.SetCheckpointState(this);
     }
 }

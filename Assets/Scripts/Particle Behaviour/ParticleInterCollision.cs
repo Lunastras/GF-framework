@@ -18,7 +18,7 @@ using System.Threading;
 using Unity.Collections.LowLevel.Unsafe;
 using Mono.Cecil;
 
-public class ParticleInterCollision : JobChild
+public class ParticleInterCollision : GfcJobChild
 {
     [SerializeField]
     protected ParticleSystem m_particleSystem;
@@ -52,7 +52,7 @@ public class ParticleInterCollision : JobChild
 
     protected static int AllParticlesCount = 0;
 
-    protected static NativeList<ParticleCollisionSystemData> AllParticleSystems = new(16, Allocator.Persistent);
+    protected static NativeList<ParticleCollisionSystemData> AllParticleSystems;
 
     protected static NativeArray<ParticleCollisionCallbackData> ParticleCallbacks;
 
@@ -70,6 +70,9 @@ public class ParticleInterCollision : JobChild
 
     protected void Awake()
     {
+        if (!AllParticleSystems.IsCreated)
+            AllParticleSystems = new(16, Allocator.Persistent);
+
         if (null == m_particleSystem)
             m_particleSystem = GetComponent<ParticleSystem>();
     }
@@ -111,17 +114,12 @@ public class ParticleInterCollision : JobChild
             //uninitialize everything if there are no more systems
             if (countBrothers == 0)
             {
-                //UnityEngine.Debug.Log("trying to destroy everything ");
                 ProcedureOngoing = false;
                 if (AllParticles.IsCreated) AllParticles.Dispose();
                 if (ParticleCallbacks.IsCreated) ParticleCallbacks.Dispose();
                 if (AllParticleSystems.IsCreated) AllParticleSystems.Dispose();
             }
         }
-    }
-
-    protected void OnDestroy()
-    {
     }
 
     public override void OnOperationStart(float deltaTime, UpdateTypes updateType)
@@ -164,7 +162,7 @@ public class ParticleInterCollision : JobChild
                 CountParticles = particleCount,
                 BounceCoef = 1,
                 Layer = gameObject.layer,
-                LayerMask = GfPhysics.GetLayerMask(gameObject.layer),
+                LayerMask = GfcPhysics.GetLayerMask(gameObject.layer),
                 MinimumParticleDistanceSq = m_minimumParticleDistanceSq,
                 CallbackOnFirstCollision = m_callbackOnFirstCollision,
                 Radius = m_particleSystem.collision.radiusScale,
@@ -352,7 +350,7 @@ public class ParticleInterCollision : JobChild
             for (int i = 0; i < countBrothers; ++i)
             {
                 system = brotherSystems[i] as ParticleInterCollision;
-                if (GfPhysics.LayerIsInMask(system.gameObject.layer, layerMask) && system.LastBounds.IntersectRay(ray))
+                if (GfcPhysics.LayerIsInMask(system.gameObject.layer, layerMask) && system.LastBounds.IntersectRay(ray))
                 {
                     particleSystem = system.m_particleSystem;
                     countParticles = particleSystem.particleCount;
@@ -528,7 +526,7 @@ internal struct ParticleInterCollisionJob : IJobParallelFor
             otherBounds = AllParticleSystems[currentSystem].Bounds;
             hasEvent = selfEvent != ParticleCollisionEventType.NONE || (!ignoreOtherEvent && otherEvent != ParticleCollisionEventType.NONE);
 
-            if (GfPhysics.LayerIsInMask(otherLayer, layerMask) && (currentSystem != ownSystemIndex || collidesWithOwnParticles)
+            if (GfcPhysics.LayerIsInMask(otherLayer, layerMask) && (currentSystem != ownSystemIndex || collidesWithOwnParticles)
             && (callbackOnFirstCollision || hasEvent) && selfBounds.Intersects(otherBounds))
             {
                 otherRadius = AllParticleSystems[currentSystem].Radius;

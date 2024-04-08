@@ -27,14 +27,14 @@ public class ParticlePlayerCollectible : ParticleTrigger
 
     private void FixedUpdate()
     {
-        StatsCharacter statsPlayer = GfLevelManager.GetPlayerStats();
+        StatsCharacter statsPlayer = GfManagerLevel.GetPlayerStats();
         if (statsPlayer)
         {
-            if (m_particleHoming && GfGameManager.Instance && m_player != GfLevelManager.GetPlayer() && !statsPlayer.IsDead())
+            if (m_particleHoming && GfcManagerGame.Instance && m_player != GfManagerLevel.GetPlayer() && !statsPlayer.IsDead())
             {
                 if (m_player) m_particleSystem.trigger.RemoveCollider(m_player);
 
-                m_player = GfLevelManager.GetPlayer();
+                m_player = GfManagerLevel.GetPlayer();
                 m_particleHoming.AddTarget(m_player);
                 m_particleSystem.trigger.AddCollider(m_player);
             }
@@ -59,7 +59,7 @@ public class ParticlePlayerCollectible : ParticleTrigger
     {
         StatsPlayer playerStats = hitObject.GetComponent<StatsPlayer>();
 
-        if (playerStats && playerStats.transform == GfLevelManager.GetPlayer() && particle.remainingLifetime >= m_destroyTime)
+        if (playerStats && playerStats.transform == GfManagerLevel.GetPlayer() && particle.remainingLifetime >= m_destroyTime)
         {
             playerStats.AddPoints(m_type, m_numPoints);
             particle.remainingLifetime = m_destroyTime;

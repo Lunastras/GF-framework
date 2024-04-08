@@ -112,7 +112,7 @@ public class LoadingScreenManager : MonoBehaviour
         Debug.Log("Starting to load scene with build index " + sceneBuildIndex);
         Application.backgroundLoadingPriority = ThreadPriority.High;
         Cursor.visible = false;
-        ServerLoadingMode = loadingMode;
+        ServerLoadingMode = sceneBuildIndex == 0 ? ServerLoadingMode.SHUTDOWN : loadingMode;
         int originalSceneIndexLoading = SceneBuildIndexToLoad;
         SceneBuildIndexToLoad = sceneBuildIndex;
         GameTypeToLoad = gameType;
@@ -136,7 +136,7 @@ public class LoadingScreenManager : MonoBehaviour
     public static int GetSceneBuildIndexByName(string name)
     {
         int countScenes = SceneManager.sceneCountInBuildSettings;
-        int index = -1;
+        int index = 0; //return to main menu if there is no scene
         for (int i = 0; i < countScenes; ++i)
         {
             string scenePath = UnityEngine.SceneManagement.SceneUtility.GetScenePathByBuildIndex(i);
@@ -183,8 +183,8 @@ public class LoadingScreenManager : MonoBehaviour
         Instance.m_isLoading = true;
         Instance.m_loadingCanvasGroup.alpha = 1;
 
-        if (GfServerManager.HasInstance)
-            GfServerManager.SetPlayerIsReady(false);
+        if (GfManagerServer.HasInstance)
+            GfManagerServer.SetPlayerIsReady(false);
 
         FadeOut();
         yield return Timing.WaitForSeconds(FadeDuration);
@@ -196,7 +196,7 @@ public class LoadingScreenManager : MonoBehaviour
 
         if (stopGame)
         {
-            GfGameManager.ShutdownServer();
+            GfcManagerGame.ShutdownServer();
             while (NetworkManager.Singleton.ShutdownInProgress)
                 yield return Timing.WaitForSeconds(0.02f);//wait for scenes to be unloaded and for the server to shutdown
         }
@@ -212,9 +212,6 @@ public class LoadingScreenManager : MonoBehaviour
         loadingScreenScene.GetRootGameObjects(RootGameObjectsOnStart);
         SceneManager.SetActiveScene(loadingScreenScene);
 
-        if (mustHaveGame)
-            GfGameManager.SpawnGameAssets();
-
         float loadingProgress = 0f;
         int sceneToLoadIndex = SceneBuildIndexToLoad;
         Application.backgroundLoadingPriority = Instance.m_loadThreadPriority;
@@ -223,24 +220,23 @@ public class LoadingScreenManager : MonoBehaviour
 
         Instance.ShowLoadingVisuals();
 
-        // operation does not auto-activate scene, so it's stuck at 0.9
         while (operation.isDone == false)
         {
             yield return Timing.WaitForSeconds(0.02f);
             loadingProgress = operation.progress;
         }
 
-        Scene currentScene = SceneManager.GetSceneByBuildIndex(SceneBuildIndexToLoad);
+        Scene currentScene = SceneManager.GetSceneByBuildIndex(sceneToLoadIndex);
         SceneManager.SetActiveScene(currentScene);
 
         if (mustHaveGame)
         {
-            GfGameManager.StartGame(GameTypeToLoad);
-            while (!GfGameManager.GameInitialised || !(GfServerManager.HostReady || GfServerManager.HasAuthority))
+            GfcManagerGame.StartGame(GameTypeToLoad);
+            while (!GfcManagerGame.GameInitialised || !(GfManagerServer.HostReady || GfManagerServer.HasAuthority))
                 yield return Timing.WaitForSeconds(0.02f);
         }
 
-        if (GfServerManager.HasAuthority || true)
+        if (GfManagerServer.HasAuthority || true)
         {
             loadingScreenScene.GetRootGameObjects(RootGameObjects);
 
@@ -268,7 +264,7 @@ public class LoadingScreenManager : MonoBehaviour
         Instance.m_isLoading = false;
 
         if (mustHaveGame)
-            GfServerManager.SetPlayerIsReady(true);
+            GfManagerServer.SetPlayerIsReady(true);
 
         FadeOut();
         yield return Timing.WaitForSeconds(FadeDuration);

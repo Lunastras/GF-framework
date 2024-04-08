@@ -28,9 +28,9 @@ public class GfInSceneNetworkObject : NetworkBehaviour
         NetworkManager.Singleton.AddNetworkPrefab(gameObject);
         NetworkManager.Singleton.PrefabHandler.AddHandler(m_globalObjectIdHash, new GfInScenePrefabHandler(NetworkObject, m_globalObjectIdHash));
 
-        if (GfServerManager.HasAuthority)
+        if (GfManagerServer.HasAuthority)
         {
-            if (GfServerManager.HasInstance)
+            if (GfManagerServer.HasInstance)
             {
                 if (!NetworkObject.IsSpawned)
                     NetworkObject.Spawn();

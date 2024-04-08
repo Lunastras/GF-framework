@@ -63,7 +63,7 @@ public class AngleDegTestSpeed : MonoBehaviour
 
         for (int i = 0; i < NumLoops; ++i)
         {
-            GfTools.Add3(ref aux, upVec);
+            GfcTools.Add3(ref aux, upVec);
         }
 
         m_watch.Stop();

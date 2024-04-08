@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-
+using static GfcTools;
 public class GfMovementGeneric : MonoBehaviour
 {
     #region Variables
@@ -109,8 +109,8 @@ public class GfMovementGeneric : MonoBehaviour
     private readonly float DOWNPULL = 0.05F;
 
     protected const float OVERLAP_SKIN = 0.0f;
-    private const float MIN_DISPLACEMENT = 0.00000001F; // min squared length of a displacement vector required for a Move() to proceed.
-    private const float MIN_PUSHBACK_DEPTH = 0.000001F;
+    private const float MIN_DISPLACEMENT = 0.00001F; // min squared length of a displacement vector required for a Move() to proceed.
+    private const float MIN_PUSHBACK_DEPTH = 0.00001F;
 
     private float m_refUpVecSmoothRot;
 
@@ -202,7 +202,7 @@ public class GfMovementGeneric : MonoBehaviour
                 m_timeOfLastParentPosUpdate = currentTime;
                 m_parentLastPos = currentParentPos;
                 deltaMovement = m_parentPosMov;
-                GfTools.Add3(ref position, deltaMovement);
+                Add3(ref position, deltaMovement);
             }
 
             //Calculate the rotation according to the parent's rotation
@@ -213,19 +213,19 @@ public class GfMovementGeneric : MonoBehaviour
                 Vector3 vecFromParent = position - parentTransform.position;
                 Vector3 newVecFromParent = deltaQuaternion * vecFromParent;
                 m_parentRotMov = newVecFromParent;
-                GfTools.Minus3(ref m_parentRotMov, vecFromParent);
+                Minus3(ref m_parentRotMov, vecFromParent);
 
                 //apply the rotation to the character if it isn't moving
                 if (GetVelocity().sqrMagnitude < 0.001f)
                 {
-                    GfTools.RemoveOtherAxisFromRotation(ref deltaQuaternion, m_rotationUpVec);
+                    RemoveOtherAxisFromRotation(ref deltaQuaternion, m_rotationUpVec);
                     deltaRotation = deltaQuaternion;
                 }
 
                 m_parentDeltaTimeRot = (float)(currentTime - m_timeOfLastParentRotUpdate);
                 m_timeOfLastParentRotUpdate = currentTime;
                 m_parentLastRot = currentRot;
-                GfTools.Add3(ref deltaMovement, m_parentRotMov);
+                Add3(ref deltaMovement, m_parentRotMov);
             }
 
             //adjust the player's velocity to the parent's
@@ -238,8 +238,8 @@ public class GfMovementGeneric : MonoBehaviour
 
                 if (m_interpolateThisFrame)
                 {
-                    GfTools.Mult3(ref parentVelocity, m_lastPhysDeltaTime);
-                    GfTools.Minus3(ref parentVelocity, m_upVec * Vector3.Dot(m_upVec, parentVelocity)); //remove any vertical movement from parent velocity            
+                    Mult3(ref parentVelocity, m_lastPhysDeltaTime);
+                    Minus3(ref parentVelocity, m_upVec * Vector3.Dot(m_upVec, parentVelocity)); //remove any vertical movement from parent velocity            
                     ParentingVelocityAdjustVector(ref m_interpolationMovement, parentVelocity); //adjust interpolation 
                 }
             }
@@ -292,7 +292,7 @@ public class GfMovementGeneric : MonoBehaviour
             float correctionFactor = 1.0f - m_accumulatedTimefactor;
             m_accumulatedTimefactor = m_previousLerpAlpha = 0;
 
-            GfTools.Mult3(ref m_interpolationMovement, correctionFactor);
+            Mult3(ref m_interpolationMovement, correctionFactor);
             m_transform.position += m_interpolationMovement;
             m_transform.rotation = m_desiredRotation * m_externalRotation;
             m_interpolationRotation = m_externalRotation = IDENTITY_QUAT;
@@ -318,8 +318,8 @@ public class GfMovementGeneric : MonoBehaviour
         bool foundCollisions = false;
         if (!ignorePhysics)
         {
-            Collider[] colliderbuffer = GfPhysics.GetCollidersArray();
-            int layermask = GfPhysics.GetLayerMask(gameObject.layer);
+            Collider[] colliderbuffer = GfcPhysics.GetCollidersArray();
+            int layermask = GfcPhysics.GetLayerMask(gameObject.layer);
 
             if (validateCollisionArchetype)
             {
@@ -330,13 +330,13 @@ public class GfMovementGeneric : MonoBehaviour
             if (m_useSimpleCollision)
                 foundCollisions = UpdatePhysicsDiscrete(ref position, deltaTime, colliderbuffer, layermask);
             else
-                foundCollisions = UpdatePhysicsContinuous(ref position, deltaTime, colliderbuffer, GfPhysics.GetRaycastHits(), layermask);
+                foundCollisions = UpdatePhysicsContinuous(ref position, deltaTime, colliderbuffer, GfcPhysics.GetRaycastHits(), layermask);
 
             if (!m_isGrounded) PhysicsGroundCheck(ref position);
         }
         else
         {
-            GfTools.Add3(ref position, deltaTime * m_velocity);
+            Add3(ref position, deltaTime * m_velocity);
         }
 
         m_interpolationMovement = ZERO3;
@@ -346,8 +346,8 @@ public class GfMovementGeneric : MonoBehaviour
         /* TRACING SECTION END*/
         if (m_interpolateThisFrame)
         {
-            GfTools.Add3(ref m_interpolationMovement, position);
-            GfTools.Minus3(ref m_interpolationMovement, initialPos);
+            Add3(ref m_interpolationMovement, position);
+            Minus3(ref m_interpolationMovement, initialPos);
             m_transform.position = initialPos;
 
             m_desiredRotation = m_transform.rotation;
@@ -385,7 +385,7 @@ public class GfMovementGeneric : MonoBehaviour
                 m_currentGroundCollision.SetRaycastHit(hitInfo);
                 m_currentGroundCollision.isStair = false;
                 m_currentGroundCollision.selfPosition = position;
-                m_currentGroundCollision.selfUpVecAngle = GfTools.AngleDegNorm(m_upVec, hitInfo.normal);
+                m_currentGroundCollision.selfUpVecAngle = AngleDegNorm(m_upVec, hitInfo.normal);
                 m_currentGroundCollision.isGrounded = CheckGround(ref m_currentGroundCollision);
                 m_isGrounded |= m_currentGroundCollision.isGrounded;
 
@@ -418,7 +418,7 @@ public class GfMovementGeneric : MonoBehaviour
             Vector3 _trace = m_velocity * deltaTime * timefactor;
             float _tracelen = _trace.magnitude;
             if (MIN_DISPLACEMENT <= _tracelen)
-                GfTools.Add3(ref position, _trace);
+                Add3(ref position, _trace);
 
             m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, out numCollisions);
 
@@ -540,7 +540,7 @@ public class GfMovementGeneric : MonoBehaviour
             {
                 Vector3 traceDir = trace;
                 float _traceLenInv = 1.0f / tracelen;
-                GfTools.Mult3(ref traceDir, _traceLenInv);
+                Mult3(ref traceDir, _traceLenInv);
 
                 m_archetypeCollision.Trace(position, traceDir, tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, out numCollisions);/* prevent tunneling by using this skin length */
                 ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, ref position);
@@ -556,8 +556,8 @@ public class GfMovementGeneric : MonoBehaviour
                     float distanceFromHit = System.MathF.Max(closestHit.distance - TRACE_SKIN, 0F);
 
                     timefactor -= distanceFromHit * _traceLenInv;
-                    GfTools.Mult3(ref traceDir, distanceFromHit);
-                    GfTools.Add3(ref position, traceDir);
+                    Mult3(ref traceDir, distanceFromHit);
+                    Add3(ref position, traceDir);
 
                     collision.selfPosition = position;
 
@@ -572,7 +572,7 @@ public class GfMovementGeneric : MonoBehaviour
                 }
                 else /* Discovered noting along our linear path */
                 {
-                    GfTools.Add3(ref position, trace);
+                    Add3(ref position, trace);
                     break;
                 }
             }
@@ -591,8 +591,8 @@ public class GfMovementGeneric : MonoBehaviour
         if (m_parentSpherical.Value)
         {
             m_upVec = transform.position;
-            GfTools.Minus3(ref m_upVec, m_parentSpherical.Value.position);
-            GfTools.Normalize(ref m_upVec);
+            Minus3(ref m_upVec, m_parentSpherical.Value.position);
+            Normalize(ref m_upVec);
         }
 
         if (rotateOrientation && !m_upVec.Equals(m_rotationUpVec))
@@ -603,7 +603,7 @@ public class GfMovementGeneric : MonoBehaviour
             {
                 m_rotationSmoothProgress = Mathf.SmoothDamp(m_rotationSmoothProgress, 1, ref m_refUpVecSmoothRot, m_rotationSmoothSeconds, int.MaxValue, deltaTime);
                 Vector3 auxVec = Vector3.Lerp(m_initialUpVec, m_upVec, m_rotationSmoothProgress);
-                GfTools.Normalize(ref auxVec);
+                Normalize(ref auxVec);
                 upVecRotCorrection = Quaternion.FromToRotation(m_rotationUpVec, auxVec);
             }
             else
@@ -664,22 +664,22 @@ public class GfMovementGeneric : MonoBehaviour
             if (!collision.isGrounded && geometryClips == 1)
             {
                 Vector3 crease = Vector3.Cross(lastNormal, normal);
-                GfTools.Normalize(ref crease);
-                GfTools.Project(ref velocity, crease);
+                Normalize(ref crease);
+                Project(ref velocity, crease);
             }
             else
             {
                 if (collision.selfUpVecAngle > m_upperSlopeLimit)
-                    GfTools.Minus3(ref velocity, m_slopeNormal * System.MathF.Max(0, Vector3.Dot(m_slopeNormal, velocity)));
+                    Minus3(ref velocity, m_slopeNormal * System.MathF.Max(0, Vector3.Dot(m_slopeNormal, velocity)));
 
                 if (collision.isGrounded)
                 {
-                    GfTools.RemoveAxis(ref velocity, m_slopeNormal);
+                    RemoveAxis(ref velocity, m_slopeNormal);
                     m_slopeNormal = normal;
                 }
 
-                GfTools.Mult3(ref normal, Vector3.Dot(velocity, normal));
-                GfTools.Minus3(ref velocity, normal);
+                Mult3(ref normal, Vector3.Dot(velocity, normal));
+                Minus3(ref velocity, normal);
             }
         }
 
@@ -787,7 +787,7 @@ public class GfMovementGeneric : MonoBehaviour
     {
         return m_slopeLimit >= normalAngle
         //&& 1 == collision.selfNormal.sqrMagnitude
-        && GfPhysics.LayerIsInMask(collision.collider.gameObject.layer, GfPhysics.GroundLayers());
+        && GfcPhysics.LayerIsInMask(collision.collider.gameObject.layer, GfcPhysics.GroundLayers());
     }
 
     private static void ParentingVelocityAdjustVector(ref Vector3 selfVelocity, Vector3 parentVelocity)
@@ -845,10 +845,10 @@ public class GfMovementGeneric : MonoBehaviour
                 parentVelocity.x += m_upVec.x * verticalFallSpeed;
                 parentVelocity.y += m_upVec.y * verticalFallSpeed;
                 parentVelocity.z += m_upVec.z * verticalFallSpeed;
-                GfTools.Div3(ref parentVelocity, deltaTimeCoef);
+                Div3(ref parentVelocity, deltaTimeCoef);
 
                 //TODO, not sure why i put todo here, probably because this doesn't work well with time stop, but last Phys delta time should be affected by the time stop delta coef, so i dunno
-                if (m_interpolateThisFrame) GfTools.Add3(ref m_interpolationMovement, parentVelocity * m_lastPhysDeltaTime);
+                if (m_interpolateThisFrame) Add3(ref m_interpolationMovement, parentVelocity * m_lastPhysDeltaTime);
                 AddVelocity(parentVelocity);
             }
 
@@ -860,7 +860,7 @@ public class GfMovementGeneric : MonoBehaviour
 
     private void BeginUpVecSmoothing(Vector3 newUpVec)
     {
-        float angleDifference = GfTools.AngleDegNorm(m_rotationUpVec, newUpVec);
+        float angleDifference = AngleDegNorm(m_rotationUpVec, newUpVec);
         m_rotationSmoothSeconds = angleDifference * INV_180 * m_fullRotationSeconds;
         m_rotationSmoothProgress = 0;
         m_initialUpVec = m_rotationUpVec;
@@ -877,7 +877,7 @@ public class GfMovementGeneric : MonoBehaviour
             {
                 changedGravity = true;
                 Vector3 newUpVec = m_transform.position - parent.position;
-                GfTools.Normalize(ref newUpVec);
+                Normalize(ref newUpVec);
                 BeginUpVecSmoothing(newUpVec);
             }
         }
@@ -971,14 +971,14 @@ public class GfMovementGeneric : MonoBehaviour
         //remove vertical component if we can't fly
         if (!canFly)
         {
-            GfTools.RemoveAxisKeepMagnitude(ref movDir, m_upVec);
+            RemoveAxisKeepMagnitude(ref movDir, m_upVec);
 
             if (!m_slopeNormal.Equals(m_upVec))
             {
                 float mag = movDir.magnitude;
-                GfTools.StraightProjectOnPlane(ref movDir, m_slopeNormal, m_upVec);
+                StraightProjectOnPlane(ref movDir, m_slopeNormal, m_upVec);
                 movDir.Normalize();
-                GfTools.Mult3(ref movDir, mag);
+                Mult3(ref movDir, mag);
             }
         }
 
@@ -1035,7 +1035,7 @@ public class GfMovementGeneric : MonoBehaviour
 
     public virtual Vector3 AddVelocity(Vector3 force)
     {
-        GfTools.Add3(ref m_velocity, force);
+        Add3(ref m_velocity, force);
         return m_velocity;
     }
 
@@ -1088,7 +1088,7 @@ public unsafe struct MgCollisionStruct
         this.collider = collider;
         this.normal = selfNormal;
         this.point = point;
-        selfUpVecAngle = GfTools.AngleDegNorm(selfNormal, upVec) + 0.00001F;
+        selfUpVecAngle = AngleDegNorm(selfNormal, upVec) + 0.00001F;
         //Debug.Log("angle is " + selfUpVecAngle);
         isGrounded = false;
         this.archetypeCollision = archetypeCollision;
@@ -1135,7 +1135,7 @@ public unsafe struct MgCollisionStruct
         {
             calculatedPoint = true;
             point = archetypeCollision.InnerRayCast(-normal);
-            GfTools.Add3(ref point, selfPosition);
+            Add3(ref point, selfPosition);
         }
 
         return point;
@@ -1157,7 +1157,7 @@ public unsafe struct MgCollisionStruct
         if (!calculatedHitUpVecAngle)
         {
             calculatedHitUpVecAngle = true;
-            hitUpVecAngle = GfTools.AngleDegNorm(upVec, GetRaycastHit().normal);
+            hitUpVecAngle = AngleDegNorm(upVec, GetRaycastHit().normal);
         }
 
         return hitUpVecAngle;

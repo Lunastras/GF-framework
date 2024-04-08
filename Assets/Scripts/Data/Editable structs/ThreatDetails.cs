@@ -1,6 +1,6 @@
 [System.Serializable]
 public struct ThreatDetails
 {
-    public uint Tier;
+    public int Tier;
     public ThreatLevel ThreatLevel;
 }

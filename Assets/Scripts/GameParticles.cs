@@ -54,7 +54,7 @@ public class GameParticles : MonoBehaviour
             //emitParams.ResetVelocity();
 
             emissionRadius *= 0.5f;
-            GfTools.Add3(ref position, Random.onUnitSphere * emissionRadius);
+            GfcTools.Add3(ref position, Random.onUnitSphere * emissionRadius);
             emitParams.velocity = Random.insideUnitSphere.normalized * value;
             emitParams.position = position;
             emitParams.axisOfRotation = upVec;
@@ -95,7 +95,7 @@ public class GameParticles : MonoBehaviour
     {
         if (particleSystemPrefab)
         {
-            List<GameObject> emitters = GfPooling.GetPoolList(particleSystemPrefab);
+            List<GameObject> emitters = GfcPooling.GetPoolList(particleSystemPrefab);
             ParticleHoming spawnedEmitter = null;
 
             if (null != emitters)
@@ -119,9 +119,8 @@ public class GameParticles : MonoBehaviour
 
             if (null == spawnedEmitter)
             {
-                Debug.Log("I created my own system for this");
-                GfPooling.Pool(particleSystemPrefab, 1);
-                emitters = GfPooling.GetPoolList(particleSystemPrefab);
+                GfcPooling.Pool(particleSystemPrefab, 1);
+                emitters = GfcPooling.GetPoolList(particleSystemPrefab);
                 spawnedEmitter = emitters[emitters.Count - 1].GetComponent<ParticleHoming>();
                 spawnedEmitter.CopyGravity(gravityReference);
             }
@@ -170,7 +169,7 @@ public class GameParticles : MonoBehaviour
 
     protected static void ClearParticleSystems(GameObject ps, bool disable = true)
     {
-        List<GameObject> emitters = GfPooling.GetPoolList(ps);
+        List<GameObject> emitters = GfcPooling.GetPoolList(ps);
         int count = emitters.Count;
         for (int i = 0; i < count; ++i)
         {

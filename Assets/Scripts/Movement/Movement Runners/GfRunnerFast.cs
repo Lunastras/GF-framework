@@ -81,7 +81,7 @@ public class GfRunnerFast : GfRunnerTemplate
         if (!movDir.Equals(Vector3.zero))
         {
             Vector3 m_rotationUpVec = m_mov.GetUpvecRotation();
-            Vector3 desiredForwardVec = GfTools.RemoveAxis(movDir, m_rotationUpVec);
+            Vector3 desiredForwardVec = GfcTools.RemoveAxis(movDir, m_rotationUpVec);
             m_mov.SetRotation(Quaternion.LookRotation(desiredForwardVec, m_rotationUpVec));
         }
     }
@@ -92,12 +92,12 @@ public class GfRunnerFast : GfRunnerTemplate
         Vector3 slope = m_mov.GetSlope();
         Vector3 velocity = m_mov.GetVelocity();
 
-        GfTools.Mult3(ref movDir, m_effectiveSpeed);
+        GfcTools.Mult3(ref movDir, m_effectiveSpeed);
 
         if (!CanFly)
         {
-            GfTools.Mult3(ref slope, m_fallSpeed);
-            GfTools.Minus3(ref movDir, slope);
+            GfcTools.Mult3(ref slope, m_fallSpeed);
+            GfcTools.Minus3(ref movDir, slope);
         }
 
         velocity = Vector3.SmoothDamp(velocity
@@ -140,8 +140,8 @@ public class GfRunnerFast : GfRunnerTemplate
             //we use the rotation upVec because it feels more natural when the player's rotation is still changing
             Vector3 m_velocity = m_mov.GetVelocity();
             Vector3 upVecRotation = m_mov.GetUpvecRotation();
-            GfTools.RemoveAxis(ref m_velocity, upVecRotation);
-            GfTools.Add3(ref m_velocity, upVecRotation * m_jumpForce);
+            GfcTools.RemoveAxis(ref m_velocity, upVecRotation);
+            GfcTools.Add3(ref m_velocity, upVecRotation * m_jumpForce);
             m_mov.SetVelocity(m_velocity);
             m_mov.SetIsGrounded(false);
 

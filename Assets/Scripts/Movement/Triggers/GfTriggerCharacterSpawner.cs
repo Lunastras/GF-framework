@@ -10,10 +10,13 @@ public class GfTriggerCharacterSpawner : GfMovementTriggerable
     [SerializeField]
     protected CharacterSpawner[] m_characterSpawners = null;
 
-    void Start() {
-        if(m_characterSpawners.Length == 0) {
+    void Start()
+    {
+        if (m_characterSpawners.Length == 0)
+        {
             CharacterSpawner spawner = GetComponent<CharacterSpawner>();
-            if(spawner){
+            if (spawner)
+            {
                 m_characterSpawners = new CharacterSpawner[1];
                 m_characterSpawners[0] = spawner;
             }
@@ -22,7 +25,7 @@ public class GfTriggerCharacterSpawner : GfMovementTriggerable
 
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
-        if (!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform)
+        if (!m_onlyForPlayer || GfManagerLevel.GetPlayer() == movement.transform)
         {
             for (int i = 0; i < m_characterSpawners.Length; ++i)
             {

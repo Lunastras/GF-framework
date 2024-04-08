@@ -69,7 +69,7 @@ public class HitBoxBehaviour : HitBoxGeneric
         if (m_lifeSpan > 0.0f && m_destroysObjectWhenDone)
         {
             // Debug.Log("Called GF detroy");
-            GfPooling.Destroy(gameObject, m_lifeSpan);
+            GfcPooling.Destroy(gameObject, m_lifeSpan);
         }
 
         m_timeOfDisable = Time.time + m_lifeSpan;
@@ -91,7 +91,7 @@ public class HitBoxBehaviour : HitBoxGeneric
 
     protected virtual void HitCollision(Collider other)
     {
-        GfPooling.Destroy(gameObject);
+        GfcPooling.Destroy(gameObject);
     }
 
     protected virtual void OnDestroyBehaviour(bool hitEnemy) { }
@@ -108,7 +108,7 @@ public class HitBoxBehaviour : HitBoxGeneric
             bool willDamage = false;
 
             bool hitSelf = characterStats == collisionStats;
-            float damageMultiplier = HostilityManager.DamageMultiplier(characterStats, collisionStats);
+            float damageMultiplier = GfcManagerCharacters.DamageMultiplier(characterStats, collisionStats);
 
             //check if it can damage target
             if (!hitSelf || (hitSelf && m_canDamageSelf))
@@ -145,7 +145,7 @@ public class HitBoxBehaviour : HitBoxGeneric
 
                             if (m_destroysObjectWhenDone)
                             {
-                                GfPooling.Destroy(gameObject);
+                                GfcPooling.Destroy(gameObject);
                             }
                         }
                     }

@@ -8,7 +8,7 @@ using Unity.Mathematics;
 using System;
 using static Unity.Mathematics.math;
 
-public class ParticleHoming : JobChild
+public class ParticleHoming : GfcJobChild
 {
     [SerializeField]
     protected ParticleSystem m_particleSystem;
@@ -146,14 +146,14 @@ public class ParticleHoming : JobChild
                     int realCountTargets = 0;
                     for (int i = 0; i < countTargets; ++i)
                     {
-                        if (m_targetsOverride[i].gameObject.activeSelf)
+                        if (m_targetsOverride[i] && m_targetsOverride[i].gameObject.activeSelf)
                             realCountTargets++;
                     }
 
                     m_effectiveTargetPositions = new(realCountTargets, Allocator.TempJob);
-                    for (int i = 0; i < countTargets; ++i)
+                    for (int i = 0; i < realCountTargets; ++i)
                     {
-                        if (m_targetsOverride[i].gameObject.activeSelf)
+                        if (m_targetsOverride[i] && m_targetsOverride[i].gameObject.activeSelf)
                             m_effectiveTargetPositions[i] = m_targetsOverride[i].position;
                     }
 
@@ -204,6 +204,7 @@ public class ParticleHoming : JobChild
     protected void OnDestroy()
     {
         if (m_particleList.IsCreated) m_particleList.Dispose();
+        if (m_effectiveTargetPositions.IsCreated) m_effectiveTargetPositions.Dispose();
     }
 
     public List<Transform> GetTargetList()

@@ -55,8 +55,8 @@ public class HudManager : MonoBehaviour
         if (Instance) Destroy(Instance);
         Instance = this;
         //levelSlidersParent = new GameObject("Level Sliders").transform;
-        GfLevelManager.OnLevelStart += OnLevelStart;
-        GfLevelManager.OnLevelEnd += OnLevelEnd;
+        GfManagerLevel.OnLevelStart += OnLevelStart;
+        GfManagerLevel.OnLevelEnd += OnLevelEnd;
     }
 
     protected void OnLevelStart()
@@ -87,8 +87,8 @@ public class HudManager : MonoBehaviour
 
     void OnDestroy()
     {
-        GfLevelManager.OnLevelStart -= OnLevelStart;
-        GfLevelManager.OnLevelEnd -= OnLevelEnd;
+        GfManagerLevel.OnLevelStart -= OnLevelStart;
+        GfManagerLevel.OnLevelEnd -= OnLevelEnd;
     }
 
     /** Set the max number of sliders and stup the sliders
@@ -106,7 +106,7 @@ public class HudManager : MonoBehaviour
         while (0 < numSlidersNeeded) //add sliders
         {
             index = m_weaponSliders.Count;
-            m_weaponSliders.Add(GfPooling.PoolInstantiate(m_levelSliderPrefab).GetComponent<ExperienceSliderWeapon>());
+            m_weaponSliders.Add(GfcPooling.PoolInstantiate(m_levelSliderPrefab).GetComponent<ExperienceSliderWeapon>());
             RectTransform weaponTransform = m_weaponSliders[index].GetComponent<RectTransform>();
             weaponTransform.SetParent(m_levelSlidersParent);
 
@@ -119,7 +119,7 @@ public class HudManager : MonoBehaviour
         while (0 > numSlidersNeeded) //remove sliders
         {
             index = m_weaponSliders.Count - 1;
-            GfPooling.DestroyInsert(m_weaponSliders[index].gameObject);
+            GfcPooling.DestroyInsert(m_weaponSliders[index].gameObject);
             m_weaponSliders.RemoveAt(index);
             ++numSlidersNeeded;
         }

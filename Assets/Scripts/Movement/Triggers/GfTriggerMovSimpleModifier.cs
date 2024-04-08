@@ -11,7 +11,7 @@ public class GfTriggerMovSimpleModifier : GfTriggerMovGenericModifier
 
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
-        if (!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform)
+        if (!m_onlyForPlayer || GfManagerLevel.GetPlayer() == movement.transform)
         {
             if (!m_massMultiplier.m_ignore)
                 movement.GetRunnerTemplate().SetMassMultiplier(m_massMultiplier, m_massMultiplier.m_priority, m_massMultiplier.m_overridePriority);

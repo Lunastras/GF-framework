@@ -26,9 +26,9 @@ public class LevelEndScreen : MonoBehaviour
 
     public void EnableEndScreen()
     {
-        float levelTimer = GfLevelManager.GetSecondsSinceStart();
-        int killsCount = GfLevelManager.GetCurrentKillCount();
-        int resetsCount = GfLevelManager.GetResetsCount();
+        float levelTimer = GfManagerLevel.GetSecondsSinceStart();
+        int killsCount = GfManagerLevel.GetCurrentKillCount();
+        int resetsCount = GfManagerLevel.GetResetsCount();
 
         int levelMinutes = (int)(levelTimer / 60.0f);
         float levelSeconds = levelTimer - 60 * levelMinutes;

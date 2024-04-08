@@ -23,7 +23,7 @@ public class GameObjectSpawner
 
     protected virtual bool SpawnBehaviour()
     {
-        GameObject spawnedObject = GfPooling.Instantiate(spawnerStruct.gameObjectToSpawn);
+        GameObject spawnedObject = GfcPooling.Instantiate(spawnerStruct.gameObjectToSpawn);
         spawnedObject.transform.position = spawnTransform.position;
 
         return true;

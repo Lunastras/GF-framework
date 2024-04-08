@@ -109,11 +109,11 @@ public class GfRunnerSimple : GfRunnerTemplate
         //ROTATION SECTION
         if (movDir != Vector3.zero)
         {
-            Vector3 desiredForwardVec = GfTools.RemoveAxis(movDir, m_rotationUpVec);
-            Vector3 forwardVec = GfTools.RemoveAxis(transform.forward, m_rotationUpVec);
+            Vector3 desiredForwardVec = GfcTools.RemoveAxis(movDir, m_rotationUpVec);
+            Vector3 forwardVec = GfcTools.RemoveAxis(transform.forward, m_rotationUpVec);
 
             float turnAmount = m_turnSpeed * deltaTime;
-            float angleDistance = -GfTools.SignedAngleDeg(desiredForwardVec, forwardVec, m_rotationUpVec); //angle between the current and desired rotation
+            float angleDistance = -GfcTools.SignedAngleDeg(desiredForwardVec, forwardVec, m_rotationUpVec); //angle between the current and desired rotation
             float degreesMovement = Min(System.MathF.Abs(angleDistance), turnAmount);
 
             if (degreesMovement > 0.05f)
@@ -130,7 +130,7 @@ public class GfRunnerSimple : GfRunnerTemplate
         Vector3 velocity = m_mov.GetVelocity();
 
         float movDirMagnitude = movDir.magnitude;
-        if (movDirMagnitude > 0.000001f) GfTools.Div3(ref movDir, movDirMagnitude); //normalise
+        if (movDirMagnitude > 0.000001f) GfcTools.Div3(ref movDir, movDirMagnitude); //normalise
 
         float verticalFallSpeed = Vector3.Dot(slope, velocity);
         float fallMagn = 0, fallMaxDiff = -verticalFallSpeed - m_maxFallSpeed; //todo
@@ -155,7 +155,7 @@ public class GfRunnerSimple : GfRunnerTemplate
         if (currentSpeed > 0.000001F)
         {
             Vector3 velDir = effectiveVelocity;
-            GfTools.Div3(ref velDir, currentSpeed);
+            GfcTools.Div3(ref velDir, currentSpeed);
             dotMovementVelDir = Vector3.Dot(movDir, velDir);
         }
 
@@ -170,23 +170,23 @@ public class GfRunnerSimple : GfRunnerTemplate
         deacceleration.y -= movDir.y * minAux;
         deacceleration.z -= movDir.z * minAux;
 
-        if (desiredSpeed > speedInDesiredDir) GfTools.RemoveAxis(ref deacceleration, movDir);
+        if (desiredSpeed > speedInDesiredDir) GfcTools.RemoveAxis(ref deacceleration, movDir);
 
         float unwantedSpeed = deacceleration.magnitude;
-        if (unwantedSpeed > 0.000001F) GfTools.Div3(ref deacceleration, unwantedSpeed);
+        if (unwantedSpeed > 0.000001F) GfcTools.Div3(ref deacceleration, unwantedSpeed);
 
         float accMagn = Min(Max(0, desiredSpeed - speedInDesiredDir), deltaTime * m_effectiveAcceleration);
         float deaccMagn = Min(unwantedSpeed, m_effectiveDeacceleration * deltaTime);
 
         //GfTools.Mult3(ref movDir, accMagn);
-        GfTools.Mult3(ref deacceleration, deaccMagn);
-        GfTools.Mult3(ref slope, fallMagn);
+        GfcTools.Mult3(ref deacceleration, deaccMagn);
+        GfcTools.Mult3(ref slope, fallMagn);
 
-        GfTools.Mult3(ref movDir, accMagn); //acceleration
+        GfcTools.Mult3(ref movDir, accMagn); //acceleration
 
-        GfTools.Add3(ref velocity, movDir); //add acceleration
-        GfTools.Minus3(ref velocity, deacceleration);//add deacceleration
-        GfTools.Minus3(ref velocity, slope); //add vertical speed change  
+        GfcTools.Add3(ref velocity, movDir); //add acceleration
+        GfcTools.Minus3(ref velocity, deacceleration);//add deacceleration
+        GfcTools.Minus3(ref velocity, slope); //add vertical speed change  
 
         m_mov.SetVelocity(velocity);
     }
@@ -224,8 +224,8 @@ public class GfRunnerSimple : GfRunnerTemplate
             //we use the rotation upVec because it feels more natural when the player's rotation is still changing
             Vector3 m_velocity = m_mov.GetVelocity();
             Vector3 upVecRotation = m_mov.GetUpvecRotation();
-            GfTools.RemoveAxis(ref m_velocity, upVecRotation);
-            GfTools.Add3(ref m_velocity, upVecRotation * m_jumpForce);
+            GfcTools.RemoveAxis(ref m_velocity, upVecRotation);
+            GfcTools.Add3(ref m_velocity, upVecRotation * m_jumpForce);
             m_mov.SetVelocity(m_velocity);
             m_mov.SetIsGrounded(false);
 

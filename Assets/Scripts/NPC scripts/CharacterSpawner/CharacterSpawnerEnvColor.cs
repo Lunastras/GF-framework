@@ -29,11 +29,11 @@ public class CharacterSpawnerEnvColor : MonoBehaviour
 
     protected void OnPlay()
     {
-        GfLevelManager.SetEnvironmentColors(m_EnvironmentColors);
+        GfManagerLevel.SetEnvironmentColors(m_EnvironmentColors);
     }
 
     protected void OnCharactersKilled()
     {
-        GfLevelManager.ReturnToDefaultEnvironmentColors();
+        GfManagerLevel.ReturnToDefaultEnvironmentColors();
     }
 }

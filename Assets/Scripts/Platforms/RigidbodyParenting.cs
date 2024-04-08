@@ -58,7 +58,7 @@ public class RigidbodyParenting : MonoBehaviour
             {
                 Vector3 parentPosMov = currentParentPos - m_parentLastPos;
                 m_parentLastPos = parentPosition;
-                GfTools.Add3(ref selfPosition, parentPosMov);
+                GfcTools.Add3(ref selfPosition, parentPosMov);
             }
 
             //Calculate the rotation according to the parent's rotation
@@ -68,13 +68,13 @@ public class RigidbodyParenting : MonoBehaviour
             {
                 Quaternion deltaQuaternion = currentRot * Quaternion.Inverse(m_parentLastRot);
                 Vector3 vecFromParent = selfPosition;
-                GfTools.Minus3(ref vecFromParent, parentPosition);
+                GfcTools.Minus3(ref vecFromParent, parentPosition);
 
                 Vector3 newVecFromParent = deltaQuaternion * vecFromParent;
                 Vector3 parentRotMov = newVecFromParent - vecFromParent;
 
                 m_parentLastRot = currentRot;
-                GfTools.Add3(ref selfPosition, parentRotMov);
+                GfcTools.Add3(ref selfPosition, parentRotMov);
                 if (!IgnoresRotation) m_rb.MoveRotation(deltaQuaternion * m_transform.rotation);
             }
 

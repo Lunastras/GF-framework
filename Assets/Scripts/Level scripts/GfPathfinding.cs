@@ -169,14 +169,14 @@ namespace GfPathFindingNamespace
     , new(-1, -1, -1)
     };
 
-        public void SetNodePathData(NodePathSaveData data)
+        public void SetNodePathData(NodePathSaveData aNodeData)
         {
             if (m_pathNodes.IsCreated) m_pathNodes.Dispose();
-            m_gridSize = data.gridSize;
-            m_gridLength = data.gridLength;
-            m_startPoint = data.startPoint;
-            m_scale = data.scale;
-            var pathNodeArray = data.pathNodeArray;
+            m_gridSize = aNodeData.gridSize;
+            m_gridLength = aNodeData.gridLength;
+            m_startPoint = aNodeData.startPoint;
+            m_scale = aNodeData.scale;
+            var pathNodeArray = aNodeData.pathNodeArray;
             Debug.Log("The nodepath length is: " + m_gridLength);
             m_pathNodes = new(pathNodeArray, Allocator.Persistent);
 
@@ -254,7 +254,7 @@ namespace GfPathFindingNamespace
         public void GenerateNodePath()
         {
             NodePathSaveData data = GenerateNodePathData();
-            GfLevelManager.SetNodePathData(this, data);
+            GfManagerLevel.SetNodePathData(this, data);
             SetNodePathData(data);
             Start();
         }
@@ -302,7 +302,7 @@ namespace GfPathFindingNamespace
         }
 #endif //UNITY_EDITOR
 
-        public bool GetPathfindingJob(float3 start, float3 end, NativeList<float3> path, out JobHandle handle)
+        public bool GetPathfindingJob(float3 aStart, float3 aEnd, NativeList<float3> someNodesPath, out JobHandle aHandle)
         {
             bool hasJob = false;
             if (m_pathNodes.IsCreated && m_pathNodes.Length > 0)
@@ -311,8 +311,8 @@ namespace GfPathFindingNamespace
 
                 FindPathJob pathJob = new FindPathJob
                 {
-                    startPoint = start,
-                    endPoint = end,
+                    startPoint = aStart,
+                    endPoint = aEnd,
                     gridSize = m_gridSize,
                     pathNodeArray = m_pathNodes.AsReadOnly(),
                     neighboursOffsetArray = NeighboursOffsetArray.AsReadOnly(),
@@ -320,16 +320,16 @@ namespace GfPathFindingNamespace
                     gridLength = m_gridLength,
                     invDistanceBetweenNodes = m_invDistanceBetweenNodes,
                     boundsStart = m_startPoint,
-                    path = path,
+                    path = someNodesPath,
                     scale = m_scale
 
                 };
 
-                handle = pathJob.Schedule();
+                aHandle = pathJob.Schedule();
             }
             else
             {
-                handle = default;
+                aHandle = default;
             }
 
             return hasJob;
@@ -471,21 +471,21 @@ namespace GfPathFindingNamespace
                 openList.Dispose();
             }
 
-            private NativeList<float3> CalculatePath(PathNodeData endNodeData, PathNode endNode, NativeArray<PathNodeData> nodesData)
+            private NativeList<float3> CalculatePath(PathNodeData aEndNodeData, PathNode aEndNode, NativeArray<PathNodeData> someNodesData)
             {
-                if (endNodeData.cameFromNodeIndex != -1) //found path
+                if (aEndNodeData.cameFromNodeIndex != -1) //found path
                 {
-                    while (endNodeData.cameFromNodeIndex != -1)
+                    while (aEndNodeData.cameFromNodeIndex != -1)
                     {
-                        PathNode pathNode = pathNodeArray[endNodeData.cameFromNodeIndex];
-                        PathNodeData pathNodeData = nodesData[endNodeData.cameFromNodeIndex];
+                        PathNode pathNode = pathNodeArray[aEndNodeData.cameFromNodeIndex];
+                        PathNodeData pathNodeData = someNodesData[aEndNodeData.cameFromNodeIndex];
 
-                        path.Add(endNode.position);
-                        endNode = pathNode;
-                        endNodeData = pathNodeData;
+                        path.Add(aEndNode.position);
+                        aEndNode = pathNode;
+                        aEndNodeData = pathNodeData;
                     }
 
-                    path.Add(endNode.position); //add first node
+                    path.Add(aEndNode.position); //add first node
                 }
 
                 return path;
@@ -547,17 +547,17 @@ namespace GfPathFindingNamespace
                 return currentIndex;
             }
 
-            private int GetLowestFNodeIndex(NativeList<int> openList, NativeArray<PathNodeData> nodeDatas)
+            private int GetLowestFNodeIndex(NativeList<int> someOpenListNodes, NativeArray<PathNodeData> someNodeData)
             {
-                int lowestFCostIndex = openList[0];
-                float lowestFCost = nodeDatas[lowestFCostIndex].fCost;
-                for (int i = 1; i < openList.Length; ++i)
+                int lowestFCostIndex = someOpenListNodes[0];
+                float lowestFCost = someNodeData[lowestFCostIndex].fCost;
+                for (int i = 1; i < someOpenListNodes.Length; ++i)
                 {
-                    PathNodeData testPathNode = nodeDatas[openList[i]];
+                    PathNodeData testPathNode = someNodeData[someOpenListNodes[i]];
                     if (testPathNode.fCost < lowestFCost)
                     {
                         lowestFCost = testPathNode.fCost;
-                        lowestFCostIndex = openList[i];
+                        lowestFCostIndex = someOpenListNodes[i];
                     }
                 }
 
@@ -632,12 +632,12 @@ namespace GfPathFindingNamespace
 
         public struct PathNodeData
         {
-            public PathNodeData(float gCost = float.MaxValue, float fCost = 0, int cameFromNodeIndex = -1, int openListIndex = -1)
+            public PathNodeData(float aGCost = float.MaxValue, float aFCost = 0, int aOriginNodeIndex = -1, int aOpenListIndex = -1)
             {
-                this.gCost = gCost;
-                this.fCost = fCost;
-                this.cameFromNodeIndex = cameFromNodeIndex;
-                this.openListIndex = openListIndex;
+                this.gCost = aGCost;
+                this.fCost = aFCost;
+                this.cameFromNodeIndex = aOriginNodeIndex;
+                this.openListIndex = aOpenListIndex;
                 inClosedList = false;
                 initialised = false;
             }
@@ -653,7 +653,4 @@ namespace GfPathFindingNamespace
             public bool initialised;
         }
     }
-
-
-
 }

@@ -93,8 +93,8 @@ public class ChargeMeterBehaviour : MonoBehaviour
 
                 m_wasShowingMeterLastFrame = showChargeMeter;
 
-                Vector2 screenPosPlayer = GfLevelManager.GetPlayerPositionOnScreen();
-                GfTools.Add2(ref screenPosPlayer, m_chargePositionOffset);
+                Vector2 screenPosPlayer = GfManagerLevel.GetPlayerPositionOnScreen();
+                GfcTools.Add2(ref screenPosPlayer, m_chargePositionOffset);
                 float deltaTime = Time.deltaTime * StatsPlayer.LocalPlayer.GetDeltaTimeCoef();
                 m_currentPosition = Vector2.SmoothDamp(m_currentPosition, screenPosPlayer, ref m_positionSmoothRef, m_positionSmoothTime, int.MaxValue, deltaTime);
 

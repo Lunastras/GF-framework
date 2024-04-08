@@ -84,10 +84,10 @@ public class GfSpriteAnimator3D : MonoBehaviour
             Vector3 upVec = null != cameraController ? cameraController.Upvec : m_defaultCameraUpvec;
             Vector3 mainCameraForward = cameraController.transform.forward;
             Vector3 transForward = m_objectTransform.forward;
-            GfTools.RemoveAxis(ref mainCameraForward, upVec);
-            GfTools.RemoveAxis(ref transForward, upVec);
+            GfcTools.RemoveAxis(ref mainCameraForward, upVec);
+            GfcTools.RemoveAxis(ref transForward, upVec);
 
-            float angleToCamera = -GfTools.SignedAngleDeg(mainCameraForward, transForward, upVec);
+            float angleToCamera = -GfcTools.SignedAngleDeg(mainCameraForward, transForward, upVec);
             if (angleToCamera < 0) angleToCamera += 360;
 
             angleToCamera += degreesBetweenSteps / 2 + m_currentState.rotationOffsetDegrees;

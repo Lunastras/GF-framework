@@ -8,10 +8,10 @@ public class ParticleSingleHit : WeaponParticle
     [SerializeField]
     private bool m_canDamageSelf = false;
     [SerializeField]
-    private GfSound m_damageSound = null;
+    private GfcSound m_damageSound = null;
 
     [SerializeField]
-    private GfSound m_collisionSound = null;
+    private GfcSound m_collisionSound = null;
 
     public static List<ParticleCollisionEvent> m_collisionEvents;
 
@@ -39,7 +39,7 @@ public class ParticleSingleHit : WeaponParticle
             if (collisionStats != null)
             {
                 bool hitSelf = selfStats == collisionStats;
-                float damageMultiplier = HostilityManager.DamageMultiplier(selfStats, collisionStats);
+                float damageMultiplier = GfcManagerCharacters.DamageMultiplier(selfStats, collisionStats);
 
                 //check if it can damage target
                 if (!hitSelf || (hitSelf && m_canDamageSelf))
@@ -74,7 +74,7 @@ public class ParticleSingleHit : WeaponParticle
     {
         //  Debug.Log("GONNA DAMAJE IT " + target.name);
         // Debug.Log("I AM HIT, DESTROY BULLET NOW");
-        GfAudioManager.PlayAudio(m_damageSound, collisionEvent.intersection);
+        GfcManagerAudio.PlayAudio(m_damageSound, collisionEvent.intersection);
         target.Damage(new(m_damage * damageMultiplier, collisionEvent.intersection, collisionEvent.normal, m_damageType, true, self.NetworkObjectId, m_loadoutIndex, m_loadoutWeaponIndex));
 
         return true;
@@ -88,7 +88,7 @@ public class ParticleSingleHit : WeaponParticle
 
     protected virtual void HitCollision(ParticleCollisionEvent collisionEvent, StatsCharacter self, GameObject other)
     {
-        GfAudioManager.PlayAudio(m_collisionSound, collisionEvent.intersection);
+        GfcManagerAudio.PlayAudio(m_collisionSound, collisionEvent.intersection);
         GameParticles.PlayParticleDust(collisionEvent.intersection, collisionEvent.normal);
     }
 

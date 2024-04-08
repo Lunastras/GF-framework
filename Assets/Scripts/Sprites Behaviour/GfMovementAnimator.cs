@@ -30,7 +30,7 @@ public class GfMovementAnimator : MonoBehaviour
     void LateUpdate()
     {
         Vector3 velocity = m_movement.GetVelocity();
-        GfTools.RemoveAxis(ref velocity, m_movement.GetUpvecRotation());
+        GfcTools.RemoveAxis(ref velocity, m_movement.GetUpvecRotation());
         float speed = System.MathF.Sqrt(velocity.sqrMagnitude);
 
         if (speed > 0.01f || true) //running

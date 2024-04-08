@@ -14,14 +14,14 @@ public class ParticleTriggerDamageManager : MonoBehaviour
         if (Instance) Destroy(Instance);
         Instance = this;
         ParticleWeapons.Clear();
-        HostilityManager.OnCharacterAdded += AddCharacter;
-        HostilityManager.OnCharacterRemoved += RemoveCharacter;
+        GfcManagerCharacters.OnCharacterAdded += AddCharacter;
+        GfcManagerCharacters.OnCharacterRemoved += RemoveCharacter;
     }
 
     protected void OnDestroy()
     {
-        HostilityManager.OnCharacterAdded -= AddCharacter;
-        HostilityManager.OnCharacterRemoved -= RemoveCharacter;
+        GfcManagerCharacters.OnCharacterAdded -= AddCharacter;
+        GfcManagerCharacters.OnCharacterRemoved -= RemoveCharacter;
         Instance = null;
 
 
@@ -52,8 +52,8 @@ public class ParticleTriggerDamageManager : MonoBehaviour
     {
         int indexToRemove = characterToRemove.GetCharacterIndex(CharacterIndexType.CHARACTERS_ALL_LIST);
         int numParticleWeapons = ParticleWeapons.Count;
-        int lastIndex = HostilityManager.GetAllCharactersCount() - 1;
-        StatsCharacter lastCharacter = HostilityManager.GetAllCharacters()[lastIndex];
+        int lastIndex = GfcManagerCharacters.GetAllCharactersCount() - 1;
+        StatsCharacter lastCharacter = GfcManagerCharacters.GetAllCharacters()[lastIndex];
 
         ParticleSystem ps;
         for (int i = 0; i < numParticleWeapons; ++i)
@@ -81,7 +81,7 @@ public class ParticleTriggerDamageManager : MonoBehaviour
         while (0 <= --countColliders) //remove previous colliders
             ps.trigger.RemoveCollider(countColliders);
 
-        var characters = HostilityManager.GetAllCharacters();
+        var characters = GfcManagerCharacters.GetAllCharacters();
         countColliders = characters.Count;
 
         for (int i = 0; i < countColliders; ++i)

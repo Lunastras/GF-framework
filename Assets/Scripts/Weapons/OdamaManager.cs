@@ -51,7 +51,7 @@ public class OdamaManager : LoadoutManager
 
     protected Transform m_transform = null;
 
-    protected override void InternalAwake()
+    protected void Awake()
     {
         m_currentRotationSpeed = m_rotationSpeed;
         m_transform = transform;
@@ -127,8 +127,8 @@ public class OdamaManager : LoadoutManager
                 height = System.MathF.Sin((m_currentBopValue.Value + angleOffset) * 2F) * heightCoef;
 
                 dirFromPlayer = m_parentMovement.GetCurrentRotation() * RIGHT3;
-                GfTools.Mult3(ref dirFromPlayer, odama.GetDesiredDst());
-                GfTools.Add3(ref dirFromPlayer, height * upVec);
+                GfcTools.Mult3(ref dirFromPlayer, odama.GetDesiredDst());
+                GfcTools.Add3(ref dirFromPlayer, height * upVec);
                 dirFromPlayer = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, upVec) * dirFromPlayer;
 
                 odama.UpdateMovement(deltaTime, dirFromPlayer, transform.position, dstCoef, m_parentMovement);

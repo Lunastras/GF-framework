@@ -28,6 +28,6 @@ public class NpcSpawnBehaviour : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (!m_audioSource.isPlaying) GfPooling.DestroyInsert(gameObject);
+        if (!m_audioSource.isPlaying) GfcPooling.DestroyInsert(gameObject);
     }
 }

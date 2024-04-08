@@ -8,7 +8,7 @@ using Unity.Mathematics;
 using System;
 using static Unity.Mathematics.math;
 
-public class ParticleEraser : JobChild
+public class ParticleEraser : GfcJobChild
 {
     [SerializeField]
     protected ParticleSystem m_particleSystem;

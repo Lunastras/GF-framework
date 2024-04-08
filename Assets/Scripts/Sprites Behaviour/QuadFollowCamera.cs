@@ -40,10 +40,10 @@ public class QuadFollowCamera : MonoBehaviour
                 if (m_transformCharacter) upVec = m_transformCharacter.up;
 
                 Vector3 dirFromCamera = m_transform.position;
-                GfTools.Minus3(ref dirFromCamera, cameraTransform.position);
-                GfTools.Normalize(ref dirFromCamera);
+                GfcTools.Minus3(ref dirFromCamera, cameraTransform.position);
+                GfcTools.Normalize(ref dirFromCamera);
 
-                float angle = GfTools.AngleDegNorm(upVec, dirFromCamera);
+                float angle = GfcTools.AngleDegNorm(upVec, dirFromCamera);
                 float auxAngle = 90f + m_xFollowFactor * (angle - 90f);
 
                 m_transform.rotation = Quaternion.LookRotation(dirFromCamera, upVec) * Quaternion.AngleAxis(auxAngle - angle, RIGHT3);

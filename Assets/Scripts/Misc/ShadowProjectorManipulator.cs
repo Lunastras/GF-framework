@@ -99,8 +99,8 @@ public class ShadowProjectorManipulator : MonoBehaviour
             Vector3 topPos = m_transform.position, forward = m_transform.forward;
             Ray ray = new Ray(topPos, forward);
 
-            RaycastHit[] hits = GfPhysics.GetRaycastHits();
-            int traceCount = Physics.RaycastNonAlloc(ray, hits, m_maxProjectionDistance, GfPhysics.NonCharacterCollisions(), QueryTriggerInteraction.Ignore);
+            RaycastHit[] hits = GfcPhysics.GetRaycastHits();
+            int traceCount = Physics.RaycastNonAlloc(ray, hits, m_maxProjectionDistance, GfcPhysics.NonCharacterCollisions(), QueryTriggerInteraction.Ignore);
             ActorTraceFilter(ref traceCount, out int closestIndex, hits);
 
             RaycastHit hitInfo = default;
@@ -118,7 +118,7 @@ public class ShadowProjectorManipulator : MonoBehaviour
             if (m_parentMovement)
             {
                 forward = m_parentMovement.UpVecEstimated();
-                GfTools.Mult3(ref forward, -1);
+                GfcTools.Mult3(ref forward, -1);
             }
             else
                 forward = m_transform.forward;

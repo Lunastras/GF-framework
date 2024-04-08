@@ -21,7 +21,7 @@ public class GfTriggerRevertToSoftCheckpoint : GfMovementTriggerable
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
         CheckpointManager checkpointManager = movement.GetComponent<CheckpointManager>();
-        if ((!m_onlyForPlayer || GfLevelManager.GetPlayer() == movement.transform)
+        if ((!m_onlyForPlayer || GfManagerLevel.GetPlayer() == movement.transform)
             && checkpointManager && (checkpointManager.HasCheckpointRegistered(m_triggerCheckpoint) || null == m_triggerCheckpoint))
             checkpointManager.ResetToSoftCheckpoint(Damage, CanKillOnRevert);
     }

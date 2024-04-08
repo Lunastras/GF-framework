@@ -80,10 +80,10 @@ public class OdamaBehaviour : MonoBehaviour
             m_timeUntilPhysCheck = m_physCheckInterval;
 
             Vector3 dirNormalised = dirFromPlayer;
-            GfTools.Normalize(ref dirNormalised);
+            GfcTools.Normalize(ref dirNormalised);
 
-            int layermask = GfPhysics.NonCharacterCollisions();
-            RaycastHit[] raycastHits = GfPhysics.GetRaycastHits();
+            int layermask = GfcPhysics.NonCharacterCollisions();
+            RaycastHit[] raycastHits = GfcPhysics.GetRaycastHits();
 
             m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(parentPosition, m_collisionRadius, dirNormalised, raycastHits, m_desiredTargetDst, layermask, QueryTriggerInteraction.Ignore);
 

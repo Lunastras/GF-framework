@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
 
-public class GfPathFindingNpcScheduler : JobChild
+public class GfPathFindingNpcScheduler : GfcJobChild
 {
     NpcController m_npcController;
 

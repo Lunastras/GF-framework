@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Collections;
+using System;
+using Sabresaurus.SabreCSG;
+using UnityEditor.Localization.Plugins.XLIFF.V12;
+
+using static GfcTools;
 
 public class StatsPlayer : StatsCharacter
 {
@@ -33,92 +39,139 @@ public class StatsPlayer : StatsCharacter
     private Transform m_transform = null;
 
     [SerializeField]
-    protected GfSound m_damageSound = null;
+    protected GfcSound m_damageSound = null;
 
     [SerializeField]
-    protected GfSound m_damageDealtSound = null;
+    protected GfcSound m_damageDealtSound = null;
 
     [SerializeField]
-    protected GfSound m_deathSound = null;
+    protected GfcSound m_deathSound = null;
     [SerializeField]
-    private GfSound m_itemPickUpSound = null;
+    private GfcSound m_itemPickUpSound = null;
 
     private HealthUIBehaviour m_healthUI;
 
     protected CheckpointStatePlayer m_checkpointState = null;
 
+    protected bool m_initialisedStatsPlayer = false;
+
     public static StatsPlayer LocalPlayer { get; protected set; } = null;
+
+    protected List<EquipCharmData> m_aquiredCharms;
+
+    protected List<WeaponData> m_aquiredWeapons;
 
     new protected void Start()
     {
-        base.Start();
-        m_transform = transform;
-
-        var objPickUp = GfAudioManager.GetAudioObject(m_transform);
-        var objDamageDealt = GfAudioManager.GetAudioObject(m_transform);
-        var objDamageReceived = GfAudioManager.GetAudioObject(m_transform);
-
-        m_audioObjectPickUp = objPickUp.GetAudioSource();
-        m_audioObjectDamageDealt = objDamageDealt.GetAudioSource();
-        m_audioObjectDamageReceived = objDamageReceived.GetAudioSource();
-
-        if (HasAuthority)
-            m_currentHealth.Value = GetMaxHealthEffective();
-
-        if (null == m_playerGun)
-            m_playerGun = FindObjectOfType<FiringWeapons>();
-
-        if (null == m_loadoutManager)
-            m_loadoutManager = GetComponent<LoadoutManager>();
-
-        if (null == m_playerControler)
-            m_playerControler = GetComponent<PlayerController>();
-
-        if (null == m_audioSource)
+        if (!m_initialisedStatsPlayer)
         {
-            m_audioSource = GetComponent<AudioSource>();
+            base.Start();
+            m_transform = transform;
+
+            var objPickUp = GfcManagerAudio.GetAudioObject(m_transform);
+            var objDamageDealt = GfcManagerAudio.GetAudioObject(m_transform);
+            var objDamageReceived = GfcManagerAudio.GetAudioObject(m_transform);
+
+            m_audioObjectPickUp = objPickUp.GetAudioSource();
+            m_audioObjectDamageDealt = objDamageDealt.GetAudioSource();
+            m_audioObjectDamageReceived = objDamageReceived.GetAudioSource();
+
+            if (HasAuthority)
+                m_currentHealth.Value = GetMaxHealthEffective();
+
+            if (null == m_playerGun)
+                m_playerGun = FindObjectOfType<FiringWeapons>();
+
+            if (null == m_loadoutManager)
+                m_loadoutManager = GetComponent<LoadoutManager>();
+
+            if (null == m_playerControler)
+                m_playerControler = GetComponent<PlayerController>();
+
             if (null == m_audioSource)
             {
-                m_audioSource = gameObject.AddComponent<AudioSource>();
+                m_audioSource = GetComponent<AudioSource>();
+                if (null == m_audioSource)
+                {
+                    m_audioSource = gameObject.AddComponent<AudioSource>();
+                }
             }
-        }
 
-        m_damageSound.LoadAudioClip();
-        m_damageDealtSound.LoadAudioClip();
-        m_deathSound.LoadAudioClip();
-        m_itemPickUpSound.LoadAudioClip();
-        m_damageDealtSound.LoadAudioClip();
+            m_damageSound.LoadAudioClip();
+            m_damageDealtSound.LoadAudioClip();
+            m_deathSound.LoadAudioClip();
+            m_itemPickUpSound.LoadAudioClip();
+            m_damageDealtSound.LoadAudioClip();
 
-        if (null == m_odamaManager) m_odamaManager = GetComponent<OdamaManager>();
-        if (null == m_movement) m_movement = GetComponent<GfMovementGeneric>();
+            if (null == m_odamaManager) m_odamaManager = GetComponent<OdamaManager>();
+            if (null == m_movement) m_movement = GetComponent<GfMovementGeneric>();
 
-        if (IsOwner)
-        {
-            m_healthUI = GfLevelManager.GetHudManager().GetHealthUI();
-
-            if (m_healthUI)
+            if (IsOwner)
             {
-                m_healthUI.SetMaxHealth(m_maxHealth);
-                m_healthUI.SetHealthPoints(m_currentHealth.Value);
+                m_healthUI = GfManagerLevel.GetHudManager().GetHealthUI();
+
+                if (m_healthUI)
+                {
+                    m_healthUI.SetMaxHealth(m_maxHealth);
+                    m_healthUI.SetHealthPoints(m_currentHealth.Value);
+                }
+
+                GfManagerLevel.SetPlayer(this);
+                LocalPlayer = this;
+            }
+            else
+            {
+                Debug.Log(" oh, I am not the owner");
             }
 
-            GfLevelManager.SetPlayer(this);
-            LocalPlayer = this;
+            if (IsOwner)
+                OwnPlayer = this;
+
+            m_initialised = true;
+            GfcManagerCharacters.AddCharacter(this);
+            GfManagerLevel.OnLevelEnd += OnLevelEnd;
+            m_initialisedStatsPlayer = true;
         }
-
-        if (IsOwner)
-            OwnPlayer = this;
-
-        m_initialised = true;
-        HostilityManager.AddCharacter(this);
-        GfLevelManager.OnLevelEnd += OnLevelEnd;
-
     }
 
     protected void OnLevelEnd()
     {
-        m_playerControler.enabled = false;
-        m_loadoutManager.enabled = false;
+        m_playerControler.CanTakeInputs = false;
+        //m_loadoutManager.enabled = false;
+
+        PlayerSaveData saveData = GfcManagerSaveData.GetActivePlayerSaveData();
+
+        NativeArray<Pair<float, CharmAquireInfo>> charmAquireInfos = default;
+        NativeArray<WeaponAquireInfo> weaponAquireInfos = default;
+
+        float totalCharmPointsAquired = 0;
+        if (m_aquiredCharms != null && m_aquiredCharms.Count > 0)
+        {
+            int countCharms = m_aquiredCharms.Count;
+            charmAquireInfos = new(countCharms, Allocator.Temp);
+            for (int i = 0; i < countCharms; ++i)
+            {
+                float charmPointsAquired = saveData.AddCharm(m_aquiredCharms[i], out CharmAquireInfo aquireInfo);
+                charmAquireInfos[i] = new(charmPointsAquired, aquireInfo);
+                totalCharmPointsAquired += charmPointsAquired;
+            }
+        }
+
+        if (m_aquiredWeapons != null && m_aquiredWeapons.Count > 0)
+        {
+            int countWeapons = m_aquiredWeapons.Count;
+            weaponAquireInfos = new(countWeapons, Allocator.Temp);
+            for (int i = 0; i < countWeapons; ++i)
+            {
+                saveData.AddWeapon(m_aquiredWeapons[i], out WeaponAquireInfo aquireInfo);
+                weaponAquireInfos[i] = aquireInfo;
+            }
+        }
+
+        if (charmAquireInfos.IsCreated) charmAquireInfos.Dispose();
+        if (weaponAquireInfos.IsCreated) weaponAquireInfos.Dispose();
+
+        GfcManagerSaveData.SaveGame();
     }
 
     protected override void InternalDamage(DamageData aDamageData, bool isServerCall)
@@ -130,12 +183,12 @@ public class StatsPlayer : StatsCharacter
             StatsCharacter enemy = null;
             if (aDamageData.HasEnemyNetworkId)
             {
-                enemy = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
+                enemy = GfcManagerGame.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
                 if (enemy)
                 {
                     DamageSource damageSource = enemy.GetWeaponDamageSource(aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
                     if (damageSource) damageSource.OnDamageDealt(damage, this, isServerCall);
-                    enemy.OnDamageDealt(damage, NetworkObjectId, aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex, isServerCall);
+                    enemy.OnDamageDealt(aDamageData, isServerCall);
                 }
             }
 
@@ -166,7 +219,7 @@ public class StatsPlayer : StatsCharacter
     {
         base.Deinit();
         CheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;
-        GfLevelManager.OnLevelEnd -= OnLevelEnd;
+        GfManagerLevel.OnLevelEnd -= OnLevelEnd;
     }
 
     protected override void Init()
@@ -175,12 +228,12 @@ public class StatsPlayer : StatsCharacter
         CheckpointManager.OnHardCheckpoint += OnHardCheckpoint;
     }
 
-    public override DamageSource GetWeaponDamageSource(int weaponLoadoutIndex, int weaponIndex)
+    public override DamageSource GetWeaponDamageSource(int aWeaponLoadoutIndex, int aWeaponIndex)
     {
         DamageSource ret = null;
-        if (m_loadoutManager && weaponLoadoutIndex > -1 && weaponIndex > -1 && weaponLoadoutIndex == m_loadoutManager.GetCurrentLoadoutIndex())
+        if (m_loadoutManager && aWeaponLoadoutIndex > -1 && aWeaponIndex > -1 && aWeaponLoadoutIndex == m_loadoutManager.GetCurrentLoadoutIndex())
         {
-            ret = m_loadoutManager.GetWeapons()[weaponIndex];
+            ret = m_loadoutManager.GetWeapons()[aWeaponIndex];
         }
 
         return ret;
@@ -190,35 +243,61 @@ public class StatsPlayer : StatsCharacter
     {
         if (aIsServerCall)
         {
-            StatsCharacter killerStats = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
+            StatsCharacter killerStats = GfcManagerGame.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
             //killerStats.Getwea
             if (killerStats)
             {
                 DamageSource damageSource = killerStats.GetWeaponDamageSource(aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
                 if (damageSource) damageSource.OnCharacterKilled(this, aIsServerCall);
-                killerStats.OnCharacterKilled(NetworkObjectId, aDamageData.WeaponLoadoutIndex, aDamageData.WeaponIndex);
+                killerStats.OnCharacterKilled(aDamageData, aIsServerCall);
             }
-
 
             m_isDead = true;
             Vector3 currentPos = m_transform.position;
             GameParticles.PlayDeathDust(currentPos);
-            GfAudioManager.PlayAudio(m_deathSound, m_transform.position);
+            GfcManagerAudio.PlayAudio(m_deathSound, m_transform.position);
             OnKilled?.Invoke(this, aDamageData);
             OnKilled = null;
             gameObject.SetActive(false);
 
             if (IsOwner)
-                GfLevelManager.PlayerDied();
+                GfManagerLevel.PlayerDied();
         }
     }
 
-    public override void SetCheckpointState(CheckpointState state)
+    public void AddCharm(EquipCharmData aCharmmDdata)
+    {
+        if (m_aquiredCharms == null) m_aquiredCharms = new(4);
+        m_aquiredCharms.Add(aCharmmDdata);
+    }
+
+    public void AddWeapon(WeaponData aWeaponData)
+    {
+        if (m_aquiredWeapons == null) m_aquiredWeapons = new(4);
+        m_aquiredWeapons.Add(aWeaponData);
+    }
+
+    public void SetPlayerRuntimeGameData(PlayerRuntimeGameData aPlayerRuntimeGameData)
+    {
+        Start();
+        int countWeapons = aPlayerRuntimeGameData.EquippedWeapons != null ? aPlayerRuntimeGameData.EquippedWeapons.Count : 0;
+        m_loadoutManager.ClearLoadouts();
+
+        for (int i = 0; i < countWeapons; ++i)
+        {
+            m_loadoutManager.SetLoadoutWeapon(i, 0, aPlayerRuntimeGameData.EquippedWeapons[i].WeaponData, false);
+        }
+
+        m_loadoutManager.SetWeaponCapacity(30);
+    }
+
+    public override void SetCheckpointState(CheckpointState aCheckpointState)
     {
         if (gameObject)
         {
             gameObject.SetActive(true);
-            CheckpointStatePlayer checkpointState = state as CheckpointStatePlayer;
+            CheckpointStatePlayer checkpointState = aCheckpointState as CheckpointStatePlayer;
+
             Start();
             m_movement.ReturnToDefaultValues();
             transform.position = checkpointState.Position;
@@ -230,6 +309,18 @@ public class StatsPlayer : StatsCharacter
             m_checkpointState = checkpointState;
             //m_movement.d();
             transform.rotation = checkpointState.Rotation;
+
+            int countWeapons = Count(checkpointState.AquiredWeapons);
+            m_aquiredWeapons?.Clear();
+
+            for (int i = 0; i < countWeapons; ++i)
+                AddWeapon(checkpointState.AquiredWeapons[i]);
+
+            int countCharms = checkpointState.AquiredCharms != null ? checkpointState.AquiredCharms.Count : 0;
+            m_aquiredCharms?.Clear();
+
+            for (int i = 0; i < countCharms; ++i)
+                AddCharm(checkpointState.AquiredCharms[i]);
 
             m_movement.SetParentTransform(checkpointState.MovementParent, checkpointState.MovementParentPriority, true);
             OnKilled = checkpointState.OnKilled;
@@ -248,6 +339,7 @@ public class StatsPlayer : StatsCharacter
     {
         if (gameObject && IsCheckpointable())
         {
+            Start();
             m_movement.Initialize();
             if (null == m_checkpointState) m_checkpointState = new();
             m_transform = transform;
@@ -264,14 +356,26 @@ public class StatsPlayer : StatsCharacter
             m_checkpointState.UpVec = m_movement.GetUpVecRaw();
             m_checkpointState.OnKilled = OnKilled;
 
+            int countWeapons = m_aquiredWeapons != null ? m_aquiredWeapons.Count : 0;
+            m_checkpointState.AquiredWeapons?.Clear();
+
+            for (int i = 0; i < countWeapons; i++)
+                m_checkpointState.AquiredWeapons.Add(m_aquiredWeapons[i]);
+
+            int countCharms = m_aquiredCharms != null ? m_aquiredCharms.Count : 0;
+            m_checkpointState.AquiredCharms?.Clear();
+
+            for (int i = 0; i < countCharms; i++)
+                m_checkpointState.AquiredCharms.Add(m_aquiredCharms[i]);
+
             CheckpointState state = m_checkpointState;
             CheckpointManager.AddCheckpointState(state);
         }
     }
 
-    public override void SetMaxHealthRaw(float maxHealth)
+    public override void SetMaxHealthRaw(float aMaxHealth)
     {
-        m_maxHealth = maxHealth;
+        m_maxHealth = aMaxHealth;
         if (m_healthUI) m_healthUI.SetMaxHealth(GetMaxHealthEffective());
     }
 
@@ -284,11 +388,11 @@ public class StatsPlayer : StatsCharacter
         }
     }
 
-    public void AddPoints(CollectibleType itemType, float value)
+    public void AddPoints(CollectibleType aItemType, float aValue)
     {
         m_itemPickUpSound.Play(m_audioSource);
 
-        switch (itemType)
+        switch (aItemType)
         {
             case (CollectibleType.POINTS):
 
@@ -296,28 +400,27 @@ public class StatsPlayer : StatsCharacter
 
             case (CollectibleType.POWER):
                 if (IsOwner)
-                    m_loadoutManager.AddPointsAll(WeaponPointsTypes.EXPERIENCE, value);
+                    m_loadoutManager.AddPointsAll(WeaponPointsTypes.EXPERIENCE, aValue);
                 break;
 
             case (CollectibleType.HEALTH):
-                m_currentHealth.Value += value;
+                m_currentHealth.Value += aValue;
                 if (m_healthUI) m_healthUI.SetHealthPoints(m_currentHealth.Value);
                 break;
         }
 
     }
 
-    public override void OnDamageDealt(float damage, ulong damagedCharacterNetworkId, int weaponLoadoutIndex, int weaponIndex, bool isServerCall)
+    public override void OnDamageDealt(DamageData aDamageData, bool aIsServerCall)
     {
-        if (!isServerCall)
+        if (!aIsServerCall)
         {
-            StatsCharacter damagedCharacter = GfGameManager.GetComponentFromNetworkObject<StatsCharacter>(damagedCharacterNetworkId);
+            StatsCharacter damagedCharacter = GfcManagerGame.GetComponentFromNetworkObject<StatsCharacter>(aDamageData.EnemyNetworkId);
             bool lowHp = false;
             float volume = 1, pitch = 1;
 
             if (damagedCharacter)
             {
-                damagedCharacter.OnCharacterKilled(NetworkObjectId, weaponLoadoutIndex, weaponIndex);
                 lowHp = damagedCharacter.GetCurrentHealth() <= damagedCharacter.GetMaxHealthRaw() * 0.25f;
             }
 
@@ -329,7 +432,6 @@ public class StatsPlayer : StatsCharacter
 
             m_damageDealtSound.Play(m_audioObjectDamageDealt, 0, volume, pitch);
         }
-
     }
 
     public override void RefillHp()
@@ -339,18 +441,18 @@ public class StatsPlayer : StatsCharacter
     }
 
     //called when an enemy is approaching this character
-    protected override void InternalNotifyEnemyEngaging(ulong enemyNetworkId)
+    protected override void InternalNotifyEnemyEngaging(ulong aEnemyNetworkId)
     {
         ++m_enemiesEngagingCount;
-        if (IsOwner) GfLevelManager.NotifyEnemyEngaging(m_enemiesEngagingCount, enemyNetworkId);
+        if (IsOwner) GfManagerLevel.NotifyEnemyEngaging(m_enemiesEngagingCount, aEnemyNetworkId);
     }
 
     //called when an enemy stop engaging
-    protected override void InternalNotifyEnemyDisengaging(ulong enemyNetworkId)
+    protected override void InternalNotifyEnemyDisengaging(ulong aEnemyNetworkId)
     {
         --m_enemiesEngagingCount;
         if (m_enemiesEngagingCount < 0) m_enemiesEngagingCount = 0;
-        if (IsOwner) GfLevelManager.NotifyEnemyDisengaging(m_enemiesEngagingCount, enemyNetworkId);
+        if (IsOwner) GfManagerLevel.NotifyEnemyDisengaging(m_enemiesEngagingCount, aEnemyNetworkId);
     }
 }
 
