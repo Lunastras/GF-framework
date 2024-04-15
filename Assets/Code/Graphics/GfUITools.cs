@@ -69,6 +69,18 @@ public class GfUiTools : MonoBehaviour
         Instance = null;
     }
 
+    public static bool NotifyIsActive() { return false; }
+
+    public static void NotifyMessage(string aMessage)
+    {
+        //todo
+    }
+
+    public static void NotifyMessage(List<string> someMessages)
+    {
+        //todo
+    }
+
     public static void SetBlackBars(bool turnOn, float delay = 0, bool constantOpacity = false, bool constantAnchors = false, bool ignoreTimeScale = false)
     {
         if (delay == 0 || true)

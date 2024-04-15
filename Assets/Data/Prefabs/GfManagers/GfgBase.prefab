@@ -1182,11 +1182,8 @@ GameObject:
   - component: {fileID: 574548350803113249}
   - component: {fileID: 8430071061663699060}
   - component: {fileID: 3133454678615565452}
-  - component: {fileID: 4404040694973127310}
-  - component: {fileID: 5060674266253523980}
   - component: {fileID: 3313271913631601356}
   - component: {fileID: 1245101940207183805}
-  - component: {fileID: 3302688422444642017}
   - component: {fileID: 2304749010785839854}
   m_Layer: 0
   m_Name: GfgBase
@@ -1431,57 +1428,6 @@ MonoBehaviour:
   - 0.05
   - 0.05
   - 0.02
---- !u!114 &4404040694973127310
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2080833477572206972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 593a2fe42fa9d37498c96f9a383b6521, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  RunInBackground: 1
-  LogLevel: 1
-  NetworkConfig:
-    ProtocolVersion: 0
-    NetworkTransport: {fileID: 3302688422444642017}
-    PlayerPrefab: {fileID: 1762151893091121002, guid: 3348080b641069b418ce6becab7f3290,
-      type: 3}
-    Prefabs:
-      NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 4ca052e3a9b0db74dba072828c9feb8d, type: 2}
-    TickRate: 30
-    ClientConnectionBufferTimeout: 10
-    ConnectionApproval: 0
-    ConnectionData: 
-    EnableTimeResync: 0
-    TimeResyncInterval: 30
-    EnsureNetworkVariableLengthSafety: 0
-    EnableSceneManagement: 0
-    ForceSamePrefabs: 0
-    RecycleNetworkIds: 1
-    NetworkIdRecycleDelay: 120
-    RpcHashSize: 0
-    LoadSceneTimeOut: 120
-    SpawnTimeout: 1
-    EnableNetworkLogs: 1
-    OldPrefabList: []
---- !u!114 &5060674266253523980
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2080833477572206972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eaa418723ee5b774ea0dc922d16e83a3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_minimumDistance: 10000
 --- !u!114 &3313271913631601356
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1506,33 +1452,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f94d4dc2b90a4784d9271dd053a5727b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &3302688422444642017
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2080833477572206972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6960e84d07fb87f47956e7a81d71c4e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_ProtocolType: 0
-  m_MaxPacketQueueSize: 128
-  m_MaxPayloadSize: 6144
-  m_HeartbeatTimeoutMS: 500
-  m_ConnectTimeoutMS: 1000
-  m_MaxConnectAttempts: 60
-  m_DisconnectTimeoutMS: 30000
-  ConnectionData:
-    Address: 127.0.0.1
-    Port: 7779
-    ServerListenAddress: 127.0.0.1
-  DebugSimulator:
-    PacketDelayMS: 0
-    PacketJitterMS: 0
-    PacketDropRate: 0
 --- !u!82 &2304749010785839854
 AudioSource:
   m_ObjectHideFlags: 0
@@ -5996,7 +5915,7 @@ PrefabInstance:
     - target: {fileID: 3931108508837045004, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_Name
-      value: InvaderAssets
+      value: CornAssets
       objectReference: {fileID: 0}
     - target: {fileID: 8195732876905952848, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
@@ -6053,7 +5972,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 876988519276325551, guid: 4cf04ccd0bd40904194fc6678b5ed3bb, type: 3}
+    - {fileID: 6351766030350613692, guid: 4cf04ccd0bd40904194fc6678b5ed3bb, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
