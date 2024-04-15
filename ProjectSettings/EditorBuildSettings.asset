@@ -6,19 +6,19 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainMenu.unity
+    path: Assets/Data/Scenes/MainMenu.unity
     guid: e162b25afd126974c8066d3f52543087
   - enabled: 1
-    path: Assets/Scenes/LoadingScreen.unity
+    path: Assets/Data/Scenes/LoadingScreen.unity
     guid: ae00b69f7f7cd464db197f30b9373cf3
   - enabled: 1
-    path: Assets/Scenes/GfGameManagerScene.unity
+    path: Assets/Data/Scenes/GfGameManagerScene.unity
     guid: 27914b7d823475040993c03597a56e9c
   - enabled: 1
-    path: Assets/Scenes/TestLevels/World Scenes/Gensokyo Field/ws_gensokyo.unity
+    path: Assets/Data/Scenes/TestLevels/World Scenes/Gensokyo Field/ws_gensokyo.unity
     guid: 7543e8db56fbecc45a620ea4b90551f6
   - enabled: 1
-    path: Assets/Scenes/TestLevels/Mission Scenes/ms_1.unity
+    path: Assets/Data/Scenes/TestLevels/Mission Scenes/ms_1.unity
     guid: 1b5a13788dd33fb42b68a3d163a38668
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 79751fafe6694864a998e58059428777,
