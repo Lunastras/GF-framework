@@ -37,11 +37,11 @@ public class LoadingScreenManager : MonoBehaviour
     // If loading additive, link to the cameras audio listener, to avoid multiple active audio listeners
     public AudioListener audioListener;
 
-    public static int GfGameManagerSceneIndex
+    public static int GfBaseSceneIndex
     {
         get
         {
-            return GetSceneBuildIndexByName("GfGameManagerScene");
+            return GetSceneBuildIndexByName("GfBaseScene");
         }
     }
 
@@ -149,7 +149,7 @@ public class LoadingScreenManager : MonoBehaviour
         {
             Scene scene = SceneManager.GetSceneAt(i);
             int buildIndex = scene.buildIndex;
-            if (buildIndex != GfGameManagerSceneIndex && buildIndex != LoadingSceneIndex)
+            if (buildIndex != GfBaseSceneIndex && buildIndex != LoadingSceneIndex)
             {
                 m_scenesToUnload.Add(scene.buildIndex);
                 SceneManager.UnloadSceneAsync(scene);
@@ -264,12 +264,12 @@ public class LoadingScreenManager : MonoBehaviour
 
     private static void FadeIn()
     {
-        GfUiTools.CrossFadeAlpha(1, FadeDuration);
+        GfxUiTools.CrossFadeBlackAlpha(1, FadeDuration);
     }
 
     private static void FadeOut()
     {
-        GfUiTools.CrossFadeAlpha(0, FadeDuration);
+        GfxUiTools.CrossFadeBlackAlpha(0, FadeDuration);
     }
 
     void ShowLoadingVisuals()

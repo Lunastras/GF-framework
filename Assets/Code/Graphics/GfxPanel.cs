@@ -168,15 +168,15 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
         m_panelRectTransform.localPosition = Vector2.Lerp(m_stateAtTransitionStart.LocalPosition, finalState.PositionOffset, effectiveLerpValue);
         m_panelImage.color = Color.Lerp(m_stateAtTransitionStart.ColorPanel, finalState.ColorPanel, effectiveLerpValue);
 
-        Color effectiveColor = GfUiTools.BlendColors(finalState.ColorLeftText, finalState.ColorContent, finalState.ColorContentSelfBlendMode);
+        Color effectiveColor = GfxUiTools.BlendColors(finalState.ColorLeftText, finalState.ColorContent, finalState.ColorContentSelfBlendMode);
         m_textLeft.color = Color.Lerp(m_stateAtTransitionStart.ColorTextLeft, effectiveColor, effectiveLerpValue);
 
-        effectiveColor = GfUiTools.BlendColors(finalState.ColorRightText, finalState.ColorContent, finalState.ColorContentSelfBlendMode);
+        effectiveColor = GfxUiTools.BlendColors(finalState.ColorRightText, finalState.ColorContent, finalState.ColorContentSelfBlendMode);
         m_textRight.color = Color.Lerp(m_stateAtTransitionStart.ColorTextRight, effectiveColor, effectiveLerpValue);
 
         if (m_iconActive)
         {
-            effectiveColor = GfUiTools.BlendColors(finalState.ColorIcon, finalState.ColorContent, finalState.ColorContentSelfBlendMode);
+            effectiveColor = GfxUiTools.BlendColors(finalState.ColorIcon, finalState.ColorContent, finalState.ColorContentSelfBlendMode);
             m_iconImage.color = Color.Lerp(m_stateAtTransitionStart.ColorIcon, effectiveColor, effectiveLerpValue);
         }
 
@@ -196,12 +196,12 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
             PanelSizeCoef = aHighlight.PanelSizeCoef * aBase.PanelSizeCoef,
             PositionOffset = aHighlight.PositionOffset + aBase.PositionOffset,
 
-            ColorPanel = GfUiTools.BlendColors(aBase.ColorPanel, aHighlight.ColorPanel, aHighlight.ColorPanelBlendMode),
-            ColorContent = GfUiTools.BlendColors(aBase.ColorContent, aHighlight.ColorContent, aHighlight.ColorContentBlendMode),
+            ColorPanel = GfxUiTools.BlendColors(aBase.ColorPanel, aHighlight.ColorPanel, aHighlight.ColorPanelBlendMode),
+            ColorContent = GfxUiTools.BlendColors(aBase.ColorContent, aHighlight.ColorContent, aHighlight.ColorContentBlendMode),
 
-            ColorLeftText = GfUiTools.BlendColors(aBase.ColorLeftText, aHighlight.ColorLeftText, aHighlight.ColorLeftTextBlendMode),
-            ColorRightText = GfUiTools.BlendColors(aBase.ColorRightText, aHighlight.ColorRightText, aHighlight.ColorRightTextBlendMode),
-            ColorIcon = GfUiTools.BlendColors(aBase.ColorIcon, aHighlight.ColorIcon, aHighlight.ColorIconBlendMode),
+            ColorLeftText = GfxUiTools.BlendColors(aBase.ColorLeftText, aHighlight.ColorLeftText, aHighlight.ColorLeftTextBlendMode),
+            ColorRightText = GfxUiTools.BlendColors(aBase.ColorRightText, aHighlight.ColorRightText, aHighlight.ColorRightTextBlendMode),
+            ColorIcon = GfxUiTools.BlendColors(aBase.ColorIcon, aHighlight.ColorIcon, aHighlight.ColorIconBlendMode),
 
             ColorPanelBlendMode = aHighlight.ColorPanelBlendMode,
             ColorContentBlendMode = aHighlight.ColorContentBlendMode,
@@ -545,7 +545,7 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
             {
                 //  EventSystem.current.SetSelectedGameObject(gameObject);
                 m_soundSelect?.PlaySingleInstance();
-                if (m_isDisabled) GfUiTools.WriteDisableReason(this);
+                if (m_isDisabled) GfxUiTools.WriteDisableReason(this);
             }
             else //deselected
             {
@@ -554,7 +554,7 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
                 //EventSystem.current.SetSelectedGameObject(null);
 
                 m_soundDeselect?.PlaySingleInstance();
-                if (m_isDisabled) GfUiTools.EraseDisableReason(this);
+                if (m_isDisabled) GfxUiTools.EraseDisableReason(this);
             }
         }
     }
@@ -704,13 +704,6 @@ public struct GfxPanelCreateData
     public GfcSound SoundSubmit;
 
     public Action<GfxPanelCallbackType, GfxPanel, bool> OnEventCallback;
-
-    public Action<GfxPanel, bool> OnSelectEvent;
-
-    public Action<GfxPanel> OnSubmitEvent;
-
-    //the bool is the same as the one in OnSelectEvent
-    public Action<GfxPanel, bool> OnPinnedEvent;
 
     public GfxPanelHightlightState DefaultHighlightState;
 

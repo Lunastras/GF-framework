@@ -10,14 +10,134 @@ using static Unity.Mathematics.math;
 public static class GfcToolsStatic
 {
     public static bool IsEmpty(this string aString) { return aString == null || aString.Length == 0; }
+
+    public static int Clamp(this int aNum, int aMin, int aMax) { return Math.Clamp(aNum, aMin, aMax); }
+    public static long Clamp(this long aNum, long aMin, long aMax) { return Math.Clamp(aNum, aMin, aMax); }
+    public static float Clamp(this float aNum, float aMin, float aMax) { return Math.Clamp(aNum, aMin, aMax); }
+    public static double Clamp(this double aNum, double aMin, double aMax) { return Math.Clamp(aNum, aMin, aMax); }
+
+    public static void ClampSelf(this ref int aNum, int aMin, int aMax) { aNum = Math.Clamp(aNum, aMin, aMax); }
+    public static void ClampSelf(this ref long aNum, long aMin, long aMax) { aNum = Math.Clamp(aNum, aMin, aMax); }
+    public static void ClampSelf(this ref float aNum, float aMin, float aMax) { aNum = Math.Clamp(aNum, aMin, aMax); }
+    public static void ClampSelf(this ref double aNum, double aMin, double aMax) { aNum = Math.Clamp(aNum, aMin, aMax); }
+
+    public static int Max(this int aSelf, int aNum) { return Math.Max(aSelf, aNum); }
+    public static float Max(this float aSelf, float aNum) { return Math.Max(aSelf, aNum); }
+    public static double Max(this double aSelf, double aNum) { return Math.Max(aSelf, aNum); }
+
+    public static void MaxSelf(this ref int aSelf, int aNum) { aSelf = Math.Max(aSelf, aNum); }
+    public static void MaxSelf(this ref float aSelf, float aNum) { aSelf = Math.Max(aSelf, aNum); }
+    public static void MaxSelf(this ref double aSelf, double aNum) { aSelf = Math.Max(aSelf, aNum); }
+
+    public static int Min(this int aSelf, int aNum) { return Math.Min(aSelf, aNum); }
+    public static float Min(this float aSelf, float aNum) { return Math.Min(aSelf, aNum); }
+    public static double Min(this double aSelf, double aNum) { return Math.Min(aSelf, aNum); }
+
+    public static void MinSelf(this ref int aSelf, int aNum) { aSelf = Math.Min(aSelf, aNum); }
+    public static void MinSelf(this ref float aSelf, float aNum) { aSelf = Math.Min(aSelf, aNum); }
+    public static void MinSelf(this ref double aSelf, double aNum) { aSelf = Math.Min(aSelf, aNum); }
+
+    public static int Abs(this int aSelf) { return Math.Abs(aSelf); }
+    public static float Abs(this float aSelf) { return Math.Abs(aSelf); }
+    public static double Abs(this double aSelf) { return Math.Abs(aSelf); }
+
+    public static void AbsSelf(this ref int aSelf) { aSelf = Math.Abs(aSelf); }
+    public static void AbsSelf(this ref float aSelf) { aSelf = Math.Abs(aSelf); }
+    public static void AbsSelf(this ref double aSelf) { aSelf = Math.Abs(aSelf); }
+
+    public static int Sign(this int aSelf) { return Math.Sign(aSelf); }
+    public static float Sign(this float aSelf) { return Math.Sign(aSelf); }
+    public static double Sign(this double aSelf) { return Math.Sign(aSelf); }
+
+    public static void SignSelf(this ref int aSelf) { aSelf = Math.Sign(aSelf); }
+    public static void SignSelf(this ref float aSelf) { aSelf = Math.Sign(aSelf); }
+    public static void SignSelf(this ref double aSelf) { aSelf = Math.Sign(aSelf); }
+
+    public static float SqrtF(this int aSelf) { return MathF.Sqrt(aSelf); }
+    public static double Sqrt(this int aSelf) { return Math.Sqrt(aSelf); }
+
+    public static float Sqrt(this float aSelf) { return MathF.Sqrt(aSelf); }
+    public static double Sqrt(this double aSelf) { return Math.Sqrt(aSelf); }
+
+    public static void SqrtSelf(this ref float aSelf) { aSelf = MathF.Sqrt(aSelf); }
+    public static void SqrtSelf(this ref double aSelf) { aSelf = Math.Sqrt(aSelf); }
+
+    public static float Sin(this float aSelf) { return MathF.Sin(aSelf); }
+    public static double Sin(this double aSelf) { return Math.Sin(aSelf); }
+
+    public static void SinSelf(this ref float aSelf) { aSelf = MathF.Sin(aSelf); }
+    public static void SinSelf(this ref double aSelf) { aSelf = Math.Sin(aSelf); }
+
+    public static float Cos(this float aSelf) { return MathF.Cos(aSelf); }
+    public static double Cos(this double aSelf) { return Math.Cos(aSelf); }
+
+    public static void CosSelf(this ref float aSelf) { aSelf = MathF.Cos(aSelf); }
+    public static void CosSelf(this ref double aSelf) { aSelf = Math.Cos(aSelf); }
+
+    public static float Tan(this float aSelf) { return MathF.Tan(aSelf); }
+    public static double Tan(this double aSelf) { return Math.Tan(aSelf); }
+
+    public static void TanSelf(this ref float aSelf) { aSelf = MathF.Tan(aSelf); }
+    public static void TanSelf(this ref double aSelf) { aSelf = Math.Tan(aSelf); }
+
+    public static float Atan(this float aSelf) { return MathF.Atan(aSelf); }
+    public static double Atan(this double aSelf) { return Math.Atan(aSelf); }
+
+    public static void AtanSelf(this ref float aSelf) { aSelf = MathF.Atan(aSelf); }
+    public static void AtanSelf(this ref double aSelf) { aSelf = Math.Atan(aSelf); }
+
+    public static float Atanh(this float aSelf) { return MathF.Atanh(aSelf); }
+    public static double Atanh(this double aSelf) { return Math.Atanh(aSelf); }
+
+    public static void AtanhSelf(this ref float aSelf) { aSelf = MathF.Atanh(aSelf); }
+    public static void AtanhSelf(this ref double aSelf) { aSelf = Math.Atanh(aSelf); }
+
+    public static float Atan2(this float aSelf, float aNum) { return MathF.Atan2(aSelf, aNum); }
+    public static double Atan2(this double aSelf, double aNum) { return Math.Atan2(aSelf, aNum); }
+
+    public static void Atan2Self(this ref float aSelf, float aNum) { aSelf = MathF.Atan2(aSelf, aNum); }
+    public static void Atan2Self(this ref double aSelf, double aNum) { aSelf = Math.Atan2(aSelf, aNum); }
+
+    public static float Lerp(this float aSelf, float aTarget, float aCoef) { return Mathf.Lerp(aSelf, aTarget, aCoef); }
+    public static Vector2 Lerp(this Vector2 aSelf, Vector2 aTarget, float aCoef) { return Vector2.Lerp(aSelf, aTarget, aCoef); }
+    public static Vector3 Lerp(this Vector3 aSelf, Vector3 aTarget, float aCoef) { return Vector3.Lerp(aSelf, aTarget, aCoef); }
+
+    public static void LerpSelf(this ref float aSelf, float aTarget, float aCoef) { aSelf = Mathf.Lerp(aSelf, aTarget, aCoef); }
+    public static void LerpSelf(this ref Vector2 aSelf, Vector2 aTarget, float aCoef) { aSelf = Vector2.Lerp(aSelf, aTarget, aCoef); }
+    public static void LerpSelf(this ref Vector3 aSelf, Vector3 aTarget, float aCoef) { aSelf = Vector3.Lerp(aSelf, aTarget, aCoef); }
+
+    public static int Pow(this int aSelf, int aNum) { return (int)MathF.Pow(aSelf, aNum); }
+    public static float Pow(this float aSelf, float aNum) { return MathF.Pow(aSelf, aNum); }
+    public static double Pow(this double aSelf, double aNum) { return Math.Pow(aSelf, aNum); }
+
+    public static void PowSelf(this ref int aSelf, int aNum) { aSelf = (int)Math.Pow(aSelf, aNum); }
+    public static void PowSelf(this ref float aSelf, float aNum) { aSelf = MathF.Pow(aSelf, aNum); }
+    public static void PowSelf(this ref double aSelf, double aNum) { aSelf = Math.Pow(aSelf, aNum); }
+
+    public static float Log(this float aSelf, float aNum) { return MathF.Log(aSelf, aNum); }
+    public static double Log(this double aSelf, double aNum) { return Math.Log(aSelf, aNum); }
+
+    public static void LogSelf(this ref float aSelf, float aNum) { aSelf = MathF.Log(aSelf, aNum); }
+    public static void LogSelf(this ref double aSelf, double aNum) { aSelf = Math.Log(aSelf, aNum); }
+
+    public static float Log10(this ref float aSelf) { return MathF.Log10(aSelf); }
+    public static double Log10(this ref double aSelf) { return Math.Log10(aSelf); }
+
+    public static void Log10Self(this ref float aSelf) { aSelf = MathF.Log10(aSelf); }
+    public static void Log10Self(this ref double aSelf) { aSelf = Math.Log10(aSelf); }
+
+    public static float Ln(this float aSelf) { return aSelf.Log((float)GfcTools.EULER); }
+    public static double Ln(this double aSelf) { return aSelf.Log(GfcTools.EULER); }
+
+    public static void LnSelf(this ref float aSelf) { aSelf = aSelf.Log((float)GfcTools.EULER); }
+    public static void LnSelf(this ref double aSelf) { aSelf = aSelf.Log(GfcTools.EULER); }
+
+    public static void Add<T>(this List<T> aList, IEnumerable<T> someMessages) { foreach (T item in someMessages) aList.Add(item); }
 }
 
 public class GfcTools
 {
-    private const float PHI = 1.618033988749895f; // min squared length of a displacement vector required for a Move() to proceed.
-
-    //public const float kEpsilon = 0.00000001F;
-    public const float kEpsilonNormalSqrt = 1e-15F;
+    public const double EULER = 2.7182818284590452;
 
     //godbless stack overflow
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

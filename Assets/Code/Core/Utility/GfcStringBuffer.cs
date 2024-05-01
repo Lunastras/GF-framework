@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
-
+using UnityEngine.Assertions;
 using static Unity.Mathematics.math;
 
 public class GfcStringBuffer
@@ -40,7 +41,7 @@ public class GfcStringBuffer
     public unsafe char this[int key]
     {
         get => m_stringBuffer[key];
-        set => Insert(ref key, value);
+        set => Write(ref key, value);
     }
 
     public static implicit operator string(GfcStringBuffer d) => d.m_stringBuffer;
@@ -48,51 +49,50 @@ public class GfcStringBuffer
     public GfcStringBuffer Concatenate(string aString)
     {
         int insertPosition = Length;
-        Insert(ref insertPosition, aString);
+        Write(ref insertPosition, aString);
         return this;
     }
 
     public GfcStringBuffer Concatenate(char aChar)
     {
         int insertPosition = Length;
-        Insert(ref insertPosition, aChar);
+        Write(ref insertPosition, aChar);
         return this;
     }
 
     public GfcStringBuffer Concatenate(long aLong)
     {
         int insertPosition = Length;
-        Insert(ref insertPosition, aLong);
+        Write(ref insertPosition, aLong);
         return this;
     }
 
     public GfcStringBuffer Concatenate(ulong aUlong)
     {
         int insertPosition = Length;
-        Insert(ref insertPosition, aUlong);
+        Write(ref insertPosition, aUlong);
         return this;
     }
 
     public GfcStringBuffer Concatenate(double aDouble, int aPrecission, char aDecimalPointSymbol = '.')
     {
         int insertPosition = Length;
-        Insert(ref insertPosition, aDouble, aPrecission, aDecimalPointSymbol);
+        Write(ref insertPosition, aDouble, aPrecission, aDecimalPointSymbol);
         return this;
     }
 
-    public unsafe void CopySubstringTo(int aWritePosition, int aSubstringPosition, int aSubstringLength)
-    {
-        SetMinimumLength(aWritePosition + aSubstringLength);
-
-        fixed (char* stringPtr = m_stringBuffer)
-            for (int i = 0; i < aSubstringLength; i++)
-                stringPtr[i + aWritePosition] = m_stringBuffer[i + aSubstringPosition];
-    }
+    public unsafe void CopySubstringTo(int aWritePosition, int aSubstringPosition, int aSubstringLength) { CopySubstringTo(ref m_stringBuffer, ref m_stringBufferCapacity, aWritePosition, aSubstringPosition, aSubstringLength, true); }
 
     public void CutToSubstring(int aSubstringPosition, int aSubstringLength)
     {
         CopySubstringTo(0, aSubstringPosition, aSubstringLength);
         SetLength(aSubstringLength);
+    }
+
+    public void CutSubstring(int aSubstringPosition, int aSubstringLength)
+    {
+        CopySubstringTo(aSubstringPosition, aSubstringPosition + aSubstringLength, Length - aSubstringPosition + aSubstringLength);
+        SetLength(Length - aSubstringLength);
     }
 
     public void SetMinimumLength(int aMinimumLength) { SetMinimumLength(ref m_stringBuffer, ref m_stringBufferCapacity, aMinimumLength); }
@@ -132,9 +132,41 @@ public class GfcStringBuffer
 
     public void Insert(ref int aCurrentPositionInBuffer, double aInsertDouble, int aPrecission, char aDecimalPointSymbol = '.') { InsertInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertDouble, aPrecission, aDecimalPointSymbol, true); }
 
-    public static unsafe void ExpandStringBuffer(ref string aStringBuffer, ref int aStringBufferLength, int aRequiredLength, bool aKeepData, bool aMultipleOfTwoIfExpand = false)
+
+    public void Insert(int aCurrentPositionInBuffer, string aInsertString) { InsertInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertString, true); }
+
+    public void Insert(int aCurrentPositionInBuffer, char aInsertChar) { InsertInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertChar, true); }
+
+    public void Insert(int aCurrentPositionInBuffer, long aInsertLong) { InsertInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertLong, true); }
+
+    public void Insert(int aCurrentPositionInBuffer, ulong aInsertUlong) { InsertInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertUlong, true); }
+
+    public void Insert(int aCurrentPositionInBuffer, double aInsertDouble, int aPrecission, char aDecimalPointSymbol = '.') { InsertInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertDouble, aPrecission, aDecimalPointSymbol, true); }
+
+
+    public void Write(ref int aCurrentPositionInBuffer, string aInsertString) { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertString, true); }
+
+    public void Write(ref int aCurrentPositionInBuffer, char aInsertChar) { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertChar, true); }
+
+    public void Write(ref int aCurrentPositionInBuffer, long aInsertLong) { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertLong, true); }
+
+    public void Write(ref int aCurrentPositionInBuffer, ulong aInsertUlong) { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertUlong, true); }
+
+    public void Write(ref int aCurrentPositionInBuffer, double aInsertDouble, int aPrecission, char aDecimalPointSymbol = '.') { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertDouble, aPrecission, aDecimalPointSymbol, true); }
+
+    public void Write(int aCurrentPositionInBuffer, string aInsertString) { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertString, true); }
+
+    public void Write(int aCurrentPositionInBuffer, char aInsertChar) { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertChar, true); }
+
+    public void Write(int aCurrentPositionInBuffer, long aInsertLong) { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertLong, true); }
+
+    public void Write(int aCurrentPositionInBuffer, ulong aInsertUlong) { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertUlong, true); }
+
+    public void Write(int aCurrentPositionInBuffer, double aInsertDouble, int aPrecission, char aDecimalPointSymbol = '.') { WriteInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertDouble, aPrecission, aDecimalPointSymbol, true); }
+
+    public static unsafe void ExpandStringBuffer(ref string aStringBuffer, ref int aStringBufferCapacity, int aRequiredLength, bool aKeepData, bool aMultipleOfTwoIfExpand = false)
     {
-        if (aStringBufferLength < aRequiredLength)
+        if (aStringBufferCapacity < aRequiredLength)
         {
             int newStringBufferLength;
 
@@ -154,16 +186,16 @@ public class GfcStringBuffer
             if (aKeepData)
                 fixed (char* stringPtr = newStringBuffer)
                 fixed (char* oldStringPtr = aStringBuffer)
-                    for (int i = 0; i < aStringBufferLength; ++i)
+                    for (int i = 0; i < aStringBufferCapacity; ++i)
                         stringPtr[i] = oldStringPtr[i];
 
             SetStringLength(newStringBuffer, aStringBuffer.Length);
-            aStringBufferLength = newStringBufferLength;
+            aStringBufferCapacity = newStringBufferLength;
             aStringBuffer = newStringBuffer;
         }
     }
 
-    public static void SetMinimumLength(ref string aStringBuffer, ref int aStringBufferLength, int aMinimumLength) { if (aMinimumLength > aStringBuffer.Length) ResizeStringBufferLength(ref aStringBuffer, ref aStringBufferLength, aMinimumLength); }
+    public static void SetMinimumLength(ref string aStringBuffer, ref int aStringBufferCapacity, int aMinimumLength) { if (aMinimumLength > aStringBuffer.Length) ResizeStringBufferLength(ref aStringBuffer, ref aStringBufferCapacity, aMinimumLength); }
 
     public static unsafe void SetStringLength(string aString, int aLength)
     {
@@ -176,26 +208,51 @@ public class GfcStringBuffer
         }
     }
 
-    public static unsafe void ResizeStringBufferLength(ref string aStringBuffer, ref int aStringBufferLength, int aRequiredLength, bool aKeepData = true, bool aMultipleOfTwoIfExpand = false)
+    public static unsafe void OffsetData(ref string aStringBuffer, ref int aStringBufferCapacity, int aOffsetStart, int aOffset, bool aMultipleOfTwoIfExpand = false)
     {
-        ExpandStringBuffer(ref aStringBuffer, ref aStringBufferLength, aRequiredLength, aKeepData, aMultipleOfTwoIfExpand);
+        CopySubstringTo(ref aStringBuffer, ref aStringBufferCapacity, aOffsetStart + aOffset, aOffsetStart, aStringBufferCapacity - aOffsetStart, aMultipleOfTwoIfExpand);
+    }
+
+    public static unsafe void CopySubstringTo(ref string aStringBuffer, ref int aStringBufferCapacity, int aWritePosition, int aSubstringPosition, int aSubstringLength, bool aMultipleOfTwoIfExpand = false)
+    {
+        Debug.Assert(aSubstringPosition + aSubstringLength <= aStringBufferCapacity);
+        SetMinimumLength(ref aStringBuffer, ref aStringBufferCapacity, aWritePosition + aSubstringLength);
+
+        fixed (char* stringPtr = aStringBuffer)
+        {//todo/ not sure if functional
+            if (aSubstringPosition < aWritePosition)
+            {
+                for (int i = aSubstringLength - 1; i >= 0; i--)
+                    stringPtr[i + aWritePosition] = stringPtr[i + aSubstringPosition];
+            }
+            else
+            {
+                for (int i = 0; i < aSubstringLength; i++)
+                    stringPtr[i + aWritePosition] = stringPtr[i + aSubstringPosition];
+            }
+        }
+    }
+
+    public static unsafe void ResizeStringBufferLength(ref string aStringBuffer, ref int aStringBufferCapacity, int aRequiredLength, bool aKeepData = true, bool aMultipleOfTwoIfExpand = false)
+    {
+        ExpandStringBuffer(ref aStringBuffer, ref aStringBufferCapacity, aRequiredLength, aKeepData, aMultipleOfTwoIfExpand);
         SetStringLength(aStringBuffer, aRequiredLength);
     }
 
-    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferLength, ref int aCurrentPositionInBuffer, string aInsertString, bool aMultipleOfTwoIfExpand = false)
+    public static unsafe void WriteInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, string aInsertString, bool aMultipleOfTwoIfExpand = false)
     {
-        ResizeStringBufferLength(ref aStringBuffer, ref aStringBufferLength, aCurrentPositionInBuffer + aInsertString.Length, true, aMultipleOfTwoIfExpand);
-        InsertInStringBuffer(aStringBuffer, ref aCurrentPositionInBuffer, aInsertString);
+        SetMinimumLength(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer + aInsertString.Length);
+        WriteInStringBuffer(aStringBuffer, ref aCurrentPositionInBuffer, aInsertString);
     }
 
-    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferLength, ref int aCurrentPositionInBuffer, char aInsertChar, bool aMultipleOfTwoIfExpand = false)
+    public static unsafe void WriteInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, char aInsertChar, bool aMultipleOfTwoIfExpand = false)
     {
-        ExpandStringBuffer(ref aStringBuffer, ref aStringBufferLength, aCurrentPositionInBuffer + 1, true, aMultipleOfTwoIfExpand);
-        InsertInStringBuffer(aStringBuffer, ref aCurrentPositionInBuffer, aInsertChar);
-        SetMinimumLength(ref aStringBuffer, ref aStringBufferLength, aCurrentPositionInBuffer);
+        ExpandStringBuffer(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer + 1, true, aMultipleOfTwoIfExpand);
+        WriteInStringBuffer(aStringBuffer, ref aCurrentPositionInBuffer, aInsertChar);
+        SetMinimumLength(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer);
     }
 
-    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferLength, ref int aCurrentPositionInBuffer, double aInsertDouble, int aPrecission, char aDecimalPointSymbol = '.', bool aMultipleOfTwoIfExpand = false)
+    public static unsafe void WriteInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, double aInsertDouble, int aPrecission, char aDecimalPointSymbol = '.', bool aMultipleOfTwoIfExpand = false)
     {
         aPrecission = min(aPrecission, 17); //doesn't work if [aPrecission] is more than 17. Double precission doesn't go over the 16th digit so this should be fine
         double absInsertDouble = abs(aInsertDouble);
@@ -203,14 +260,14 @@ public class GfcStringBuffer
         long decicmalPart = (long)(pow(10.0, aPrecission) * (absInsertDouble - wholeNumber));
 
         if (aInsertDouble < 0)
-            InsertInStringBufferExpand(ref aStringBuffer, ref aStringBufferLength, ref aCurrentPositionInBuffer, '-', aMultipleOfTwoIfExpand);
+            WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, '-', aMultipleOfTwoIfExpand);
 
-        InsertInStringBufferExpand(ref aStringBuffer, ref aStringBufferLength, ref aCurrentPositionInBuffer, wholeNumber, aMultipleOfTwoIfExpand);
-        InsertInStringBufferExpand(ref aStringBuffer, ref aStringBufferLength, ref aCurrentPositionInBuffer, aDecimalPointSymbol, aMultipleOfTwoIfExpand);
-        InsertInStringBufferExpand(ref aStringBuffer, ref aStringBufferLength, ref aCurrentPositionInBuffer, decicmalPart, aMultipleOfTwoIfExpand);
+        WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, wholeNumber, aMultipleOfTwoIfExpand);
+        WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, aDecimalPointSymbol, aMultipleOfTwoIfExpand);
+        WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, decicmalPart, aMultipleOfTwoIfExpand);
     }
 
-    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferLength, ref int aCurrentPositionInBuffer, long aInsertLong, bool aDoubleInSizeIfExpand = false)
+    public static unsafe void WriteInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, long aInsertLong, bool aDoubleInSizeIfExpand = false)
     {
         long auxInsertLong = aInsertLong;
         int countCharacters = auxInsertLong == 0 ? 1 : 0;
@@ -223,12 +280,12 @@ public class GfcStringBuffer
         if (aInsertLong < 0)
             countCharacters++;
 
-        ExpandStringBuffer(ref aStringBuffer, ref aStringBufferLength, aCurrentPositionInBuffer + countCharacters, true, aDoubleInSizeIfExpand);
-        InsertLongInStringBufferInternal(aStringBuffer, ref aCurrentPositionInBuffer, aInsertLong, countCharacters);
-        SetMinimumLength(ref aStringBuffer, ref aStringBufferLength, aCurrentPositionInBuffer);
+        ExpandStringBuffer(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer + countCharacters, true, aDoubleInSizeIfExpand);
+        WriteLongInStringBufferInternal(aStringBuffer, ref aCurrentPositionInBuffer, aInsertLong, countCharacters);
+        SetMinimumLength(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer);
     }
 
-    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferLength, ref int aCurrentPositionInBuffer, ulong aInsertUlong, bool aDoubleInSizeIfExpand = false)
+    public static unsafe void WriteInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, ulong aInsertUlong, bool aDoubleInSizeIfExpand = false)
     {
         ulong auxInsertLong = aInsertUlong;
         int countCharacters = auxInsertLong == 0 ? 1 : 0;
@@ -238,12 +295,12 @@ public class GfcStringBuffer
             auxInsertLong /= 10;
         }
 
-        ExpandStringBuffer(ref aStringBuffer, ref aStringBufferLength, aCurrentPositionInBuffer + countCharacters, true, aDoubleInSizeIfExpand);
-        InsertLongInStringBufferInternal(aStringBuffer, ref aCurrentPositionInBuffer, aInsertUlong, countCharacters);
-        SetMinimumLength(ref aStringBuffer, ref aStringBufferLength, aCurrentPositionInBuffer);
+        ExpandStringBuffer(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer + countCharacters, true, aDoubleInSizeIfExpand);
+        WriteLongInStringBufferInternal(aStringBuffer, ref aCurrentPositionInBuffer, aInsertUlong, countCharacters);
+        SetMinimumLength(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer);
     }
 
-    public static unsafe void InsertInStringBuffer(string aStringBuffer, ref int aCurrentPositionInBuffer, string aInsertString)
+    public static unsafe void WriteInStringBuffer(string aStringBuffer, ref int aCurrentPositionInBuffer, string aInsertString)
     {
         int insertStringLength = aInsertString.Length;
 
@@ -254,7 +311,7 @@ public class GfcStringBuffer
         aCurrentPositionInBuffer += insertStringLength;
     }
 
-    public static unsafe void InsertInStringBuffer(string aStringBuffer, ref int aCurrentPositionInBuffer, char aInsertChar)
+    public static unsafe void WriteInStringBuffer(string aStringBuffer, ref int aCurrentPositionInBuffer, char aInsertChar)
     {
         fixed (char* stringPtr = aStringBuffer)
             stringPtr[aCurrentPositionInBuffer] = aInsertChar;
@@ -262,7 +319,7 @@ public class GfcStringBuffer
         ++aCurrentPositionInBuffer;
     }
 
-    protected static unsafe void InsertLongInStringBufferInternal(string aStringBuffer, ref int aCurrentPositionInBuffer, long aInsertLong, int aInsertLongLength)
+    protected static unsafe void WriteLongInStringBufferInternal(string aStringBuffer, ref int aCurrentPositionInBuffer, long aInsertLong, int aInsertLongLength)
     {
         fixed (char* stringPtr = aStringBuffer)
         {
@@ -283,7 +340,7 @@ public class GfcStringBuffer
         aCurrentPositionInBuffer += aInsertLongLength;
     }
 
-    protected static unsafe void InsertLongInStringBufferInternal(string aStringBuffer, ref int aCurrentPositionInBuffer, ulong aInsertUlong, int aInsertLongLength)
+    protected static unsafe void WriteLongInStringBufferInternal(string aStringBuffer, ref int aCurrentPositionInBuffer, ulong aInsertUlong, int aInsertLongLength)
     {
         fixed (char* stringPtr = aStringBuffer)
         {
@@ -299,5 +356,64 @@ public class GfcStringBuffer
         }
 
         aCurrentPositionInBuffer += aInsertLongLength;
+    }
+
+    //todo insert properly
+    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, string aInsertString, bool aMultipleOfTwoIfExpand = false)
+    {
+        OffsetData(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer, aInsertString.Length, aMultipleOfTwoIfExpand);
+        WriteInStringBuffer(aStringBuffer, ref aCurrentPositionInBuffer, aInsertString);
+    }
+
+    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, char aInsertChar, bool aMultipleOfTwoIfExpand = false)
+    {
+        OffsetData(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer, 1, aMultipleOfTwoIfExpand);
+        WriteInStringBuffer(aStringBuffer, ref aCurrentPositionInBuffer, aInsertChar);
+    }
+
+    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, double aInsertDouble, int aPrecission, char aDecimalPointSymbol = '.', bool aMultipleOfTwoIfExpand = false)
+    {
+        aPrecission = min(aPrecission, 17); //doesn't work if [aPrecission] is more than 17. Double precission doesn't go over the 16th digit so this should be fine
+        double absInsertDouble = abs(aInsertDouble);
+        long wholeNumber = (long)absInsertDouble;
+        long decicmalPart = (long)(pow(10.0, aPrecission) * (absInsertDouble - wholeNumber));
+
+        if (aInsertDouble < 0)
+            InsertInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, '-', aMultipleOfTwoIfExpand);
+
+        InsertInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, wholeNumber, aMultipleOfTwoIfExpand);
+        InsertInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, aDecimalPointSymbol, aMultipleOfTwoIfExpand);
+        InsertInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, decicmalPart, aMultipleOfTwoIfExpand);
+    }
+
+    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, long aInsertLong, bool aDoubleInSizeIfExpand = false)
+    {
+        long auxInsertLong = aInsertLong;
+        int countCharacters = auxInsertLong == 0 ? 1 : 0;
+        while (auxInsertLong != 0)
+        {
+            countCharacters++;
+            auxInsertLong /= 10;
+        }
+
+        if (aInsertLong < 0)
+            countCharacters++;
+
+        OffsetData(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer, countCharacters, aDoubleInSizeIfExpand);
+        WriteLongInStringBufferInternal(aStringBuffer, ref aCurrentPositionInBuffer, aInsertLong, countCharacters);
+    }
+
+    public static unsafe void InsertInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, ulong aInsertUlong, bool aDoubleInSizeIfExpand = false)
+    {
+        ulong auxInsertLong = aInsertUlong;
+        int countCharacters = auxInsertLong == 0 ? 1 : 0;
+        while (auxInsertLong != 0)
+        {
+            countCharacters++;
+            auxInsertLong /= 10;
+        }
+
+        OffsetData(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer, countCharacters, aDoubleInSizeIfExpand);
+        WriteLongInStringBufferInternal(aStringBuffer, ref aCurrentPositionInBuffer, aInsertUlong, countCharacters);
     }
 }

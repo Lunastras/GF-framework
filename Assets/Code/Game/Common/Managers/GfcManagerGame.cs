@@ -7,6 +7,7 @@ using Unity.Netcode;
 using System;
 using MEC;
 using Unity.Netcode.Transports.UTP;
+using log4net.Filter;
 
 public class GfcManagerGame : MonoBehaviour
 {
@@ -71,16 +72,28 @@ public class GfcManagerGame : MonoBehaviour
         m_initialFixedDeltaTime = Time.fixedDeltaTime;
     }
 
+    public static void InitializeGfBase()
+    {
+        int gfBaseSceneIndex = LoadingScreenManager.GfBaseSceneIndex;
+        Scene sceneManager = SceneManager.GetSceneByBuildIndex(gfBaseSceneIndex);
+        if (!sceneManager.isLoaded)
+            SceneManager.LoadScene(gfBaseSceneIndex, LoadSceneMode.Additive);
+    }
+
     private void Start()
     {
-        //NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallbackFunc;
-        NetworkManager.Singleton.OnServerStopped += OnServerStoppedFunc;
+        m_spawnManager = null;
+
+        if (NetworkManager.Singleton)
+        {
+            NetworkManager.Singleton.ConnectionApprovalCallback += ConnectionApprovalCallbackFunc;
+            NetworkManager.Singleton.OnServerStopped += OnServerStoppedFunc;
+            m_spawnManager = NetworkManager.Singleton.SpawnManager;
+        }
 
         m_currentTimeScale = Time.timeScale;
-
         DontDestroyOnLoad(gameObject);
 
-        m_spawnManager = NetworkManager.Singleton.SpawnManager;
         m_initialised = true;
     }
 
@@ -104,7 +117,7 @@ public class GfcManagerGame : MonoBehaviour
 
     public static void ValidateGameManager()
     {
-        int sceneBuildIndex = LoadingScreenManager.GfGameManagerSceneIndex;
+        int sceneBuildIndex = LoadingScreenManager.GfBaseSceneIndex;
         if (!SceneManager.GetSceneByBuildIndex(sceneBuildIndex).isLoaded)
         {
             SceneManager.LoadScene(sceneBuildIndex, LoadSceneMode.Additive);
@@ -113,7 +126,7 @@ public class GfcManagerGame : MonoBehaviour
 
     public static void SetServerIp(string ip, ushort port = 7779)
     {
-        UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+        UnityTransport transport = NetworkManager.Singleton?.GetComponent<UnityTransport>();
         transport.ConnectionData.Address = ip;
         transport.ConnectionData.Port = port;
     }
@@ -125,7 +138,7 @@ public class GfcManagerGame : MonoBehaviour
 
     public static void ShutdownServer()
     {
-        NetworkManager.Singleton.Shutdown();
+        NetworkManager.Singleton?.Shutdown();
         Instance.m_isMultiplayer = false;
         if (Instance.m_gameAssetsInstance)
             Destroy(Instance.m_gameAssetsInstance);
@@ -148,7 +161,7 @@ public class GfcManagerGame : MonoBehaviour
                     Debug.Log("Singleplayer started ");
                     Instance.m_isMultiplayer = false;
                     Instantiate(Instance.m_serverManagerPrefab);
-                    NetworkManager.Singleton.StartHost();
+                    NetworkManager.Singleton?.StartHost();
                     GfcManagerGame.SingleplayerStart();
                     break;
 

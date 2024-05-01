@@ -7,13 +7,14 @@ using UnityEngine.Assertions;
 using UnityEngine.Assertions.Must;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using uei = UnityEngine.Internal;
 
-public class GfUiTools : MonoBehaviour
+public class GfxUiTools : MonoBehaviour
 {
     [SerializeField] protected GameObject m_panelPrefab;
 
     [SerializeField] private TextMeshProUGUI m_bottomNotificationText = null;
+
+    [SerializeField] private GfxNotifyPanel m_notifyPanel = null;
 
     [SerializeField] private Image m_colourOverlay = null;
 
@@ -37,16 +38,28 @@ public class GfUiTools : MonoBehaviour
 
     [SerializeField] private GfxPanelCreateData m_defaultPanelCreateData;
 
-    private static GfUiTools Instance;
+    private static GfxUiTools Instance;
     private static List<RaycastResult> RaycastResults = new(1);
     private static PointerEventData PointerEventData;
 
     private GfxPanel m_displayedNotificationPanel = null;
 
+    private GameObject m_gameObjectToSelect;
+    private bool m_inTheProcessOfSelectingGameObject = false;
+
+    private bool m_inTheProcessOfDeselectingGameObject = false;
+
+    private CoroutineHandle m_selectingGameObjectCoroutine = default;
+    private CoroutineHandle m_deselectingGameObjectCoroutine = default;
+
+    private List<string> m_notifyMessagesBuffer = new(1);
+
+    private HashSet<GameObject> m_objectsToDeselect = new(4);
+
     // Start is called before the first frame update
     void Awake()
     {
-        if (Instance) Destroy(Instance);
+        if (Instance != this) Destroy(Instance);
         Instance = this;
 
         PointerEventData = new PointerEventData(EventSystem.current);
@@ -69,16 +82,15 @@ public class GfUiTools : MonoBehaviour
         Instance = null;
     }
 
-    public static bool NotifyIsActive() { return false; }
+    public static GfxNotifyPanel GetNotifyMessagePanel() { return Instance.m_notifyPanel; }
 
-    public static void NotifyMessage(string aMessage)
-    {
-        //todo
-    }
+    public static CoroutineHandle NotifyMessage(IEnumerable<string> someMessages) { return Instance.m_notifyPanel.DrawMessages(someMessages); }
 
-    public static void NotifyMessage(List<string> someMessages)
+    public static CoroutineHandle NotifyMessage(string aMessage)
     {
-        //todo
+        Instance.m_notifyMessagesBuffer.Clear();
+        Instance.m_notifyMessagesBuffer.Add(aMessage);
+        return NotifyMessage(Instance.m_notifyMessagesBuffer);
     }
 
     public static void SetBlackBars(bool turnOn, float delay = 0, bool constantOpacity = false, bool constantAnchors = false, bool ignoreTimeScale = false)
@@ -115,18 +127,21 @@ public class GfUiTools : MonoBehaviour
         return GetUIObjectUnderMouse(Input.mousePosition);
     }
 
-    public static void CrossFadeAlpha(float alpha, float durationSeconds, bool ignoreTimeScale = false)
+    public static void CrossFadeBlackAlpha(float alpha, float durationSeconds, bool ignoreTimeScale = false)
     {
+        Instance.m_colourOverlay.raycastTarget = alpha > 0.01f;
         Instance.m_colourOverlay.CrossFadeAlpha(alpha, durationSeconds, ignoreTimeScale);
     }
 
     public static void CrossFadeColor(Color color, float durationSeconds, bool ignoreTimeScale = false, bool useAlpha = true, bool useRgb = true)
     {
+        Instance.m_colourOverlay.raycastTarget = color.a > 0.01f;
         Instance.m_colourOverlay.CrossFadeColor(color, durationSeconds, ignoreTimeScale, useAlpha, useRgb);
     }
 
     public static void SetOverlayColor(Color color)
     {
+        Instance.m_colourOverlay.raycastTarget = color.a > 0.01f;
         Instance.m_colourOverlay.color = color;
     }
 
@@ -182,6 +197,65 @@ public class GfUiTools : MonoBehaviour
     {
         if (Instance.m_displayedNotificationPanel == aPanel)
             WriteBottomNotification(null, BottomNotificationType.ERROR);
+    }
+
+    private IEnumerator<float> _SetSelectedGameObject()
+    {
+        m_inTheProcessOfSelectingGameObject = true;
+
+        while (EventSystem.current.alreadySelecting)
+            yield return Timing.WaitForOneFrame;
+
+        EventSystem.current.SetSelectedGameObject(m_gameObjectToSelect);
+        m_gameObjectToSelect = null;
+        m_inTheProcessOfSelectingGameObject = false;
+        m_selectingGameObjectCoroutine = default;
+    }
+
+    private IEnumerator<float> _RemoveSelectedGameObject()
+    {
+        m_inTheProcessOfSelectingGameObject = true;
+
+        while (EventSystem.current.alreadySelecting)
+            yield return Timing.WaitForOneFrame;
+
+        if (m_objectsToDeselect.Contains(EventSystem.current.currentSelectedGameObject))
+            EventSystem.current.SetSelectedGameObject(null);
+
+        m_objectsToDeselect.Clear();
+        m_inTheProcessOfDeselectingGameObject = false;
+        m_deselectingGameObjectCoroutine = default;
+    }
+
+    public static CoroutineHandle SetSelectedGameObject(GameObject aGameObject)
+    {
+        if (Instance.m_objectsToDeselect.Contains(aGameObject))
+            Instance.m_objectsToDeselect.Remove(aGameObject);
+
+        Instance.m_gameObjectToSelect = aGameObject;
+        if (!Instance.m_inTheProcessOfSelectingGameObject)
+            Instance.m_selectingGameObjectCoroutine = Timing.RunCoroutine(Instance._SetSelectedGameObject());
+
+        return Instance.m_selectingGameObjectCoroutine;
+    }
+
+    public static CoroutineHandle RemoveSelectedGameObject() { return SetSelectedGameObject(null); }
+
+    public static CoroutineHandle RemoveSelectedGameObject(GameObject aGameObject)
+    {
+        if (Instance.m_gameObjectToSelect == aGameObject)
+        {
+            Instance.m_gameObjectToSelect = null;
+        }
+        else
+        {
+            Instance.m_objectsToDeselect.Add(aGameObject);
+            if (!Instance.m_inTheProcessOfDeselectingGameObject)
+                Instance.m_deselectingGameObjectCoroutine = Timing.RunCoroutine(Instance._RemoveSelectedGameObject());
+        }
+
+
+        return Instance.m_deselectingGameObjectCoroutine;
     }
 
     public static void WriteBottomNotification(string aText, BottomNotificationType aNotificationType = BottomNotificationType.NORMAL)

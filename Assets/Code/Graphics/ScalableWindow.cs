@@ -95,7 +95,7 @@ public class ScalableWindow : MonoBehaviour
         if (Screen.width != m_screenResolution.x || Screen.height != m_screenResolution.y)
             OnResolutionChanged();
 
-        if (Cursor.visible && (GfUiTools.IsMouseOverUI() || m_isDragging) && (m_canMove || m_canChangeSize))
+        if (Cursor.visible && (GfxUiTools.IsMouseOverUI() || m_isDragging) && (m_canMove || m_canChangeSize))
         {
             bool mouseIsPressed = Input.GetMouseButton(0);
 
@@ -169,11 +169,11 @@ public class ScalableWindow : MonoBehaviour
                 m_isDraggingTop = !m_isDraggingDown && m_borderSelectionSize > System.MathF.Abs(mousePos.y - top);
 
                 bool dragValid = m_isDraggingRight || m_isDraggingLeft || m_isDraggingDown || m_isDraggingTop;
-                bool canSizeDrag = m_canChangeSize && dragValid && GfUiTools.IsMouseOverUICollision(mousePos, gameObject);
+                bool canSizeDrag = m_canChangeSize && dragValid && GfxUiTools.IsMouseOverUICollision(mousePos, gameObject);
                 m_isChangingSize = canSizeDrag && Input.GetMouseButtonDown(0);
 
                 m_lastMousePos = mousePos;
-                m_isDragging = m_isChangingSize || (m_canMove && !dragValid && Input.GetMouseButtonDown(0) && GfUiTools.IsMouseOverUICollision(mousePos, gameObject));
+                m_isDragging = m_isChangingSize || (m_canMove && !dragValid && Input.GetMouseButtonDown(0) && GfxUiTools.IsMouseOverUICollision(mousePos, gameObject));
                 m_initialPosition = position;
 
                 if (m_isChangingSize)

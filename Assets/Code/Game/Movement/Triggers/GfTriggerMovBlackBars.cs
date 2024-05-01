@@ -30,7 +30,7 @@ public class GfTriggerMovBlackBars : GfMovementTriggerable
     private void Start()
     {
         if (m_autoTrigger)
-            GfUiTools.SetBlackBars(m_turnOn, m_delay, m_constantOpacity, m_constantAnchors, m_ignoreTimeScale);
+            GfxUiTools.SetBlackBars(m_turnOn, m_delay, m_constantOpacity, m_constantAnchors, m_ignoreTimeScale);
 
         if (m_destroyAfterTrigger)
             GfcPooling.Destroy(gameObject);
@@ -40,7 +40,7 @@ public class GfTriggerMovBlackBars : GfMovementTriggerable
     {
         if (!m_onlyForPlayer || GfgManagerLevel.GetPlayer() == movement.transform)
         {
-            GfUiTools.SetBlackBars(m_turnOn, m_delay, m_constantOpacity, m_constantAnchors, m_ignoreTimeScale);
+            GfxUiTools.SetBlackBars(m_turnOn, m_delay, m_constantOpacity, m_constantAnchors, m_ignoreTimeScale);
             if (m_destroyAfterTrigger)
                 GfcPooling.Destroy(gameObject);
         }

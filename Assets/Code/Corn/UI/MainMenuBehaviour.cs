@@ -22,20 +22,16 @@ public class MainMenuBehaviour : MonoBehaviour
         Cursor.lockState = CursorLockMode.Confined;
         Cursor.visible = true;
 
-        int mainSceneIndex = LoadingScreenManager.GfGameManagerSceneIndex;
-        if (!SceneManager.GetSceneByBuildIndex(mainSceneIndex).isLoaded)
-        {
-            SceneManager.LoadScene(mainSceneIndex, LoadSceneMode.Additive);
-        }
+
     }
 
     private void Start()
     {
         //m_fadeOverlay.CrossFadeAlpha(1f, 0f, true);
-        GfUiTools.SetOverlayColor(Color.black);
-        GfUiTools.CrossFadeAlpha(1f, 0);
+        GfxUiTools.SetOverlayColor(Color.black);
+        GfxUiTools.CrossFadeBlackAlpha(1f, 0);
         EnableScreen(MenuScreens.MAIN);
-        GfUiTools.CrossFadeAlpha(0f, m_fadeDelay);
+        GfxUiTools.CrossFadeBlackAlpha(0f, m_fadeDelay);
         Time.timeScale = 1;
     }
 
@@ -94,7 +90,7 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         yield return new WaitForSeconds(m_fadeDelay);
 
-        GfUiTools.CrossFadeAlpha(0f, m_fadeDelay);
+        GfxUiTools.CrossFadeBlackAlpha(0f, m_fadeDelay);
 
         yield return new WaitForSeconds(m_fadeDelay);
     }

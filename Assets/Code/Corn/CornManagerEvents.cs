@@ -2,20 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MEC;
+using System;
+using Unity.Collections;
 
 public class CornManagerEvents : MonoBehaviour
 {
     protected static CornManagerEvents Instance;
 
-    [SerializeField] protected float m_cornEnergyCost = 20;
-
-    [SerializeField] protected uint m_cornTimeCost = 2;
-
     [SerializeField] protected float m_screenFadeTime = 0.6f;
 
-    [SerializeField] protected CornPlayerResources m_resourcesModifierDaily = default;
-
     public const int DICE_ROLL_NUM_FACES = 10;
+
+    private bool m_canPlayEvent = true;
+
+    private List<string> m_messagesBuffer = new(4);
+
+    protected static List<string> GetMessagesBuffer()
+    {
+        if (Instance.m_messagesBuffer.Count > 0)
+            Debug.LogError("The messages buffer is not empty, was it not cleared when finished using or is another action happening right now?");
+
+        return Instance.m_messagesBuffer;
+    }
 
     // Start is called before the first frame update
     void Awake()
@@ -24,136 +32,159 @@ public class CornManagerEvents : MonoBehaviour
         Instance = this;
     }
 
-    public static void ExecuteEvent(CornEvent aEvent)
+    public static void UpdateVisuals()
     {
-        Timing.RunCoroutine(_ExecuteEvent(aEvent));
+
     }
 
-    private static IEnumerator<float> _ExecuteEvent(CornEvent aEvent)
-    {
-        float fadeTime = Instance.m_screenFadeTime;
-        PlayerSaveData playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
-
-        bool wasteTime = aEvent.EventHasCornRoll && playerSaveData.Resources.MentalSanity < UnityEngine.Random.Range(1, DICE_ROLL_NUM_FACES);
-
-        if (wasteTime)
-        {
-            ExecuteCornEvent();
-        }
-        else //perform the event normally
-        {
-            //event stuff
-            _ExecuteTransition("Event " + aEvent.EventType.ToString() + " finished.");
-            ProgressTime(aEvent.HoursDuration);
-        }
-
-        yield return Timing.WaitForOneFrame;
-    }
-
-    private static IEnumerator<float> _ExecuteTransition(string aMessage = null, List<string> someMessages = null)
+    private static IEnumerator<float> _FlushMessagesAndDrawHud()
     {
         float fadeTime = Instance.m_screenFadeTime;
 
-        GfUiTools.CrossFadeAlpha(1, fadeTime);
+        GfxUiTools.CrossFadeBlackAlpha(1, fadeTime);
+        GfxUiTools.RemoveSelectedGameObject();
+
         yield return Timing.WaitForSeconds(fadeTime);
 
-        UpdateHud();
+        UpdateVisuals();
 
-        GfUiTools.NotifyMessage(aMessage);
-        while (GfUiTools.NotifyIsActive())
-            yield return Timing.WaitForSeconds(0.03f);
+        yield return Timing.WaitUntilDone(GfxUiTools.NotifyMessage(Instance.m_messagesBuffer));
+        Instance.m_messagesBuffer.Clear();
 
-        GfUiTools.NotifyMessage(someMessages);
-        while (GfUiTools.NotifyIsActive())
-            yield return Timing.WaitForSeconds(0.03f);
-
-        GfUiTools.CrossFadeAlpha(0, fadeTime);
+        GfxUiTools.CrossFadeBlackAlpha(0, fadeTime);
         yield return Timing.WaitForSeconds(fadeTime); ;
     }
 
-    public static void ExecuteCornEvent()
+    //should only be called when an action happens
+    protected static CoroutineHandle ProgressTime(uint aElapsedHours, List<string> someMessages = null)
     {
         PlayerSaveData playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
-        playerSaveData.Consumables.Energy -= Instance.m_cornEnergyCost;
-        ProgressTime(Instance.m_cornTimeCost);
+        uint daysPassed = playerSaveData.ProgressTime(aElapsedHours);
 
-        Timing.RunCoroutine(_ExecuteTransition("You wasted time and didn't do anything... You watched corn videos obsessively."));
-    }
-
-    public static void ProgressTime(uint aElapsedHours)
-    {
-        PlayerSaveData playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
-        playerSaveData.CurrentTime += aElapsedHours;
-        string message = null;
-
-        if (playerSaveData.CurrentTime >= 24)
+        for (int i = 0; i < daysPassed; ++i)
         {
+            someMessages ??= GetMessagesBuffer();
+
             playerSaveData.CurrentTime %= 24;
             playerSaveData.CurrentDay++;
-            message = "Day " + playerSaveData.CurrentDay;
+            string message = "Day " + playerSaveData.CurrentDay;
 
-            playerSaveData.Resources -= Instance.m_resourcesModifierDaily;
+            bool loseSanity = false;
+            bool gainSanity = true;
 
-            bool loseSanity = playerSaveData.Resources.Chores <= 0
-                            || playerSaveData.Resources.Groceries <= 0
-                            || playerSaveData.Resources.PersonalNeeds <= 0
-                            || playerSaveData.Resources.PhysicalHealth <= 0
-                            || playerSaveData.Resources.Productivity <= 0
-                            || playerSaveData.Resources.Relantionship <= 0
-                            || playerSaveData.Resources.SocialLife <= 0;
-
-            bool gainSanity = playerSaveData.Resources.Chores >= 0.5
-                        && playerSaveData.Resources.Groceries >= 0.5
-                        && playerSaveData.Resources.PersonalNeeds >= 0.5
-                        && playerSaveData.Resources.PhysicalHealth >= 0.5
-                        && playerSaveData.Resources.Productivity >= 0.5
-                        && playerSaveData.Resources.Relantionship >= 0.5
-                        && playerSaveData.Resources.SocialLife >= 0.5;
+            for (int resourceIndex = 0; resourceIndex < (int)PlayerResources.COUNT; ++resourceIndex)
+            {
+                loseSanity |= playerSaveData.Resources[resourceIndex] <= 0;
+                gainSanity &= playerSaveData.Resources[resourceIndex] >= 0.5f;
+            }
 
             if (gainSanity)
             {
                 message += ", +1 sanity, good job.";
-                playerSaveData.Resources.MentalSanity++;
+                playerSaveData.MentalSanity++;
             }
             else if (loseSanity)
             {
                 message += ", -1 sanity, try to take better care of yourself, otherwise, you will spiral out of control...";
-                playerSaveData.Resources.MentalSanity--;
+                playerSaveData.MentalSanity--;
             }
 
-            playerSaveData.Resources.MentalSanity = Mathf.Clamp(playerSaveData.Resources.MentalSanity, 0, DICE_ROLL_NUM_FACES);
+            someMessages.Add(message);
+            playerSaveData.MentalSanity = Mathf.Clamp(playerSaveData.MentalSanity, 0, DICE_ROLL_NUM_FACES);
         }
 
-        Timing.RunCoroutine(_ExecuteTransition(message));
+        return Timing.RunCoroutine(_FlushMessagesAndDrawHud());
     }
 
-    public static void UpdateHud()
+    private static IEnumerator<float> _ExecuteEvent(CornEvent aEvent)
     {
+        string message;
+        CornEventCostAndRewards eventDetails = CornManagerBalancing.GetEventCostAndRewards(aEvent);
+        bool wasteTime = eventDetails.EventHasCornRoll && MentalSanity < UnityEngine.Random.Range(1, DICE_ROLL_NUM_FACES);
 
+        if (wasteTime)
+        {
+            eventDetails = CornManagerBalancing.GetEventCostAndRewards(CornEventType.CORN);
+            message = "You wasted time and didn't do anything... You watched corn videos obsessively.";
+        }
+        else //perform the event normally
+        {
+            //event stuff
+            message = "<i>Pretty</i> cool event <color=red>" + aEvent.EventType.ToString() + "</color> was finished.";
+        }
+
+        List<string> messagesBuffer = GetMessagesBuffer();
+        messagesBuffer.Add(message);
+
+        eventDetails.ApplyModifiersToPlayer(0);
+
+        CoroutineHandle transitionCoroutine = ProgressTime(eventDetails.HoursDuration, messagesBuffer);
+        yield return Timing.WaitUntilDone(transitionCoroutine);
+
+        Instance.m_canPlayEvent = true;
     }
+
+    public static void ExecuteEvent(CornEvent aEvent)
+    {
+        if (Instance.m_canPlayEvent)
+        {
+            Instance.m_canPlayEvent = false;
+            Timing.RunCoroutine(_ExecuteEvent(aEvent));
+        }
+        else
+            Debug.LogWarning("Already in the process of executing an event, could not exeucte event " + aEvent.EventType + " " + aEvent.EventTypeSub);
+    }
+
+    public static void ApplyModifier(PlayerResources aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aType, aValue); }
+    public static void ApplyModifier(PlayerConsumables aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aType, aValue); }
+
+    public static void ApplyModifier(PlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifier(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
+
+    public static void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerResourcesModifier> { if (someModifiers != null) foreach (PlayerResourcesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { if (someModifiers != null) foreach (PlayerConsumablesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
+    public static int MentalSanity { get { return GfgManagerSaveData.GetActivePlayerSaveData().MentalSanity; } }
 }
 
 [System.Serializable]
 public struct CornEvent
 {
-    public CornPlayerConsumables ConsumablesModifier;
-    public CornPlayerResources ResourcesModifier;
-    public string NotificationText;
+    public CornEvent(CornEventType aEventType, uint aEventTypeSub = 0)
+    {
+        EventType = aEventType;
+        EventTypeSub = aEventTypeSub;
+    }
+
     public CornEventType EventType;
-    public bool EventHasCornRoll;
-    public uint HoursDuration;
+    public uint EventTypeSub; //the sub event of the EventType, single EventType can have multiple events
 }
 
 public enum CornEventType
 {
-    NONE,
+    SLEEP,
     WORK,
-    GROCERIES,
     CHORES,
     SOCIAL,
-    RELATIONSHIP,
     GYM,
-    PERSONAL_LEISURE,
-    PERSONAL_BUY,
+    PERSONAL_TIME,
+    CORN,
     RANDOM,
+    PERSONAL_GIFT,
+    COUNT
+}
+
+public enum CornEventTypeWork
+{
+    WORK_ON_GAME,
+    STREAM_WORK,
+    CONTRACT_WORK,
+    COUNT
+}
+
+public enum CornEventTypeSocial
+{
+    COOL_FRIEND,
+    SHADY_FRIEND,
+    NO_IDEA_FRIEND,
+    COUNT
 }

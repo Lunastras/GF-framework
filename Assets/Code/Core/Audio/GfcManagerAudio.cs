@@ -1,7 +1,5 @@
-﻿using UnityEngine.Audio;
-using System;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
+using UnityEngine.Audio;
 using static Unity.Mathematics.math;
 
 [RequireComponent(typeof(AudioSource))]
@@ -10,13 +8,7 @@ public class GfcManagerAudio : MonoBehaviour
     private static GfcManagerAudio Instance = null;
 
     [SerializeField]
-    private AudioMixerGroup[] m_mixerGroups = null;
-
-    [SerializeField]
-    private string[] m_mixerGroupsExposedVolumeString = null;
-
-    [SerializeField]
-    private string[] m_mixerGroupsExposedPitchString = null;
+    private AudioMixerTypeInstance[] m_mixerGroups = null;
 
     [SerializeField]
     private GameObject m_audioObjectPrefab = null;
@@ -29,20 +21,25 @@ public class GfcManagerAudio : MonoBehaviour
 
     private static readonly Vector3 ZERO3 = Vector3.zero;
 
-    [SerializeField]
     private AudioSource m_audioLoadAudioSource = null;
 
     //twelveth root of 2
     const float NOTE_PROGRESSION_COEF = 1.05946309436f;
 
+    const string VOLUME_STRING = "Volume";
+
+    const string PITCH_STRING = "Pitch";
+
     void Awake()
     {
-        m_audioLoadAudioSource = GetComponent<AudioSource>();
-
         if (this != Instance)
             Destroy(Instance);
-
         Instance = this;
+
+        m_audioLoadAudioSource = GetComponent<AudioSource>();
+        for (int i = 0; i < m_mixerGroups.Length; ++i)
+            if ((int)m_mixerGroups[i].AudioMixerType != i)
+                Debug.LogError("The audio mixer group of type " + m_mixerGroups[i].AudioMixerType + " is at index " + i + " instead of index " + (int)m_mixerGroups[i].AudioMixerType);
     }
 
     public static void LoadAudioClip(GfcSound sound)
@@ -70,61 +67,57 @@ public class GfcManagerAudio : MonoBehaviour
         return Mathf.Log10(Mathf.Clamp(value, 0.00001f, 1f)) * ((Instance.m_maxVolumeDecibels - Instance.m_minVolumeDecibels) * 0.25f + Instance.m_maxVolumeDecibels);
     }
 
-    public static void SetMixerVolume(AudioMixerType type, float volume)
+    public static bool SetMixerVolumeRaw(AudioMixerType aMixerType, float volume)
     {
-        int index = (int)type;
-        Instance.m_mixerGroups[index].audioMixer.SetFloat(Instance.m_mixerGroupsExposedVolumeString[index], ValueToVolume(volume));
+        int index = (int)aMixerType;
+        return Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.SetFloat(VOLUME_STRING, volume);
     }
 
-    public static void SetMixerVolumeRaw(AudioMixerType type, float volume)
-    {
-        int index = (int)type;
-        bool worked = Instance.m_mixerGroups[index].audioMixer.SetFloat(Instance.m_mixerGroupsExposedVolumeString[index], volume);
-    }
+    public static bool SetMixerVolume(AudioMixerType aMixerType, float volume) { return SetMixerVolumeRaw(aMixerType, ValueToVolume(volume)); }
 
     public static float GetMixerVolumeRaw(AudioMixerType type)
     {
         int index = (int)type;
-        Instance.m_mixerGroups[index].audioMixer.GetFloat(Instance.m_mixerGroupsExposedVolumeString[index], out float val);
+        Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.GetFloat(VOLUME_STRING, out float val);
         return val;
     }
 
-    public static void SetMixerPitch(AudioMixerType type, float volume)
+    public static bool SetMixerPitch(AudioMixerType aMixerType, float volume)
     {
-        int index = (int)type;
-        bool worked = Instance.m_mixerGroups[index].audioMixer.SetFloat(Instance.m_mixerGroupsExposedPitchString[index], volume);
+        int index = (int)aMixerType;
+        return Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.SetFloat(PITCH_STRING, volume);
     }
 
-    public static float GetMixerPitch(AudioMixerType type)
+    public static float GetMixerPitch(AudioMixerType aMixerType)
     {
-        int index = (int)type;
-        Instance.m_mixerGroups[index].audioMixer.GetFloat(Instance.m_mixerGroupsExposedPitchString[index], out float val);
+        int index = (int)aMixerType;
+        Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.GetFloat(PITCH_STRING, out float val);
         return val;
     }
 
-    public static GfcAudioSource GetAudioObject(Transform parent = null)
+    public static GfcAudioSource GetAudioObject(Transform aParent = null)
     {
         GfcAudioSource src = GfcPooling.PoolInstantiate(Instance.m_audioObjectPrefab).GetComponent<GfcAudioSource>();
-        src.SetParent(parent);
+        src.SetParent(aParent);
         return src;
     }
 
-    public static AudioMixerGroup GetMixerGroup(uint index)
+    public static AudioMixerGroup GetMixerGroup(uint aIndex)
     {
         AudioMixerGroup ret = null;
         int length = Instance.m_mixerGroups.Length;
         if (length > 0)
-            if (length > index)
-                ret = Instance.m_mixerGroups[index];
+            if (length > aIndex)
+                ret = Instance.m_mixerGroups[aIndex].AudioMixerGroup;
             else
-                ret = Instance.m_mixerGroups[0]; //if the type has no mixer group, give default mixer group
+                ret = Instance.m_mixerGroups[0].AudioMixerGroup; //if the type has no mixer group, give default mixer group
 
         return ret;
     }
 
-    public static AudioMixerGroup GetMixerGroup(AudioMixerType index)
+    public static AudioMixerGroup GetMixerGroup(AudioMixerType aMixerType)
     {
-        return GetMixerGroup((uint)index);
+        return GetMixerGroup((uint)aMixerType);
     }
 
     public static void PlayAudio(AudioSource audio, float delay = 0, float volume = -1, float pitch = -1, bool loop = false, AudioMixerType mixerType = AudioMixerType.FX_DEFAULT)
@@ -209,12 +202,29 @@ public class GfcManagerAudio : MonoBehaviour
 public enum AudioMixerType
 {
     MASTER,
-    MUSIC_MASTER, MUSIC_MAIN, MUSIC_ACTION, MUSIC_AUX,
-    FX_MASTER, FX_DEFAULT, FX_UI, FX_AUX
 
+    MUSIC_MASTER
+    , MUSIC_MAIN
+    , MUSIC_SECONDARY
+    , MUSIC_AMBIENT
+
+    , FX_MASTER
+    , FX_DEFAULT
+    , FX_VOICES
+    , FX_UI,
+
+    MUSIC_AUX,
+    FX_AUX,
 }
 
 public enum PianoNotes
 {
     C, C_SHARP, D, D_SHARP, E, F, F_SHARP, G, G_SHARP, A, A_SHARP, B
+}
+
+[System.Serializable]
+public struct AudioMixerTypeInstance
+{
+    public AudioMixerType AudioMixerType;
+    public AudioMixerGroup AudioMixerGroup;
 }
