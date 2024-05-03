@@ -117,7 +117,7 @@ public class GfgShadowProjectorManipulator : MonoBehaviour
             if (m_parentMovement)
             {
                 forward = m_parentMovement.UpVecEstimated();
-                GfcTools.Mult3(ref forward, -1);
+                GfcTools.Mult(ref forward, -1);
             }
             else
                 forward = m_transform.forward;

@@ -197,7 +197,7 @@ public class GfgCameraController : MonoBehaviour
 
             RaycastHit[] raycastHits = GfcPhysics.GetRaycastHits();
             float minDistanceOffset = m_minDstFromtarget;
-            GfcTools.Add3(ref desiredTargetPos, forward * -minDistanceOffset);
+            GfcTools.Add(ref desiredTargetPos, forward * -minDistanceOffset);
 
             m_collidingWithSmth = 0 < Physics.SphereCastNonAlloc(desiredTargetPos, m_collisionRadius, -forward, raycastHits, m_dstFromtarget, layermask, QueryTriggerInteraction.Ignore);
 

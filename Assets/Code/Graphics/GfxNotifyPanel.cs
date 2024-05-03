@@ -89,7 +89,6 @@ public class GfxNotifyPanel : MonoBehaviour
 
             m_notifyBoxText.text = "";
             m_textWriter.m_textMeshPro = m_notifyBoxText;
-            m_textWriter.SetString(m_messagesBuffer[i]);
 
             for (int transitionIndex = 0; transitionIndex < 2; ++transitionIndex)
             {
@@ -112,11 +111,13 @@ public class GfxNotifyPanel : MonoBehaviour
 
                 if (transitionIndex == 0)
                 {
-                    m_textWriter.WriteText(m_notifyBoxText);
+                    m_textWriter.SetString(m_messagesBuffer[i]);
+                    m_textWriter.WriteText();
+
                     while (m_textWriter.WritingText())
                     {
                         if (submitInput.PressedSinceLastCheck())
-                            m_textWriter.IncrementAll();
+                            yield return Timing.WaitUntilDone(m_textWriter.FinishText());
 
                         yield return Timing.WaitForOneFrame;
                     }
@@ -132,6 +133,18 @@ public class GfxNotifyPanel : MonoBehaviour
 
                 while (transitionIndex == 0 && !submitInput.PressedSinceLastCheck())
                     yield return Timing.WaitForOneFrame;
+
+                if (transitionIndex == 0)
+                {
+                    m_textWriter.EraseText(1);
+                    while (m_textWriter.WritingText())
+                    {
+                        if (submitInput.PressedSinceLastCheck())
+                            yield return Timing.WaitUntilDone(m_textWriter.FinishText());
+
+                        yield return Timing.WaitForOneFrame;
+                    }
+                }
             }
         }
 

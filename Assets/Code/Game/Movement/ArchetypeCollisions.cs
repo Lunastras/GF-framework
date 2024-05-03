@@ -51,11 +51,11 @@ public class ArchetypeCapsule : ArchetypeCollision
 
         GfcTools.RemoveAxis(ref dir, m_topDir);
         dir.Normalize();
-        GfcTools.Mult3(ref dir, xScalar);
+        GfcTools.Mult(ref dir, xScalar);
 
         Vector3 point = m_topDir;
-        GfcTools.Mult3(ref point, yScalar);
-        GfcTools.Add3(ref point, dir);
+        GfcTools.Mult(ref point, yScalar);
+        GfcTools.Add(ref point, dir);
         return point;
     }
 
@@ -108,7 +108,7 @@ public class ArchetypeCapsule : ArchetypeCollision
 
     public override void Trace(Vector3 _pos, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float bias, out int _tracecount)
     {
-        GfcTools.Minus3(ref _pos, _direction * bias);
+        GfcTools.Minus(ref _pos, _direction * bias);
         _tracecount = Physics.CapsuleCastNonAlloc(_pos - m_topOffset, _pos + m_topOffset, m_radius, _direction,
              _hits, _len + bias, _filter, _interacttype);
     }
@@ -134,7 +134,7 @@ public class ArchetypeSphere : ArchetypeCollision
     public override Vector3 GetLocalBottomPoint()
     {
         Vector3 botDir = m_collider.transform.up;
-        GfcTools.Mult3(ref botDir, -m_radius);
+        GfcTools.Mult(ref botDir, -m_radius);
         return botDir;
     }
 
@@ -162,7 +162,7 @@ public class ArchetypeSphere : ArchetypeCollision
 
     public override void Trace(Vector3 _pos, Vector3 _direction, float _len, LayerMask _filter, QueryTriggerInteraction _interacttype, RaycastHit[] _hits, float bias, out int _tracecount)
     {
-        GfcTools.Minus3(ref _pos, _direction * bias);
+        GfcTools.Minus(ref _pos, _direction * bias);
 
         _tracecount = Physics.SphereCastNonAlloc(_pos, m_radius, _direction, _hits, _len + bias, _filter, _interacttype);
     }

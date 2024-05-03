@@ -155,7 +155,7 @@ public class GfRunnerWallrun : GfRunnerSimple
             GfcTools.Normalize(ref rotationAxis);
 
             Vector3 jumpDir = Quaternion.AngleAxis(-m_wallrunJumpAngle, rotationAxis) * horizontalAxis;
-            GfcTools.Mult3(ref jumpDir, m_wallRunJumpForce);
+            GfcTools.Mult(ref jumpDir, m_wallRunJumpForce);
             m_mov.SetVelocity(jumpDir);
 
             DetachFromWall(true);
@@ -215,13 +215,13 @@ public class GfRunnerWallrun : GfRunnerSimple
         unwantedVelocity.z -= m_wallRunDir.z * minAux;
 
         float unwantedSpeed = unwantedVelocity.magnitude;
-        if (unwantedSpeed > 0.000001F) GfcTools.Div3(ref unwantedVelocity, unwantedSpeed);
+        if (unwantedSpeed > 0.000001F) GfcTools.Div(ref unwantedVelocity, unwantedSpeed);
 
         float deaccMagn = Min(unwantedSpeed, m_deacceleration * deltaTime * m_deaccelerationMultiplier);
 
-        GfcTools.Mult3(ref unwantedVelocity, deaccMagn);
-        GfcTools.Minus3(ref velocity, unwantedVelocity);//add deacceleration
-        GfcTools.Add3(ref velocity, m_wallRunDir * (coef * acceleration));
+        GfcTools.Mult(ref unwantedVelocity, deaccMagn);
+        GfcTools.Minus(ref velocity, unwantedVelocity);//add deacceleration
+        GfcTools.Add(ref velocity, m_wallRunDir * (coef * acceleration));
 
         m_mov.SetVelocity(velocity);
     }
@@ -252,7 +252,7 @@ public class GfRunnerWallrun : GfRunnerSimple
         if (movDirMag > 0.05f)
         {
             testVector = movDir;
-            GfcTools.Div3(ref testVector, Sqrt(movDirMag));
+            GfcTools.Div(ref testVector, Sqrt(movDirMag));
             normalValid = m_wallrunNormalMinDot <= -Vector3.Dot(testVector, horizontalNormal);
         }
         else
@@ -265,7 +265,7 @@ public class GfRunnerWallrun : GfRunnerSimple
             if (velSqrMag >= sqrdSpeedRequired)
             {
                 testVector = horizontalVelocity;
-                GfcTools.Div3(ref testVector, Sqrt(velSqrMag));
+                GfcTools.Div(ref testVector, Sqrt(velSqrMag));
 
                 Vector3 forwardDir = m_transform.forward;
                 GfcTools.RemoveAxis(ref forwardDir, upVec);
@@ -366,7 +366,7 @@ public class GfRunnerWallrun : GfRunnerSimple
         m_transform.rotation = Quaternion.LookRotation(-normal, m_wallRunDir);
         GfcTools.RemoveAxis(ref velocity, normal);
         float speedInDesiredDir = Min(m_maxWallRunSpeed, Max(0, Vector3.Dot(velocity, m_wallRunDir)));
-        GfcTools.Minus3(ref velocity, normal);
+        GfcTools.Minus(ref velocity, normal);
         m_wallDistanceRan = 0;
         m_slidingOffWall = false;
         velocity = m_wallRunDir * speedInDesiredDir;

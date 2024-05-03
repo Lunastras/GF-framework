@@ -36,7 +36,7 @@ public class GfrQuadFollowCamera : MonoBehaviour
             if (m_transformCharacter) upVec = m_transformCharacter.up;
 
             Vector3 dirFromCamera = m_transform.position;
-            GfcTools.Minus3(ref dirFromCamera, cameraTransform.position);
+            GfcTools.Minus(ref dirFromCamera, cameraTransform.position);
             GfcTools.Normalize(ref dirFromCamera);
 
             float angle = GfcTools.AngleDegNorm(upVec, dirFromCamera);

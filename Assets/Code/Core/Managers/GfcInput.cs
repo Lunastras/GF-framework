@@ -111,11 +111,13 @@ public struct GfcInputTracker
 
     private bool m_previousPressedState;
 
+    private bool m_stateCheckedThisFrame;
 
     public GfcInputTracker(GfcInputType aType, float aError = GfcInput.AXIS_DEAD_ZONE)
     {
         InputType = aType;
         AxisError = aError;
+        m_stateCheckedThisFrame = false;
         m_lastFrameOfUpdate = Time.frameCount;
         m_previousPressedState = m_currentPressedState = GfcInput.GetAxisInput(InputType, AxisError);
     }
@@ -128,6 +130,7 @@ public struct GfcInputTracker
             m_previousPressedState = m_currentPressedState;
             m_currentPressedState = GfcInput.GetAxisInput(InputType, AxisError);
             m_lastFrameOfUpdate = currentFrame;
+            m_stateCheckedThisFrame = false;
         }
     }
 
@@ -137,15 +140,19 @@ public struct GfcInputTracker
         return m_currentPressedState;
     }
 
-    public bool PressedSinceLastCheck()
+    public bool PressedSinceLastCheck(bool aUniqueThisFrame = true)
     {
         UpdateState();
-        return !m_previousPressedState && m_currentPressedState;
+        bool pressed = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && !m_previousPressedState && m_currentPressedState;
+        m_stateCheckedThisFrame = true;
+        return pressed;
     }
 
-    public bool ReleasedSinceLastCheck()
+    public bool ReleasedSinceLastCheck(bool aUniqueThisFrame = true)
     {
         UpdateState();
-        return m_previousPressedState && !m_currentPressedState;
+        bool released = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && m_previousPressedState && !m_currentPressedState;
+        m_stateCheckedThisFrame = true;
+        return released;
     }
 }

@@ -1,13 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System;
-using System.Reflection;
-using System.Linq;
-using Unity.Collections;
-using Unity.Burst.Intrinsics;
 using Unity.Jobs;
-using Unity.Mathematics;
 
 public abstract class GfcJobChild : MonoBehaviour
 {
@@ -37,20 +30,20 @@ public abstract class GfcJobChild : MonoBehaviour
 
     [SerializeField]
     private JobParentSubscriberData m_jobSubscriberType = default;
-    private JobParentIndexes m_jobParentIndexes = new(-1, -1, -1);
+    private JobParentIndexes m_jobParentIndeces = new(-1, -1, -1);
 
     public int GetJobParentIndex(UpdateTypes updateType)
     {
         switch (updateType)
         {
             case (UpdateTypes.LATE_UPDATE):
-                return m_jobParentIndexes.LateUpdateIndex;
+                return m_jobParentIndeces.LateUpdateIndex;
 
             case (UpdateTypes.FIXED_UPDATE):
-                return m_jobParentIndexes.FixedUpdateIndex;
+                return m_jobParentIndeces.FixedUpdateIndex;
 
             case (UpdateTypes.UPDATE):
-                return m_jobParentIndexes.UpdateIndex;
+                return m_jobParentIndeces.UpdateIndex;
         }
 
         return -1;
@@ -60,17 +53,16 @@ public abstract class GfcJobChild : MonoBehaviour
     {
         switch (updateType)
         {
-            case (UpdateTypes.LATE_UPDATE):
-                m_jobParentIndexes.LateUpdateIndex = index;
-
+            case UpdateTypes.LATE_UPDATE:
+                m_jobParentIndeces.LateUpdateIndex = index;
                 break;
 
-            case (UpdateTypes.FIXED_UPDATE):
-                m_jobParentIndexes.FixedUpdateIndex = index;
+            case UpdateTypes.FIXED_UPDATE:
+                m_jobParentIndeces.FixedUpdateIndex = index;
                 break;
 
-            case (UpdateTypes.UPDATE):
-                m_jobParentIndexes.UpdateIndex = index;
+            case UpdateTypes.UPDATE:
+                m_jobParentIndeces.UpdateIndex = index;
                 break;
         }
     }

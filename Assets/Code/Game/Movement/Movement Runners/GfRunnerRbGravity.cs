@@ -26,15 +26,15 @@ public class GfRunnerRbGravity : GfRunnerTemplate
     {
         m_touchedParent = false;
         Vector3 upVec = m_mov.GetUpVecRaw();
-        GfcTools.Mult3(ref upVec, m_mass * deltaTime * -1f);
+        GfcTools.Mult(ref upVec, m_mass * deltaTime * -1f);
         m_rigidBody.AddForce(upVec, ForceMode.VelocityChange);
 
         Vector3 currentVelocity = m_rigidBody.velocity;
         float sqrSpeed = m_rigidBody.velocity.sqrMagnitude;
         if (sqrSpeed > m_maxFallSpeed * m_maxFallSpeed)
         {
-            GfcTools.Div3(ref currentVelocity, System.MathF.Sqrt(sqrSpeed)); //normalize the speed
-            GfcTools.Mult3(ref currentVelocity, m_maxFallSpeed);
+            GfcTools.Div(ref currentVelocity, System.MathF.Sqrt(sqrSpeed)); //normalize the speed
+            GfcTools.Mult(ref currentVelocity, m_maxFallSpeed);
             m_rigidBody.velocity = currentVelocity;
         }
     }

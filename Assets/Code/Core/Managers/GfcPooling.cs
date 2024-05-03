@@ -219,7 +219,7 @@ public class GfcPooling : MonoBehaviour
             {
                 Transform parent = obj.parent;
                 if (parent)
-                    GfcTools.Add3(ref position, parent.position);
+                    GfcTools.Add(ref position, parent.position);
             }
 
             rb.position = position;
@@ -241,7 +241,7 @@ public class GfcPooling : MonoBehaviour
                 Transform parent = obj.parent;
                 if (parent)
                 {
-                    GfcTools.Add3(ref position, parent.position);
+                    GfcTools.Add(ref position, parent.position);
                     rotation = parent.rotation * rotation;
                 }
             }

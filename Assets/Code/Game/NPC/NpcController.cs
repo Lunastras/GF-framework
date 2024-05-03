@@ -198,9 +198,9 @@ public class NpcController : MonoBehaviour
             m_timeUntilNextTargetCheck = m_targetCheckCooldown;
             Vector3 currentPosition = m_transform.position;
             Vector3 dirToTarget = target.position;
-            GfcTools.Minus3(ref dirToTarget, currentPosition);
+            GfcTools.Minus(ref dirToTarget, currentPosition);
             float distanceFromTarget = dirToTarget.magnitude;
-            if (distanceFromTarget >= 0.00001f) GfcTools.Div3(ref dirToTarget, distanceFromTarget);
+            if (distanceFromTarget >= 0.00001f) GfcTools.Div(ref dirToTarget, distanceFromTarget);
 
             auxCanSeeTarget = distanceFromTarget <= lineOfSightLength
                                 && (unlimitedFov || m_cosFieldOfView <= Vector3.Dot(m_transform.forward, dirToTarget));
@@ -227,7 +227,7 @@ public class NpcController : MonoBehaviour
 
         Vector3 targetPosition = destination.LastKnownPosition();
         Vector3 dirToTarget = targetPosition;
-        GfcTools.Minus3(ref dirToTarget, m_transform.position);
+        GfcTools.Minus(ref dirToTarget, m_transform.position);
 
         if (canSeeTarget)
         {
@@ -315,7 +315,7 @@ public class NpcController : MonoBehaviour
             }
 
             movementDir = nodePosition;
-            GfcTools.Minus3(ref movementDir, position);
+            GfcTools.Minus(ref movementDir, position);
         }
         else
         {
@@ -410,7 +410,7 @@ public class NpcController : MonoBehaviour
     private bool CheckArrivedAtDestination()
     {
         Vector3 dirToTarget = m_destination.LastKnownPosition(); ;
-        GfcTools.Minus3(ref dirToTarget, transform.position);
+        GfcTools.Minus(ref dirToTarget, transform.position);
 
         return dirToTarget.sqrMagnitude < 1f;
     }

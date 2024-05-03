@@ -92,12 +92,12 @@ public class GfRunnerFast : GfRunnerTemplate
         Vector3 slope = m_mov.GetSlope();
         Vector3 velocity = m_mov.GetVelocity();
 
-        GfcTools.Mult3(ref movDir, m_effectiveSpeed);
+        GfcTools.Mult(ref movDir, m_effectiveSpeed);
 
         if (!CanFly)
         {
-            GfcTools.Mult3(ref slope, m_fallSpeed);
-            GfcTools.Minus3(ref movDir, slope);
+            GfcTools.Mult(ref slope, m_fallSpeed);
+            GfcTools.Minus(ref movDir, slope);
         }
 
         velocity = Vector3.SmoothDamp(velocity
@@ -141,7 +141,7 @@ public class GfRunnerFast : GfRunnerTemplate
             Vector3 m_velocity = m_mov.GetVelocity();
             Vector3 upVecRotation = m_mov.GetUpvecRotation();
             GfcTools.RemoveAxis(ref m_velocity, upVecRotation);
-            GfcTools.Add3(ref m_velocity, upVecRotation * m_jumpForce);
+            GfcTools.Add(ref m_velocity, upVecRotation * m_jumpForce);
             m_mov.SetVelocity(m_velocity);
             m_mov.SetIsGrounded(false);
 

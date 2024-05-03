@@ -158,13 +158,183 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
+      propertyPath: m_textWriter.Scale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.Scale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.Scale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.LocalScale.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.GlobalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.GlobalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.GlobalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.IgnoreWhitespace
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
       propertyPath: m_textWriter.LetterDelaySeconds
-      value: 0.1
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_textWriter.m_letterDelaySeconds
       value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.LetterTranslateSeconds
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.LetterTransitionOffset.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.LetterTransitionOffset.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.Color.rgba
+      value: 4278255430
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.SmoothAlpha
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.Color.rgba
+      value: 4278255370
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.LocalScale.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.SmoothAlpha
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.GlobalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.GlobalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.GlobalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.LocalScale.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.ColorBlendMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.GlobalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.GlobalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.GlobalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.ColorBlendMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.GlobalPosition.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.GlobalPosition.y
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
@@ -180,6 +350,56 @@ PrefabInstance:
         type: 3}
       propertyPath: m_textWriter.m_transitionCurve.m_Curve.Array.data[1].value
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.TransitionCurve.m_Curve.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.TransitionCurve.m_Curve.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.TransitionCurve.m_Curve.Array.data[1].time
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeIn.TransitionCurve.m_Curve.Array.data[1].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.TransitionCurve.m_Curve.Array.data[1].time
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.TransitionCurve.m_Curve.Array.data[1].value
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.TransitionCurve.m_Curve.Array.data[0].inSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.TransitionCurve.m_Curve.Array.data[1].inSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.TransitionCurve.m_Curve.Array.data[0].outSlope
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 366350704380343149, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_textWriter.TranslationFadeOut.TransitionCurve.m_Curve.Array.data[1].outSlope
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2080833477572206972, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}

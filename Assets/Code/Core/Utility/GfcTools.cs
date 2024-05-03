@@ -132,7 +132,22 @@ public static class GfcToolsStatic
     public static void LnSelf(this ref float aSelf) { aSelf = aSelf.Log((float)GfcTools.EULER); }
     public static void LnSelf(this ref double aSelf) { aSelf = aSelf.Log(GfcTools.EULER); }
 
-    public static void Add<T>(this List<T> aList, IEnumerable<T> someMessages) { foreach (T item in someMessages) aList.Add(item); }
+    public static void Add<T>(this List<T> aList, IEnumerable<T> someItems) { foreach (T item in someItems) aList.Add(item); }
+
+    public static void MinusSelf(this ref Vector3 leftHand, Vector3 rightHand) { leftHand.x -= rightHand.x; leftHand.y -= rightHand.y; leftHand.z -= rightHand.z; }
+
+    public static void AddSelf(this ref Vector3 leftHand, Vector3 rightHand) { leftHand.x += rightHand.x; leftHand.y += rightHand.y; leftHand.z += rightHand.z; }
+
+    public static void MinusSelf(this ref Vector3 leftHand, float rightHand) { leftHand.x -= rightHand; leftHand.y -= rightHand; leftHand.z -= rightHand; }
+
+    public static void AddSelf(this ref Vector3 leftHand, float rightHand) { leftHand.x += rightHand; leftHand.y += rightHand; leftHand.z += rightHand; }
+
+    public static void MultSelf(this ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
+
+    public static void MultSelf(this ref Vector3 leftHand, Vector3 rightHand) { leftHand.x *= rightHand.x; leftHand.y *= rightHand.y; leftHand.z *= rightHand.z; }
+
+    public static void DivSelf(this ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }
+    public static void DivSafeSelf(this ref Vector3 leftHand, float rightHand) { GfcTools.DivSafe(ref leftHand, rightHand); }
 }
 
 public class GfcTools
@@ -160,7 +175,7 @@ public class GfcTools
     {
         GfcTools.RemoveAxis(ref vector, upVec);
         new Plane { normal = plane }.Raycast(new Ray { origin = vector, direction = upVec }, out float Y);
-        GfcTools.Add3(ref vector, upVec * Y);
+        GfcTools.Add(ref vector, upVec * Y);
     }
 
     /*
@@ -231,17 +246,19 @@ public class GfcTools
     }*/
 
     //inlining these functions makes it slower by a considerable ammount from the local tests performed
-    public static void Minus3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x -= rightHand.x; leftHand.y -= rightHand.y; leftHand.z -= rightHand.z; }
+    public static void Minus(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x -= rightHand.x; leftHand.y -= rightHand.y; leftHand.z -= rightHand.z; }
 
 
-    public static void Add3(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x += rightHand.x; leftHand.y += rightHand.y; leftHand.z += rightHand.z; }
+    public static void Add(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x += rightHand.x; leftHand.y += rightHand.y; leftHand.z += rightHand.z; }
 
 
-    public static void Mult3(ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
+    public static void Mult(ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
 
-    public static void Div3(ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }
+    public static void Mult(ref Vector3 leftHand, Vector3 rightHand) { leftHand.x *= rightHand.x; leftHand.y *= rightHand.y; leftHand.z *= rightHand.z; }
 
-    public static void Div3Safe(ref Vector3 leftHand, float rightHand)
+    public static void Div(ref Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; }
+
+    public static void DivSafe(ref Vector3 leftHand, float rightHand)
     {
         if (rightHand > 0.000001f)
         {
@@ -258,7 +275,7 @@ public class GfcTools
         }
     }
 
-    public static Vector3 Div3(Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; return leftHand; }
+    public static Vector3 Div(Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; return leftHand; }
 
     public static int Mod(int x, int m)
     {
@@ -267,8 +284,8 @@ public class GfcTools
 
     public static void RemoveAxis(ref Vector3 vector, Vector3 axisNormalised)
     {
-        Mult3(ref axisNormalised, Vector3.Dot(vector, axisNormalised));
-        Minus3(ref vector, axisNormalised);
+        Mult(ref axisNormalised, Vector3.Dot(vector, axisNormalised));
+        Minus(ref vector, axisNormalised);
     }
 
     //removes any rotation from the given quaternion that is not on the 'mainAxis' axis.
@@ -278,7 +295,7 @@ public class GfcTools
         // same as 'float rotationAxisMagnitude = rotationAxis.magnitude', but faster
         float rotationAxisMagnitude = MathF.Sqrt(rotationAxis.x * rotationAxis.x + rotationAxis.y * rotationAxis.y + rotationAxis.z * rotationAxis.z);
         float rotationAngleRad = 2.0f * MathF.Atan(rotationAxisMagnitude / rotation.w);
-        GfcTools.Div3(ref rotationAxis, rotationAxisMagnitude); //normalize rotation axis
+        GfcTools.Div(ref rotationAxis, rotationAxisMagnitude); //normalize rotation axis
 
 #pragma warning disable 0618
         //marked as deprecated, but system.math returns radians, and Quaternion.AngleAxis converts the euler angle in degrees to radians anyway, so we don't care about the warning
@@ -289,10 +306,10 @@ public class GfcTools
     public static void RemoveAxisKeepMagnitude(ref Vector3 leftHand, Vector3 rightHand)
     {
         float mag = leftHand.magnitude;
-        Mult3(ref rightHand, Vector3.Dot(leftHand, rightHand));
-        Minus3(ref leftHand, rightHand);
+        Mult(ref rightHand, Vector3.Dot(leftHand, rightHand));
+        Minus(ref leftHand, rightHand);
         leftHand.Normalize();
-        Mult3(ref leftHand, mag);
+        Mult(ref leftHand, mag);
     }
 
     public static void QuatMultLocal(ref Quaternion lhs, Quaternion rhs)

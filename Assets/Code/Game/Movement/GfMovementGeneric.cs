@@ -202,7 +202,7 @@ public class GfMovementGeneric : MonoBehaviour
                 m_timeOfLastParentPosUpdate = currentTime;
                 m_parentLastPos = currentParentPos;
                 deltaMovement = m_parentPosMov;
-                Add3(ref position, deltaMovement);
+                Add(ref position, deltaMovement);
             }
 
             //Calculate the rotation according to the parent's rotation
@@ -213,7 +213,7 @@ public class GfMovementGeneric : MonoBehaviour
                 Vector3 vecFromParent = position - parentTransform.position;
                 Vector3 newVecFromParent = deltaQuaternion * vecFromParent;
                 m_parentRotMov = newVecFromParent;
-                Minus3(ref m_parentRotMov, vecFromParent);
+                Minus(ref m_parentRotMov, vecFromParent);
 
                 //apply the rotation to the character if it isn't moving
                 if (GetVelocity().sqrMagnitude < 0.001f)
@@ -225,7 +225,7 @@ public class GfMovementGeneric : MonoBehaviour
                 m_parentDeltaTimeRot = (float)(currentTime - m_timeOfLastParentRotUpdate);
                 m_timeOfLastParentRotUpdate = currentTime;
                 m_parentLastRot = currentRot;
-                Add3(ref deltaMovement, m_parentRotMov);
+                Add(ref deltaMovement, m_parentRotMov);
             }
 
             //adjust the player's velocity to the parent's
@@ -238,8 +238,8 @@ public class GfMovementGeneric : MonoBehaviour
 
                 if (m_interpolateThisFrame)
                 {
-                    Mult3(ref parentVelocity, m_lastPhysDeltaTime);
-                    Minus3(ref parentVelocity, m_upVec * Vector3.Dot(m_upVec, parentVelocity)); //remove any vertical movement from parent velocity            
+                    Mult(ref parentVelocity, m_lastPhysDeltaTime);
+                    Minus(ref parentVelocity, m_upVec * Vector3.Dot(m_upVec, parentVelocity)); //remove any vertical movement from parent velocity            
                     ParentingVelocityAdjustVector(ref m_interpolationMovement, parentVelocity); //adjust interpolation 
                 }
             }
@@ -292,7 +292,7 @@ public class GfMovementGeneric : MonoBehaviour
             float correctionFactor = 1.0f - m_accumulatedTimefactor;
             m_accumulatedTimefactor = m_previousLerpAlpha = 0;
 
-            Mult3(ref m_interpolationMovement, correctionFactor);
+            Mult(ref m_interpolationMovement, correctionFactor);
             m_transform.position += m_interpolationMovement;
             m_transform.rotation = m_desiredRotation * m_externalRotation;
             m_interpolationRotation = m_externalRotation = IDENTITY_QUAT;
@@ -336,7 +336,7 @@ public class GfMovementGeneric : MonoBehaviour
         }
         else
         {
-            Add3(ref position, deltaTime * m_velocity);
+            Add(ref position, deltaTime * m_velocity);
         }
 
         m_interpolationMovement = ZERO3;
@@ -346,8 +346,8 @@ public class GfMovementGeneric : MonoBehaviour
         /* TRACING SECTION END*/
         if (m_interpolateThisFrame)
         {
-            Add3(ref m_interpolationMovement, position);
-            Minus3(ref m_interpolationMovement, initialPos);
+            Add(ref m_interpolationMovement, position);
+            Minus(ref m_interpolationMovement, initialPos);
             m_transform.position = initialPos;
 
             m_desiredRotation = m_transform.rotation;
@@ -418,7 +418,7 @@ public class GfMovementGeneric : MonoBehaviour
             Vector3 _trace = m_velocity * deltaTime * timefactor;
             float _tracelen = _trace.magnitude;
             if (MIN_DISPLACEMENT <= _tracelen)
-                Add3(ref position, _trace);
+                Add(ref position, _trace);
 
             m_archetypeCollision.Overlap(position, layermask, m_queryTrigger, colliderbuffer, out numCollisions);
 
@@ -540,7 +540,7 @@ public class GfMovementGeneric : MonoBehaviour
             {
                 Vector3 traceDir = trace;
                 float _traceLenInv = 1.0f / tracelen;
-                Mult3(ref traceDir, _traceLenInv);
+                Mult(ref traceDir, _traceLenInv);
 
                 m_archetypeCollision.Trace(position, traceDir, tracelen, layermask, m_queryTrigger, tracesbuffer, TRACEBIAS, out numCollisions);/* prevent tunneling by using this skin length */
                 ActorTraceFilter(ref numCollisions, out int _i0, TRACEBIAS, m_collider, tracesbuffer, ref position);
@@ -556,8 +556,8 @@ public class GfMovementGeneric : MonoBehaviour
                     float distanceFromHit = System.MathF.Max(closestHit.distance - TRACE_SKIN, 0F);
 
                     timefactor -= distanceFromHit * _traceLenInv;
-                    Mult3(ref traceDir, distanceFromHit);
-                    Add3(ref position, traceDir);
+                    Mult(ref traceDir, distanceFromHit);
+                    Add(ref position, traceDir);
 
                     collision.selfPosition = position;
 
@@ -572,7 +572,7 @@ public class GfMovementGeneric : MonoBehaviour
                 }
                 else /* Discovered noting along our linear path */
                 {
-                    Add3(ref position, trace);
+                    Add(ref position, trace);
                     break;
                 }
             }
@@ -591,7 +591,7 @@ public class GfMovementGeneric : MonoBehaviour
         if (m_parentSpherical.Value)
         {
             m_upVec = transform.position;
-            Minus3(ref m_upVec, m_parentSpherical.Value.position);
+            Minus(ref m_upVec, m_parentSpherical.Value.position);
             Normalize(ref m_upVec);
         }
 
@@ -670,7 +670,7 @@ public class GfMovementGeneric : MonoBehaviour
             else
             {
                 if (collision.selfUpVecAngle > m_upperSlopeLimit)
-                    Minus3(ref velocity, m_slopeNormal * System.MathF.Max(0, Vector3.Dot(m_slopeNormal, velocity)));
+                    Minus(ref velocity, m_slopeNormal * System.MathF.Max(0, Vector3.Dot(m_slopeNormal, velocity)));
 
                 if (collision.isGrounded)
                 {
@@ -678,8 +678,8 @@ public class GfMovementGeneric : MonoBehaviour
                     m_slopeNormal = normal;
                 }
 
-                Mult3(ref normal, Vector3.Dot(velocity, normal));
-                Minus3(ref velocity, normal);
+                Mult(ref normal, Vector3.Dot(velocity, normal));
+                Minus(ref velocity, normal);
             }
         }
 
@@ -845,10 +845,10 @@ public class GfMovementGeneric : MonoBehaviour
                 parentVelocity.x += m_upVec.x * verticalFallSpeed;
                 parentVelocity.y += m_upVec.y * verticalFallSpeed;
                 parentVelocity.z += m_upVec.z * verticalFallSpeed;
-                Div3(ref parentVelocity, deltaTimeCoef);
+                Div(ref parentVelocity, deltaTimeCoef);
 
                 //TODO, not sure why i put todo here, probably because this doesn't work well with time stop, but last Phys delta time should be affected by the time stop delta coef, so i dunno
-                if (m_interpolateThisFrame) Add3(ref m_interpolationMovement, parentVelocity * m_lastPhysDeltaTime);
+                if (m_interpolateThisFrame) Add(ref m_interpolationMovement, parentVelocity * m_lastPhysDeltaTime);
                 AddVelocity(parentVelocity);
             }
 
@@ -978,7 +978,7 @@ public class GfMovementGeneric : MonoBehaviour
                 float mag = movDir.magnitude;
                 StraightProjectOnPlane(ref movDir, m_slopeNormal, m_upVec);
                 movDir.Normalize();
-                Mult3(ref movDir, mag);
+                Mult(ref movDir, mag);
             }
         }
 
@@ -1035,7 +1035,7 @@ public class GfMovementGeneric : MonoBehaviour
 
     public virtual Vector3 AddVelocity(Vector3 force)
     {
-        Add3(ref m_velocity, force);
+        Add(ref m_velocity, force);
         return m_velocity;
     }
 
@@ -1135,7 +1135,7 @@ public unsafe struct MgCollisionStruct
         {
             calculatedPoint = true;
             point = archetypeCollision.InnerRayCast(-normal);
-            Add3(ref point, selfPosition);
+            Add(ref point, selfPosition);
         }
 
         return point;

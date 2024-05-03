@@ -87,7 +87,7 @@ public class ReusableParticleWeapon : WeaponGeneric
             if (m_target)
             {
                 Vector3 dirToTarget = m_target.position;
-                GfcTools.Minus3(ref dirToTarget, emitParams.position);
+                GfcTools.Minus(ref dirToTarget, emitParams.position);
                 GfcTools.Normalize(ref dirToTarget);
                 Vector3 upVec = Vector3.up;
                 if (m_movementParent) upVec = m_movementParent.GetUpvecRotation();

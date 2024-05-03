@@ -631,8 +631,8 @@ public class GfxUiTools : MonoBehaviour
 
 public enum ColorBlendMode
 {
-    REPLACE,
     INTERPOLATE_USING_ALPHA,
+    REPLACE,
     MULTIPLY,
     DIVIDE,
     ADD,

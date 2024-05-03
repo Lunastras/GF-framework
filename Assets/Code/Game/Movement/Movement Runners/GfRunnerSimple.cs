@@ -130,7 +130,7 @@ public class GfRunnerSimple : GfRunnerTemplate
         Vector3 velocity = m_mov.GetVelocity();
 
         float movDirMagnitude = movDir.magnitude;
-        if (movDirMagnitude > 0.000001f) GfcTools.Div3(ref movDir, movDirMagnitude); //normalise
+        if (movDirMagnitude > 0.000001f) GfcTools.Div(ref movDir, movDirMagnitude); //normalise
 
         float verticalFallSpeed = Vector3.Dot(slope, velocity);
         float fallMagn = 0, fallMaxDiff = -verticalFallSpeed - m_maxFallSpeed; //todo
@@ -155,7 +155,7 @@ public class GfRunnerSimple : GfRunnerTemplate
         if (currentSpeed > 0.000001F)
         {
             Vector3 velDir = effectiveVelocity;
-            GfcTools.Div3(ref velDir, currentSpeed);
+            GfcTools.Div(ref velDir, currentSpeed);
             dotMovementVelDir = Vector3.Dot(movDir, velDir);
         }
 
@@ -173,20 +173,20 @@ public class GfRunnerSimple : GfRunnerTemplate
         if (desiredSpeed > speedInDesiredDir) GfcTools.RemoveAxis(ref deacceleration, movDir);
 
         float unwantedSpeed = deacceleration.magnitude;
-        if (unwantedSpeed > 0.000001F) GfcTools.Div3(ref deacceleration, unwantedSpeed);
+        if (unwantedSpeed > 0.000001F) GfcTools.Div(ref deacceleration, unwantedSpeed);
 
         float accMagn = Min(Max(0, desiredSpeed - speedInDesiredDir), deltaTime * m_effectiveAcceleration);
         float deaccMagn = Min(unwantedSpeed, m_effectiveDeacceleration * deltaTime);
 
         //GfTools.Mult3(ref movDir, accMagn);
-        GfcTools.Mult3(ref deacceleration, deaccMagn);
-        GfcTools.Mult3(ref slope, fallMagn);
+        GfcTools.Mult(ref deacceleration, deaccMagn);
+        GfcTools.Mult(ref slope, fallMagn);
 
-        GfcTools.Mult3(ref movDir, accMagn); //acceleration
+        GfcTools.Mult(ref movDir, accMagn); //acceleration
 
-        GfcTools.Add3(ref velocity, movDir); //add acceleration
-        GfcTools.Minus3(ref velocity, deacceleration);//add deacceleration
-        GfcTools.Minus3(ref velocity, slope); //add vertical speed change  
+        GfcTools.Add(ref velocity, movDir); //add acceleration
+        GfcTools.Minus(ref velocity, deacceleration);//add deacceleration
+        GfcTools.Minus(ref velocity, slope); //add vertical speed change  
 
         m_mov.SetVelocity(velocity);
     }
@@ -225,7 +225,7 @@ public class GfRunnerSimple : GfRunnerTemplate
             Vector3 m_velocity = m_mov.GetVelocity();
             Vector3 upVecRotation = m_mov.GetUpvecRotation();
             GfcTools.RemoveAxis(ref m_velocity, upVecRotation);
-            GfcTools.Add3(ref m_velocity, upVecRotation * m_jumpForce);
+            GfcTools.Add(ref m_velocity, upVecRotation * m_jumpForce);
             m_mov.SetVelocity(m_velocity);
             m_mov.SetIsGrounded(false);
 

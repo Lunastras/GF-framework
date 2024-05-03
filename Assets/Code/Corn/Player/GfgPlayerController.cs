@@ -99,19 +99,19 @@ public class GfgPlayerController : NetworkBehaviour
             if (movementDirMagnitude > 1) GfcTools.Div2(ref input, movementDirMagnitude);
 
             Vector3 cameraForward = m_playerCamera.forward;
-            GfcTools.Mult3(ref cameraForward, input.y);
+            GfcTools.Mult(ref cameraForward, input.y);
 
             Vector3 cameraRight = m_playerCamera.right;
-            GfcTools.Mult3(ref cameraRight, input.x);
+            GfcTools.Mult(ref cameraRight, input.x);
 
             if (!m_runner.CanFly)
             {
-                GfcTools.Minus3(ref cameraForward, upVec * Vector3.Dot(upVec, cameraForward));
+                GfcTools.Minus(ref cameraForward, upVec * Vector3.Dot(upVec, cameraForward));
                 GfcTools.Normalize(ref cameraForward);
             }
 
             movDir = cameraForward;
-            GfcTools.Add3(ref movDir, cameraRight);
+            GfcTools.Add(ref movDir, cameraRight);
         }
 
         return movDir;
