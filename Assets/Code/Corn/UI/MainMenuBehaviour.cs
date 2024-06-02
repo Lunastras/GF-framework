@@ -83,7 +83,7 @@ public class MainMenuBehaviour : MonoBehaviour
             GfcManagerGame.SetServerIp(m_ipInputField.text, ushort.Parse(m_portInputField.text));
         }
 
-        LoadingScreenManager.LoadScene(levelIndex, ServerLoadingMode.KEEP_SERVER, gameType);
+        GfgManagerSceneLoader.LoadScene(levelIndex, false, ServerLoadingMode.KEEP_SERVER, gameType);
     }
 
     private IEnumerator StartMenu()

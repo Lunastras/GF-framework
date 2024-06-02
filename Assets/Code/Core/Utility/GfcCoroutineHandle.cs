@@ -27,12 +27,14 @@ public struct GfcCoroutineHandle
         CoroutineIsRunning = CoroutineHandle.IsValid;
     }
 
+    //done like this to avoid issues when the coroutine ends up calling this function
     public int KillCoroutine()
     {
         int ret = 0;
-        CoroutineIsRunning = false;
-        if (CoroutineHandle.IsValid)
+        if (CoroutineIsRunning)
             ret = Timing.KillCoroutines(CoroutineHandle);
+
+        CoroutineIsRunning = false;
         return ret;
     }
 

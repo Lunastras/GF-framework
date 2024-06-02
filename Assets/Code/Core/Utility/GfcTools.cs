@@ -1,14 +1,87 @@
 using MEC;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Runtime.CompilerServices;
 using Unity.Netcode;
 using Unity.Collections;
 using System;
 using System.Collections.Generic;
 using static Unity.Mathematics.math;
-
+using System.Reflection;
 public static class GfcToolsStatic
 {
+
+    public static void SetSingleton<T>(this T anInstance, ref T aSingleton) where T : MonoBehaviour
+    {
+        if (aSingleton != anInstance)
+            MonoBehaviour.Destroy(aSingleton);
+        aSingleton = anInstance;
+    }
+
+    public static void SetAlpha(this Image anImage, float anAlpha)
+    {
+        Color col = anImage.color;
+        col.a = anAlpha;
+        anImage.color = col;
+    }
+
+    public static bool HasValueAt<T>(this T[] anArray, int anIndex) { return anArray != null && anArray.Length > anIndex; }
+
+    public static bool IsEmpty<T>(this T[] anArray) { return anArray == null || anArray.Length == 0; }
+
+    public static bool IsEmpty<T>(this List<T> aList) { return aList == null || aList.Count == 0; }
+
+    public static TransformData GetTransformData(this Transform aTransform, bool aLocalTransform = false, bool aCopyParent = true, Transform aNewParent = null) { return new(aTransform, aLocalTransform, aCopyParent, aNewParent); }
+
+    public static void SetTransformData(this Transform aTransform, TransformData aTransformData)
+    {
+        aTransform.SetParent(aTransformData.Parent);
+
+        if (aTransformData.IsLocal)
+        {
+            aTransform.localPosition = aTransformData.Position;
+            aTransform.localRotation = aTransformData.Rotation;
+            aTransform.localScale = aTransformData.Scale;
+        }
+        else
+        {
+            aTransform.position = aTransformData.Position;
+            aTransform.rotation = aTransformData.Rotation;
+            aTransform.localScale = aTransformData.Scale;
+        }
+    }
+
+    public static void SetRectTransformdData(this RectTransform aTransform, RectTransformData aData, bool aLocalTransform = false)
+    {
+        aTransform.SetTransformData(aData.TransformData);
+        aTransform.SetParent(null);
+
+        aTransform.anchoredPosition3D = aData.AnchoredPosition3D;
+        aTransform.anchorMax = aData.AnchorMax;
+        aTransform.anchorMin = aData.AnchorMin;
+        aTransform.sizeDelta = aData.SizeDelta;
+        aTransform.pivot = aData.Pivot;
+
+        aTransform.SetParent(aData.TransformData.Parent, !aLocalTransform);
+    }
+
+    public static void CopyRectWorldData(this RectTransform aTransform, RectTransform aRefTransform, bool aLocalTransform = false, bool aCopyParent = true, Transform aNewParent = null) { aTransform.SetRectTransformdData(aRefTransform.GetRectWorldData(aCopyParent, aNewParent), aLocalTransform); }
+
+    public static void CopyTransformData(this Transform aTransform, Transform aRefTransform, bool aLocalTransform = false, bool aCopyParent = true, Transform aNewParent = null)
+    {
+        RectTransform rectTransform = aTransform as RectTransform;
+        RectTransform refRectTransform = aRefTransform as RectTransform;
+
+        if (rectTransform && refRectTransform)
+            rectTransform.CopyRectWorldData(refRectTransform, aLocalTransform, aCopyParent, aNewParent);
+        else
+            aTransform.SetTransformData(aRefTransform.GetTransformData(aLocalTransform, aCopyParent, aNewParent));
+    }
+
+    public static RectTransformData GetRectWorldData(this RectTransform aTransform, bool aCopyParent = true, Transform aNewParent = null) { return new(aTransform, aCopyParent, aNewParent); }
+
+    public static bool GetComponent<T>(this Component aComponent, ref T aContainer) { aContainer = aComponent.GetComponent<T>(); return aContainer != null; }
+
     public static bool IsEmpty(this string aString) { return aString == null || aString.Length == 0; }
 
     public static int Clamp(this int aNum, int aMin, int aMax) { return Math.Clamp(aNum, aMin, aMax); }
@@ -37,6 +110,12 @@ public static class GfcToolsStatic
     public static void MinSelf(this ref float aSelf, float aNum) { aSelf = Math.Min(aSelf, aNum); }
     public static void MinSelf(this ref double aSelf, double aNum) { aSelf = Math.Min(aSelf, aNum); }
 
+    public static float Round(this float aSelf) { return Mathf.Round(aSelf); }
+    public static double Round(this double aSelf) { return Math.Round(aSelf); }
+
+    public static void RoundSelf(this ref float aSelf) { aSelf = Mathf.Round(aSelf); }
+    public static void RoundSelf(this ref double aSelf) { aSelf = Math.Round(aSelf); }
+
     public static int Abs(this int aSelf) { return Math.Abs(aSelf); }
     public static float Abs(this float aSelf) { return Math.Abs(aSelf); }
     public static double Abs(this double aSelf) { return Math.Abs(aSelf); }
@@ -46,8 +125,8 @@ public static class GfcToolsStatic
     public static void AbsSelf(this ref double aSelf) { aSelf = Math.Abs(aSelf); }
 
     public static int Sign(this int aSelf) { return Math.Sign(aSelf); }
-    public static float Sign(this float aSelf) { return Math.Sign(aSelf); }
-    public static double Sign(this double aSelf) { return Math.Sign(aSelf); }
+    public static int Sign(this float aSelf) { return Math.Sign(aSelf); }
+    public static int Sign(this double aSelf) { return Math.Sign(aSelf); }
 
     public static void SignSelf(this ref int aSelf) { aSelf = Math.Sign(aSelf); }
     public static void SignSelf(this ref float aSelf) { aSelf = Math.Sign(aSelf); }
@@ -141,6 +220,8 @@ public static class GfcToolsStatic
     public static void MinusSelf(this ref Vector3 leftHand, float rightHand) { leftHand.x -= rightHand; leftHand.y -= rightHand; leftHand.z -= rightHand; }
 
     public static void AddSelf(this ref Vector3 leftHand, float rightHand) { leftHand.x += rightHand; leftHand.y += rightHand; leftHand.z += rightHand; }
+
+    public static Vector3 Mult(this Vector3 leftHand, Vector3 rightHand) { leftHand.x *= rightHand.x; leftHand.y *= rightHand.y; leftHand.z *= rightHand.z; return leftHand; }
 
     public static void MultSelf(this ref Vector3 leftHand, float rightHand) { leftHand.x *= rightHand; leftHand.y *= rightHand; leftHand.z *= rightHand; }
 
@@ -561,7 +642,50 @@ public class GfcTools
         aGameObject?.SetActive(false);
     }
 
+    /*
+    public static CoroutineHandle TweenFloat(PropertyInfo aProperty, object anObject, float aStartValue, float aTargetValue)
+    {
+        Type type = anObject.GetType();
+        CoroutineHandle handle = default;
+        aProperty.in
 
+        if (typeof(float) == aProperty.PropertyType)
+        {
+            handle = Timing.RunCoroutine(_TweenFloat(aProperty, anObject, aValue));
+        }
+        else
+        {
+            Debug.LogError("Type mismatch! The property passed is of type " + aProperty.PropertyType.Name + ", not float.");
+        }
+
+        return handle;
+        Image a;
+        a.CrossFadeAlpha
+    }
+
+    public static IEnumerator<float> _TweenFloat(PropertyInfo aProperty, object anObject, float aStartValue, float aTargetValue)
+    {
+        //prop.SetValue(anObject, aValue, null);
+        float refSmooth = 0;
+        float value = aProperty.GetValue(anObject, null);
+        float currentAlpha = color.a;
+        float deltaTime;
+
+        while (anImage && MathF.Abs(currentAlpha - aTargetAlpha) > 0.001f && group.alpha == currentAlpha) //stop coroutine if alpha is modified by somebody else
+        {
+            deltaTime = Time.deltaTime;
+            if (ignoreTimeScale)
+                deltaTime = Time.unscaledDeltaTime;
+
+            currentAlpha = Mathf.SmoothDamp(currentAlpha, targetAlpha, ref refSmooth, smoothTime, int.MaxValue, deltaTime);
+            group.alpha = currentAlpha;
+            yield return Timing.WaitForOneFrame;
+        }
+
+        if (anImage && anImage.color.a == currentAlpha)
+            anImage.SetAlpha(aTargetAlpha);
+
+    }*/
 
     #region BOILERPLATE SERIALIZATION CODE
 
@@ -996,4 +1120,72 @@ public class GfcTools
     }
 
     #endregion BOILERPLATE SERIALIZATION CODE
+}
+
+public struct TransformData
+{
+    public TransformData(bool aLocalTransform = true)
+    {
+        Position = Vector3.zero;
+        Rotation = Quaternion.identity;
+        Scale = new Vector3(1, 1, 1);
+        Parent = null;
+        IsLocal = aLocalTransform;
+    }
+
+    public TransformData(Transform aTransform, bool aLocalTransform = true, bool aCopyParent = true, Transform aNewParent = null)
+    {
+        Parent = aCopyParent ? aTransform.parent : aNewParent;
+
+        if (aLocalTransform)
+        {
+            Position = aTransform.localPosition;
+            Rotation = aTransform.localRotation;
+            Scale = aTransform.localScale;
+        }
+        else
+        {
+            Position = aTransform.position;
+            Rotation = aTransform.rotation;
+            Scale = aTransform.lossyScale;
+        }
+
+        IsLocal = aLocalTransform;
+    }
+
+    public Transform Parent;
+    public Vector3 Position;
+    public Quaternion Rotation;
+    public Vector3 Scale;
+    public bool IsLocal;
+}
+
+public struct RectTransformData
+{
+    public RectTransformData(bool valueToIgnoreOldCSharpLimitations = true)
+    {
+        TransformData = new();
+        AnchorMin = default;
+        AnchorMax = default;
+        AnchoredPosition3D = default;
+        SizeDelta = default;
+        Pivot = default;
+    }
+
+    public RectTransformData(RectTransform aTransform, bool aCopyParent = true, Transform aNewParent = null)
+    {
+        AnchorMin = aTransform.anchorMin;
+        AnchorMax = aTransform.anchorMax;
+        AnchoredPosition3D = aTransform.anchoredPosition3D;
+        SizeDelta = aTransform.sizeDelta;
+        Pivot = aTransform.pivot;
+        TransformData = new(aTransform, true, aCopyParent, aNewParent);
+    }
+
+    public TransformData TransformData;
+    public Vector2 AnchorMin;
+    public Vector2 AnchorMax;
+    public Vector3 AnchoredPosition3D;
+    public Vector2 SizeDelta;
+    public Vector2 Pivot;
 }

@@ -291,8 +291,87 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5fafa289e531dc4e923f8c951745c9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_highlightStateDefault:
+    Scale: {x: 1, y: 1, z: 1}
+    PositionOffset: {x: 0, y: 0, z: 0}
+    ColorPanel: {r: 1, g: 1, b: 1, a: 1}
+    ColorContent: {r: 1, g: 1, b: 1, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
+  m_highlightStateDisabled:
+    Scale: {x: 1, y: 1, z: 1}
+    PositionOffset: {x: 0, y: 0, z: 0}
+    ColorPanel: {r: 1, g: 1, b: 1, a: 1}
+    ColorContent: {r: 1, g: 1, b: 1, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 0.6
+    PixelsPerUnit: 1
+  m_highlightStateSelected:
+    Scale: {x: 1, y: 1, z: 1}
+    PositionOffset: {x: 0, y: 0, z: 0}
+    ColorPanel: {r: 1, g: 1, b: 1, a: 1}
+    ColorContent: {r: 1, g: 1, b: 1, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
+  m_highlightStateSubmit:
+    Scale: {x: 1, y: 1, z: 1}
+    PositionOffset: {x: 0, y: 0, z: 0}
+    ColorPanel: {r: 1, g: 1, b: 1, a: 1}
+    ColorContent: {r: 1, g: 1, b: 1, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
+  m_highlightStatePinned:
+    Scale: {x: 1, y: 1, z: 1}
+    PositionOffset: {x: 0, y: 0, z: 0}
+    ColorPanel: {r: 1, g: 1, b: 1, a: 1}
+    ColorContent: {r: 1, g: 1, b: 1, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
+  Index: 0
+  TransitionTime: 0.07
+  VisualsParent: {fileID: 3025674762138243394}
+  GraphicsPanel:
+  - {fileID: 7145495677509778451}
+  GraphicsContent:
+  - {fileID: 6140442975584145579}
+  - {fileID: 2251822614314750368}
+  - {fileID: 6058613348835011851}
+  TransitionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  LocalTransformRelativeToOriginal: 1
+  m_originalColors: []
   m_panelRectTransform: {fileID: 3025674762138243394}
-  m_canvasGroup: {fileID: 70955221437693969}
   m_iconImage: {fileID: 6058613348835011851}
   m_textLeft: {fileID: 6140442975584145579}
   m_textRight: {fileID: 2251822614314750368}
@@ -300,89 +379,7 @@ MonoBehaviour:
   m_contentsRectTransform: {fileID: 6534653225186097668}
   m_contentInPadding: 12
   m_contentPadding: {x: 12, y: 12}
-  DefaultHighlightState:
-    PanelSizeCoef: {x: 1, y: 1}
-    PositionOffset: {x: 0, y: 0}
-    ColorPanel: {r: 0, g: 0, b: 0, a: 0}
-    ColorContent: {r: 0, g: 0, b: 0, a: 0}
-    ColorLeftText: {r: 0, g: 0, b: 0, a: 0}
-    ColorRightText: {r: 0, g: 0, b: 0, a: 0}
-    ColorIcon: {r: 0, g: 0, b: 0, a: 0}
-    ColorPanelBlendMode: 0
-    ColorContentBlendMode: 0
-    ColorContentSelfBlendMode: 0
-    ColorLeftTextBlendMode: 0
-    ColorRightTextBlendMode: 0
-    ColorIconBlendMode: 0
-    GroupAlpha: 1
-    PixelsPerUnit: 0
-  DisabledHighlightState:
-    PanelSizeCoef: {x: 1, y: 1}
-    PositionOffset: {x: 0, y: 0}
-    ColorPanel: {r: 0, g: 0, b: 0, a: 0}
-    ColorContent: {r: 0, g: 0, b: 0, a: 0}
-    ColorLeftText: {r: 0, g: 0, b: 0, a: 0}
-    ColorRightText: {r: 0, g: 0, b: 0, a: 0}
-    ColorIcon: {r: 0, g: 0, b: 0, a: 0}
-    ColorPanelBlendMode: 0
-    ColorContentBlendMode: 0
-    ColorContentSelfBlendMode: 0
-    ColorLeftTextBlendMode: 0
-    ColorRightTextBlendMode: 0
-    ColorIconBlendMode: 0
-    GroupAlpha: 0.6
-    PixelsPerUnit: 0
-  SelectedHighlightState:
-    PanelSizeCoef: {x: 1, y: 1}
-    PositionOffset: {x: 0, y: 0}
-    ColorPanel: {r: 0, g: 0, b: 0, a: 0}
-    ColorContent: {r: 0, g: 0, b: 0, a: 0}
-    ColorLeftText: {r: 0, g: 0, b: 0, a: 0}
-    ColorRightText: {r: 0, g: 0, b: 0, a: 0}
-    ColorIcon: {r: 0, g: 0, b: 0, a: 0}
-    ColorPanelBlendMode: 0
-    ColorContentBlendMode: 0
-    ColorContentSelfBlendMode: 0
-    ColorLeftTextBlendMode: 0
-    ColorRightTextBlendMode: 0
-    ColorIconBlendMode: 0
-    GroupAlpha: 1
-    PixelsPerUnit: 0
-  SubmitHighlightState:
-    PanelSizeCoef: {x: 1, y: 1}
-    PositionOffset: {x: 0, y: 0}
-    ColorPanel: {r: 0, g: 0, b: 0, a: 0}
-    ColorContent: {r: 0, g: 0, b: 0, a: 0}
-    ColorLeftText: {r: 0, g: 0, b: 0, a: 0}
-    ColorRightText: {r: 0, g: 0, b: 0, a: 0}
-    ColorIcon: {r: 0, g: 0, b: 0, a: 0}
-    ColorPanelBlendMode: 0
-    ColorContentBlendMode: 0
-    ColorContentSelfBlendMode: 0
-    ColorLeftTextBlendMode: 0
-    ColorRightTextBlendMode: 0
-    ColorIconBlendMode: 0
-    GroupAlpha: 1
-    PixelsPerUnit: 0
-  PinnedHighlightState:
-    PanelSizeCoef: {x: 1, y: 1}
-    PositionOffset: {x: 0, y: 0}
-    ColorPanel: {r: 0, g: 0, b: 0, a: 0}
-    ColorContent: {r: 0, g: 0, b: 0, a: 0}
-    ColorLeftText: {r: 0, g: 0, b: 0, a: 0}
-    ColorRightText: {r: 0, g: 0, b: 0, a: 0}
-    ColorIcon: {r: 0, g: 0, b: 0, a: 0}
-    ColorPanelBlendMode: 0
-    ColorContentBlendMode: 0
-    ColorContentSelfBlendMode: 0
-    ColorLeftTextBlendMode: 0
-    ColorRightTextBlendMode: 0
-    ColorIconBlendMode: 0
-    GroupAlpha: 1
-    PixelsPerUnit: 0
   IndecesColumnRow: {x: 0, y: 0}
-  Index: 0
-  TransitionTime: 0.07
 --- !u!114 &4380806839912147959
 MonoBehaviour:
   m_ObjectHideFlags: 0

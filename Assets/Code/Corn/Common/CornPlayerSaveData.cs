@@ -21,21 +21,38 @@ public class PlayerSaveData
 
     public float[] Resources;
 
-    public uint CurrentTime = FIRST_WAKEUP_TIME;
+    public int CurrentHour { get; private set; } = FIRST_WAKEUP_TIME;
 
-    public uint CurrentDay = 0;
+    public int CurrentDay { get; private set; } = 0;
+
+    public int CurrentMonth { get; private set; } = 0;
 
     public int CurrentWakeUpTime = FIRST_WAKEUP_TIME;
 
     public int CurrentSleepTime = 22;
 
-    private float m_originalMaxSumMoney = INITIAL_SUM_OF_MONEY;
+    public float GameProgress = 0;
+    public int CurrentMilestone { get { return (int)Mathf.Floor(GameProgress / ((float)GAME_PROGRESS_MAX / GAME_PROGRESS_MILESTONES)); } }
+
+    private readonly float m_originalMaxSumMoney = INITIAL_SUM_OF_MONEY;
 
     private const int INITIAL_SUM_OF_MONEY = 10000;
 
     private const int FIRST_WAKEUP_TIME = 8;
 
     private const float START_RESOURCE_VALUE = 0.5f;
+
+    public const int COUNT_RESOURCES = (int)PlayerResources.COUNT;
+
+    public const int COUNT_CONSUMABLES = (int)PlayerConsumables.COUNT;
+
+    public const int COUNT_0_TO_100_CONSUMABLES = (int)PlayerConsumables.MONEY; //Money is not between 0 to 100
+
+    public const int COUNT_NON_0_TO_100_CONSUMABLES = COUNT_CONSUMABLES - COUNT_0_TO_100_CONSUMABLES; //Money is not between 0 to 100
+
+    public const int GAME_PROGRESS_MILESTONES = 20;
+
+    public const int GAME_PROGRESS_MAX = 100;
 
     public int MaxMentalSanity = CornManagerEvents.DICE_ROLL_NUM_FACES;
 
@@ -75,14 +92,43 @@ public class PlayerSaveData
         return changedSomething;
     }
 
-    public uint ProgressTime(uint aHoursSpan)
+    public TimeSpan ProgressTime(int aHoursSpan)
     {
-        CurrentTime += aHoursSpan;
-        uint daysPassed = CurrentTime / 24;
-        CurrentTime %= 24;
+        CurrentHour += aHoursSpan;
+        int daysPassed = CurrentHour / 24;
+        CurrentHour %= 24;
         CurrentDay += daysPassed;
 
-        return daysPassed;
+        int daysInMonth = GetDaysInMonth(CurrentMonth);
+
+        int monthsPassed = 0;
+        while (daysInMonth <= CurrentDay)
+        {
+            monthsPassed++;
+            CurrentDay -= daysInMonth;
+            CurrentMonth++;
+            CurrentMonth %= 12;
+
+            daysInMonth = GetDaysInMonth(CurrentMonth);
+        };
+
+        return new(daysPassed, monthsPassed);
+    }
+
+    //aYear = 1 because we do not want leap year by default
+    protected int GetDaysInMonth(int aMonth, int aYear = 1)
+    {
+        int numDays = 30;
+
+        if (aMonth == 1)
+        {
+            bool leapYear = (aYear % 400 == 0) || (aYear % 100 != 0) && (aYear % 4 == 0);
+            numDays = leapYear ? 29 : 28;
+        }
+        else if (aMonth % 2 == 0 || aMonth == 7) //august also has 31 days because Augustus could not accept Julius has more days
+            numDays++;
+
+        return numDays;
     }
 
     public bool ValidateSaveFile()
@@ -97,6 +143,10 @@ public class PlayerSaveData
         return true;
     }
 
+    public float GetValue(PlayerResources aType) { return Resources[(int)aType]; }
+
+    public float GetValue(PlayerConsumables aType) { return Consumables[(int)aType]; }
+
     public void ApplyModifier(PlayerResources aType, float aValue)
     {
         Resources[(int)aType] += aValue;
@@ -106,7 +156,28 @@ public class PlayerSaveData
     public void ApplyModifier(PlayerConsumables aType, float aValue)
     {
         Consumables[(int)aType] += aValue;
-        Consumables[(int)aType].ClampSelf(0, 1);
+        if (aType < PlayerConsumables.MONEY)
+            Consumables[(int)aType].ClampSelf(0, 1);
+    }
+
+    public bool CanAfford(PlayerConsumables aType, float aValue)
+    {
+        return -0.001 <= Consumables[(int)aType] + aValue; //-0.001 to account for errors
+    }
+
+    public bool CanAfford(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0)
+    {
+        return CanAfford(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value));
+    }
+
+    public bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier>
+    {
+        bool canAfford = true;
+        if (someModifiers != null)
+            foreach (PlayerConsumablesModifier modifier in someModifiers)
+                canAfford &= CanAfford(modifier, aMultiplier, aBonusMultiplier);
+
+        return canAfford;
     }
 
     public void ApplyModifier(PlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
@@ -119,10 +190,11 @@ public class PlayerSaveData
 [Serializable]
 public enum PlayerConsumables
 {
-    MONEY,
     ENERGY,
     WILLPOWER,
     SOCIAL_BATTERIES,
+    //values past this point are in a range outside of 0 to 100
+    MONEY,
     COUNT
 }
 
@@ -137,9 +209,8 @@ public struct PlayerConsumablesModifier
 [Serializable]
 public enum PlayerResources
 {
-    PRODUCTIVITY,
-    HOUSE_CHORES,
-    PHYSICAL_HEALTH,
+    WORK,
+    CHORES,
     PERSONAL_NEEDS,
     SOCIAL_LIFE,
     COUNT
@@ -151,4 +222,16 @@ public struct PlayerResourcesModifier
     public PlayerResources Type;
     public float Value;
     public float BonusPercent;
+}
+
+public struct TimeSpan
+{
+    public TimeSpan(int aDays, int aMonths)
+    {
+        Days = aDays;
+        Months = aMonths;
+    }
+
+    public int Days;
+    public int Months;
 }

@@ -28,45 +28,118 @@ public class CornManagerEvents : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        if (Instance) Destroy(Instance);
-        Instance = this;
+        this.SetSingleton(ref Instance);
+        Cursor.visible = true;
+    }
+
+    public static void ExecuteEvent(CornEvent aEvent)
+    {
+        if (Instance.m_canPlayEvent)
+        {
+            Instance.m_canPlayEvent = false;
+            Timing.RunCoroutine(_ExecuteEvent(aEvent));
+        }
+        else
+            Debug.LogWarning("Already in the process of executing an event, could not exeucte event " + aEvent.EventType + " " + aEvent.EventTypeSub);
+    }
+
+    private static IEnumerator<float> _ExecuteEvent(CornEvent aEvent)
+    {
+        string message;
+        CornEventCostAndRewards eventDetails = CornManagerBalancing.GetEventCostAndRewards(aEvent);
+        if (CanAfford(aEvent))
+        {
+            bool wasteTime = eventDetails.EventHasCornRoll && MentalSanity < UnityEngine.Random.Range(1, DICE_ROLL_NUM_FACES);
+
+            if (wasteTime)
+            {
+                eventDetails = CornManagerBalancing.GetEventCostAndRewards(CornEventType.CORN);
+                message = "You wasted time and didn't do anything... You watched corn videos obsessively.";
+            }
+            else //perform the event normally
+            {
+                //event stuff
+                message = "<i>Pretty</i> cool event <color=red>" + aEvent.EventType.ToString() + "</color> was finished.";
+            }
+        }
+        else
+        {
+            eventDetails = default;
+            message = "You cannot perform this action with your current consumables...";
+        }
+
+        List<string> messagesBuffer = GetMessagesBuffer();
+        messagesBuffer.Add(message);
+
+        eventDetails.ApplyModifiersToPlayer(0);
+
+        CoroutineHandle eventHandle = default;
+
+        GfxUiTools.RemoveSelectedGameObject();
+
+        switch (aEvent.EventType)
+        {
+            case CornEventType.WORK:
+                eventHandle = Timing.RunCoroutine(_ExecuteWorkEvent());
+                break;
+
+            case CornEventType.SOCIAL:
+                eventHandle = GfgVnScene.StartScene(typeof(TestDialogue)); //test todo
+                break;
+        }
+
+        if (eventHandle.IsValid) yield return Timing.WaitUntilDone(eventHandle);
+
+        CoroutineHandle apartmentLoadRoutine = GfgManagerSceneLoader.LoadScene(GfcScene.APARTMENT);
+        if (apartmentLoadRoutine.IsValid)
+        {
+            GfgManagerSceneLoader.SkipFinalFade = true;
+            GfgManagerSceneLoader.FakeWait = true;
+            yield return Timing.WaitUntilDone(apartmentLoadRoutine);
+        }
+
+        CoroutineHandle transitionCoroutine = ProgressTime(eventDetails.HoursDuration, messagesBuffer);
+        yield return Timing.WaitUntilDone(transitionCoroutine);
+
+        Instance.m_canPlayEvent = true;
+    }
+
+    private static IEnumerator<float> _ExecuteWorkEvent()
+    {
+        var playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
+        int previousMilestone = playerSaveData.CurrentMilestone;
+        GfgManagerSaveData.GetActivePlayerSaveData().GameProgress += CornManagerBalancing.GetGameProgressOnWork();
+        int newMilestone = playerSaveData.CurrentMilestone;
+        if (previousMilestone < newMilestone)
+        {
+            //new milestone achieved
+            Instance.m_messagesBuffer.Add("New milestone achieved! Currently at milestone " + newMilestone);
+        }
+
+        yield return Timing.WaitForOneFrame;
     }
 
     public static void UpdateVisuals()
     {
-
-    }
-
-    private static IEnumerator<float> _FlushMessagesAndDrawHud()
-    {
-        float fadeTime = Instance.m_screenFadeTime;
-
-        GfxUiTools.CrossFadeBlackAlpha(1, fadeTime);
-        GfxUiTools.RemoveSelectedGameObject();
-
-        yield return Timing.WaitForSeconds(fadeTime);
-
-        UpdateVisuals();
-
-        yield return Timing.WaitUntilDone(GfxUiTools.NotifyMessage(Instance.m_messagesBuffer));
-        Instance.m_messagesBuffer.Clear();
-
-        GfxUiTools.CrossFadeBlackAlpha(0, fadeTime);
-        yield return Timing.WaitForSeconds(fadeTime); ;
+        CornMenuApartment.UpdateGraphics();
     }
 
     //should only be called when an action happens
-    protected static CoroutineHandle ProgressTime(uint aElapsedHours, List<string> someMessages = null)
+    protected static CoroutineHandle ProgressTime(int aElapsedHours, List<string> someMessages = null, bool anFadeToBlack = true)
     {
         PlayerSaveData playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
-        uint daysPassed = playerSaveData.ProgressTime(aElapsedHours);
+        TimeSpan timePassed = playerSaveData.ProgressTime(aElapsedHours);
 
-        for (int i = 0; i < daysPassed; ++i)
+        for (int i = 0; i < timePassed.Months; ++i)
+        {
+            CornManagerBalancing.GetEventCostAndRewards(CornEventType.NEW_MONTH).ApplyModifiersToPlayer();
+            someMessages.Add("Month passed, take some money lmao");
+        }
+
+        for (int i = 0; i < timePassed.Days; ++i)
         {
             someMessages ??= GetMessagesBuffer();
 
-            playerSaveData.CurrentTime %= 24;
-            playerSaveData.CurrentDay++;
             string message = "Day " + playerSaveData.CurrentDay;
 
             bool loseSanity = false;
@@ -74,9 +147,11 @@ public class CornManagerEvents : MonoBehaviour
 
             for (int resourceIndex = 0; resourceIndex < (int)PlayerResources.COUNT; ++resourceIndex)
             {
-                loseSanity |= playerSaveData.Resources[resourceIndex] <= 0;
                 gainSanity &= playerSaveData.Resources[resourceIndex] >= 0.5f;
+                loseSanity |= playerSaveData.Resources[resourceIndex] <= 0;
             }
+
+            CornManagerBalancing.GetEventCostAndRewards(CornEventType.NEW_DAY).ApplyModifiersToPlayer();
 
             if (gainSanity)
             {
@@ -93,47 +168,43 @@ public class CornManagerEvents : MonoBehaviour
             playerSaveData.MentalSanity = Mathf.Clamp(playerSaveData.MentalSanity, 0, DICE_ROLL_NUM_FACES);
         }
 
-        return Timing.RunCoroutine(_FlushMessagesAndDrawHud());
+        return Timing.RunCoroutine(_FlushMessagesAndDrawHud(anFadeToBlack));
     }
 
-    private static IEnumerator<float> _ExecuteEvent(CornEvent aEvent)
+    private static IEnumerator<float> _FlushMessagesAndDrawHud(bool anFadeToBlack = true)
     {
-        string message;
-        CornEventCostAndRewards eventDetails = CornManagerBalancing.GetEventCostAndRewards(aEvent);
-        bool wasteTime = eventDetails.EventHasCornRoll && MentalSanity < UnityEngine.Random.Range(1, DICE_ROLL_NUM_FACES);
+        float fadeTime = Instance.m_screenFadeTime;
 
-        if (wasteTime)
+        if (anFadeToBlack)
         {
-            eventDetails = CornManagerBalancing.GetEventCostAndRewards(CornEventType.CORN);
-            message = "You wasted time and didn't do anything... You watched corn videos obsessively.";
-        }
-        else //perform the event normally
-        {
-            //event stuff
-            message = "<i>Pretty</i> cool event <color=red>" + aEvent.EventType.ToString() + "</color> was finished.";
+            GfxUiTools.CrossFadeBlackAlpha(1, fadeTime);
+            GfxUiTools.RemoveSelectedGameObject();
+
+            yield return Timing.WaitForSeconds(fadeTime);
         }
 
-        List<string> messagesBuffer = GetMessagesBuffer();
-        messagesBuffer.Add(message);
+        GfgManagerSceneLoader.FakeWait = false;
 
-        eventDetails.ApplyModifiersToPlayer(0);
+        UpdateVisuals();
 
-        CoroutineHandle transitionCoroutine = ProgressTime(eventDetails.HoursDuration, messagesBuffer);
-        yield return Timing.WaitUntilDone(transitionCoroutine);
+        CoroutineHandle handle = GfxUiTools.GetNotifyPanel().DrawMessages(Instance.m_messagesBuffer);
 
-        Instance.m_canPlayEvent = true;
+        if (handle.IsValid) yield return Timing.WaitUntilDone(handle);
+
+        Instance.m_messagesBuffer.Clear();
+
+        if (anFadeToBlack)
+        {
+            GfxUiTools.CrossFadeBlackAlpha(0, fadeTime);
+            yield return Timing.WaitForSeconds(fadeTime);
+        }
     }
 
-    public static void ExecuteEvent(CornEvent aEvent)
-    {
-        if (Instance.m_canPlayEvent)
-        {
-            Instance.m_canPlayEvent = false;
-            Timing.RunCoroutine(_ExecuteEvent(aEvent));
-        }
-        else
-            Debug.LogWarning("Already in the process of executing an event, could not exeucte event " + aEvent.EventType + " " + aEvent.EventTypeSub);
-    }
+    public static bool CanAfford(CornEvent aEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(aEvent).CanAfford(aBonusMultiplier); }
+    public static bool CanAfford(PlayerConsumables aType, float aValue) { return GfgManagerSaveData.GetActivePlayerSaveData().CanAfford(aType, aValue); }
+    public static bool CanAfford(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { return GfgManagerSaveData.GetActivePlayerSaveData().CanAfford(aModifier, aMultiplier, aBonusMultiplier); }
+    public static bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { return GfgManagerSaveData.GetActivePlayerSaveData().CanAfford(someModifiers, aMultiplier, aBonusMultiplier); }
+
 
     public static void ApplyModifier(PlayerResources aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aType, aValue); }
     public static void ApplyModifier(PlayerConsumables aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aType, aValue); }
@@ -141,12 +212,12 @@ public class CornManagerEvents : MonoBehaviour
     public static void ApplyModifier(PlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
     public static void ApplyModifier(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
 
-    public static void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerResourcesModifier> { if (someModifiers != null) foreach (PlayerResourcesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
-    public static void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { if (someModifiers != null) foreach (PlayerConsumablesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerResourcesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifierResourceList(someModifiers, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifierConsumablesList(someModifiers, aMultiplier, aBonusMultiplier); }
     public static int MentalSanity { get { return GfgManagerSaveData.GetActivePlayerSaveData().MentalSanity; } }
 }
 
-[System.Serializable]
+[Serializable]
 public struct CornEvent
 {
     public CornEvent(CornEventType aEventType, uint aEventTypeSub = 0)
@@ -161,15 +232,17 @@ public struct CornEvent
 
 public enum CornEventType
 {
-    SLEEP,
     WORK,
     CHORES,
-    SOCIAL,
-    GYM,
     PERSONAL_TIME,
+    SOCIAL,
+
+    SLEEP,
     CORN,
     RANDOM,
     PERSONAL_GIFT,
+    NEW_DAY,
+    NEW_MONTH,
     COUNT
 }
 

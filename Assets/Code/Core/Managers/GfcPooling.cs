@@ -17,6 +17,8 @@ public class GfcPooling : MonoBehaviour
 
     private GfcStringBuffer m_sharedGfStringBuffer = new(15);
 
+    private List<Component> m_sharedSomponentsBuffer = new(16);
+
     private struct PoolStruct
     {
         public PoolStruct(int poolSize, GameObject prefab = null)
@@ -62,14 +64,25 @@ public class GfcPooling : MonoBehaviour
     {
         get
         {
-            if (Instance.m_sharedGfStringBuffer.Length > 0)
-                Debug.LogWarning("The string buffer was not empty when retrieved, is it currently used somewhere else or did someone forget to clear it after using it?");
+            Debug.Assert(Instance);
+            Debug.Assert(Instance.m_sharedGfStringBuffer.Length == 0, "The string buffer was not empty when retrieved, is it currently used somewhere else or did someone forget to clear it after using it? The text present is: " + Instance.m_sharedGfStringBuffer.StringBuffer);
             Instance.m_sharedGfStringBuffer.Clear();
             return Instance.m_sharedGfStringBuffer;
         }
     }
 
-    private static GameObject InternalInstantiate(GameObject objectToSpawn, string objectName, Vector3 position, Quaternion rotation, Transform parent, bool instantiateInWorldSpace = true, bool mustBeInactive = true)
+    public static List<Component> ComponentsBuffer
+    {
+        get
+        {
+            Debug.Assert(Instance);
+            Debug.Assert(Instance.m_sharedSomponentsBuffer.Count == 0, "The components buffer was not empty when queried, it had a count of " + Instance.m_sharedSomponentsBuffer.Count);
+            Instance.m_sharedSomponentsBuffer.Clear();
+            return Instance.m_sharedSomponentsBuffer;
+        }
+    }
+
+    private static GameObject InternalInstantiate(GameObject objectToSpawn, string objectName, Vector3 position, Quaternion rotation, Transform parent, bool instantiateInWorldSpace = true, bool mustBeInactive = true, Transform transformReference = null)
     {
         //Debug.Log("called to instantiate: " + objectToSpawn.name);
         GameObject spawnedObject = null;
@@ -110,7 +123,7 @@ public class GfcPooling : MonoBehaviour
         if (spawnedObject)
         {
             spawnedObject.transform.SetParent(parent);
-            locSetObjectPositionAndRotation(spawnedObject.transform, position, rotation, !instantiateInWorldSpace);
+            locSetObjectPositionAndRotation(spawnedObject.transform, position, rotation, !instantiateInWorldSpace, transformReference);
         }
         else
         {
@@ -130,15 +143,14 @@ public class GfcPooling : MonoBehaviour
         return InternalInstantiate(null, prefabName, position, rotation, parent, true, mustBeInactive);
     }
 
-
     public static GameObject Instantiate(GameObject objectToSpawn, Transform parent = null, bool instantiateInWorldSpace = false, bool mustBeInactive = true)
     {
-        return InternalInstantiate(objectToSpawn, objectToSpawn.name, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace, mustBeInactive);
+        return InternalInstantiate(objectToSpawn, objectToSpawn.name, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace, mustBeInactive, objectToSpawn.transform);
     }
 
     public static GameObject Instantiate(GameObject objectToSpawn, Vector3 position, Quaternion rotation, Transform parent = null, bool mustBeInactive = true)
     {
-        return InternalInstantiate(objectToSpawn, objectToSpawn.name, position, rotation, parent, true, mustBeInactive);
+        return InternalInstantiate(objectToSpawn, objectToSpawn.name, position, rotation, parent, true, mustBeInactive, objectToSpawn.transform);
     }
 
     /**
@@ -149,7 +161,7 @@ public class GfcPooling : MonoBehaviour
         if (PoolSizeAvailable(objectToSpawn) == 0)
             Pool(objectToSpawn, 1);
 
-        return InternalInstantiate(objectToSpawn, objectToSpawn.name, objectToSpawn.transform.position, objectToSpawn.transform.rotation, parent, instantiateInWorldSpace, mustBeInactive);
+        return Instantiate(objectToSpawn, parent, instantiateInWorldSpace, mustBeInactive);
     }
 
     /**
@@ -160,10 +172,8 @@ public class GfcPooling : MonoBehaviour
         if (PoolSizeAvailable(objectToSpawn) == 0)
             Pool(objectToSpawn, 1);
 
-        return InternalInstantiate(objectToSpawn, objectToSpawn.name, position, rotation, parent, true, mustBeInactive);
+        return Instantiate(objectToSpawn, position, rotation, parent, mustBeInactive);
     }
-
-
 
     public static void DestroyChildren(Transform obj, bool deleteSelf = false)
     {
@@ -231,33 +241,40 @@ public class GfcPooling : MonoBehaviour
             obj.position = position;
     }
 
-    protected static void locSetObjectPositionAndRotation(Transform obj, Vector3 position, Quaternion rotation, bool local)
+    protected static void locSetObjectPositionAndRotation(Transform aTransform, Vector3 aPosition, Quaternion aRotation, bool anIsLocal, Transform aTransformReference)
     {
-        Rigidbody rb = obj.GetComponent<Rigidbody>();
-        if (rb)
+        Rigidbody rb = aTransform.GetComponent<Rigidbody>();
+        if (aTransformReference)
         {
-            if (local)
-            {
-                Transform parent = obj.parent;
-                if (parent)
-                {
-                    GfcTools.Add(ref position, parent.position);
-                    rotation = parent.rotation * rotation;
-                }
-            }
-
-            rb.position = position;
-            rb.rotation = rotation;
-        }
-        else if (local)
-        {
-            obj.localPosition = position;
-            obj.localRotation = rotation;
+            aTransform.CopyTransformData(aTransformReference, anIsLocal);
         }
         else
         {
-            obj.position = position;
-            obj.rotation = rotation;
+            if (rb)
+            {
+                if (anIsLocal)
+                {
+                    Transform parent = aTransform.parent;
+                    if (parent)
+                    {
+                        GfcTools.Add(ref aPosition, parent.position);
+                        aRotation = parent.rotation * aRotation;
+                    }
+                }
+
+                rb.position = aPosition;
+                rb.rotation = aRotation;
+            }
+            else if (anIsLocal)
+            {
+                aTransform.localPosition = aPosition;
+                aTransform.localRotation = aRotation;
+            }
+            else
+            {
+                aTransform.position = aPosition;
+                aTransform.rotation = aRotation;
+            }
         }
     }
 

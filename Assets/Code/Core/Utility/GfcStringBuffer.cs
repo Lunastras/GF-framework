@@ -6,6 +6,9 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using static Unity.Mathematics.math;
 
+//A memory allocation free string buffer. This is similar to c#'s StringBuilder, but StringBuilder does not allow you to directly access the memory buffer and use it, you need to create a new 
+//string when you want to use it. GfcStringBuffer allows users to directly use the current string built without creating a new one. Because of this, users need to be careful when using the buffer 
+//because the string can always change dynamically.
 public class GfcStringBuffer
 {
     protected string m_stringBuffer;
@@ -120,7 +123,7 @@ public class GfcStringBuffer
                 stringPtr[i] = stringPtr[lastIndex - i];
     }
 
-    public string GetStringClone() { return string.Copy(m_stringBuffer); }
+    public string GetStringCopy() { return string.Copy(m_stringBuffer); }
 
     public void Insert(ref int aCurrentPositionInBuffer, string aInsertString) { InsertInStringBufferExpand(ref m_stringBuffer, ref m_stringBufferCapacity, ref aCurrentPositionInBuffer, aInsertString, true); }
 
@@ -263,8 +266,11 @@ public class GfcStringBuffer
             WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, '-', aMultipleOfTwoIfExpand);
 
         WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, wholeNumber, aMultipleOfTwoIfExpand);
-        WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, aDecimalPointSymbol, aMultipleOfTwoIfExpand);
-        WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, decicmalPart, aMultipleOfTwoIfExpand);
+        if (aPrecission > 0)
+        {
+            WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, aDecimalPointSymbol, aMultipleOfTwoIfExpand);
+            WriteInStringBufferExpand(ref aStringBuffer, ref aStringBufferCapacity, ref aCurrentPositionInBuffer, decicmalPart, aMultipleOfTwoIfExpand);
+        }
     }
 
     public static unsafe void WriteInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, long aInsertLong, bool aDoubleInSizeIfExpand = false)

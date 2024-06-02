@@ -14,7 +14,9 @@ public class GfxUiTools : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI m_bottomNotificationText = null;
 
-    [SerializeField] private GfxNotifyPanel m_notifyPanel = null;
+    [SerializeField] private GfxNotifyPanelGeneric m_notifyPanel = null;
+
+    [SerializeField] private GfxNotifyPanelGeneric m_dialoguePanel = null;
 
     [SerializeField] private Image m_colourOverlay = null;
 
@@ -38,11 +40,13 @@ public class GfxUiTools : MonoBehaviour
 
     [SerializeField] private GfxPanelCreateData m_defaultPanelCreateData;
 
+    [SerializeField] private AnimationCurve m_defaultAnimationCurve;
+
     private static GfxUiTools Instance;
     private static List<RaycastResult> RaycastResults = new(1);
     private static PointerEventData PointerEventData;
 
-    private GfxPanel m_displayedNotificationPanel = null;
+    private GfxButton m_displayedNotificationButton = null;
 
     private GameObject m_gameObjectToSelect;
     private bool m_inTheProcessOfSelectingGameObject = false;
@@ -51,8 +55,6 @@ public class GfxUiTools : MonoBehaviour
 
     private CoroutineHandle m_selectingGameObjectCoroutine = default;
     private CoroutineHandle m_deselectingGameObjectCoroutine = default;
-
-    private List<string> m_notifyMessagesBuffer = new(1);
 
     private HashSet<GameObject> m_objectsToDeselect = new(4);
 
@@ -82,16 +84,9 @@ public class GfxUiTools : MonoBehaviour
         Instance = null;
     }
 
-    public static GfxNotifyPanel GetNotifyMessagePanel() { return Instance.m_notifyPanel; }
+    public static GfxNotifyPanelGeneric GetNotifyPanel() { return Instance.m_notifyPanel; }
 
-    public static CoroutineHandle NotifyMessage(IEnumerable<string> someMessages) { return Instance.m_notifyPanel.DrawMessages(someMessages); }
-
-    public static CoroutineHandle NotifyMessage(string aMessage)
-    {
-        Instance.m_notifyMessagesBuffer.Clear();
-        Instance.m_notifyMessagesBuffer.Add(aMessage);
-        return NotifyMessage(Instance.m_notifyMessagesBuffer);
-    }
+    public static GfxNotifyPanelGeneric GetDialoguePanel() { return Instance.m_dialoguePanel; }
 
     public static void SetBlackBars(bool turnOn, float delay = 0, bool constantOpacity = false, bool constantAnchors = false, bool ignoreTimeScale = false)
     {
@@ -183,19 +178,19 @@ public class GfxUiTools : MonoBehaviour
         return EventSystem.current.IsPointerOverGameObject();
     }
 
-    public static void WriteDisableReason(GfxPanel aPanel)
+    public static void WriteDisableReason(GfxButton aButton)
     {
-        string reason = aPanel.GetDisabledReason();
+        string reason = aButton.GetDisabledReason();
         if (!reason.IsEmpty())
         {
             WriteBottomNotification(reason, BottomNotificationType.ERROR);
-            Instance.m_displayedNotificationPanel = aPanel;
+            Instance.m_displayedNotificationButton = aButton;
         }
     }
 
-    public static void EraseDisableReason(GfxPanel aPanel)
+    public static void EraseDisableReason(GfxButton aButton)
     {
-        if (Instance.m_displayedNotificationPanel == aPanel)
+        if (Instance.m_displayedNotificationButton == aButton)
             WriteBottomNotification(null, BottomNotificationType.ERROR);
     }
 
@@ -261,7 +256,7 @@ public class GfxUiTools : MonoBehaviour
     public static void WriteBottomNotification(string aText, BottomNotificationType aNotificationType = BottomNotificationType.NORMAL)
     {
         //todo make nice transition
-        Instance.m_displayedNotificationPanel = null;
+        Instance.m_displayedNotificationButton = null;
         Instance.m_bottomNotificationText.text = aText;
 
         Color textColor;
@@ -288,11 +283,8 @@ public class GfxUiTools : MonoBehaviour
         Color retCol;
         switch (aBlendMode)
         {
-            case ColorBlendMode.INTERPOLATE_USING_ALPHA:
-                float secondAlpha = 1 - aSecondColor.a;
-                retCol.r = aFirstColor.r * secondAlpha + aSecondColor.r * aSecondColor.a;
-                retCol.g = aFirstColor.g * secondAlpha + aSecondColor.g * aSecondColor.a;
-                retCol.b = aFirstColor.b * secondAlpha + aSecondColor.b * aSecondColor.a;
+            case ColorBlendMode.LERP_USING_ALPHA:
+                retCol = Color.Lerp(aFirstColor, aSecondColor, aSecondColor.a);
                 retCol.a = aFirstColor.a;
                 break;
 
@@ -414,30 +406,77 @@ public class GfxUiTools : MonoBehaviour
         return new Color(output_r, output_g, output_b, output_a);
     }
 
-    public static void CrossFadeAlphaGroup(CanvasGroup group, float targetAlpha, float smoothTime, bool ignoreTimeScale)
+    public static CoroutineHandle CrossFadeAlpha(CanvasGroup aGroup, float aTargetAlpha, float aDurationSeconds, bool anIgnoreTimeScale = false, AnimationCurve anAnimationCurve = null)
     {
-        Timing.RunCoroutine(_CrossFadeAlphaGroup(group, targetAlpha, smoothTime, group.alpha, ignoreTimeScale));
+        if (aTargetAlpha != aGroup.alpha)
+            return Timing.RunCoroutine(_CrossFadeAlphaGroup(aGroup, aTargetAlpha, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve != null ? anAnimationCurve : Instance.m_defaultAnimationCurve));
+        else
+            return default;
     }
 
-    private static IEnumerator<float> _CrossFadeAlphaGroup(CanvasGroup group, float targetAlpha, float smoothTime, float currentAlpha, bool ignoreTimeScale)
+    private static IEnumerator<float> _CrossFadeAlphaGroup(CanvasGroup aGroup, float aTargetAlpha, float aDurationSeconds, bool anIgnoreTimeScale, AnimationCurve anAnimationCurve)
     {
-        float refSmooth = 0;
-        group.alpha = currentAlpha;
-        float deltaTime;
+        float progress = 0;
+        float anInitialAlpha = aGroup.alpha, lastAlpha = anInitialAlpha;
 
-        while (group && MathF.Abs(currentAlpha - targetAlpha) > 0.001f && group.alpha == currentAlpha) //stop coroutine if alpha is modified by somebody else
+        if (aDurationSeconds > 0)
         {
-            deltaTime = Time.deltaTime;
-            if (ignoreTimeScale)
-                deltaTime = Time.unscaledDeltaTime;
+            float invDuration = 1.0f / aDurationSeconds;
 
-            currentAlpha = Mathf.SmoothDamp(currentAlpha, targetAlpha, ref refSmooth, smoothTime, int.MaxValue, deltaTime);
-            group.alpha = currentAlpha;
-            yield return Timing.WaitForOneFrame;
+            while (progress < 1 && aGroup && aGroup.alpha == lastAlpha) //stop coroutine if alpha is modified by somebody else or if the image was deleted in the meantime
+            {
+                aGroup.alpha = aGroup.alpha.Lerp(aTargetAlpha, anAnimationCurve == null ? progress : anAnimationCurve.Evaluate(progress));
+                lastAlpha = aGroup.alpha;
+
+                yield return Timing.WaitForOneFrame;
+
+                progress += invDuration * (anIgnoreTimeScale ? Time.unscaledDeltaTime : Time.deltaTime);
+            }
         }
 
-        if (group && group.alpha == currentAlpha)
-            group.alpha = targetAlpha;
+        progress = 1;
+        if (aGroup && aGroup.alpha == lastAlpha)
+            aGroup.alpha = aGroup.alpha.Lerp(aTargetAlpha, anAnimationCurve == null ? progress : anAnimationCurve.Evaluate(progress));
+    }
+
+    public static CoroutineHandle CrossFadeAlpha(Graphic aGraphic, float aTargetAlpha, float aDurationSeconds, bool anIgnoreTimeScale, AnimationCurve anAnimationCurve = null)
+    {
+        Color color = aGraphic.color;
+        color.a = aTargetAlpha;
+        return CrossFadeColor(aGraphic, color, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve);
+    }
+
+    public static CoroutineHandle CrossFadeColor(Graphic aGraphic, Color aTargetColor, float aDurationSeconds, bool anIgnoreTimeScale, AnimationCurve anAnimationCurve = null)
+    {
+        if (aTargetColor != aGraphic.color)
+            return Timing.RunCoroutine(_CrossFadeColor(aGraphic, aTargetColor, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve ?? Instance.m_defaultAnimationCurve));
+        else
+            return default;
+    }
+
+    private static IEnumerator<float> _CrossFadeColor(Graphic aGraphic, Color aTargetColor, float aDurationSeconds, bool anIgnoreTimeScale, AnimationCurve anAnimationCurve)
+    {
+        float progress = 0;
+        Color anInitialColor = aGraphic.color, lastColor = anInitialColor;
+
+        if (aDurationSeconds > 0)
+        {
+            float invDuration = 1.0f / aDurationSeconds;
+
+            while (progress < 1 && aGraphic && aGraphic.color == lastColor) //stop coroutine if alpha is modified by somebody else or if the image was deleted in the meantime
+            {
+                aGraphic.color = anInitialColor.Lerp(aTargetColor, anAnimationCurve == null ? progress : anAnimationCurve.Evaluate(progress));
+                lastColor = aGraphic.color;
+
+                yield return Timing.WaitForOneFrame;
+
+                progress += invDuration * (anIgnoreTimeScale ? Time.unscaledDeltaTime : Time.deltaTime);
+            }
+        }
+
+        progress = 1;
+        if (aGraphic && aGraphic.color == lastColor)
+            aGraphic.color = Color.Lerp(anInitialColor, aTargetColor, anAnimationCurve == null ? progress : anAnimationCurve.Evaluate(progress));
     }
 
     public static GfxPanelCreateData GetDefaultPanelCreateData(MovementDisableOptions aMovementDisableOptions)
@@ -447,27 +486,27 @@ public class GfxUiTools : MonoBehaviour
         switch (aMovementDisableOptions)
         {
             case MovementDisableOptions.REMOVE_VERTICAL:
-                createData.DefaultHighlightState.PositionOffset.y = 0;
-                createData.PinnedHighlightState.PositionOffset.y = 0;
-                createData.SelectHighlightState.PositionOffset.y = 0;
-                createData.DisabledHighlightState.PositionOffset.y = 0;
-                createData.SubmitHighlightState.PositionOffset.y = 0;
+                createData.ButtonCreateData.DefaultHighlightState.PositionOffset.y = 0;
+                createData.ButtonCreateData.PinnedHighlightState.PositionOffset.y = 0;
+                createData.ButtonCreateData.SelectHighlightState.PositionOffset.y = 0;
+                createData.ButtonCreateData.DisabledHighlightState.PositionOffset.y = 0;
+                createData.ButtonCreateData.SubmitHighlightState.PositionOffset.y = 0;
                 break;
 
             case MovementDisableOptions.REMOVE_HORIZONTAL:
-                createData.DefaultHighlightState.PositionOffset.x = 0;
-                createData.PinnedHighlightState.PositionOffset.x = 0;
-                createData.SelectHighlightState.PositionOffset.x = 0;
-                createData.DisabledHighlightState.PositionOffset.x = 0;
-                createData.SubmitHighlightState.PositionOffset.x = 0;
+                createData.ButtonCreateData.DefaultHighlightState.PositionOffset.x = 0;
+                createData.ButtonCreateData.PinnedHighlightState.PositionOffset.x = 0;
+                createData.ButtonCreateData.SelectHighlightState.PositionOffset.x = 0;
+                createData.ButtonCreateData.DisabledHighlightState.PositionOffset.x = 0;
+                createData.ButtonCreateData.SubmitHighlightState.PositionOffset.x = 0;
                 break;
 
             case MovementDisableOptions.REMOVE_ALL:
-                createData.DefaultHighlightState.PositionOffset = new();
-                createData.PinnedHighlightState.PositionOffset = new();
-                createData.SelectHighlightState.PositionOffset = new();
-                createData.DisabledHighlightState.PositionOffset = new();
-                createData.SubmitHighlightState.PositionOffset = new();
+                createData.ButtonCreateData.DefaultHighlightState.PositionOffset = new();
+                createData.ButtonCreateData.PinnedHighlightState.PositionOffset = new();
+                createData.ButtonCreateData.SelectHighlightState.PositionOffset = new();
+                createData.ButtonCreateData.DisabledHighlightState.PositionOffset = new();
+                createData.ButtonCreateData.SubmitHighlightState.PositionOffset = new();
                 break;
         }
 
@@ -476,7 +515,7 @@ public class GfxUiTools : MonoBehaviour
 
     public static GfxPanel CreatePanelWithCache(RectTransform aParent, GfxPanelCreateData aPanelData, List<GfxPanel> somePanelsCache, bool aSnapPanelsToDesiredState = false, bool aForceUpdateCache = true, AlignmentHorizontal aAlignmentHorizontal = AlignmentHorizontal.MIDDLE, AlignmentVertical aAlignmentVertical = AlignmentVertical.MIDDLE, bool aDynamicIndex = false)
     {
-        aPanelData.Parent = aParent;
+        aPanelData.ButtonCreateData.Parent = aParent;
         return CreatePanelWithCache(aPanelData, somePanelsCache, aSnapPanelsToDesiredState, aForceUpdateCache, aAlignmentHorizontal, aAlignmentVertical, aDynamicIndex);
     }
 
@@ -485,26 +524,27 @@ public class GfxUiTools : MonoBehaviour
         if (somePanelsCache == null)
             somePanelsCache = new(4);
 
-        if (aForceUpdateCache || somePanelsCache.Count <= aPanelData.Index || somePanelsCache[aPanelData.Index] == null)
+        int index = aPanelData.ButtonCreateData.Index;
+        if (aForceUpdateCache || somePanelsCache.Count <= index || somePanelsCache[index] == null)
         {
             GfxPanel panel;
             bool setPanelData = aForceUpdateCache;
 
-            if (somePanelsCache.Count > aPanelData.Index)
+            if (somePanelsCache.Count > index)
             {
-                panel = somePanelsCache[aPanelData.Index];
+                panel = somePanelsCache[index];
                 if (panel == null)
                 {
                     panel = CreatePanelUninitialized();
                     aSnapPanelsToDesiredState = true;
-                    somePanelsCache[aPanelData.Index] = panel;
+                    somePanelsCache[index] = panel;
                     setPanelData = true;
                 }
             }
             else
             {
-                if (somePanelsCache.Count != aPanelData.Index && !aDynamicIndex)
-                    Debug.LogError("The count of the list right now is: " + somePanelsCache.Count + " but we are already at index " + aPanelData.Index + ", the previous elements in the list should already be instantiated. If this is intentional, set 'aDynamicIndex' to true");
+                if (somePanelsCache.Count != index && !aDynamicIndex)
+                    Debug.LogError("The count of the list right now is: " + somePanelsCache.Count + " but we are already at index " + index + ", the previous elements in the list should already be instantiated. If this is intentional, set 'aDynamicIndex' to true");
 
                 panel = CreatePanelUninitialized();
                 aSnapPanelsToDesiredState = true;
@@ -519,7 +559,7 @@ public class GfxUiTools : MonoBehaviour
             }
         }
 
-        return somePanelsCache[aPanelData.Index];
+        return somePanelsCache[index];
     }
 
     public static GfxPanel CreatePanelIfNull(GfxPanelCreateData aPanelData, ref GfxPanel aPanel, bool aSnapPanelsToDesiredState = false, bool aForceUpdateCache = true, AlignmentHorizontal aAlignmentHorizontal = AlignmentHorizontal.MIDDLE, AlignmentVertical aAlignmentVertical = AlignmentVertical.MIDDLE)
@@ -551,7 +591,7 @@ public class GfxUiTools : MonoBehaviour
 
     public static GfxPanel CreatePanel(GfxPanelCreateData aPanelData, AlignmentHorizontal aAlignmentHorizontal = AlignmentHorizontal.MIDDLE, AlignmentVertical aAlignmentVertical = AlignmentVertical.MIDDLE)
     {
-        GameObject spawnedObject = GfcPooling.PoolInstantiate(Instance.m_panelPrefab, aPanelData.Parent);
+        GameObject spawnedObject = GfcPooling.PoolInstantiate(Instance.m_panelPrefab, aPanelData.ButtonCreateData.Parent);
         GfxPanel itemPanel = spawnedObject.GetComponent<GfxPanel>();
         CalculateAlignmentOffset(ref aPanelData, new(1, 1), aAlignmentHorizontal, aAlignmentVertical);
         itemPanel.SetCreateData(aPanelData, true);
@@ -560,13 +600,13 @@ public class GfxUiTools : MonoBehaviour
 
     public static void CreatePanelList(RectTransform aParent, GfxPanelCreateData aPanelData, List<GfxPanel> somePanelsCache, Axis aDrawAxis, int aPanelCount, bool aSnapPanelsToDesiredState = false, bool aForceUpdateCache = true, AlignmentHorizontal aAlignmentHorizontal = AlignmentHorizontal.MIDDLE, AlignmentVertical aAlignmentVertical = AlignmentVertical.MIDDLE)
     {
-        aPanelData.Parent = aParent;
+        aPanelData.ButtonCreateData.Parent = aParent;
         CreatePanelList(aPanelData, somePanelsCache, aDrawAxis, aPanelCount, aSnapPanelsToDesiredState, aForceUpdateCache, aAlignmentHorizontal, aAlignmentVertical);
     }
 
     public static void CreatePanelMatrix(RectTransform aParent, GfxPanelCreateData aPanelData, List<GfxPanel> somePanelsCache, Vector2Int aPanelCount, bool aSnapPanelsToDesiredState = false, bool aForceUpdateCache = true, AlignmentHorizontal aAlignmentHorizontal = AlignmentHorizontal.MIDDLE, AlignmentVertical aAlignmentVertical = AlignmentVertical.MIDDLE)
     {
-        aPanelData.Parent = aParent;
+        aPanelData.ButtonCreateData.Parent = aParent;
         CreatePanelMatrix(aPanelData, somePanelsCache, aPanelCount, aSnapPanelsToDesiredState, aForceUpdateCache, aAlignmentHorizontal, aAlignmentVertical);
     }
 
@@ -604,7 +644,7 @@ public class GfxUiTools : MonoBehaviour
             {
                 aPanelData.IndecesColumnRow[(int)aDrawAxis] = i;
                 CreatePanelWithCache(aPanelData, somePanelsCache, aSnapPanelsToDesiredState, aForceUpdateCache);
-                aPanelData.Index++;
+                aPanelData.ButtonCreateData.Index++;
             }
         }
     }
@@ -622,18 +662,44 @@ public class GfxUiTools : MonoBehaviour
                 {
                     aPanelData.IndecesColumnRow.x = j;
                     CreatePanelWithCache(aPanelData, somePanelsCache, aSnapPanelsToDesiredState, aForceUpdateCache);
-                    aPanelData.Index++;
+                    aPanelData.ButtonCreateData.Index++;
                 }
             }
         }
     }
 }
 
+public static class GfxUiToolsStatic
+{
+    public static CoroutineHandle CrossFadeAlphaGf(this CanvasGroup aGroup, float aTargetAlpha, float aDurationSeconds, bool anIgnoreTimeScale = false, AnimationCurve anAnimationCurve = null)
+    {
+        return GfxUiTools.CrossFadeAlpha(aGroup, aTargetAlpha, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve);
+    }
+
+    public static CoroutineHandle CrossFadeAlphaGf(this Graphic aGraphic, float aTargetAlpha, float aDurationSeconds, bool anIgnoreTimeScale, AnimationCurve anAnimationCurve = null)
+    {
+        return GfxUiTools.CrossFadeAlpha(aGraphic, aTargetAlpha, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve);
+    }
+
+    public static CoroutineHandle CrossFadeColorGf(this Graphic aGraphic, Color aTargetColor, float aDurationSeconds, bool anIgnoreTimeScale, AnimationCurve anAnimationCurve = null)
+    {
+        return GfxUiTools.CrossFadeColor(aGraphic, aTargetColor, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve);
+    }
+
+    public static Color Lerp(this Color aLeftCol, Color aRightCol, float aCoef) { return Color.Lerp(aLeftCol, aRightCol, aCoef); }
+
+    public static void LerpSelf(this ref Color aLeftCol, Color aRightCol, float aCoef) { aLeftCol = Color.Lerp(aLeftCol, aRightCol, aCoef); }
+
+    public static Color Blend(this Color aLeftCol, Color aRightCol, ColorBlendMode aBlendMode) { return GfxUiTools.BlendColors(aLeftCol, aRightCol, aBlendMode); }
+
+    public static void BlendSelf(this ref Color aLeftCol, Color aRightCol, ColorBlendMode aBlendMode) { aLeftCol = GfxUiTools.BlendColors(aLeftCol, aRightCol, aBlendMode); }
+}
+
 public enum ColorBlendMode
 {
-    INTERPOLATE_USING_ALPHA,
-    REPLACE,
     MULTIPLY,
+    LERP_USING_ALPHA,
+    REPLACE,
     DIVIDE,
     ADD,
     SUBSTRACT

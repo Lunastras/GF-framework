@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Sabresaurus.SabreCSG.Importers.Quake1;
 using UnityEditor.Localization;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -104,12 +103,43 @@ public class GfcLocalization : MonoBehaviour
         return aLocalizedString != null;
     }
 
+    public static string GetDateString(int aDay, int aMonth, int aYear = -1)
+    {
+        GfcStringBuffer stringBuffer = Instance.m_stringBuffer;
+        stringBuffer.Clear();
+
+        stringBuffer.Concatenate(aDay);
+        stringBuffer.Concatenate('/');
+
+        switch (aMonth)
+        {
+            case 0: stringBuffer.Concatenate("JAN"); break;
+            case 1: stringBuffer.Concatenate("FEB"); break;
+            case 2: stringBuffer.Concatenate("MAR"); break;
+            case 3: stringBuffer.Concatenate("APR"); break;
+            case 4: stringBuffer.Concatenate("MAY"); break;
+            case 5: stringBuffer.Concatenate("JUN"); break;
+            case 6: stringBuffer.Concatenate("JUL"); break;
+            case 7: stringBuffer.Concatenate("AUG"); break;
+            case 8: stringBuffer.Concatenate("SEP"); break;
+            case 9: stringBuffer.Concatenate("OCT"); break;
+            case 10: stringBuffer.Concatenate("NOV"); break;
+            case 11: stringBuffer.Concatenate("DEC"); break;
+            default: stringBuffer.Concatenate("UNKNOWN"); break;
+        }
+
+        if (aYear >= 0)
+        {
+            stringBuffer.Concatenate(' ');
+            stringBuffer.Concatenate(aYear);
+        }
+
+        return stringBuffer.GetStringCopy();
+    }
+
     //Retrieves the string for the current locale Id found inside the table associated with [aStringTableType] at the entry [aEntryName]
     //Please do not call in the "Awake" function
-    public static string GetString(StringTableType aStringTableType, string aEntryName)
-    {
-        return Instance.GetStringInternal(aStringTableType, aEntryName);
-    }
+    public static string GetString(StringTableType aStringTableType, string aEntryName) { return Instance.GetStringInternal(aStringTableType, aEntryName); }
 
     protected string GetStringInternal(StringTableType aStringTableType, string aEntryName)
     {
@@ -129,7 +159,7 @@ public class GfcLocalization : MonoBehaviour
                 m_stringBuffer.Clear();
                 m_stringBuffer.Concatenate(aEntryName);
                 m_stringBuffer.Concatenate(UNKNOWN_ENTRY);
-                valueString = m_stringBuffer.GetStringClone();
+                valueString = m_stringBuffer.GetStringCopy();
 
                 if (m_printErrorsWhenKeyInvalid)
                     Debug.LogError("Could not find the entry '" + aEntryName + "' in the table '" + m_stringTables[tableIndex].name + "' (type: '" + aStringTableType + "' ).");

@@ -33,14 +33,15 @@ public class GfcInput : MonoBehaviour
     }
 
     public static string GetAxisString(GfcInputType aInputType) { return Instance.m_inputDefines[(int)aInputType].AxisString; }
-    public static float GetAxis(GfcInputType aInputType) { return Input.GetAxis(GetAxisString(aInputType)); }
-    public static float GetAxisRaw(GfcInputType aInputType) { return Input.GetAxisRaw(GetAxisString(aInputType)); }
+    public static float GetAxis(GfcInputType aInputType) { return aInputType == GfcInputType.NONE ? 0 : Input.GetAxis(GetAxisString(aInputType)); }
+    public static float GetAxisRaw(GfcInputType aInputType) { return aInputType == GfcInputType.NONE ? 0 : Input.GetAxisRaw(GetAxisString(aInputType)); }
     public static bool GetAxisInput(GfcInputType aInputType, float aError = AXIS_DEAD_ZONE) { return GetAxisRaw(aInputType).Abs() > aError; }
 }
 
 //used for generic inputs that should be compatible with a keyboard and a controller
 public enum GfcInputType
 {
+    NONE,
     PAUSE,
     SELECT,
     SUBMIT,
@@ -99,13 +100,13 @@ public struct GfcInputDefine
     public string AxisString;
 }
 
+[System.Serializable]
 public struct GfcInputTracker
 {
-    public float AxisError;
+    [SerializeField] private GfcInputType m_inputType;
+    [SerializeField] private float m_axisError;
 
-    public GfcInputType InputType { get; private set; }
-
-    public int m_lastFrameOfUpdate;
+    private int m_lastFrameOfUpdate;
 
     private bool m_currentPressedState;
 
@@ -113,13 +114,16 @@ public struct GfcInputTracker
 
     private bool m_stateCheckedThisFrame;
 
+    public GfcInputType InputType { get { return m_inputType; } set { m_inputType = value; UpdateState(); } }
+    public float AxisError { get { return m_axisError; } set { m_axisError = value; UpdateState(); } }
+
     public GfcInputTracker(GfcInputType aType, float aError = GfcInput.AXIS_DEAD_ZONE)
     {
-        InputType = aType;
-        AxisError = aError;
+        m_inputType = aType;
+        m_axisError = aError;
         m_stateCheckedThisFrame = false;
         m_lastFrameOfUpdate = Time.frameCount;
-        m_previousPressedState = m_currentPressedState = GfcInput.GetAxisInput(InputType, AxisError);
+        m_previousPressedState = m_currentPressedState = GfcInput.GetAxisInput(m_inputType, m_axisError);
     }
 
     private void UpdateState()
@@ -128,7 +132,7 @@ public struct GfcInputTracker
         if (currentFrame != m_lastFrameOfUpdate)
         {
             m_previousPressedState = m_currentPressedState;
-            m_currentPressedState = GfcInput.GetAxisInput(InputType, AxisError);
+            m_currentPressedState = GfcInput.GetAxisInput(m_inputType, m_axisError);
             m_lastFrameOfUpdate = currentFrame;
             m_stateCheckedThisFrame = false;
         }
@@ -144,7 +148,7 @@ public struct GfcInputTracker
     {
         UpdateState();
         bool pressed = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && !m_previousPressedState && m_currentPressedState;
-        m_stateCheckedThisFrame = true;
+        m_stateCheckedThisFrame |= aUniqueThisFrame;
         return pressed;
     }
 
@@ -152,7 +156,42 @@ public struct GfcInputTracker
     {
         UpdateState();
         bool released = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && m_previousPressedState && !m_currentPressedState;
-        m_stateCheckedThisFrame = true;
+        m_stateCheckedThisFrame |= aUniqueThisFrame;
         return released;
+    }
+}
+
+//this is used mainly for coroutines where we need to share an input becaue async functions cannot have ref structs as arguments
+[System.Serializable]
+public class GfcInputTrackerShared
+{
+    [SerializeField] private GfcInputTracker m_inputTracker = new GfcInputTracker(GfcInputType.SUBMIT);
+
+    public GfcInputTrackerShared(GfcInputType aType, float aError = GfcInput.AXIS_DEAD_ZONE) { m_inputTracker = new(aType, aError); }
+
+    public GfcInputTrackerShared(GfcInputTracker aTracker) { m_inputTracker = aTracker; }
+
+    public bool Pressed() { return m_inputTracker.Pressed(); }
+
+    public bool PressedSinceLastCheck(bool aUniqueThisFrame = true) { return m_inputTracker.PressedSinceLastCheck(aUniqueThisFrame); }
+
+    public bool ReleasedSinceLastCheck(bool aUniqueThisFrame = true) { return m_inputTracker.ReleasedSinceLastCheck(aUniqueThisFrame); }
+}
+
+public static class GfcInputTrackerStatic
+{
+    public static bool PressedFallback(this GfcInputTrackerShared aTrackerInstance, ref GfcInputTracker aTrackerFallback)
+    {
+        return aTrackerInstance != null ? aTrackerInstance.Pressed() : aTrackerFallback.Pressed();
+    }
+
+    public static bool PressedSinceLastCheckFallback(this GfcInputTrackerShared aTrackerInstance, ref GfcInputTracker aTrackerFallback, bool aUniqueThisFrame = true)
+    {
+        return aTrackerInstance != null ? aTrackerInstance.PressedSinceLastCheck(aUniqueThisFrame) : aTrackerFallback.PressedSinceLastCheck(aUniqueThisFrame);
+    }
+
+    public static bool ReleasedSinceLastCheckFallback(this GfcInputTrackerShared aTrackerInstance, ref GfcInputTracker aTrackerFallback, bool aUniqueThisFrame = true)
+    {
+        return aTrackerInstance != null ? aTrackerInstance.ReleasedSinceLastCheck(aUniqueThisFrame) : aTrackerFallback.ReleasedSinceLastCheck(aUniqueThisFrame);
     }
 }

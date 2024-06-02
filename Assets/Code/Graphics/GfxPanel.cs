@@ -6,11 +6,9 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointerEnterHandler, IPointerExitHandler
+public class GfxPanel : GfxButton2D
 {
     [SerializeField] private RectTransform m_panelRectTransform;
-
-    [SerializeField] private CanvasGroup m_canvasGroup;
 
     [SerializeField] private Image m_iconImage;
 
@@ -24,27 +22,9 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
 
     [SerializeField] private float m_contentInPadding = 12;
 
-    [SerializeField] private Vector2 m_contentPadding = new Vector2(12, 12);
-
-    [SerializeField] protected GfxPanelHightlightState m_highlightStateDefault = new() { PanelSizeCoef = new(1, 1), GroupAlpha = 1, };
-
-    [SerializeField] protected GfxPanelHightlightState m_highlightStateDisabled = new() { PanelSizeCoef = new(1, 1), GroupAlpha = 0.6f, };
-
-    [SerializeField] protected GfxPanelHightlightState m_highlightStateSelected = new() { PanelSizeCoef = new(1, 1), GroupAlpha = 1, };
-
-    [SerializeField] protected GfxPanelHightlightState m_highlightStateSubmit = new() { PanelSizeCoef = new(1, 1), GroupAlpha = 1, };
-
-    [SerializeField] protected GfxPanelHightlightState m_highlightStatePinned = new() { PanelSizeCoef = new(1, 1), GroupAlpha = 1, };
+    [SerializeField] private Vector2 m_contentPadding = new(12, 12);
 
     protected bool m_iconActive = true;
-
-    public Vector2Int IndecesColumnRow = new();
-
-    public int Index = 0;
-
-    public float TransitionTime = 0.07f;
-
-    protected float m_transitionTimeEffective = 0.07f;
 
     private RectTransform m_mainRectTransform;
 
@@ -54,67 +34,27 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
 
     private RectTransform m_rightTextRectTransform;
 
+    private GfxPanelTransitionState m_stateAtTransitionStart = default;
+
     private RectTransform m_iconRectTransform;
 
+    public Vector2Int IndecesColumnRow = new();
+
     private Image m_panelImage;
-
-    //the bool tells if the panel was selected or not. False means it was deselected
-    public Action<GfxPanelCallbackType, GfxPanel, bool> OnEventCallback;
-
-    protected const string EMPTY = "";
-
-    protected string m_inactiveReason = EMPTY;
-
-    protected bool m_isActive = false;
 
     protected bool m_leftTextHasPriority = true;
 
     //The length of the priority text relative to the text parent length
     protected float m_priorityTextLengthRatio = 1;
 
-    private bool m_initialized = false;
+    private void Start() { Initialize(); }
+    private bool m_initializedPanel = false;
 
-    private bool m_isSelected = false;
-
-    private bool m_isPinned = false;
-
-    private bool m_isDisabled = false;
-
-    private int m_frameOfEnable = -1;
-
-    private bool m_isInteractable = true;
-
-    private bool m_deselectOnPointerExit = false;
-
-    private float m_timeSinceTransitionStart = 0;
-
-    private string m_disabledReason = null;
-
-    private GfcSound m_soundSelect;
-
-    private GfcSound m_soundDeselect;
-
-    private GfcSound m_soundPinned;
-
-    private GfcSound m_soundUnpinned;
-
-    private GfcSound m_soundSubmit;
-
-    private AnimationCurve m_transitionCurve;
-
-    private GfxPanelTransitionState m_stateAtTransitionStart = default;
-
-    private bool WasEnabledThisFrame() { return m_frameOfEnable == -1 || m_frameOfEnable == Time.frameCount; }
-
-    private void OnEnable() { m_frameOfEnable = Time.frameCount; }
-
-    private void Awake() { InitializeHard(); }
-
-    public void InitializeHard()
+    public override void Initialize()
     {
-        if (!m_initialized)
+        if (!m_initializedPanel)
         {
-            m_initialized = true;
+            m_initializedPanel = true;
             m_mainRectTransform = GetComponent<RectTransform>();
             m_panelImage = m_panelRectTransform.GetComponent<Image>();
             m_iconRectTransform = m_iconImage.GetComponent<RectTransform>();
@@ -131,174 +71,35 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
                 Debug.LogError("The default pixelsPerUnit value set in " + gameObject.name + " was not 1, this will cause issues.");
         }
 
-        m_transitionTimeEffective = TransitionTime;
-        m_timeSinceTransitionStart = TransitionTime;
-
-        IndecesColumnRow.x = IndecesColumnRow.y = Index = 0;
-        m_deselectOnPointerExit = false;
-        SetInteractable(true);
-        SetDisabled(false);
-        SetSelected(false);
-        SetPinned(false);
-        StartTransitionToNewState();
+        IndecesColumnRow.x = IndecesColumnRow.y = 0;
+        base.Initialize();
     }
 
-    protected void Update()
+    protected override void SetTransitionLerpState(float aTransitionPoint, GfxButtonHightlightState aDesiredState)
     {
-        if (m_timeSinceTransitionStart < m_transitionTimeEffective && m_initialized)
-        {
-            m_timeSinceTransitionStart += Time.deltaTime;
-            SetTransitionLerpState(m_timeSinceTransitionStart / m_transitionTimeEffective);
-        }
+        base.SetTransitionLerpState(aTransitionPoint, aDesiredState);
 
-        Color c = m_panelImage.color;
-        c.a = 1;
-        m_panelImage.color = c;
-    }
+        if (TransitionCurve != null)
+            aTransitionPoint = TransitionCurve.Evaluate(aTransitionPoint);
 
-    protected void SetTransitionLerpState(float aTransitionPoint)
-    {
-        GfxPanelHightlightState finalState = GetFinalHighlightState();
-        m_timeSinceTransitionStart = aTransitionPoint * m_transitionTimeEffective;
 
-        if (m_transitionCurve != null)
-            aTransitionPoint = m_transitionCurve.Evaluate(aTransitionPoint);
+        m_panelImage.pixelsPerUnitMultiplier = Mathf.Lerp(m_stateAtTransitionStart.PixelsPerUnityMult, aDesiredState.PixelsPerUnit, aTransitionPoint);
 
-        float effectiveLerpValue = MathF.Min(1.0f, aTransitionPoint);
-        m_panelRectTransform.localPosition = Vector2.Lerp(m_stateAtTransitionStart.LocalPosition, finalState.PositionOffset, effectiveLerpValue);
-        m_panelImage.color = Color.Lerp(m_stateAtTransitionStart.ColorPanel, finalState.ColorPanel, effectiveLerpValue);
-
-        Color effectiveColor = GfxUiTools.BlendColors(finalState.ColorLeftText, finalState.ColorContent, finalState.ColorContentSelfBlendMode);
-        m_textLeft.color = Color.Lerp(m_stateAtTransitionStart.ColorTextLeft, effectiveColor, effectiveLerpValue);
-
-        effectiveColor = GfxUiTools.BlendColors(finalState.ColorRightText, finalState.ColorContent, finalState.ColorContentSelfBlendMode);
-        m_textRight.color = Color.Lerp(m_stateAtTransitionStart.ColorTextRight, effectiveColor, effectiveLerpValue);
-
-        if (m_iconActive)
-        {
-            effectiveColor = GfxUiTools.BlendColors(finalState.ColorIcon, finalState.ColorContent, finalState.ColorContentSelfBlendMode);
-            m_iconImage.color = Color.Lerp(m_stateAtTransitionStart.ColorIcon, effectiveColor, effectiveLerpValue);
-        }
-
-        m_panelImage.pixelsPerUnitMultiplier = Mathf.Lerp(m_stateAtTransitionStart.PixelsPerUnityMult, finalState.PixelsPerUnit, effectiveLerpValue);
-
-        Vector2 currentSize = Vector2.Lerp(m_stateAtTransitionStart.Size, finalState.PanelSizeCoef * m_mainRectTransform.rect.size, effectiveLerpValue);
+        Vector2 currentSize = Vector2.Lerp(m_stateAtTransitionStart.Size, m_mainRectTransform.rect.size, aTransitionPoint);
         SetPanelLength(currentSize.x);
         SetPanelHeight(currentSize.y);
-
-        m_canvasGroup.alpha = Mathf.Lerp(m_stateAtTransitionStart.GroupAlpha, finalState.GroupAlpha, effectiveLerpValue);
     }
 
-    private static GfxPanelHightlightState ComposeHighlightState(GfxPanelHightlightState aBase, GfxPanelHightlightState aHighlight)
+    protected override void OnStartTransition()
     {
-        return new()
-        {
-            PanelSizeCoef = aHighlight.PanelSizeCoef * aBase.PanelSizeCoef,
-            PositionOffset = aHighlight.PositionOffset + aBase.PositionOffset,
-
-            ColorPanel = GfxUiTools.BlendColors(aBase.ColorPanel, aHighlight.ColorPanel, aHighlight.ColorPanelBlendMode),
-            ColorContent = GfxUiTools.BlendColors(aBase.ColorContent, aHighlight.ColorContent, aHighlight.ColorContentBlendMode),
-
-            ColorLeftText = GfxUiTools.BlendColors(aBase.ColorLeftText, aHighlight.ColorLeftText, aHighlight.ColorLeftTextBlendMode),
-            ColorRightText = GfxUiTools.BlendColors(aBase.ColorRightText, aHighlight.ColorRightText, aHighlight.ColorRightTextBlendMode),
-            ColorIcon = GfxUiTools.BlendColors(aBase.ColorIcon, aHighlight.ColorIcon, aHighlight.ColorIconBlendMode),
-
-            ColorPanelBlendMode = aHighlight.ColorPanelBlendMode,
-            ColorContentBlendMode = aHighlight.ColorContentBlendMode,
-            ColorContentSelfBlendMode = aHighlight.ColorContentSelfBlendMode,
-            ColorLeftTextBlendMode = aHighlight.ColorLeftTextBlendMode,
-            ColorRightTextBlendMode = aHighlight.ColorRightTextBlendMode,
-            ColorIconBlendMode = aHighlight.ColorIconBlendMode,
-
-            GroupAlpha = aHighlight.GroupAlpha * aBase.GroupAlpha,
-            PixelsPerUnit = aHighlight.PixelsPerUnit,
-        };
-    }
-
-    private void SaveCurrentTransitionState()
-    {
-        m_stateAtTransitionStart.ColorPanel = m_panelImage.color;
-        m_stateAtTransitionStart.LocalPosition = m_panelRectTransform.localPosition;
-        m_stateAtTransitionStart.ColorTextLeft = m_textLeft.color;
-        m_stateAtTransitionStart.ColorTextRight = m_textRight.color;
-        m_stateAtTransitionStart.ColorIcon = m_iconImage.color;
+        base.OnStartTransition();
         m_stateAtTransitionStart.PixelsPerUnityMult = m_panelImage.pixelsPerUnitMultiplier;
-        m_stateAtTransitionStart.GroupAlpha = m_canvasGroup.alpha;
         m_stateAtTransitionStart.Size = m_panelRectTransform.rect.size;
     }
 
-    public void StartTransitionToNewState(bool aRestartTransitionTime = true)
-    {
-        if (WasEnabledThisFrame())
-        {
-            SnapToDesiredState();
-        }
-        else
-        {
-            /*
-                   if (aRestartTransitionTime || m_stateTransitionProgress > 0.9999f)
-                       m_transitionTimeEffective = TransitionTime;
-                   else
-                       m_transitionTimeEffective = TransitionTime * (1.0f - m_stateTransitionProgress);
-                   */
-
-            m_timeSinceTransitionStart = 0;
-            m_transitionTimeEffective = TransitionTime;
-            SaveCurrentTransitionState();
-        }
-    }
-
-    private GfxPanelHightlightState GetHighlightedDefaultState(GfxPanelHightlightState aHighlight) { return ComposeHighlightState(m_highlightStateDefault, aHighlight); }
-
-    private GfxPanelHightlightState GetDefaultHighlightState()
-    {
-        if (m_isSelected)
-        {
-            if (m_isPinned) return GetHighlightedDefaultState(m_highlightStatePinned);
-            if (m_isDisabled) return GetHighlightedDefaultState(m_highlightStateDisabled);
-        }
-
-        return m_highlightStateDefault;
-    }
-
-    private GfxPanelHightlightState GetDesiredHighlightState()
-    {
-        if (m_isSelected) return m_highlightStateSelected;
-        if (m_isDisabled) return m_highlightStateDisabled;
-        if (m_isPinned) return m_highlightStatePinned;
-        return m_highlightStateDefault;
-    }
-
-    protected GfxPanelHightlightState GetFinalHighlightState()
-    {
-        if (!m_isPinned && !m_isSelected && !m_isDisabled)
-            return m_highlightStateDefault;
-
-        GfxPanelHightlightState defaultState = GetDefaultHighlightState();
-        GfxPanelHightlightState desiredState = GetDesiredHighlightState();
-
-        return ComposeHighlightState(defaultState, desiredState);
-    }
-
-    public void SetHightlightStateDefault(GfxPanelHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStateDefault = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
-    public void SetHightlightStateDisabled(GfxPanelHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStateDisabled = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
-    public void SetHightlightStatePinned(GfxPanelHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStatePinned = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
-    public void SetHightlightStateSelected(GfxPanelHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStateSelected = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
-    public void SetHightlightStateSubmit(GfxPanelHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStateSubmit = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
-
-    public bool IsSelected() { return m_isSelected; }
-    public GfxPanelHightlightState GetHightlightStateDefault() { return m_highlightStateDefault; }
-    public GfxPanelHightlightState GetHightlightStateDisabled() { return m_highlightStateDisabled; }
-    public GfxPanelHightlightState GetHightlightStateSelected() { return m_highlightStateSelected; }
-    public GfxPanelHightlightState GetHightlightStateSubmit() { return m_highlightStateSubmit; }
-    public GfxPanelHightlightState GetHightlightStatePinned() { return m_highlightStatePinned; }
-    public bool IsPinned() { return m_isPinned; }
-    public bool IsSelectedPinned() { return m_isPinned && m_isSelected; }
     public TextMeshProUGUI GetLeftText() { return m_textLeft; }
     public TextMeshProUGUI GetRightText() { return m_textRight; }
     public Image GetIconImage() { return m_iconImage; }
-    public string GetDisabledReason() { return m_disabledReason; }
-    public void SnapToDesiredState() { SetTransitionLerpState(1); }
     public Image GetPanelImage() { return m_panelImage; }
     public void SetIconSize(float aLength) { SetIconSize(aLength, aLength); }
     public RectTransform GetPanelRectTransform() { return m_panelRectTransform; }
@@ -306,7 +107,6 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
     public void SetContentPadding(float aPadding, bool aUpdateIconSize = true) { SetContentPadding(aPadding, aPadding, aUpdateIconSize); }
     public void SetContentPadding(float aPaddingX, float aPaddingY, bool aUpdateIconSize = true) { SetContentPadding(new Vector2(aPaddingX, aPaddingY), aUpdateIconSize); }
     public void SetIconSizeDefault() { SetIconSize(m_panelRectTransform.rect.height - m_contentPadding.y * 2); }
-    public string GetInactiveReason() { return m_inactiveReason; }
 
     public void SetContentPadding(Vector2 aPadding, bool aUpdateIconSize = true)
     {
@@ -319,13 +119,13 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
     public void SetLength(float aLength)
     {
         m_mainRectTransform.SetSizeWithCurrentAnchorsX(aLength);
-        SetPanelLength(aLength * GetFinalHighlightState().PanelSizeCoef.x);
+        SetPanelLength(aLength);
     }
 
     public void SetHeight(float aHeight)
     {
         m_mainRectTransform.SetSizeWithCurrentAnchorsY(aHeight);
-        SetPanelHeight(aHeight * GetFinalHighlightState().PanelSizeCoef.y);
+        SetPanelHeight(aHeight);
     }
 
     public void SetPanelLength(float aLength)
@@ -515,127 +315,20 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
         SetIconActive(false);
     }
 
-    public void OnSelect(BaseEventData aEventData) { SetSelected(true); }
-
-    public void OnPointerEnter(PointerEventData aEventData) { SetSelected(true); }
-
-    public void OnDeselect(BaseEventData aEventData) { SetSelected(false); }
-
-    public void OnPointerExit(PointerEventData aEventData) { if (m_deselectOnPointerExit || true) SetSelected(false); }
-
-    public bool IsSelectable() { return m_isInteractable && (!m_isDisabled || !m_disabledReason.IsEmpty()); }
-    public void Submit()
-    {
-        if (!m_isDisabled && m_isInteractable)
-        {
-            OnEventCallback?.Invoke(GfxPanelCallbackType.SUBMIT, this, true);
-            m_soundSubmit?.PlaySingleInstance();
-        }
-    }
-
-    public void SetSelected(bool aSelect, bool aIgnoreInteractable = false)
-    {
-        if (IsSelectable() && aSelect != m_isSelected && (aIgnoreInteractable || m_isInteractable))
-        {
-            m_isSelected = aSelect;
-            StartTransitionToNewState(aSelect);
-            OnEventCallback?.Invoke(GfxPanelCallbackType.SELECT, this, aSelect);
-
-            if (aSelect)
-            {
-                //  EventSystem.current.SetSelectedGameObject(gameObject);
-                m_soundSelect?.PlaySingleInstance();
-                if (m_isDisabled) GfxUiTools.WriteDisableReason(this);
-            }
-            else //deselected
-            {
-                // if (EventSystem.current.currentSelectedGameObject == gameObject)
-                // EventSystem.current.
-                //EventSystem.current.SetSelectedGameObject(null);
-
-                m_soundDeselect?.PlaySingleInstance();
-                if (m_isDisabled) GfxUiTools.EraseDisableReason(this);
-            }
-        }
-    }
-
-    public void SetPinned(bool aIsPinned, bool aForceEnable = false, bool aIgnoreInteractable = false)
-    {
-        if (aIgnoreInteractable || m_isInteractable)
-        {
-            if (aForceEnable) SetDisabled(false);
-            aIsPinned &= !m_isDisabled;
-
-            if (aIsPinned != m_isPinned)
-            {
-                m_isPinned = aIsPinned;
-                StartTransitionToNewState(aIsPinned);
-                OnEventCallback?.Invoke(GfxPanelCallbackType.PINNED, this, aIsPinned);
-
-                if (aIsPinned)
-                    m_soundPinned?.PlaySingleInstance();
-                else
-                    m_soundUnpinned?.PlaySingleInstance();
-            }
-        }
-    }
-
-    public void SetDisabled(bool aIsDisabled, string aDisableReason = null, bool aIgnoreInteractable = false)
-    {
-        if (aIgnoreInteractable || m_isInteractable)
-        {
-            m_disabledReason = aDisableReason;
-            if (m_isDisabled != aIsDisabled)
-            {
-                m_isDisabled = aIsDisabled;
-                StartTransitionToNewState(true);
-                SetPinned(m_isPinned && !m_isDisabled);
-                OnEventCallback?.Invoke(GfxPanelCallbackType.DISABLED, this, aIsDisabled);
-            }
-        }
-    }
-
-    public void SetInteractable(bool aIsInteractable, bool aOverrideStates = true)
-    {
-        bool newState = aIsInteractable || !aOverrideStates;
-        m_isInteractable = aIsInteractable;
-        SetPinned(m_isPinned && newState, false, true);
-        SetSelected(m_isSelected && newState, true);
-        SetDisabled(m_isDisabled && newState, EMPTY, true);
-    }
-
-    public bool GetIsInteractable() { return m_isInteractable; }
-
     public void SetCreateData(GfxPanelCreateData aPanelData, bool aSnapToDesiredState = false, bool aSetPositionAndIndex = true)
     {
-        TransitionTime = aPanelData.TransitionTime;
-        m_transitionCurve = aPanelData.TransitionCurve;
+        SetCreateData(aPanelData.ButtonCreateData, false, aSetPositionAndIndex);
+        TransitionCurve = aPanelData.TransitionCurve;
 
-        InitializeHard();
+        Initialize();
         SetLength(aPanelData.PanelSize.x);
         SetHeight(aPanelData.PanelSize.y);
         SetContentPadding(aPanelData.Padding);
         SetContentInPadding(aPanelData.ContentInPadding);
 
-        m_highlightStateDefault = aPanelData.DefaultHighlightState;
-        m_highlightStateDisabled = aPanelData.DisabledHighlightState;
-        m_highlightStateSelected = aPanelData.SelectHighlightState;
-        m_highlightStateSubmit = aPanelData.SubmitHighlightState;
-        m_highlightStatePinned = aPanelData.PinnedHighlightState;
-
-        OnEventCallback = aPanelData.OnEventCallback;
-
-        m_soundDeselect = aPanelData.SoundDeselect;
-        m_soundPinned = aPanelData.SoundPinned;
-        m_soundSelect = aPanelData.SoundSelect;
-        m_soundSubmit = aPanelData.SoundSubmit;
-        m_soundUnpinned = aPanelData.SoundUnpinned;
-
         if (aSetPositionAndIndex)
         {
             IndecesColumnRow = aPanelData.IndecesColumnRow;
-            Index = aPanelData.Index;
-            m_deselectOnPointerExit = aPanelData.DeselectOnPointerExit;
 
             Vector2 spawnPosition = new();
 
@@ -647,19 +340,15 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
             GfcTools.Add2(ref spawnPosition, aPanelData.PositionOffset);
 
             RectTransform panelRectTransform = GetMainRectTransform();
-            if (aPanelData.Parent == null)
-                Debug.LogError("The parent of the GfxPanelCreateData is null, this is most likely a mistake.");
 
             if (aPanelData.DistanceFromLastPanel.x <= -aPanelData.PanelSize.x
             || aPanelData.DistanceFromLastPanel.y <= -aPanelData.PanelSize.y)
                 Debug.LogError("The distance from the panel is so low to the point where it goes against the spawn axis. If you wish to do this, please use the SpawnAxisCoef member of the panel create data.");
 
-            panelRectTransform.SetParent(aPanelData.Parent);
             panelRectTransform.localPosition = spawnPosition;
         }
 
         transform.localScale = new Vector3(1, 1, 1);
-        SetInteractable(aPanelData.IsInteractable);
 
         if (aSnapToDesiredState)
             SnapToDesiredState();
@@ -667,53 +356,28 @@ public class GfxPanel : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointe
 }
 
 [Serializable]
-public struct GfxPanelHightlightState
+public struct GfxButtonHightlightState
 {
-    public Vector2 PanelSizeCoef;
-    public Vector2 PositionOffset;
+    public Vector3 Scale;
+    public Vector3 PositionOffset;
     public Color ColorPanel;
     public Color ColorContent;
-    public Color ColorLeftText;
-    public Color ColorRightText;
-    public Color ColorIcon;
+
     public ColorBlendMode ColorPanelBlendMode;
     public ColorBlendMode ColorContentBlendMode;
-    public ColorBlendMode ColorContentSelfBlendMode;
-    public ColorBlendMode ColorLeftTextBlendMode;
-    public ColorBlendMode ColorRightTextBlendMode;
-    public ColorBlendMode ColorIconBlendMode;
-    public float GroupAlpha;
+
+    public float Opacity;
     public float PixelsPerUnit;
 }
 
 [Serializable]
 public struct GfxPanelCreateData
 {
+    public GfxButtonCreateData ButtonCreateData;
+
     public Sprite PanelSprite;
 
     public AnimationCurve TransitionCurve;
-
-    public GfcSound SoundSelect;
-
-    public GfcSound SoundDeselect;
-
-    public GfcSound SoundPinned;
-
-    public GfcSound SoundUnpinned;
-
-    public GfcSound SoundSubmit;
-
-    public Action<GfxPanelCallbackType, GfxPanel, bool> OnEventCallback;
-
-    public GfxPanelHightlightState DefaultHighlightState;
-
-    public GfxPanelHightlightState DisabledHighlightState;
-
-    public GfxPanelHightlightState SelectHighlightState;
-
-    public GfxPanelHightlightState SubmitHighlightState;
-
-    public GfxPanelHightlightState PinnedHighlightState;
 
     public Vector2 DistanceFromLastPanel;
 
@@ -725,37 +389,13 @@ public struct GfxPanelCreateData
 
     [HideInInspector] public Vector2 PositionOffset;
 
-    [HideInInspector] public RectTransform Parent;
-
     [HideInInspector] public Vector2Int IndecesColumnRow;
 
-    [HideInInspector] public int Index;
-
     public float ContentInPadding;
-
-    public float TransitionTime;
-
-    public bool IsInteractable;
-
-    public bool DeselectOnPointerExit;
 }
 
 internal struct GfxPanelTransitionState
 {
-    public Vector2 LocalPosition;
     public Vector2 Size;
-    public Color ColorPanel;
-    public Color ColorTextLeft;
-    public Color ColorTextRight;
-    public Color ColorIcon;
     public float PixelsPerUnityMult;
-    public float GroupAlpha;
-}
-
-public enum GfxPanelCallbackType
-{
-    SELECT,
-    PINNED,
-    DISABLED,
-    SUBMIT
 }
