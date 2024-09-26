@@ -6,7 +6,6 @@ using System.Linq;
 using System;
 using Unity.Mathematics;
 
-
 public abstract class GfgStatsCharacter : NetworkBehaviour
 {
     [SerializeField]
@@ -24,13 +23,11 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
     [SerializeField]
     protected bool m_sendDamageRpc = false;
 
-    protected PriorityValue<float> m_maxHealthMultiplier = new(1);
-
     protected PriorityValue<float> m_receivedDamageMultiplier = new(1);
 
     protected bool m_isDead = false;
 
-    protected NetworkVariable<float> m_currentHealth = new(0);
+    protected GfcNetworkVariable<float> m_currentHealth;
 
     protected NetworkTransform m_networkTransform;
 
@@ -42,6 +39,8 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
 
     protected int m_enemiesEngagingCount = 0;
 
+    protected new bool IsOwner { get { return !NetworkManager.Singleton || IsOwner; } }
+
     //used for external callbacks
     public Action<GfgStatsCharacter, DamageData> OnKilled = null;
 
@@ -50,14 +49,15 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
 
     protected bool HasAuthority { get { return GfcManagerServer.HasAuthority; } }
 
-    // Start is called before the first frame update
-    protected void Start()
+    protected void Awake()
     {
         m_networkTransform = GetComponent<NetworkTransform>();
-        m_networkObject = GetComponent<NetworkObject>();
-        m_initialised = true;
+        m_networkObject = NetworkManager.Singleton ? GetComponent<NetworkObject>() : null;
+        m_currentHealth = new(this, 0);
         Init();
     }
+
+    protected void Start() { }
 
     protected virtual void Init()
     {
@@ -71,8 +71,9 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
 
             if (m_networkTransform) m_networkTransform.enabled = true;
 
-            if (HasAuthority && m_currentHealth.Value == 0) m_currentHealth.Value = GetMaxHealthEffective();
+            if (HasAuthority && m_currentHealth.Value == 0) m_currentHealth.Value = GetMaxHealth();
             m_isDead = false;
+            m_initialised = true;
         }
     }
 
@@ -109,10 +110,27 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
 
     protected abstract void InternalDamage(DamageData aDamageData, bool aIsServerCall);
 
+    protected abstract void InternalKill(DamageData aDamageData, bool aIsServerCall);
+
     [ClientRpc]
     protected virtual void DamageClientRpc(DamageData aDamageData)
     {
         if (!HasAuthority) InternalDamage(aDamageData, true);
+    }
+
+    public virtual void Damage(float aDamage, DamageType aDamageType = DamageType.NORMAL, GfgStatsCharacter anEnemy = null)
+    {
+        DamageData damageData = new()
+        {
+            Damage = aDamage,
+            DamageType = aDamageType,
+            DamagePosition = transform.position,
+            DamageNormal = Vector3.zero,
+            HasEnemyNetworkId = anEnemy,
+            EnemyNetworkId = anEnemy ? anEnemy.NetworkObjectId : 0,
+        };
+
+        Damage(damageData);
     }
 
     public virtual void Damage(DamageData aDamageData)
@@ -129,7 +147,6 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
     public virtual void OnHardCheckpoint() { }
 
 
-    protected abstract void InternalKill(DamageData aDamageData, bool aIsServerCall);
 
     [ClientRpc]
     protected void KillClientRpc(DamageData aDamageData)
@@ -210,7 +227,7 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
 
     public bool IsCheckpointable()
     {
-        return !m_isDead && m_checkpointable && !GfcManagerGame.IsMultiplayer; //disable checkpoint states if we are in multiplayer
+        return !m_isDead && m_checkpointable && !GfgManagerGame.IsMultiplayer; //disable checkpoint states if we are in multiplayer
     }
 
     public void SetCheckpointable(bool aCheckpointable) { m_checkpointable = aCheckpointable; }
@@ -266,29 +283,21 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
         m_characterIndexes[(int)aType] = aIndex;
     }
 
-    public virtual float GetMaxHealthRaw() { return m_maxHealth; }
-    public virtual float GetMaxHealthEffective() { return m_maxHealth * m_maxHealthMultiplier; }
+    public virtual float GetMaxHealth() { return m_maxHealth; }
+
     public virtual float GetCurrentHealth() { return m_currentHealth.Value; }
 
-    public virtual void SetMaxHealthRaw(float aMaxHealth)
+    public virtual void SetMaxHealth(float aMaxHealth)
     {
-        if (HasAuthority || IsOwner)
+        if (HasAuthority)
             m_maxHealth = aMaxHealth;
-    }
-
-    public virtual PriorityValue<float> GetMaxHealthMultiplier() { return m_maxHealthMultiplier; }
-
-    public virtual void SetMaxHealthMultiplier(float aMaxHealthMultiplier, uint aPriority = 0, bool aOverridePriority = false)
-    {
-        if (HasAuthority || IsOwner)
-            m_maxHealthMultiplier.SetValue(aMaxHealthMultiplier, aPriority, aOverridePriority);
     }
 
     public virtual PriorityValue<float> GetReceivedDamageMultiplier() { return m_receivedDamageMultiplier; }
 
     public virtual void SetReceivedDamageMultiplier(float aMaxHealthMultiplier, uint aPriority = 0, bool aOverridePriority = false)
     {
-        if (HasAuthority || IsOwner)
+        if (HasAuthority)
             m_receivedDamageMultiplier.SetValue(aMaxHealthMultiplier, aPriority, aOverridePriority);
     }
 
@@ -296,13 +305,13 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
     {
         m_currentHealth.Value += aHp;
         if (aClampToMaxHealth)
-            m_currentHealth.Value = Mathf.Clamp(m_currentHealth.Value, 0, GetMaxHealthEffective());
+            m_currentHealth.Value = Mathf.Clamp(m_currentHealth.Value, 0, GetMaxHealth());
     }
 
     public virtual void RefillHp()
     {
-        if (HasAuthority || IsOwner)
-            m_currentHealth.Value = GetMaxHealthEffective();
+        if (HasAuthority)
+            m_currentHealth.Value = GetMaxHealth();
     }
 
     public virtual void SetHp(float aHp, bool aClampToMaxHealth = true)
@@ -310,7 +319,7 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
         if (HasAuthority || IsOwner)
         {
             if (aClampToMaxHealth)
-                aHp = Mathf.Clamp(aHp, 0, GetMaxHealthEffective());
+                aHp = Mathf.Clamp(aHp, 0, GetMaxHealth());
 
             m_currentHealth.Value = aHp;
         }

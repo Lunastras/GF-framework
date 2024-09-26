@@ -1,9 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEngine;
-using UnityEngine.Assertions;
 using static Unity.Mathematics.math;
 
 //A memory allocation free string buffer. This is similar to c#'s StringBuilder, but StringBuilder does not allow you to directly access the memory buffer and use it, you need to create a new 
@@ -49,35 +44,35 @@ public class GfcStringBuffer
 
     public static implicit operator string(GfcStringBuffer d) => d.m_stringBuffer;
 
-    public GfcStringBuffer Concatenate(string aString)
+    public GfcStringBuffer Append(string aString)
     {
         int insertPosition = Length;
         Write(ref insertPosition, aString);
         return this;
     }
 
-    public GfcStringBuffer Concatenate(char aChar)
+    public GfcStringBuffer Append(char aChar)
     {
         int insertPosition = Length;
         Write(ref insertPosition, aChar);
         return this;
     }
 
-    public GfcStringBuffer Concatenate(long aLong)
+    public GfcStringBuffer Append(long aLong)
     {
         int insertPosition = Length;
         Write(ref insertPosition, aLong);
         return this;
     }
 
-    public GfcStringBuffer Concatenate(ulong aUlong)
+    public GfcStringBuffer Append(ulong aUlong)
     {
         int insertPosition = Length;
         Write(ref insertPosition, aUlong);
         return this;
     }
 
-    public GfcStringBuffer Concatenate(double aDouble, int aPrecission, char aDecimalPointSymbol = '.')
+    public GfcStringBuffer Append(double aDouble, int aPrecission, char aDecimalPointSymbol = '.')
     {
         int insertPosition = Length;
         Write(ref insertPosition, aDouble, aPrecission, aDecimalPointSymbol);

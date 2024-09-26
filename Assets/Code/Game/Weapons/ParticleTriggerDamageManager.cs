@@ -11,19 +11,24 @@ public class ParticleTriggerDamageManager : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        if (Instance) Destroy(Instance);
+        if (Instance != this)
+            Destroy(Instance);
         Instance = this;
+
         ParticleWeapons.Clear();
-        GfgManagerCharacters.OnCharacterAdded += AddCharacter;
-        GfgManagerCharacters.OnCharacterRemoved += RemoveCharacter;
+        GfgManagerCharacters.Instance.OnCharacterAdded += AddCharacter;
+        GfgManagerCharacters.Instance.OnCharacterRemoved += RemoveCharacter;
     }
 
     protected void OnDestroy()
     {
-        GfgManagerCharacters.OnCharacterAdded -= AddCharacter;
-        GfgManagerCharacters.OnCharacterRemoved -= RemoveCharacter;
-        Instance = null;
+        if (GfgManagerCharacters.Instance)
+        {
+            GfgManagerCharacters.Instance.OnCharacterAdded -= AddCharacter;
+            GfgManagerCharacters.Instance.OnCharacterRemoved -= RemoveCharacter;
+        }
 
+        Instance = null;
 
         int weaponsCount = ParticleWeapons.Count;
         for (int i = 0; i < weaponsCount; ++i)

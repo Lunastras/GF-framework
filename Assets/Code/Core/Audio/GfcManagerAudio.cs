@@ -42,6 +42,16 @@ public class GfcManagerAudio : MonoBehaviour
                 Debug.LogError("The audio mixer group of type " + m_mixerGroups[i].AudioMixerType + " is at index " + i + " instead of index " + (int)m_mixerGroups[i].AudioMixerType);
     }
 
+    private static GfcStringBuffer GetExposedParameterString(AudioMixerType aMixerType, string aParameterString)
+    {
+        GfcStringBuffer buffer = GfcPooling.GfcStringBuffer;
+        buffer.Append(aParameterString);
+        buffer.Append(" (of ");
+        buffer.Append(Instance.m_mixerGroups[(int)aMixerType].AudioMixerGroup.name);
+        buffer.Append(')');
+        return buffer;
+    }
+
     public static void LoadAudioClip(GfcSound sound)
     {
         if (Instance && Instance.m_audioLoadAudioSource)
@@ -70,28 +80,38 @@ public class GfcManagerAudio : MonoBehaviour
     public static bool SetMixerVolumeRaw(AudioMixerType aMixerType, float volume)
     {
         int index = (int)aMixerType;
-        return Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.SetFloat(VOLUME_STRING, volume);
+        GfcStringBuffer parameterName = GetExposedParameterString(aMixerType, VOLUME_STRING);
+        var ret = Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.SetFloat(parameterName, volume);
+        parameterName.Clear();
+        return ret;
     }
 
     public static bool SetMixerVolume(AudioMixerType aMixerType, float volume) { return SetMixerVolumeRaw(aMixerType, ValueToVolume(volume)); }
 
-    public static float GetMixerVolumeRaw(AudioMixerType type)
+    public static float GetMixerVolumeRaw(AudioMixerType aMixerType)
     {
-        int index = (int)type;
-        Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.GetFloat(VOLUME_STRING, out float val);
+        int index = (int)aMixerType;
+        GfcStringBuffer parameterName = GetExposedParameterString(aMixerType, VOLUME_STRING);
+        Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.GetFloat(parameterName, out float val);
+        parameterName.Clear();
         return val;
     }
 
     public static bool SetMixerPitch(AudioMixerType aMixerType, float volume)
     {
         int index = (int)aMixerType;
-        return Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.SetFloat(PITCH_STRING, volume);
+        GfcStringBuffer parameterName = GetExposedParameterString(aMixerType, PITCH_STRING);
+        var ret = Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.SetFloat(parameterName, volume);
+        parameterName.Clear();
+        return ret;
     }
 
     public static float GetMixerPitch(AudioMixerType aMixerType)
     {
         int index = (int)aMixerType;
-        Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.GetFloat(PITCH_STRING, out float val);
+        GfcStringBuffer parameterName = GetExposedParameterString(aMixerType, PITCH_STRING);
+        Instance.m_mixerGroups[index].AudioMixerGroup.audioMixer.GetFloat(parameterName, out float val);
+        parameterName.Clear();
         return val;
     }
 
@@ -173,7 +193,7 @@ public class GfcManagerAudio : MonoBehaviour
     private static GfcAudioSource InternalPlayAudio(AudioClip audio, Transform parent, Vector3 position, float delay = 0, float volume = 1, float pitch = 1, bool loop = false, AudioMixerGroup mixer = null, float spatialBlend = 1, float minDst = 1, float maxDst = 500)
     {
         GfcAudioSource gfAudioSource = GetAudioObject();
-        gfAudioSource.m_destroyWhenFinished = true;
+        gfAudioSource.DestroyWhenFinished = true;
 
         AudioSource source = gfAudioSource.GetAudioSource();
         gfAudioSource.SetParent(parent);

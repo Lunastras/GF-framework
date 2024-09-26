@@ -22,7 +22,6 @@ public class GfxNotifyPanel2D : GfxNotifyPanelGeneric
         m_elementsCanvasGroup = new CanvasGroup[m_elementsTransitions.Length];
         m_elementsOriginalLocalData = new TransformData[m_elementsTransitions.Length];
 
-
         for (int i = 0; i < m_elementsCanvasGroup.Length; ++i)
         {
             m_elementsTransitions[i].Transform.GetComponent(ref m_elementsCanvasGroup[i]);
@@ -38,7 +37,7 @@ public class GfxNotifyPanel2D : GfxNotifyPanelGeneric
         }
     }
 
-    protected override void TransitionBox(float aTimeFactor, bool aFadeIn, bool aHasName, bool aSkipping)
+    protected override void TransitionBox(float aTimeFactor, bool aFadeIn, bool aHasName)
     {
         for (int i = 0; i < m_elementsTransitions.Length; ++i)
         {
@@ -79,11 +78,11 @@ public class GfxNotifyPanel2D : GfxNotifyPanelGeneric
         return default;
     }
 
-    protected override void OnTextWrite(GfxTextMessage aMessage, int aMessageIndex, bool aSkipping)
+    protected override void OnTextWrite(GfxTextMessage aMessage, int aMessageIndex)
     {
     }
 
-    protected override void SubmitOnText(int aMessageIndex, bool aHasName, bool aSkipping)
+    protected override void SubmitOnText(int aMessageIndex, bool aHasName)
     {
         m_continueText.enabled = false;
     }

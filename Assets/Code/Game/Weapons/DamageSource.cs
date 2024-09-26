@@ -17,8 +17,6 @@ public abstract class DamageSource : MonoBehaviour
 
     public GfgStatsCharacter GetGfgStatsCharacter()
     {
-        return m_statsCharacter;
-        //todo
         if (ParentDamageSource)
             return ParentDamageSource.GetGfgStatsCharacter();
         else

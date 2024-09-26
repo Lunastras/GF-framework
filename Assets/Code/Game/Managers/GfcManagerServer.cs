@@ -39,7 +39,7 @@ public class GfcManagerServer : NetworkBehaviour
     {
         get
         {
-            return !NetworkManager.Singleton || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer || !GfcManagerGame.IsMultiplayer;
+            return !NetworkManager.Singleton || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer || !GfgManagerGame.IsMultiplayer;
         }
     }
 
@@ -77,7 +77,7 @@ public class GfcManagerServer : NetworkBehaviour
         if (HasAuthority)
         {
             m_characterTimeScales = new();
-            m_targetFixedTimestep.Value = GfcManagerGame.GetInitialFixedDeltaTime;
+            m_targetFixedTimestep.Value = GfgManagerGame.GetInitialFixedDeltaTime;
         }
 
         DontDestroyOnLoad(gameObject);
@@ -123,8 +123,9 @@ public class GfcManagerServer : NetworkBehaviour
     {
         if (HasAuthority)
         {
-            GfgManagerSceneLoader.LoadScene(sceneBuildIndex, true, loadingMode, GfcManagerGame.GameType);
-            Instance.LevelChangeClientRpc(sceneBuildIndex, ServerLoadingMode.RECONNECT);
+            GfgManagerSceneLoader.LoadScene(sceneBuildIndex, GfcGameState.INVALID, true, GfgManagerGame.GameType, loadingMode);
+            if (NetworkManager.Singleton)
+                Instance.LevelChangeClientRpc(sceneBuildIndex, ServerLoadingMode.RECONNECT);
         }
     }
 
@@ -137,7 +138,7 @@ public class GfcManagerServer : NetworkBehaviour
     protected virtual void LevelChangeClientRpc(int sceneBuildIndex, ServerLoadingMode loadingMode)
     {
         if (!HasAuthority)
-            GfgManagerSceneLoader.LoadScene(sceneBuildIndex, true, loadingMode, GfcManagerGame.GameType);
+            GfgManagerSceneLoader.LoadScene(sceneBuildIndex, GfcGameState.INVALID, true, GfgManagerGame.GameType, loadingMode);
     }
 
     public override void OnDestroy()
@@ -293,7 +294,7 @@ public enum ServerLoadingMode
 }
 
 [System.Serializable]
-public enum GameMultiplayerType
+public enum GfcGameMultiplayerType
 {
     SINGLEPLAYER,
     SERVER,

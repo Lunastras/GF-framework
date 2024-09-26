@@ -16,8 +16,6 @@ public class GfxPanel : GfxButton2D
 
     [SerializeField] private TextMeshProUGUI m_textRight;
 
-    [SerializeField] private ParticleSystem m_blessedParticleSystem;
-
     [SerializeField] private RectTransform m_contentsRectTransform;
 
     [SerializeField] private float m_contentInPadding = 12;
@@ -300,15 +298,6 @@ public class GfxPanel : GfxButton2D
         m_iconImage.color = aColor;
     }
 
-    public void SetBlessed(bool aBlessed)
-    {
-        return;
-        if (aBlessed)
-            m_blessedParticleSystem.Play();
-        else
-            m_blessedParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-    }
-
     public void SetTextOnly(string aString, HorizontalAlignmentOptions aXAlignment = HorizontalAlignmentOptions.Center, VerticalAlignmentOptions aYAlignment = VerticalAlignmentOptions.Middle)
     {
         SetLeftTextOnly(aString, aXAlignment, aYAlignment);
@@ -335,9 +324,9 @@ public class GfxPanel : GfxButton2D
             spawnPosition.x += IndecesColumnRow.x * (aPanelData.PanelSize.x + aPanelData.DistanceFromLastPanel.x);
             spawnPosition.y += IndecesColumnRow.y * (aPanelData.PanelSize.y + aPanelData.DistanceFromLastPanel.y);
 
-            GfcTools.Mult2(ref spawnPosition, aPanelData.SpawnAxisCoef);
+            GfcTools.Mult(ref spawnPosition, aPanelData.SpawnAxisCoef);
 
-            GfcTools.Add2(ref spawnPosition, aPanelData.PositionOffset);
+            GfcTools.Add(ref spawnPosition, aPanelData.PositionOffset);
 
             RectTransform panelRectTransform = GetMainRectTransform();
 

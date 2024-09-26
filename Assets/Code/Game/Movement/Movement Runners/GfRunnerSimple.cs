@@ -11,11 +11,19 @@ public class GfRunnerSimple : GfRunnerTemplate
     [SerializeField]
     protected float m_deacceleration = 40;
     [SerializeField]
-    protected float m_midAirAcceleration = 20;
+    protected float m_accelerationMidAir = 20;
     [SerializeField]
-    protected float m_midAirDeacceleration = 10;
+    protected float m_deaccelerationMidAir = 10;
+
+    [SerializeField]
+    protected float m_deacelerationDashCoef = 5;
+
     [SerializeField]
     protected float m_maxFallSpeed = 50;
+
+    [SerializeField]
+    private float m_dashVelocity = 20f;
+
     [SerializeField]
     protected float m_jumpForce = 14;
     [SerializeField]
@@ -25,12 +33,24 @@ public class GfRunnerSimple : GfRunnerTemplate
     protected float m_turnSpeed = 400;
 
     [SerializeField]
-    protected bool m_requireJumpRelease = true;
-
-    [SerializeField]
     protected int m_maxJumps = 2;
 
+    [SerializeField]
+    protected float m_dashStatusDuration = 0.6f;
+
+    [SerializeField]
+    protected int m_maxDashes = 2;
+
+    [SerializeField]
+    protected bool m_enableRotation = true;
+
     protected int m_currentJumpsCount = 0;
+
+    protected int m_currentDashesCount = 0;
+
+    public bool Dashing { get; private set; } = false;
+
+    protected float m_dashDurationLeft = 0;
 
     protected float m_effectiveDeacceleration;
     protected float m_effectiveAcceleration;
@@ -45,6 +65,8 @@ public class GfRunnerSimple : GfRunnerTemplate
     protected float m_rotationSmoothRef = 0;
 
     protected bool m_jumpFlagReleased = true;
+
+    protected bool m_dashFlagReleased = true;
 
     protected bool m_isExtendingJump = false;
 
@@ -61,37 +83,41 @@ public class GfRunnerSimple : GfRunnerTemplate
 
     public override void BeforePhysChecks(float deltaTime)
     {
+        m_dashDurationLeft -= deltaTime;
+        Dashing = m_dashDurationLeft > 0;
+
         m_touchedParent = m_jumpedThisFrame = false;
-        Vector3 movDir = m_mov.MovementDirComputed(MovementDirRaw, CanFly);
+        Vector3 movDir = m_movement.MovementDirComputed(MovementDirRaw, CanFly);
 
         CalculateEffectiveValues();
         CalculateVelocity(deltaTime, movDir);
         CalculateJump();
-        CalculateRotation(deltaTime, movDir);
+        CalculateDash(deltaTime, MovementDirRaw);
+        if (m_enableRotation) CalculateRotation(deltaTime, movDir);
     }
 
     public override void AfterPhysChecks(float deltaTime)
     {
-        if (!m_touchedParent && null != m_mov.GetParentTransform())
+        if (!m_touchedParent && null != m_movement.GetParentTransform())
         {
-            m_mov.DetachFromParentTransform();
+            m_movement.DetachFromParentTransform();
             if (m_breakWhenUnparent) Debug.Break();
         }
     }
 
     protected void CalculateEffectiveValues()
     {
-        m_isExtendingJump &= 0 < Vector3.Dot(m_mov.GetVelocity(), m_mov.GetUpvecRotation()); //if falling, stop jump extending
+        m_isExtendingJump &= !Dashing && 0 < Vector3.Dot(m_movement.GetVelocity(), m_movement.GetUpvecRotation()); //if falling, stop jump extending
 
-        if (m_mov.GetIsGrounded() || CanFly)
+        if (m_movement.GetGrounded() || CanFly)
         {
             m_effectiveAcceleration = m_acceleration;
             m_effectiveDeacceleration = m_deacceleration;
         }
         else
         {
-            m_effectiveAcceleration = m_midAirAcceleration;
-            m_effectiveDeacceleration = m_midAirDeacceleration;
+            m_effectiveAcceleration = m_accelerationMidAir;
+            m_effectiveDeacceleration = m_deaccelerationMidAir;
         }
 
         m_effectiveAcceleration *= m_accelerationMultiplier;
@@ -99,12 +125,20 @@ public class GfRunnerSimple : GfRunnerTemplate
 
         m_effectiveSpeed = m_speed * m_speedMultiplier;
         m_effectiveMass = m_mass * m_massMultiplier;
+
+        if (Dashing)
+        {
+            m_effectiveDeacceleration *= m_deacelerationDashCoef;
+
+        }
+
         if (m_isExtendingJump) m_effectiveMass *= m_jumpExtensionMassCoef;
     }
 
     protected virtual void CalculateRotation(float deltaTime, Vector3 movDir)
     {
-        Vector3 m_rotationUpVec = m_mov.GetUpvecRotation();
+        Vector3 m_rotationUpVec = m_movement.GetUpvecRotation();
+        GfcTools.RemoveAxisKeepMagnitude(ref movDir, m_movement.GetUpVecRaw());
 
         //ROTATION SECTION
         if (movDir != Vector3.zero)
@@ -119,15 +153,15 @@ public class GfRunnerSimple : GfRunnerTemplate
             if (degreesMovement > 0.05f)
             {
                 Quaternion angleAxis = Quaternion.AngleAxis(Sign(angleDistance) * degreesMovement, m_rotationUpVec);
-                m_mov.SetRotation(angleAxis * m_transform.rotation);
+                m_movement.SetRotation(angleAxis * m_transform.rotation);
             }
         }
     }
 
     protected virtual void CalculateVelocity(float deltaTime, Vector3 movDir)
     {
-        Vector3 slope = m_mov.GetSlope();
-        Vector3 velocity = m_mov.GetVelocity();
+        Vector3 slope = m_movement.GetSlope();
+        Vector3 velocity = m_movement.GetVelocity();
 
         float movDirMagnitude = movDir.magnitude;
         if (movDirMagnitude > 0.000001f) GfcTools.Div(ref movDir, movDirMagnitude); //normalise
@@ -137,7 +171,7 @@ public class GfRunnerSimple : GfRunnerTemplate
         //remove vertical factor from the velocity to calculate the horizontal plane velocity easier
         Vector3 effectiveVelocity = velocity;
 
-        if (!CanFly)
+        if (!CanFly && !Dashing)
         {
             //remove vertical component of velocity if we can't fly
             effectiveVelocity.x -= slope.x * verticalFallSpeed;
@@ -188,15 +222,43 @@ public class GfRunnerSimple : GfRunnerTemplate
         GfcTools.Minus(ref velocity, deacceleration);//add deacceleration
         GfcTools.Minus(ref velocity, slope); //add vertical speed change  
 
-        m_mov.SetVelocity(velocity);
+        m_movement.SetVelocity(velocity);
+    }
+
+    protected virtual void CalculateDash(float deltaTime, Vector3 movDir)
+    {
+        if (MyRunnerFlags.GetAndUnsetBit((int)RunnerFlags.DASH))
+        {
+            if (m_dashFlagReleased)
+            {
+                m_dashFlagReleased = false;
+                PerformDash(deltaTime, movDir);
+            }
+        }
+        else
+        {
+            m_dashFlagReleased = true;
+        }
+    }
+
+    protected virtual void PerformDash(float deltaTime, Vector3 movDir)
+    {
+        if (m_maxDashes > m_currentDashesCount && movDir.sqrMagnitude > 0.001f)
+        {
+            m_dashDurationLeft = m_dashStatusDuration;
+            m_currentDashesCount++;
+
+            m_movement.SetVelocity(m_dashVelocity * movDir.normalized);
+            m_movement.SetIsGrounded(false);
+            m_movement.DetachFromParentTransform();
+        }
     }
 
     protected virtual void CalculateJump()
     {
-        if (FlagJump)
+        if (MyRunnerFlags.GetAndUnsetBit((int)RunnerFlags.JUMP))
         {
-            FlagJump = false;
-            if (m_jumpFlagReleased || !m_requireJumpRelease)
+            if (m_jumpFlagReleased)
             {
                 m_jumpFlagReleased = false;
                 PerformJump();
@@ -222,27 +284,31 @@ public class GfRunnerSimple : GfRunnerTemplate
             m_currentJumpsCount++;
 
             //we use the rotation upVec because it feels more natural when the player's rotation is still changing
-            Vector3 m_velocity = m_mov.GetVelocity();
-            Vector3 upVecRotation = m_mov.GetUpvecRotation();
-            GfcTools.RemoveAxis(ref m_velocity, upVecRotation);
-            GfcTools.Add(ref m_velocity, upVecRotation * m_jumpForce);
-            m_mov.SetVelocity(m_velocity);
-            m_mov.SetIsGrounded(false);
+            Vector3 velocity = m_movement.GetVelocity();
+            Vector3 upVecRotation = m_movement.GetUpvecRotation();
+            GfcTools.RemoveAxis(ref velocity, upVecRotation);
+            GfcTools.Add(ref velocity, upVecRotation * m_jumpForce);
 
-            m_mov.DetachFromParentTransform();
+            m_movement.SetVelocity(velocity);
+            m_movement.SetIsGrounded(false);
+            m_movement.DetachFromParentTransform();
         }
     }
 
     public override void MgOnCollision(ref MgCollisionStruct collision)
     {
         Transform collisionTrans = collision.collider.transform;
-        if (collision.isGrounded) m_currentJumpsCount = 0;
+        if (collision.isGrounded)
+        {
+            m_currentJumpsCount = 0;
+            m_currentDashesCount = 0;
+        }
 
-        if (collision.isGrounded && collisionTrans != m_mov.GetParentTransform())
-            m_mov.SetParentTransform(collisionTrans);
+        if (collision.isGrounded && collisionTrans != m_movement.GetParentTransform())
+            m_movement.SetParentTransform(collisionTrans);
 
-        m_isExtendingJump &= !collision.isGrounded && collision.selfUpVecAngle <= m_mov.GetUpperSlopeLimitDeg();
-        m_touchedParent |= collision.isGrounded && m_mov.GetParentTransform() == collisionTrans;
+        m_isExtendingJump &= !collision.isGrounded && collision.selfUpVecAngle <= m_movement.GetUpperSlopeLimitDeg();
+        m_touchedParent |= collision.isGrounded && m_movement.GetParentTransform() == collisionTrans;
     }
 
     public PriorityValue<float> GetAccelerationMultiplier()

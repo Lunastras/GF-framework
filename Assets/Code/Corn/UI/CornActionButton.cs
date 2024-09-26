@@ -39,10 +39,9 @@ public class CornActionButton : MonoBehaviour
 
     void Start()
     {
-        Debug.Assert(WorldPointOfReference, "The world reference point was not assigned.");
         Initialize();
+        Debug.Assert(WorldPointOfReference, "The world reference point was not assigned.");
     }
-
 
     void Update()
     {

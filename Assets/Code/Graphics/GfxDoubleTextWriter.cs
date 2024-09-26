@@ -7,22 +7,30 @@ using System;
 
 public class GfxDoubleTextWriter : MonoBehaviour
 {
-    [SerializeField] private GfxRichTextWriter m_textWriterMain = new();
+    [SerializeField] private GfxRichTextWriter m_textWriterMain;
 
     private GfxRichTextWriter m_textWriter;
 
     private GfxRichTextWriter m_textEraser;
 
     // Start is called before the first frame update
-    void Awake()
+    void Start()
     {
+        Debug.Assert(m_textWriterMain.TextMeshPro);
+        Debug.Assert(m_textWriterMain.TextMeshPro.gameObject != gameObject);
+
+        m_textWriterMain.RefreshValues();
+
         m_textWriterMain.RemoveText();
         m_textWriter = m_textWriterMain;
+
         GameObject secondTmpWriter = Instantiate(m_textWriterMain.TextMeshPro.gameObject);
         secondTmpWriter.transform.SetParent(m_textWriterMain.TextMeshPro.transform.parent, false);
 
         m_textEraser = new(m_textWriterMain);
         m_textEraser.TextMeshPro = secondTmpWriter.GetComponent<TextMeshProUGUI>();
+
+        m_textEraser.RefreshValues();
     }
 
     public void WriteString(string aString, float aWriteSpeedMultiplier = 1, float aEraseSpeedMultiplier = 1, bool aSkipEraseAnimation = false)
@@ -89,7 +97,7 @@ public class GfxDoubleTextWriter : MonoBehaviour
 
         while (WritingText())
         {
-            if (GfcInput.GetAxisInput(aSkipInput))
+            if (GfcInput.GetInput(aSkipInput))
             {
                 ForceWriteText();
             }
@@ -116,11 +124,9 @@ public class GfxDoubleTextWriter : MonoBehaviour
 
     public CoroutineHandle EraseText(float aSpeedMultiplier = 1)
     {
-        GfxRichTextWriter newTextEraser = m_textWriter;
-        m_textWriter = m_textEraser;
+        (m_textEraser, m_textWriter) = (m_textWriter, m_textEraser);
         m_textWriter.RemoveText();
 
-        m_textEraser = newTextEraser;
         return m_textEraser.EraseText(aSpeedMultiplier);
     }
 }

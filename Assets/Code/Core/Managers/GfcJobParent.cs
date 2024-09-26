@@ -96,18 +96,21 @@ public class JobParent : MonoBehaviour
         if (m_jobHandles.IsCreated)
             m_jobHandles.Dispose();
 
-        for (int i = 0; i < (int)UpdateTypes.TYPES_COUNT; ++i)
+        if (m_inheritedTypes != null)
         {
-            foreach (Type type in m_inheritedTypes)
+            for (int i = 0; i < (int)UpdateTypes.TYPES_COUNT; ++i)
             {
-                List<GfcJobChild> list = m_jobChildren[type][i];
-                if (null != list)
+                foreach (Type type in m_inheritedTypes)
                 {
-                    int count = list.Count;
-
-                    for (int j = 0; j < count; ++j)
+                    List<GfcJobChild> list = m_jobChildren[type][i];
+                    if (null != list)
                     {
-                        list[j].SetJobParentIndex(-1, (UpdateTypes)i);
+                        int count = list.Count;
+
+                        for (int j = 0; j < count; ++j)
+                        {
+                            list[j].SetJobParentIndex(-1, (UpdateTypes)i);
+                        }
                     }
                 }
             }

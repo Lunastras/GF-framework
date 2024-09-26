@@ -1,0 +1,28 @@
+{
+    "name": "Project.Corn",
+    "rootNamespace": "",
+    "references": [
+        "GUID:3b8ed52f1b5c64994af4c4e0aa4b6c4b",
+        "GUID:1491147abca9d7d4bb7105af628b223e",
+        "GUID:3a7d2356d294639448d0a84a5b9f69e2",
+        "GUID:fc7c61cc9f2510e4ca3d70f379dfc422",
+        "GUID:42ab4e63919bf704bb7fa4dabd8304cc",
+        "GUID:3a9701b98f1122949841e19b03381f29",
+        "GUID:4a6e12a823288f64da45379057e2c996",
+        "GUID:2665a8d13d1b3f18800f46e256720795",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:f2d49d9fa7e7eb3418e39723a7d3b92f",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:15fc0a57446b3144c949da3e2b9737a9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

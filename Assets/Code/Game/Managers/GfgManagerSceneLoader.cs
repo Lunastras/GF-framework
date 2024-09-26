@@ -1,15 +1,5 @@
-// LoadingScreenManager
-// --------------------------------
-// built by Martin Nerurkar (http://www.martin.nerurkar.de)
-// for Nowhere Prophet (http://www.noprophet.com)
-// Edited by Bucurescu Radu for the purpose of CSC384
-//
-// Licensed under GNU General Public License v3.0
-// http://www.gnu.org/licenses/gpl-3.0.txt
-
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 using UnityEngine.SceneManagement;
 using Unity.Netcode;
 using MEC;
@@ -19,7 +9,6 @@ public class GfgManagerSceneLoader : MonoBehaviour
     protected static GfgManagerSceneLoader Instance = null;
 
     [Header("Loading Visuals")]
-
 
     [Header("Timing Settings")]
     public float m_fadeDuration = 0.25f;
@@ -31,9 +20,13 @@ public class GfgManagerSceneLoader : MonoBehaviour
     // If loading additive, link to the cameras audio listener, to avoid multiple active audio listeners
     public AudioListener audioListener;
 
-    public static bool CurrentlyLoading { get { return Instance && Instance.m_isLoading; } }
+    [SerializeField] protected bool m_enableLogs = false;
 
-    protected static GameMultiplayerType GameTypeToLoad = GameMultiplayerType.NONE;
+    public static bool CurrentlyLoading { get { return Instance && Instance.m_loadingRoutine.CoroutineIsRunning; } }
+
+    protected static GfcGameState GameStateAfterLoad = GfcGameState.INVALID;
+
+    protected static GfcGameMultiplayerType GameTypeToLoad = GfcGameMultiplayerType.NONE;
 
     public static int SceneBuildIndexToLoad = -1;
 
@@ -41,15 +34,11 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
     protected static List<GameObject> m_rootGameObjectsOnStart = new(4);
 
-    protected static HashSet<int> m_scenesToUnload = new(4);
+    protected HashSet<int> m_scenesToUnload = new(4);
 
     protected static float FadeDuration = 0.25f;
 
-    private bool m_isLoading = false;
-
     private bool m_fakeWait = false;
-
-    private bool m_skipFinalFade = false;
 
     public static bool FakeWait
     {
@@ -64,20 +53,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
         }
     }
 
-    public static bool SkipFinalFade
-    {
-        get
-        {
-            return Instance.m_skipFinalFade;
-        }
-
-        set
-        {
-            Instance.m_skipFinalFade = value;
-        }
-    }
-
-    private static CoroutineHandle ourLoadingRoutine = default;
+    private GfcCoroutineHandle m_loadingRoutine = default;
 
     public static ServerLoadingMode ServerLoadingMode { get; protected set; } = ServerLoadingMode.KEEP_SERVER;
 
@@ -102,30 +78,33 @@ public class GfgManagerSceneLoader : MonoBehaviour
         }
     }
 
-    public static CoroutineHandle LoadScene(GfcScene aScene, bool aReloadIfLoaded = false, ServerLoadingMode aLoadingMode = ServerLoadingMode.KEEP_SERVER, GameMultiplayerType aGameType = GameMultiplayerType.SINGLEPLAYER)
+    public static CoroutineHandle LoadScene(GfcSceneId aScene, GfcGameState aNewGameState = GfcGameState.INVALID, bool aReloadIfLoaded = false, GfcGameMultiplayerType aGameType = GfcGameMultiplayerType.SINGLEPLAYER, ServerLoadingMode aLoadingMode = ServerLoadingMode.KEEP_SERVER)
     {
-        return LoadScene((int)aScene, aReloadIfLoaded, aLoadingMode, aGameType);
+        return LoadScene((int)aScene, aNewGameState, aReloadIfLoaded, aGameType, aLoadingMode);
     }
 
-    public static CoroutineHandle LoadScene(int aSceneBuildIndex, bool aReloadIfLoaded = false, ServerLoadingMode aLoadingMode = ServerLoadingMode.KEEP_SERVER, GameMultiplayerType aGameType = GameMultiplayerType.SINGLEPLAYER)
+    public static CoroutineHandle LoadScene(int aSceneBuildIndex, GfcGameState aNewGameState = GfcGameState.INVALID, bool aReloadIfLoaded = false, GfcGameMultiplayerType aGameType = GfcGameMultiplayerType.SINGLEPLAYER, ServerLoadingMode aLoadingMode = ServerLoadingMode.KEEP_SERVER)
     {
-        //Debug.Log("Starting to load scene with build index " + aSceneBuildIndex);
         ServerLoadingMode = aSceneBuildIndex == 0 ? ServerLoadingMode.SHUTDOWN : aLoadingMode;
         int originalSceneIndexLoading = SceneBuildIndexToLoad;
         SceneBuildIndexToLoad = aSceneBuildIndex;
         GameTypeToLoad = aGameType;
+        GameStateAfterLoad = aNewGameState == GfcGameState.INVALID ? GfgManagerGame.GetGameState() : aNewGameState;
 
         if (!CurrentlyLoading)
         {
             bool sceneLoaded = SceneManager.GetSceneByBuildIndex(SceneBuildIndexToLoad).isLoaded;
             if (aReloadIfLoaded || !sceneLoaded)
             {
-                m_scenesToUnload.Clear();
-                ourLoadingRoutine = Timing.RunCoroutine(_LoadAsyncHost());
+                Debug.Assert(!CurrentlyLoading, "The routine is already running, you cannot have this coroutine called multiple times in parallel.");
+                if (Instance.m_enableLogs) Debug.Log("Starting to load scene with build index " + aSceneBuildIndex);
+
+                Instance.m_scenesToUnload.Clear();
+                Instance.m_loadingRoutine.RunCoroutineIfNotRunning(_LoadAsyncHost());
             }
-            else if (sceneLoaded)
+            else
             {
-                Debug.Log("THe scene at build index " + aSceneBuildIndex + " was already loaded.");
+                if (Instance.m_enableLogs) Debug.Log("The scene at build index " + aSceneBuildIndex + " was already loaded.");
             }
         }
         else if (aSceneBuildIndex != originalSceneIndexLoading)
@@ -133,12 +112,12 @@ public class GfgManagerSceneLoader : MonoBehaviour
             Debug.LogWarning("Already in the process of loading scene with build index " + SceneBuildIndexToLoad + ", there might be issues loading scene " + aSceneBuildIndex);
         }
 
-        return ourLoadingRoutine;
+        return Instance.m_loadingRoutine;
     }
 
-    public static void LoadScene(string aLevelName, bool aReloadIfLoaded = false, ServerLoadingMode aLoadingMode = ServerLoadingMode.KEEP_SERVER, GameMultiplayerType aGameType = GameMultiplayerType.SINGLEPLAYER)
+    public static void LoadScene(string aLevelName, GfcGameState aNewGameState = GfcGameState.INVALID, bool aReloadIfLoaded = false, GfcGameMultiplayerType aGameType = GfcGameMultiplayerType.SINGLEPLAYER, ServerLoadingMode aLoadingMode = ServerLoadingMode.KEEP_SERVER)
     {
-        LoadScene(GetSceneBuildIndexByName(aLevelName), aReloadIfLoaded, aLoadingMode, aGameType);
+        LoadScene(GetSceneBuildIndexByName(aLevelName), aNewGameState, aReloadIfLoaded, aGameType, aLoadingMode);
     }
 
     public static int GetSceneBuildIndexByName(string name)
@@ -165,9 +144,9 @@ public class GfgManagerSceneLoader : MonoBehaviour
         for (int i = 0; i < countScenes; ++i)
         {
             Scene scene = SceneManager.GetSceneAt(i);
-            if (scene.buildIndex != (int)GfcScene.GF_BASE)
+            if (!GfgScene.GetScenePersistent((GfcSceneId)scene.buildIndex))
             {
-                m_scenesToUnload.Add(scene.buildIndex);
+                Instance.m_scenesToUnload.Add(scene.buildIndex);
                 SceneManager.UnloadSceneAsync(scene);
             }
         }
@@ -175,21 +154,10 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
     private static IEnumerator<float> _LoadAsyncHost()
     {
-        bool mustHaveNetworkGame = ServerLoadingMode != ServerLoadingMode.SHUTDOWN;
-
-        FadeIn();
-        yield return Timing.WaitForSeconds(FadeDuration);
-
-        GfxLoadingScreenVisuals.Instance.SetGroupAlpha(1);
-
-        Debug.Assert(!Instance.m_isLoading, "The routine is already running, you cannot have this coroutine called multiple times in parallel.");
-        Instance.m_isLoading = true;
+        yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GfcGameState.LOADING, true, false, false, false));
 
         if (GfcManagerServer.HasInstance)
             GfcManagerServer.SetPlayerIsReady(false);
-
-        FadeOut();
-        yield return Timing.WaitForSeconds(FadeDuration);
 
         var originalThreadPriority = Application.backgroundLoadingPriority;
         Application.backgroundLoadingPriority = Instance.m_loadThreadPriority;
@@ -197,33 +165,28 @@ public class GfgManagerSceneLoader : MonoBehaviour
     StartLoading:
 
         bool stopGame = ServerLoadingMode != ServerLoadingMode.KEEP_SERVER;
-        mustHaveNetworkGame = NetworkManager.Singleton && ServerLoadingMode != ServerLoadingMode.SHUTDOWN;
+        bool mustHaveNetworkGame = NetworkManager.Singleton && ServerLoadingMode != ServerLoadingMode.SHUTDOWN;
 
         if (stopGame)
-            GfcManagerGame.StopGame();
+            GfgManagerGame.StopGame();
 
         //UNLOAD SCENES SECTION START
         UnloadAllScenes();
-        while (m_scenesToUnload.Count() != 0 || (NetworkManager.Singleton && NetworkManager.Singleton.ShutdownInProgress))
-            yield return Timing.WaitForSeconds(0.5f);//wait for scenes to be unloaded and for the server to shutdown
+        while (Instance.m_scenesToUnload.Count != 0 || (NetworkManager.Singleton && NetworkManager.Singleton.ShutdownInProgress))
+            yield return Timing.WaitForSeconds(0.1f);//wait for scenes to be unloaded and for the server to shutdown
 
         //UNLOAD SCENES SECTION END
-
-        Scene loadingScreenScene = Instance.gameObject.scene;
+        Scene loadingScreenScene = SceneManager.GetSceneByBuildIndex((int)GfcSceneId.GF_BASE);
         loadingScreenScene.GetRootGameObjects(m_rootGameObjectsOnStart);
         SceneManager.SetActiveScene(loadingScreenScene);
 
-        float loadingProgress = 0f;
         int sceneToLoadIndex = SceneBuildIndexToLoad;
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneToLoadIndex, LoadSceneMode.Additive);
         operation.allowSceneActivation = true;
 
-        Instance.ShowLoadingVisuals();
-
         while (operation.isDone == false)
         {
             yield return Timing.WaitForSeconds(0.02f);
-            loadingProgress = operation.progress;
         }
 
         Scene currentScene = SceneManager.GetSceneByBuildIndex(sceneToLoadIndex);
@@ -231,8 +194,8 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
         if (mustHaveNetworkGame)
         {
-            GfcManagerGame.StartGame(GameTypeToLoad);
-            while (!GfcManagerGame.GameInitialised || !(GfcManagerServer.HostReady || GfcManagerServer.HasAuthority))
+            GfgManagerGame.StartGame(GameTypeToLoad);
+            while (!GfgManagerGame.GameInitialised || !(GfcManagerServer.HostReady || GfcManagerServer.HasAuthority))
                 yield return Timing.WaitForSeconds(0.02f);
         }
 
@@ -258,30 +221,19 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
         Application.backgroundLoadingPriority = originalThreadPriority;
 
-        if (!Instance.m_skipFinalFade)
-        {
-            FadeIn();
-            yield return Timing.WaitForSeconds(FadeDuration);
-        }
+        yield return Timing.WaitUntilDone(GfgManagerGame.GetGameStateTransitionHandle()); //make sure the fade out of the first transition is done
 
-        Instance.m_isLoading = false;
+        if (!Instance.m_fakeWait)
+            yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GameStateAfterLoad, true, false, false, false));
+
+        if (mustHaveNetworkGame) GfcManagerServer.SetPlayerIsReady(true);
 
         if (Instance.m_fakeWait)
             Timing.RunCoroutine(_FakeLoadWait());
         else
-            GfxLoadingScreenVisuals.Instance.SetGroupAlpha(0);
+            yield return Timing.WaitUntilDone(GfgManagerGame.GetGameStateTransitionHandle());
 
-        if (mustHaveNetworkGame)
-            GfcManagerServer.SetPlayerIsReady(true);
-
-        if (!Instance.m_skipFinalFade)
-        {
-            FadeOut();
-            yield return Timing.WaitForSeconds(FadeDuration);
-        }
-
-        Instance.m_skipFinalFade = false;
-        ourLoadingRoutine = default;
+        Instance.m_loadingRoutine.Finished();
     }
 
     private static IEnumerator<float> _FakeLoadWait()
@@ -290,29 +242,6 @@ public class GfgManagerSceneLoader : MonoBehaviour
             yield return Timing.WaitForSeconds(0.02f);
 
         Instance.m_fakeWait = false;
-        GfxLoadingScreenVisuals.Instance.SetGroupAlpha(0);
-    }
-
-    public void ImmediateLoadScene(int buildIndex, LoadSceneMode mode)
-    {
-        SceneManager.LoadScene(buildIndex, mode);
-    }
-
-    private static void FadeIn()
-    {
-        GfxUiTools.CrossFadeBlackAlpha(1, FadeDuration);
-    }
-
-    private static void FadeOut()
-    {
-        GfxUiTools.CrossFadeBlackAlpha(0, FadeDuration);
-    }
-
-    void ShowLoadingVisuals()
-    {
-        //loadingIcon.gameObject.SetActive(true);
-        //loadingDoneIcon.gameObject.SetActive(false);
-
-        //progressBar.fillAmount = 0f;
+        GfgManagerGame.SetGameState(GameStateAfterLoad, false);
     }
 }

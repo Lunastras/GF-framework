@@ -45,7 +45,6 @@ public class GfxSliderText : MonoBehaviour
     {
         if (m_sliderMain == null) m_sliderMain = GetComponent<Slider>();
         if (m_textValue == null) m_textValue = GetComponent<TextMeshProUGUI>();
-        Debug.Assert(m_valueTextMultiplier != 0, "Some schmuck face passed 0 wtf " + gameObject.name);
 
         if (m_sliderMain)
         {

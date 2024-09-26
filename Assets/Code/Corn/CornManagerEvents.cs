@@ -47,6 +47,7 @@ public class CornManagerEvents : MonoBehaviour
     {
         string message;
         CornEventCostAndRewards eventDetails = CornManagerBalancing.GetEventCostAndRewards(aEvent);
+
         if (CanAfford(aEvent))
         {
             bool wasteTime = eventDetails.EventHasCornRoll && MentalSanity < UnityEngine.Random.Range(1, DICE_ROLL_NUM_FACES);
@@ -70,6 +71,9 @@ public class CornManagerEvents : MonoBehaviour
 
         List<string> messagesBuffer = GetMessagesBuffer();
         messagesBuffer.Add(message);
+        messagesBuffer.Add(message);
+        messagesBuffer.Add(message);
+        messagesBuffer.Add(message);
 
         eventDetails.ApplyModifiersToPlayer(0);
 
@@ -84,16 +88,15 @@ public class CornManagerEvents : MonoBehaviour
                 break;
 
             case CornEventType.SOCIAL:
-                eventHandle = GfgVnScene.StartScene(typeof(TestDialogue)); //test todo
+                eventHandle = CornManagerStory.StartStoryScene((StoryCharacter)aEvent.EventTypeSub);
                 break;
         }
 
         if (eventHandle.IsValid) yield return Timing.WaitUntilDone(eventHandle);
 
-        CoroutineHandle apartmentLoadRoutine = GfgManagerSceneLoader.LoadScene(GfcScene.APARTMENT);
+        CoroutineHandle apartmentLoadRoutine = GfgManagerSceneLoader.LoadScene(GfcSceneId.APARTMENT, GfcGameState.APARTMENT);
         if (apartmentLoadRoutine.IsValid)
         {
-            GfgManagerSceneLoader.SkipFinalFade = true;
             GfgManagerSceneLoader.FakeWait = true;
             yield return Timing.WaitUntilDone(apartmentLoadRoutine);
         }
@@ -104,19 +107,35 @@ public class CornManagerEvents : MonoBehaviour
         Instance.m_canPlayEvent = true;
     }
 
+    private static bool WaitingForEndOfLevel = false;
+
+    private static void OnLevelEndSubmit() { WaitingForEndOfLevel = false; }
+
     private static IEnumerator<float> _ExecuteWorkEvent()
     {
         var playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
         int previousMilestone = playerSaveData.CurrentMilestone;
-        GfgManagerSaveData.GetActivePlayerSaveData().GameProgress += CornManagerBalancing.GetGameProgressOnWork();
+        GfgManagerSaveData.GetActivePlayerSaveData().Data.GameProgress += CornManagerBalancing.GetGameProgressOnWork();
         int newMilestone = playerSaveData.CurrentMilestone;
         if (previousMilestone < newMilestone)
         {
             //new milestone achieved
+            WaitingForEndOfLevel = true;
             Instance.m_messagesBuffer.Add("New milestone achieved! Currently at milestone " + newMilestone);
+
+            GfgManagerSceneLoader.LoadScene(GfcSceneId.CORN_LEVEL_0 + previousMilestone);
+
+            GfgManagerLevel.OnLevelEndSubmit += OnLevelEndSubmit;
+            while (WaitingForEndOfLevel) yield return Timing.WaitForSeconds(0.033f);
+            GfgManagerLevel.OnLevelEndSubmit -= OnLevelEndSubmit;
         }
 
         yield return Timing.WaitForOneFrame;
+    }
+
+    protected void OnDestroy()
+    {
+        GfgManagerLevel.OnLevelEndSubmit -= OnLevelEndSubmit;
     }
 
     public static void UpdateVisuals()
@@ -128,7 +147,7 @@ public class CornManagerEvents : MonoBehaviour
     protected static CoroutineHandle ProgressTime(int aElapsedHours, List<string> someMessages = null, bool anFadeToBlack = true)
     {
         PlayerSaveData playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
-        TimeSpan timePassed = playerSaveData.ProgressTime(aElapsedHours);
+        TimeSpan timePassed = playerSaveData.Data.ProgressTime(aElapsedHours);
 
         for (int i = 0; i < timePassed.Months; ++i)
         {
@@ -140,15 +159,15 @@ public class CornManagerEvents : MonoBehaviour
         {
             someMessages ??= GetMessagesBuffer();
 
-            string message = "Day " + playerSaveData.CurrentDay;
+            string message = "Day " + playerSaveData.Data.CurrentDay;
 
             bool loseSanity = false;
             bool gainSanity = true;
 
             for (int resourceIndex = 0; resourceIndex < (int)PlayerResources.COUNT; ++resourceIndex)
             {
-                gainSanity &= playerSaveData.Resources[resourceIndex] >= 0.5f;
-                loseSanity |= playerSaveData.Resources[resourceIndex] <= 0;
+                gainSanity &= playerSaveData.Data.Resources[resourceIndex] >= 0.5f;
+                loseSanity |= playerSaveData.Data.Resources[resourceIndex] <= 0;
             }
 
             CornManagerBalancing.GetEventCostAndRewards(CornEventType.NEW_DAY).ApplyModifiersToPlayer();
@@ -156,16 +175,16 @@ public class CornManagerEvents : MonoBehaviour
             if (gainSanity)
             {
                 message += ", +1 sanity, good job.";
-                playerSaveData.MentalSanity++;
+                playerSaveData.Data.MentalSanity++;
             }
             else if (loseSanity)
             {
                 message += ", -1 sanity, try to take better care of yourself, otherwise, you will spiral out of control...";
-                playerSaveData.MentalSanity--;
+                playerSaveData.Data.MentalSanity--;
             }
 
             someMessages.Add(message);
-            playerSaveData.MentalSanity = Mathf.Clamp(playerSaveData.MentalSanity, 0, DICE_ROLL_NUM_FACES);
+            playerSaveData.Data.MentalSanity = Mathf.Clamp(playerSaveData.Data.MentalSanity, 0, DICE_ROLL_NUM_FACES);
         }
 
         return Timing.RunCoroutine(_FlushMessagesAndDrawHud(anFadeToBlack));
@@ -177,7 +196,7 @@ public class CornManagerEvents : MonoBehaviour
 
         if (anFadeToBlack)
         {
-            GfxUiTools.CrossFadeBlackAlpha(1, fadeTime);
+            GfxUiTools.FadeOverlayAlpha(1, fadeTime);
             GfxUiTools.RemoveSelectedGameObject();
 
             yield return Timing.WaitForSeconds(fadeTime);
@@ -187,7 +206,7 @@ public class CornManagerEvents : MonoBehaviour
 
         UpdateVisuals();
 
-        CoroutineHandle handle = GfxUiTools.GetNotifyPanel().DrawMessages(Instance.m_messagesBuffer);
+        CoroutineHandle handle = GfxUiTools.GetNotifyPanel().DrawMessage(Instance.m_messagesBuffer);
 
         if (handle.IsValid) yield return Timing.WaitUntilDone(handle);
 
@@ -195,26 +214,26 @@ public class CornManagerEvents : MonoBehaviour
 
         if (anFadeToBlack)
         {
-            GfxUiTools.CrossFadeBlackAlpha(0, fadeTime);
+            GfxUiTools.FadeOverlayAlpha(0, fadeTime);
             yield return Timing.WaitForSeconds(fadeTime);
         }
     }
 
     public static bool CanAfford(CornEvent aEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(aEvent).CanAfford(aBonusMultiplier); }
-    public static bool CanAfford(PlayerConsumables aType, float aValue) { return GfgManagerSaveData.GetActivePlayerSaveData().CanAfford(aType, aValue); }
-    public static bool CanAfford(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { return GfgManagerSaveData.GetActivePlayerSaveData().CanAfford(aModifier, aMultiplier, aBonusMultiplier); }
-    public static bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { return GfgManagerSaveData.GetActivePlayerSaveData().CanAfford(someModifiers, aMultiplier, aBonusMultiplier); }
+    public static bool CanAfford(PlayerConsumables aType, float aValue) { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(aType, aValue); }
+    public static bool CanAfford(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(aModifier, aMultiplier, aBonusMultiplier); }
+    public static bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(someModifiers, aMultiplier, aBonusMultiplier); }
 
 
-    public static void ApplyModifier(PlayerResources aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aType, aValue); }
-    public static void ApplyModifier(PlayerConsumables aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aType, aValue); }
+    public static void ApplyModifier(PlayerResources aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aType, aValue); }
+    public static void ApplyModifier(PlayerConsumables aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aType, aValue); }
 
-    public static void ApplyModifier(PlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
-    public static void ApplyModifier(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifier(PlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifier(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
 
-    public static void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerResourcesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifierResourceList(someModifiers, aMultiplier, aBonusMultiplier); }
-    public static void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().ApplyModifierConsumablesList(someModifiers, aMultiplier, aBonusMultiplier); }
-    public static int MentalSanity { get { return GfgManagerSaveData.GetActivePlayerSaveData().MentalSanity; } }
+    public static void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerResourcesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifierResourceList(someModifiers, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifierConsumablesList(someModifiers, aMultiplier, aBonusMultiplier); }
+    public static int MentalSanity { get { return GfgManagerSaveData.GetActivePlayerSaveData().Data.MentalSanity; } }
 }
 
 [Serializable]
@@ -227,7 +246,7 @@ public struct CornEvent
     }
 
     public CornEventType EventType;
-    public uint EventTypeSub; //the sub event of the EventType, single EventType can have multiple events
+    public uint EventTypeSub; //the sub event of the EventType, single EventType can have multiple events. For story scenes, this can be the ID of the character the player is meeting with
 }
 
 public enum CornEventType

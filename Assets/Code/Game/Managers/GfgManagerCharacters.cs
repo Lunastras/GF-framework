@@ -10,12 +10,16 @@ using Unity.Mathematics;
 public class GfgManagerCharacters : MonoBehaviour
 {
     protected List<GfgStatsCharacter>[] m_instantiatedCharacters;
-    protected static GfgManagerCharacters Instance = null;
+
+    public static GfgManagerCharacters Instance { get; protected set; } = null;
 
     [SerializeField]
     protected StructArray<bool>[] m_typesEnemiesWith;
     [SerializeField]
     protected StructArray<float>[] m_typesDamageMultiplier;
+
+    [SerializeField]
+    protected bool m_friendlyFireByDefault = false;
 
     protected List<GfgStatsCharacter> m_allCharacters = new(32);
 
@@ -23,10 +27,22 @@ public class GfgManagerCharacters : MonoBehaviour
 
     protected NativeList<float3> m_allCharactersPositions;
 
-    public static Action<GfgStatsCharacter> OnCharacterRemoved;
-    public static Action<GfgStatsCharacter> OnCharacterAdded;
+    public Action<GfgStatsCharacter> OnCharacterRemoved;
+    public Action<GfgStatsCharacter> OnCharacterAdded;
 
     private const int NUM_CHARACTER_TYPES = (int)CharacterTypes.NUM_CHARACTER_TYPES;
+
+    private static void ResizeAndInitializeEmpty<T>(ref StructArray<T>[] anArray, int aDesiredLength, T aDefaultValueForDifferentTypes, T aSameTypeValue)
+    {
+        Array.Resize(ref anArray, aDesiredLength);
+        for (int i = 0; i < aDesiredLength; ++i)
+        {
+            int originalSubArrayLength = anArray[i].array != null ? anArray.Length : 0;
+            Array.Resize(ref anArray[i].array, NUM_CHARACTER_TYPES);
+            for (int j = originalSubArrayLength; j < aDesiredLength; j++)
+                anArray[i].array[j] = i == j ? aSameTypeValue : aDefaultValueForDifferentTypes;
+        }
+    }
 
     private void Awake()
     {
@@ -37,18 +53,15 @@ public class GfgManagerCharacters : MonoBehaviour
 
         m_instantiatedCharacters = new List<GfgStatsCharacter>[NUM_CHARACTER_TYPES];
 
-        Array.Resize<StructArray<bool>>(ref m_typesEnemiesWith, NUM_CHARACTER_TYPES);
-        Array.Resize<StructArray<float>>(ref m_typesDamageMultiplier, NUM_CHARACTER_TYPES);
+        int originalEnemiesWithLength = m_typesEnemiesWith.Length;
+        int originalTypesDamageMultiplier = m_typesDamageMultiplier.Length;
+
+        ResizeAndInitializeEmpty(ref m_typesEnemiesWith, NUM_CHARACTER_TYPES, true, false);
+        ResizeAndInitializeEmpty(ref m_typesDamageMultiplier, NUM_CHARACTER_TYPES, 1, m_friendlyFireByDefault ? 1 : 0);
 
         for (int i = 0; i < NUM_CHARACTER_TYPES; ++i)
         {
             m_instantiatedCharacters[i] = new List<GfgStatsCharacter>(4);
-            Array.Resize<bool>(ref m_typesEnemiesWith[i].array, NUM_CHARACTER_TYPES);
-            Array.Resize<float>(ref m_typesDamageMultiplier[i].array, NUM_CHARACTER_TYPES);
-        }
-
-        for (int i = 0; i < NUM_CHARACTER_TYPES; ++i)
-        {
             m_characterPositions[i] = new();
         }
 
@@ -217,15 +230,13 @@ public class GfgManagerCharacters : MonoBehaviour
             typeList.Add(character);
             Instance.m_allCharacters.Add(character);
 
-            OnCharacterAdded?.Invoke(character);
+            Instance.OnCharacterAdded?.Invoke(character);
         }
     }
 
     protected void OnDestroy()
     {
-        DestroyAllCharacters(true);
-        Instance = null;
-        for (int i = 0; i < NUM_CHARACTER_TYPES; ++i)
+        for (int i = 0; i < m_characterPositions.Length; ++i)
         {
             if (m_characterPositions[i].IsCreated)
                 m_characterPositions[i].Dispose();
@@ -233,15 +244,17 @@ public class GfgManagerCharacters : MonoBehaviour
 
         if (m_allCharactersPositions.IsCreated)
             m_allCharactersPositions.Dispose();
+
+        Instance = null;
     }
 
     public static void RemoveCharacter(GfgStatsCharacter character)
     {
         int characterIndex = character.GetCharacterIndex(CharacterIndexType.CHARACTERS_TYPE_LIST);
 
-        if (0 <= characterIndex) //make sure it is in the list
+        if (0 <= characterIndex && Instance) //make sure it is in the list
         {
-            OnCharacterRemoved?.Invoke(character);
+            Instance.OnCharacterRemoved?.Invoke(character);
 
             List<GfgStatsCharacter> typeList = Instance.m_instantiatedCharacters[(int)character.GetCharacterType()];
             List<GfgStatsCharacter> allCharacters = Instance.m_allCharacters;

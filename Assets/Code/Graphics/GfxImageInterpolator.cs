@@ -16,9 +16,10 @@ public class GfxImageInterpolator : MonoBehaviour
 
     public bool IgnoreTimeScale = false;
 
-    private void Awake()
+    private void Start()
     {
         m_secondaryImage = Instantiate(MainImage.gameObject, MainImage.transform.parent, false).GetComponent<Image>();
+        SetSprite(null, true);
     }
 
     public void SnapToDesiredState()
@@ -40,13 +41,20 @@ public class GfxImageInterpolator : MonoBehaviour
             m_secondaryImage.sprite = MainImage.sprite;
             MainImage.sprite = aSprite;
 
-            m_secondaryImage.SetAlpha(m_secondaryImage.sprite ? 1 : 0);
+            if (m_secondaryImage.sprite != null)
+            {
+                m_secondaryImage.SetAlpha(m_secondaryImage.sprite ? 1 : 0);
+                m_secondaryImage.CrossFadeAlphaGf(0, FadeTime, IgnoreTimeScale, AnimationCurve);
+            }
+            else
+            {
+                m_secondaryImage.SetAlpha(0);
+            }
+
             MainImage.SetAlpha(0);
 
-            if (MainImage.sprite)
+            if (MainImage.sprite != null)
                 MainImage.CrossFadeAlphaGf(1, FadeTime, IgnoreTimeScale, AnimationCurve);
-
-            m_secondaryImage.CrossFadeAlphaGf(0, FadeTime, IgnoreTimeScale, AnimationCurve);
         }
     }
 }

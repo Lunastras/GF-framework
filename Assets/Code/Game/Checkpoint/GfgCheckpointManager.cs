@@ -10,7 +10,7 @@ public class GfgCheckpointManager : MonoBehaviour
 {
     public static GfgCheckpointManager Instance = null;
 
-    [SerializeField] private bool m_canTriggerHardCheckpoints = false;
+    [SerializeField] private bool m_canTriggerHardCheckpoints = true;
 
     [SerializeField] private GfMovementGeneric m_movementGeneric = null;
 
@@ -37,15 +37,11 @@ public class GfgCheckpointManager : MonoBehaviour
 
     private void Awake()
     {
-        if (m_canTriggerHardCheckpoints)
-        {
-            Instance = this;
-        }
 
-        if (Instance != this && !GfcManagerGame.IsMultiplayer && m_canTriggerHardCheckpoints)
-        {
+        if (Instance != this)
             Destroy(Instance);
-        }
+
+        Instance = this;
 
         if (null == m_movementGeneric) m_movementGeneric = GetComponent<GfMovementGeneric>();
         if (null == m_statsCharacter) m_statsCharacter = GetComponent<GfgStatsCharacter>();
@@ -88,7 +84,7 @@ public class GfgCheckpointManager : MonoBehaviour
         if (checkpoint != m_currentHardCheckpoint && m_canTriggerHardCheckpoints)//hard checkpoint
         {
             m_currentHardCheckpoint = checkpoint;
-            if (null != OnHardCheckpoint && !GfcManagerGame.IsMultiplayer)
+            if (null != OnHardCheckpoint && !GfgManagerGame.IsMultiplayer)
             {
                 m_checkpointStates.Clear();
                 OnHardCheckpoint();
@@ -148,8 +144,8 @@ public class GfgCheckpointManager : MonoBehaviour
 
         if (m_canTriggerHardCheckpoints)
         {
-            GfgCameraController.LookFowardInstance();
-            GfgCameraController.SnapToTargetInstance();
+            GfgCameraController.Instance.RevertToDefault();
+            GfgCameraController.Instance.SnapToTarget();
         }
 
         m_isSoftReseting = false;
@@ -168,7 +164,7 @@ public class GfgCheckpointManager : MonoBehaviour
 
     public void ResetToHardCheckpoint()
     {
-        if (m_canTriggerHardCheckpoints && !GfcManagerGame.IsMultiplayer)
+        if (m_canTriggerHardCheckpoints && !GfgManagerGame.IsMultiplayer)
         {
             GfgManagerLevel.OnCheckpointReset(this, true);
 
@@ -183,14 +179,15 @@ public class GfgCheckpointManager : MonoBehaviour
             }
 
             GfgManagerCharacters.DestroyAllCharacters(false);
+
             //do not reset checkpoint states if we are playing multiplayer
-            if (!GfcManagerGame.IsMultiplayer)
+            if (!GfgManagerGame.IsMultiplayer)
             {
                 //start coroutine to execute checkpoint states in the next turn
                 Timing.RunCoroutine(_ExecuteCheckpointsInNextFrame());
             }
         }
-        else if (GfcManagerGame.IsMultiplayer)
+        else if (GfgManagerGame.IsMultiplayer)
         {
             ResetToSoftCheckpoint();
         }

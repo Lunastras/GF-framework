@@ -4,9 +4,10 @@ using UnityEngine;
 
 public enum StoryCharacter
 {
-    NONE,
+    NONE = -1,
     PROTAG,
     GF,
     DUNNO,
     TEST,
+    COUNT,
 }

@@ -25,7 +25,7 @@ public class GfRunnerRbGravity : GfRunnerTemplate
     public override void BeforePhysChecks(float deltaTime)
     {
         m_touchedParent = false;
-        Vector3 upVec = m_mov.GetUpVecRaw();
+        Vector3 upVec = m_movement.GetUpVecRaw();
         GfcTools.Mult(ref upVec, m_mass * deltaTime * -1f);
         m_rigidBody.AddForce(upVec, ForceMode.VelocityChange);
 
@@ -41,17 +41,17 @@ public class GfRunnerRbGravity : GfRunnerTemplate
 
     public override void AfterPhysChecks(float deltaTime)
     {
-        if (!m_touchedParent && null != m_mov.GetParentTransform())
-            m_mov.DetachFromParentTransform();
+        if (!m_touchedParent && null != m_movement.GetParentTransform())
+            m_movement.DetachFromParentTransform();
     }
 
     public override void MgOnCollision(ref MgCollisionStruct collision)
     {
         Transform collisionTrans = collision.collider.transform;
 
-        if (collision.isGrounded && collisionTrans != m_mov.GetParentTransform())
-            m_mov.SetParentTransform(collisionTrans);
+        if (collision.isGrounded && collisionTrans != m_movement.GetParentTransform())
+            m_movement.SetParentTransform(collisionTrans);
 
-        m_touchedParent |= collision.isGrounded && m_mov.GetParentTransform() == collisionTrans;
+        m_touchedParent |= collision.isGrounded && m_movement.GetParentTransform() == collisionTrans;
     }
 }

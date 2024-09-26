@@ -1,7 +1,7 @@
 public enum CharacterTypes
 {
+    ENEMY,
     PLAYER,
     FRIENDLY_NPC,
-    ENEMY,
     NUM_CHARACTER_TYPES
 }

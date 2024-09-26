@@ -36,9 +36,6 @@ public class NpcController : MonoBehaviour
     private float m_targetTrackingTimeWindow = 5.0f;
 
     [SerializeField]
-    private bool m_updatePhysicsValuesAutomatically = false;
-
-    [SerializeField]
     private GfgPathfinding m_pathFindingManager;
 
     private float m_timeUntilUnpause;
@@ -179,7 +176,7 @@ public class NpcController : MonoBehaviour
                 NoDestinationsBehaviour(deltaTime);
             }
 
-            m_movement.UpdatePhysics(deltaTime, timeUntilNextUpdate, false, m_updatePhysicsValuesAutomatically);
+            m_movement.UpdatePhysics(deltaTime, timeUntilNextUpdate, false);
             AfterStateUpdate(deltaTime);
         }
     }
@@ -286,12 +283,12 @@ public class NpcController : MonoBehaviour
     protected virtual void EngageEnemyBehaviour(float deltaTime, Vector3 dirToTarget)
     {
 
-        m_movement.GetRunnerTemplate().SetMovementDir(dirToTarget.normalized);
+        m_movement.GetRunner().SetMovementDir(dirToTarget.normalized);
     }
 
     protected virtual void LowLifeBehaviour(float deltaTime, Vector3 dirToTarget)
     {
-        m_movement.GetRunnerTemplate().SetMovementDir(-dirToTarget.normalized);
+        m_movement.GetRunner().SetMovementDir(-dirToTarget.normalized);
     }
 
     protected Vector3 GetPathDirection(Vector3 dirToTarget)
@@ -328,25 +325,25 @@ public class NpcController : MonoBehaviour
     protected virtual void CalculatePathDirection(float deltaTime, Vector3 dirToTarget)
     {
         Debug.Log("finding the target");
-        m_movement.GetRunnerTemplate().SetMovementDir(GetPathDirection(dirToTarget));
+        m_movement.GetRunner().SetMovementDir(GetPathDirection(dirToTarget));
     }
 
     protected virtual void ArrivedAtDestinationBehaviour(float deltaTime)
     {
         m_destination.RemoveDestination();
-        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
+        m_movement.GetRunner().SetMovementDir(Vector3.zero);
     }
 
     protected virtual void LostTargetBehaviour(float deltaTime)
     {
-        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
+        m_movement.GetRunner().SetMovementDir(Vector3.zero);
         m_destination.RemoveDestination();
     }
 
     protected virtual void DestinationDestroyedBehaviour(float deltaTime)
     {
         PauseMovement(1);
-        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
+        m_movement.GetRunner().SetMovementDir(Vector3.zero);
         m_destination.RemoveDestination();
     }
 
@@ -391,7 +388,7 @@ public class NpcController : MonoBehaviour
 
     public void PauseMovement(float durationInSeconds = float.MaxValue)
     {
-        m_movement.GetRunnerTemplate().SetMovementDir(Vector3.zero);
+        m_movement.GetRunner().SetMovementDir(Vector3.zero);
 
         /*
          * if a value is not given or is something like 0

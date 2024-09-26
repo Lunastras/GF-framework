@@ -29,7 +29,7 @@ public class GfrQuadFollowCamera : MonoBehaviour
 
     private void LateUpdate()
     {
-        Transform cameraTransform = GfcManagerGame.Camera.transform;
+        Transform cameraTransform = GfgCameraController.Instance.Camera.transform;
         if (cameraTransform)
         {
             Vector3 upVec = m_defaultUpvec;

@@ -17,10 +17,7 @@ public class GfxFpsTracker : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (null == textFps)
-        {
-            textFps = GetComponent<Text>();
-        }
+        this.GetComponentIfNull(ref textFps);
     }
 
     //Displays the average FPS between the refreshes

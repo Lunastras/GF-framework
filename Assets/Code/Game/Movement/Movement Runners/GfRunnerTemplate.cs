@@ -15,22 +15,19 @@ public abstract class GfRunnerTemplate : MonoBehaviour
     public Vector3 MovementDirRaw { get; protected set; }
 
     [HideInInspector]
-    public bool FlagJump = false;
-
-    [HideInInspector]
-    public bool FlagDash = false;
+    public uint MyRunnerFlags = 0;
 
     protected PriorityValue<float> m_speedMultiplier = new(1);
 
     protected PriorityValue<float> m_massMultiplier = new(1);
 
-    protected GfMovementGeneric m_mov;
+    protected GfMovementGeneric m_movement;
 
     protected Transform m_transform;
 
     protected void Awake()
     {
-        m_mov = GetComponent<GfMovementGeneric>();
+        m_movement = GetComponent<GfMovementGeneric>();
         m_transform = transform;
     }
 
@@ -67,5 +64,11 @@ public abstract class GfRunnerTemplate : MonoBehaviour
         return m_massMultiplier;
     }
 
-    public GfMovementGeneric GetMovementGeneric() { return m_mov; }
+    public GfMovementGeneric GetMovementGeneric() { return m_movement; }
+}
+
+public enum RunnerFlags
+{
+    JUMP
+    , DASH
 }

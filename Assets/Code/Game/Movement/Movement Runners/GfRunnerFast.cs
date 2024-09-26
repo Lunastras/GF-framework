@@ -44,7 +44,7 @@ public class GfRunnerFast : GfRunnerTemplate
     public override void BeforePhysChecks(float deltaTime)
     {
         m_touchedParent = m_jumpedThisFrame = false;
-        Vector3 movDir = m_mov.MovementDirComputed(MovementDirRaw, CanFly);
+        Vector3 movDir = m_movement.MovementDirComputed(MovementDirRaw, CanFly);
 
         CalculateEffectiveValues();
         CalculateVelocity(deltaTime, movDir);
@@ -54,16 +54,16 @@ public class GfRunnerFast : GfRunnerTemplate
 
     public override void AfterPhysChecks(float deltaTime)
     {
-        if (!m_touchedParent && null != m_mov.GetParentTransform())
+        if (!m_touchedParent && null != m_movement.GetParentTransform())
         {
-            m_mov.DetachFromParentTransform();
+            m_movement.DetachFromParentTransform();
             if (m_breakWhenUnparent) Debug.Break();
         }
     }
 
     protected void CalculateEffectiveValues()
     {
-        if (m_mov.GetIsGrounded() || CanFly)
+        if (m_movement.GetGrounded() || CanFly)
         {
             m_effectiveSmoothingTime = m_smoothingTime;
         }
@@ -80,17 +80,17 @@ public class GfRunnerFast : GfRunnerTemplate
         //ROTATION SECTION
         if (!movDir.Equals(Vector3.zero))
         {
-            Vector3 m_rotationUpVec = m_mov.GetUpvecRotation();
+            Vector3 m_rotationUpVec = m_movement.GetUpvecRotation();
             Vector3 desiredForwardVec = GfcTools.RemoveAxis(movDir, m_rotationUpVec);
-            m_mov.SetRotation(Quaternion.LookRotation(desiredForwardVec, m_rotationUpVec));
+            m_movement.SetRotation(Quaternion.LookRotation(desiredForwardVec, m_rotationUpVec));
         }
     }
 
     Vector3 m_velocitySmoothref;
     protected virtual void CalculateVelocity(float deltaTime, Vector3 movDir)
     {
-        Vector3 slope = m_mov.GetSlope();
-        Vector3 velocity = m_mov.GetVelocity();
+        Vector3 slope = m_movement.GetSlope();
+        Vector3 velocity = m_movement.GetVelocity();
 
         GfcTools.Mult(ref movDir, m_effectiveSpeed);
 
@@ -105,16 +105,15 @@ public class GfRunnerFast : GfRunnerTemplate
                             , ref m_velocitySmoothref
                             , m_effectiveSmoothingTime
                             , float.MaxValue
-                            , Time.deltaTime * m_mov.GetDeltaTimeCoef());
+                            , Time.deltaTime * m_movement.GetDeltaTimeCoef());
 
-        m_mov.SetVelocity(velocity);
+        m_movement.SetVelocity(velocity);
     }
 
     protected virtual void CalculateJump()
     {
-        if (FlagJump)
+        if (MyRunnerFlags.GetAndUnsetBit((int)RunnerFlags.JUMP))
         {
-            FlagJump = false;
             if (m_jumpFlagReleased || !m_requireJumpRelease)
             {
                 m_jumpFlagReleased = false;
@@ -138,14 +137,14 @@ public class GfRunnerFast : GfRunnerTemplate
         {
             m_currentJumpsCount++;
             //we use the rotation upVec because it feels more natural when the player's rotation is still changing
-            Vector3 m_velocity = m_mov.GetVelocity();
-            Vector3 upVecRotation = m_mov.GetUpvecRotation();
+            Vector3 m_velocity = m_movement.GetVelocity();
+            Vector3 upVecRotation = m_movement.GetUpvecRotation();
             GfcTools.RemoveAxis(ref m_velocity, upVecRotation);
             GfcTools.Add(ref m_velocity, upVecRotation * m_jumpForce);
-            m_mov.SetVelocity(m_velocity);
-            m_mov.SetIsGrounded(false);
+            m_movement.SetVelocity(m_velocity);
+            m_movement.SetIsGrounded(false);
 
-            m_mov.DetachFromParentTransform();
+            m_movement.DetachFromParentTransform();
         }
     }
 
@@ -154,9 +153,9 @@ public class GfRunnerFast : GfRunnerTemplate
         Transform collisionTrans = collision.collider.transform;
         if (collision.isGrounded) m_currentJumpsCount = 0;
 
-        if (collision.isGrounded && collisionTrans != m_mov.GetParentTransform())
-            m_mov.SetParentTransform(collisionTrans);
+        if (collision.isGrounded && collisionTrans != m_movement.GetParentTransform())
+            m_movement.SetParentTransform(collisionTrans);
 
-        m_touchedParent |= collision.isGrounded && m_mov.GetParentTransform() == collisionTrans;
+        m_touchedParent |= collision.isGrounded && m_movement.GetParentTransform() == collisionTrans;
     }
 }

@@ -9,6 +9,8 @@ public class GfMovementGenericRb : GfMovementGeneric
 
     protected bool m_isGroundedAux;
 
+    protected bool m_ignoreRunner = false;
+
     public override void Initialize()
     {
         if (!m_initialisedMovementGeneric)
@@ -24,15 +26,20 @@ public class GfMovementGenericRb : GfMovementGeneric
 
     public override void LateUpdateBehaviour(float deltaTime) { }
 
-    public override bool UpdatePhysics(float deltaTime, float timeUntilNextUpdate, bool ignorePhysics = false, bool validateCollisionArchetype = true)
+    public override bool UpdatePhysics(float deltaTime, float timeUntilNextUpdate, bool ignorePhysics = false, bool anIgnoreRunner = false)
     {
         double currentTime = Time.timeAsDouble;
         ApplyParentMovement(m_transform.position, deltaTime, currentTime);
         m_isGrounded = m_isGroundedAux;
         if (!m_isGrounded) m_slopeNormal = m_upVec;
         //because physics aren't actually checked here, we first call AfterPhysicsChecks because we did the calculations in the previous rigidbody cycle
-        m_runner.AfterPhysChecks(deltaTime);
-        m_runner.BeforePhysChecks(deltaTime);
+        if (!anIgnoreRunner)
+        {
+            m_runner.AfterPhysChecks(deltaTime);
+            m_runner.BeforePhysChecks(deltaTime);
+        }
+
+        m_ignoreRunner = anIgnoreRunner;
 
         UpdateSphericalOrientation(true, deltaTime);
 
@@ -43,7 +50,7 @@ public class GfMovementGenericRb : GfMovementGeneric
     protected override TransformDelta ApplyParentMovement(Vector3 position, float deltaTime, double currentTime)
     {
         TransformDelta parentMovement = GetParentMovement(position, deltaTime, currentTime);
-        m_rigidbody.MovePosition(m_transform.position + parentMovement.DeltaPosition);
+        m_rigidbody.MovePosition(m_transform.position + parentMovement.DeltaMovement);
 
         if (!parentMovement.DeltaRotation.Equals(IDENTITY_QUAT))
         {
@@ -93,6 +100,6 @@ public class GfMovementGenericRb : GfMovementGeneric
         if (m_isGroundedAux)
             m_slopeNormal = contactPoint.normal;
 
-        m_runner.MgOnCollision(ref collisionData);
+        if (!m_ignoreRunner) m_runner.MgOnCollision(ref collisionData);
     }
 }

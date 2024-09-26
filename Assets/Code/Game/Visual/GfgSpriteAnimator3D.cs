@@ -67,7 +67,7 @@ public class GfgSpriteAnimator3D : MonoBehaviour
 
     private void CalculateAnimationIndex()
     {
-        GfgCameraController cameraController = GfgCameraController.Instance;
+        GfgCameraController3D cameraController = GfgCameraController.Instance as GfgCameraController3D;
 
         if (cameraController)
         {
@@ -90,7 +90,6 @@ public class GfgSpriteAnimator3D : MonoBehaviour
 
             angleToCamera += degreesBetweenSteps / 2 + m_currentState.rotationOffsetDegrees;
             angleToCamera = angleToCamera % 360;
-
 
             m_currentViewIndex = (int)(angleToCamera / degreesBetweenSteps);
 

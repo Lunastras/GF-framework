@@ -8,8 +8,6 @@ public class GfxDialoguePanel : MonoBehaviour
 
     public GfxNotifyPanelGeneric PanelGeneric;
 
-    private bool m_firstMessageSinceFadeIn = false;
-
     void Start()
     {
         PanelGeneric.OnTextWriteCallback += OnTextWriteInternal;
@@ -17,10 +15,9 @@ public class GfxDialoguePanel : MonoBehaviour
         PanelGeneric.OnNotificationFadeInStart += OnNotificationFadeInStart;
     }
 
-    private void OnTextWriteInternal(GfxTextMessage aMessage, int aMessageIndex, bool aSkipping)
+    private void OnTextWriteInternal(GfxTextMessage aMessage, int aMessageIndex)
     {
-        Portrait.SetSprite(GfxCharacterPortraits.GetPortrait(aMessage.Character), m_firstMessageSinceFadeIn);
-        m_firstMessageSinceFadeIn = false;
+        Portrait.SetSprite(GfxCharacterPortraits.GetPortrait(aMessage.Character));
     }
 
     private void OnNotificationFadeOutEnd()
@@ -30,6 +27,6 @@ public class GfxDialoguePanel : MonoBehaviour
 
     public void OnNotificationFadeInStart()
     {
-        m_firstMessageSinceFadeIn = true;
+        Portrait.SetSprite(GfxCharacterPortraits.GetPortrait(PanelGeneric.GetTextMessage(0).Character), true);
     }
 }

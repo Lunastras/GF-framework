@@ -146,7 +146,7 @@ public class GfgManagerSaveData : MonoBehaviour
             for (aSaveIndex = 0; aSaveIndex < MAX_NUM_SAVE_FILES && SaveExists(aSaveIndex); aSaveIndex++) ; //find an unused slot
         }
 
-        PlayerSaveData saveData = Instance.m_playerSaveData;
+        PlayerSaveData saveData = GetActivePlayerSaveData();
         double currentTime = Time.unscaledTimeAsDouble;
         saveData.SecondsPlayed += currentTime - Instance.m_timeOfLastSave;
 
@@ -159,9 +159,9 @@ public class GfgManagerSaveData : MonoBehaviour
     public static GfcStringBuffer GetSaveDataFilePath(int aSaveIndex = 0)
     {
         GfcStringBuffer stringBuffer = GfcPooling.GfcStringBuffer;
-        stringBuffer.Concatenate(SAVE_DATA_PATH);
-        stringBuffer.Concatenate(SAVE_DATA_FILENAME);
-        return stringBuffer.Concatenate(aSaveIndex);
+        stringBuffer.Append(SAVE_DATA_PATH);
+        stringBuffer.Append(SAVE_DATA_FILENAME);
+        return stringBuffer.Append(aSaveIndex);
     }
 
     public static double GetCurrentUnixTime() { return (System.DateTime.UtcNow - UNIX_TIME_START).TotalSeconds; }

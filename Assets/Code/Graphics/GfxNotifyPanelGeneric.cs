@@ -3,8 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(GfxDoubleTextWriter))]
-public abstract class GfxNotifyPanelGeneric : MonoBehaviour
+public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
 {
     [SerializeField] protected GfxDoubleTextWriter m_mainTextWriter;
 
@@ -24,9 +23,9 @@ public abstract class GfxNotifyPanelGeneric : MonoBehaviour
 
     [SerializeField] protected float m_speedMultiplierFinish = 2;
 
-    [SerializeField] protected GfcInputTrackerShared m_submitTracker;
+    [SerializeField] protected GfcInputType m_inputSubmit;
 
-    [SerializeField] protected GfcInputType m_skipInput;
+    [SerializeField] protected GfcInputType m_inputSkip;
 
     [SerializeField] protected float m_messageWaitSecondsOnSkip = 0.2f;
 
@@ -34,69 +33,28 @@ public abstract class GfxNotifyPanelGeneric : MonoBehaviour
 
     [SerializeField] protected BoxTextTransitionMode m_transitionMixMode = BoxTextTransitionMode.MIX_NONE;
 
-    private int m_messageBufferIndex = 0;
-
-    protected GfcCoroutineHandle m_currentNotifyCoroutine = default;
-
-    protected List<GfxTextMessage> m_messagesBuffer = new(8);
-
-    public Action<GfxTextMessage, int, bool> OnTextWriteCallback;
-
-    public Action OnNotificationFadeInStart;
-
-    public Action OnNotificationFadeOutStart;
-
-    public Action OnNotificationFadeOutEnd;
-
-    public CoroutineHandle DrawMessages(string aMessage)
-    {
-        m_messagesBuffer.Add(new(aMessage));
-        return DrawMessages();
-    }
-
-    public CoroutineHandle DrawMessages(IEnumerable<string> someMessages)
-    {
-        foreach (string message in someMessages) m_messagesBuffer.Add(new(message, "Notify"));
-        return DrawMessages();
-    }
-
-    public CoroutineHandle DrawMessages(GfxTextMessage aMessage)
-    {
-        m_messagesBuffer.Add(aMessage);
-        return DrawMessages();
-    }
-
-    public CoroutineHandle DrawMessages(IEnumerable<GfxTextMessage> someMessages)
-    {
-        foreach (GfxTextMessage message in someMessages) m_messagesBuffer.Add(message);
-        return DrawMessages();
-    }
-
-    private CoroutineHandle DrawMessages()
-    {
-        if (m_messagesBuffer.Count > 0)
-            return m_currentNotifyCoroutine.RunCoroutineIfNotRunning(_DrawMessages());
-        else
-            return m_currentNotifyCoroutine;
-    }
-
-    public bool IsShowingMessages() { return m_currentNotifyCoroutine.CoroutineIsRunning; }
-
-    public CoroutineHandle GetCoroutineHandle() { return m_currentNotifyCoroutine; }
+    protected int m_lastWrittenMessageIndex = -1;
+    protected int m_messageBufferIndex = 0;
 
     protected abstract IEnumerator<float> _AnimateContinueGraphics();
 
-    protected abstract void TransitionBox(float aTimeFactor, bool aFadeIn, bool aHasName, bool aSkipping);
+    protected abstract void TransitionBox(float aTimeFactor, bool aFadeIn, bool aHasName);
 
-    protected abstract void OnTextWrite(GfxTextMessage aMessage, int aMessageIndex, bool aSkipping);
+    protected abstract void OnTextWrite(GfxTextMessage aMessage, int aMessageIndex);
 
-    private void OnTextWriteInternal(GfxTextMessage aMessage, int aMessageIndex, bool aSkipping)
+    void Awake()
     {
-        OnTextWrite(aMessage, aMessageIndex, aSkipping);
-        OnTextWriteCallback?.Invoke(aMessage, aMessageIndex, aSkipping);
+        Debug.Assert(m_mainTextWriter);
+        Debug.Assert(m_nameTextWriter);
     }
 
-    protected abstract void SubmitOnText(int aMessageIndex, bool aHasName, bool aSkipping);
+    private void OnTextWriteInternal(GfxTextMessage aMessage, int aMessageIndex)
+    {
+        OnTextWrite(aMessage, aMessageIndex);
+        OnTextWriteCallback?.Invoke(aMessage, aMessageIndex);
+    }
+
+    protected abstract void SubmitOnText(int aMessageIndex, bool aHasName);
 
     private bool m_waitingForOptionSelect = true;
 
@@ -117,13 +75,29 @@ public abstract class GfxNotifyPanelGeneric : MonoBehaviour
         return default;
     }
 
+    public override void ClearVisuals()
+    {
+        Debug.Assert(m_currentNotifyCoroutine.CoroutineIsRunning, "Clear cannot be called while the routine is still running");
+        TransitionBox(0, true, false);
+    }
+
     public virtual CoroutineHandle RemoveOptionButtons()
     {
         GfcPooling.DestroyChildren(m_optionsButtonsParent);
         return default;
     }
 
-    protected IEnumerator<float> _DrawMessages()
+    protected void WriteCurrentMessage(ref GfcAudioSource messageAudioSource)
+    {
+        messageAudioSource?.Stop();
+        messageAudioSource = m_messagesBuffer[m_messageBufferIndex].Sound?.PlaySingleInstance();
+        m_lastWrittenMessageIndex = m_messageBufferIndex;
+        OnTextWriteInternal(m_messagesBuffer[m_messageBufferIndex], m_messageBufferIndex);
+        m_nameTextWriter.WriteString(m_messagesBuffer[m_messageBufferIndex].Name, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
+        m_mainTextWriter.WriteString(m_messagesBuffer[m_messageBufferIndex].MainText, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
+    }
+
+    protected override IEnumerator<float> _DrawMessages()
     {
         if (m_messagesBuffer.Count == 0)
             yield break;
@@ -134,11 +108,13 @@ public abstract class GfxNotifyPanelGeneric : MonoBehaviour
         m_mainTextWriter.RemoveText();
 
         m_messageBufferIndex = 0;
-        int lastWrittenMessageIndex = -1;
-        bool skipTransition = false;
+        m_lastWrittenMessageIndex = -1;
         bool hasNameBox = false;
         float invTransitionTime = 1;
         GfxTextMessage currentMessage = default;
+
+        GfcInputTracker trackerSubmit = new(GfcInputType.SUBMIT);
+        GfcAudioSource messageAudioSource = null;
 
         for (int transitionIndex = 0; transitionIndex < 2; ++transitionIndex)
         {
@@ -146,64 +122,39 @@ public abstract class GfxNotifyPanelGeneric : MonoBehaviour
                 currentMessage = m_messagesBuffer[m_messageBufferIndex];
 
             transitionIndex %= 2;
-            float transitionProgress = 0;
 
             if (transitionIndex == FADE_IN)
             {
                 OnNotificationFadeInStart?.Invoke();
                 m_mainTextWriter.ForceWriteText();
                 hasNameBox = !m_messagesBuffer[m_messageBufferIndex].Name.IsEmpty();
-                hasNameBox = true;
                 float effectiveTransitionTime = hasNameBox ? m_transitionTime : m_transitionTimeNoName;
                 invTransitionTime = effectiveTransitionTime > 0.00001f ? 1.0f / effectiveTransitionTime : 999999999;
 
-                if (BoxTextTransitionMode.MIX_BEGIN <= m_transitionMixMode && m_transitionMixMode != BoxTextTransitionMode.MIX_END)
-                {
-                    lastWrittenMessageIndex = m_messageBufferIndex;
-                    OnTextWriteInternal(currentMessage, m_messageBufferIndex, GfcInput.GetAxisInput(m_skipInput));
-                    m_nameTextWriter.WriteString(m_messagesBuffer[m_messageBufferIndex].Name, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
-                    m_mainTextWriter.WriteString(m_messagesBuffer[m_messageBufferIndex].MainText, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
-                }
+                if (BoxTextTransitionMode.MIX_BEGIN == m_transitionMixMode || BoxTextTransitionMode.MIX_BOTH == m_transitionMixMode)
+                    WriteCurrentMessage(ref messageAudioSource);
             }
-            else
+            else //fading out
             {
                 m_nameTextWriter.EraseText();
                 OnNotificationFadeOutStart?.Invoke();
             }
 
-            bool skippedTransition = false;
-            float auxTransitionProgress;
-            const float EPSILON_ONE = 0.9999f;
-            while (transitionProgress < 1)
+            for (float progress = 0; progress < GfcTools.EPSILON; progress += Time.deltaTime * invTransitionTime)
             {
-                if (GfcInput.GetAxisInput(m_skipInput) || m_submitTracker.PressedSinceLastCheck() || skipTransition)
+                if (GfcInput.GetInput(m_inputSkip) || trackerSubmit.PressedSinceLastCheck())
                 {
-                    transitionProgress = 1;
-                    if (transitionIndex == FADE_IN && lastWrittenMessageIndex != m_messageBufferIndex)
-                    {
-                        skippedTransition = true;
-                        lastWrittenMessageIndex = m_messageBufferIndex;
-                        m_nameTextWriter.WriteString(m_messagesBuffer[m_messageBufferIndex].Name, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
-                        m_mainTextWriter.WriteString(m_messagesBuffer[m_messageBufferIndex].MainText, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
-                    }
-
                     m_mainTextWriter.ForceWriteText();
                     m_nameTextWriter.ForceWriteText();
-
-                    skipTransition = transitionIndex != FADE_IN;
+                    break;
                 }
 
-                auxTransitionProgress = transitionIndex == FADE_IN ? transitionProgress : 1.0f - transitionProgress;
-                TransitionBox(auxTransitionProgress, transitionIndex == FADE_IN, hasNameBox, skippedTransition);
-
-                if (transitionProgress < EPSILON_ONE)
-                    yield return Timing.WaitForOneFrame;
-
-                transitionProgress += Time.deltaTime * invTransitionTime;
+                TransitionBox(transitionIndex == FADE_IN ? progress : 1f - progress, transitionIndex == FADE_IN, hasNameBox);
+                yield return Timing.WaitForOneFrame;
             }
 
-            auxTransitionProgress = transitionIndex == FADE_IN ? transitionProgress : 1.0f - transitionProgress;
-            TransitionBox(auxTransitionProgress, transitionIndex == FADE_IN, hasNameBox, skippedTransition);
+            Time.timeScale = 1.0f;
+            TransitionBox(transitionIndex == FADE_IN ? 1 : 0, transitionIndex == FADE_IN, hasNameBox);
 
             if (transitionIndex == FADE_IN && m_messagesBuffer.Count > 0) //perform this only in the first transition
             {
@@ -213,27 +164,28 @@ public abstract class GfxNotifyPanelGeneric : MonoBehaviour
                 {
                     currentMessage = m_messagesBuffer[m_messageBufferIndex];
 
-                    if (m_messageBufferIndex != lastWrittenMessageIndex)
+                    if (m_messageBufferIndex != m_lastWrittenMessageIndex)
                     {
-                        OnTextWriteInternal(currentMessage, m_messageBufferIndex, GfcInput.GetAxisInput(m_skipInput));
-                        m_nameTextWriter.FinishTranslation();
+                        OnTextWriteInternal(currentMessage, m_messageBufferIndex);
+                        //m_nameTextWriter.FinishTranslation();
 
                         if (currentMessage.Name != previousStringName)
                             m_nameTextWriter.WriteString(currentMessage.Name, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
 
                         m_mainTextWriter.WriteString(currentMessage.MainText, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
+                        m_lastWrittenMessageIndex = m_messageBufferIndex;
                     }
 
-                    lastWrittenMessageIndex = m_messageBufferIndex;
-
                     if (m_mainTextWriter.WritingText())
-                        yield return Timing.WaitUntilDone(m_mainTextWriter.WaitUntilTextFinishes(m_submitTracker, m_skipInput, m_speedMultiplierFinish, m_forceWriteOnSubmit));
+                        yield return Timing.WaitUntilDone(m_mainTextWriter.WaitUntilTextFinishes(trackerSubmit, m_inputSkip, m_speedMultiplierFinish, m_forceWriteOnSubmit));
 
-                    bool skip = false;
+                    Debug.Log("Finished writing the text I assume");
 
-                    if (currentMessage.Options != null && currentMessage.Options.Count > 0)
+                    trackerSubmit.PressedSinceLastCheck(); //reset the submit in case it was pressed while waiting for the text
+
+                    if (!currentMessage.Options.IsEmpty())
                     {
-                        Debug.Assert(currentMessage.OptionCallback != null, "There are options in the message but the callback function is null.");
+                        Debug.Assert(currentMessage.OptionCallback != null, "There are options in the message, but the callback function is null.");
                         m_waitingForOptionSelect = true;
 
                         //draw options here
@@ -244,34 +196,38 @@ public abstract class GfxNotifyPanelGeneric : MonoBehaviour
 
                         yield return Timing.WaitUntilDone(RemoveOptionButtons(), false);
 
-                        m_submitTracker.PressedSinceLastCheck();
+                        trackerSubmit.PressedSinceLastCheck();
                     }
                     else
                     {
                         CoroutineHandle continueAnimationHandle = Timing.RunCoroutine(_AnimateContinueGraphics());
 
-                        skip = GfcInput.GetAxisInput(m_skipInput);
-                        if (skip)
+                        if (GfcInput.GetInput(m_inputSkip))
                             yield return Timing.WaitForSeconds(m_messageWaitSecondsOnSkip);
-                        else while (!m_submitTracker.PressedSinceLastCheck() && !GfcInput.GetAxisInput(m_skipInput))
+                        else while (!trackerSubmit.PressedSinceLastCheck() && !GfcInput.GetInput(m_inputSkip))
                                 yield return Timing.WaitForOneFrame;
 
                         if (continueAnimationHandle.IsValid) Timing.KillCoroutines(continueAnimationHandle);
                     }
 
-                    SubmitOnText(m_messageBufferIndex, hasNameBox, skip);
+                    SubmitOnText(m_messageBufferIndex, hasNameBox);
 
                     previousStringName = m_messagesBuffer[m_messageBufferIndex].Name;
-                }
+                } //for (; m_messageBufferIndex < m_messagesBuffer.Count; ++m_messageBufferIndex)
 
+                Debug.Log("Erasing text I assume");
                 m_mainTextWriter.EraseText(m_speedMultiplierTextErase);
             }
             else OnNotificationFadeOutEnd?.Invoke();
 
             if (transitionIndex == FADE_IN && BoxTextTransitionMode.MIX_END > m_transitionMixMode && m_mainTextWriter.WritingText())
-                yield return Timing.WaitUntilDone(m_mainTextWriter.WaitUntilTextFinishes(m_submitTracker, m_skipInput, m_speedMultiplierFinish, m_forceWriteOnSubmit));
+                yield return Timing.WaitUntilDone(m_mainTextWriter.WaitUntilTextFinishes(trackerSubmit, m_inputSkip, m_speedMultiplierFinish, m_forceWriteOnSubmit));
         }
 
+        //m_mainTextWriter.FinishTranslation();
+        //m_nameTextWriter.FinishTranslation();
+
+        messageAudioSource?.Stop();
         m_messageBufferIndex = 0;
         m_messagesBuffer.Clear();
         m_currentNotifyCoroutine.Finished();
@@ -311,30 +267,38 @@ public struct MessageOption
 
 public struct GfxTextMessage
 {
-    public GfxTextMessage(string aMainText = null, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE)
+    public GfxTextMessage(string aMainText = null, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
     {
         MainText = aMainText;
         Name = aName;
         OptionCallback = null;
         Options = null;
         Character = aCharacter;
+        Emotion = anEmotion;
+        Sound = null;
     }
 
-    public GfxTextMessage(string aMainText, List<MessageOption> someOptions, Action<GfxTextMessage, GfxNotifyPanelGeneric, int> aOptionCallback, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE)
+    public GfxTextMessage(string aMainText, List<MessageOption> someOptions, Action<GfxTextMessage, GfxNotifyPanelGeneric, int> aOptionCallback, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
     {
         Options = someOptions;
         OptionCallback = aOptionCallback;
         MainText = aMainText;
         Name = aName;
         Character = aCharacter;
+        Emotion = anEmotion;
+        Sound = null;
     }
 
-    public StoryCharacter Character;
-    public string MainText;
-    public string Name;
     public List<MessageOption> Options;
     public Action<GfxTextMessage, GfxNotifyPanelGeneric, int> OptionCallback;
 
+    public string MainText;
+    public string Name;
+
+    public StoryCharacter Character;
+    public CharacterEmotion Emotion;
+
+    public GfcSound Sound;
 }
 
 public enum BoxTextTransitionMode

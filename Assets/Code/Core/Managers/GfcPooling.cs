@@ -64,10 +64,15 @@ public class GfcPooling : MonoBehaviour
     {
         get
         {
-            Debug.Assert(Instance);
-            Debug.Assert(Instance.m_sharedGfStringBuffer.Length == 0, "The string buffer was not empty when retrieved, is it currently used somewhere else or did someone forget to clear it after using it? The text present is: " + Instance.m_sharedGfStringBuffer.StringBuffer);
-            Instance.m_sharedGfStringBuffer.Clear();
-            return Instance.m_sharedGfStringBuffer;
+            GfcStringBuffer buffer = null;
+
+            if (Instance)
+                if (Instance.m_sharedGfStringBuffer.Length == 0)
+                    buffer = Instance.m_sharedGfStringBuffer;
+                else
+                    Debug.LogWarning("The string buffer was not empty when retrieved, is it currently used somewhere else or did someone forget to clear it after using it? The text present is: " + Instance.m_sharedGfStringBuffer.StringBuffer);
+
+            return buffer ?? new();
         }
     }
 
@@ -285,7 +290,7 @@ public class GfcPooling : MonoBehaviour
         if (aObjectToDestroy)
         {
             bool activeState = false;
-            if (Instance.isActiveAndEnabled && Instance.m_pools.TryGetValue(aObjectToDestroy.name, out PoolStruct pool) && null != pool.list)
+            if (Instance && Instance.isActiveAndEnabled && Instance.m_pools.TryGetValue(aObjectToDestroy.name, out PoolStruct pool) && null != pool.list)
             {
                 var currentPool = pool.list;
                 bool alreadyInPool = aObjectToDestroy.transform.position.Equals(DESTROY_POSITION);
@@ -306,7 +311,10 @@ public class GfcPooling : MonoBehaviour
             aObjectToDestroy.SetActive(activeState);
             aObjectToDestroy.transform.SetParent(null);
 
-            if (destroyObject) GameObject.Destroy(aObjectToDestroy);
+            if (destroyObject)
+            {
+                GameObject.Destroy(aObjectToDestroy);
+            }
         }
     }
 

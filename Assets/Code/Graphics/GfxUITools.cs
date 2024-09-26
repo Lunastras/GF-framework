@@ -14,13 +14,9 @@ public class GfxUiTools : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI m_bottomNotificationText = null;
 
-    [SerializeField] private GfxNotifyPanelGeneric m_notifyPanel = null;
-
-    [SerializeField] private GfxNotifyPanelGeneric m_dialoguePanel = null;
+    [SerializeField] private GfxNotifyPanelTemplate m_notifyPanel = null;
 
     [SerializeField] private Image m_colourOverlay = null;
-
-    [SerializeField] private CanvasGroup m_colourOverlayCanvsGroup = null;
 
     [SerializeField] private CanvasGroup m_blackBarsCanvsGroup = null;
 
@@ -31,8 +27,6 @@ public class GfxUiTools : MonoBehaviour
     [SerializeField] private Sprite m_iconCharm;
 
     [SerializeField] private Sprite m_iconWeapon;
-
-    [SerializeField] private Color m_notificationColorDefault;
 
     [SerializeField] private Color m_notificationColorError;
 
@@ -61,18 +55,14 @@ public class GfxUiTools : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        if (Instance != this) Destroy(Instance);
-        Instance = this;
+        this.SetSingleton(ref Instance);
 
         PointerEventData = new PointerEventData(EventSystem.current);
-
-        if (m_colourOverlayCanvsGroup)
-            m_colourOverlayCanvsGroup.alpha = 1;
 
         if (m_colourOverlay)
         {
             m_colourOverlay.gameObject.SetActive(true);
-            m_colourOverlay.CrossFadeAlpha(0, 0, true);
+            m_colourOverlay.CrossFadeAlphaGf(0, 0, true);
         }
 
         if (m_blackBarsCanvsGroup)
@@ -84,9 +74,7 @@ public class GfxUiTools : MonoBehaviour
         Instance = null;
     }
 
-    public static GfxNotifyPanelGeneric GetNotifyPanel() { return Instance.m_notifyPanel; }
-
-    public static GfxNotifyPanelGeneric GetDialoguePanel() { return Instance.m_dialoguePanel; }
+    public static GfxNotifyPanelTemplate GetNotifyPanel() { return Instance.m_notifyPanel; }
 
     public static void SetBlackBars(bool turnOn, float delay = 0, bool constantOpacity = false, bool constantAnchors = false, bool ignoreTimeScale = false)
     {
@@ -122,22 +110,15 @@ public class GfxUiTools : MonoBehaviour
         return GetUIObjectUnderMouse(Input.mousePosition);
     }
 
-    public static void CrossFadeBlackAlpha(float alpha, float durationSeconds, bool ignoreTimeScale = false)
+    public static CoroutineHandle FadeOverlayAlpha(float alpha, float durationSeconds, bool ignoreTimeScale = false)
+    {
+        return FadeOverlayAlpha(alpha, durationSeconds, ignoreTimeScale, Instance.m_defaultAnimationCurve);
+    }
+
+    public static CoroutineHandle FadeOverlayAlpha(float alpha, float durationSeconds, bool ignoreTimeScale, AnimationCurve anAnimationCurve)
     {
         Instance.m_colourOverlay.raycastTarget = alpha > 0.01f;
-        Instance.m_colourOverlay.CrossFadeAlpha(alpha, durationSeconds, ignoreTimeScale);
-    }
-
-    public static void CrossFadeColor(Color color, float durationSeconds, bool ignoreTimeScale = false, bool useAlpha = true, bool useRgb = true)
-    {
-        Instance.m_colourOverlay.raycastTarget = color.a > 0.01f;
-        Instance.m_colourOverlay.CrossFadeColor(color, durationSeconds, ignoreTimeScale, useAlpha, useRgb);
-    }
-
-    public static void SetOverlayColor(Color color)
-    {
-        Instance.m_colourOverlay.raycastTarget = color.a > 0.01f;
-        Instance.m_colourOverlay.color = color;
+        return Instance.m_colourOverlay.CrossFadeAlphaGf(alpha, durationSeconds, ignoreTimeScale, anAnimationCurve);
     }
 
     public static void SetOverlayAlpha(float alpha)
@@ -224,6 +205,9 @@ public class GfxUiTools : MonoBehaviour
 
     public static CoroutineHandle SetSelectedGameObject(GameObject aGameObject)
     {
+        Debug.Assert(Instance, "bruh cum e null asta???");
+        Debug.Assert(Instance.m_objectsToDeselect != null, "COAIE E STRICAT UNITY");
+
         if (Instance.m_objectsToDeselect.Contains(aGameObject))
             Instance.m_objectsToDeselect.Remove(aGameObject);
 
@@ -409,7 +393,7 @@ public class GfxUiTools : MonoBehaviour
     public static CoroutineHandle CrossFadeAlpha(CanvasGroup aGroup, float aTargetAlpha, float aDurationSeconds, bool anIgnoreTimeScale = false, AnimationCurve anAnimationCurve = null)
     {
         if (aTargetAlpha != aGroup.alpha)
-            return Timing.RunCoroutine(_CrossFadeAlphaGroup(aGroup, aTargetAlpha, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve != null ? anAnimationCurve : Instance.m_defaultAnimationCurve));
+            return Timing.RunCoroutine(_CrossFadeAlphaGroup(aGroup, aTargetAlpha, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve ?? Instance.m_defaultAnimationCurve));
         else
             return default;
     }
@@ -425,7 +409,8 @@ public class GfxUiTools : MonoBehaviour
 
             while (progress < 1 && aGroup && aGroup.alpha == lastAlpha) //stop coroutine if alpha is modified by somebody else or if the image was deleted in the meantime
             {
-                aGroup.alpha = aGroup.alpha.Lerp(aTargetAlpha, anAnimationCurve == null ? progress : anAnimationCurve.Evaluate(progress));
+
+                aGroup.alpha = anInitialAlpha.Lerp(aTargetAlpha, anAnimationCurve == null ? progress : anAnimationCurve.Evaluate(progress));
                 lastAlpha = aGroup.alpha;
 
                 yield return Timing.WaitForOneFrame;
@@ -462,10 +447,12 @@ public class GfxUiTools : MonoBehaviour
         if (aDurationSeconds > 0)
         {
             float invDuration = 1.0f / aDurationSeconds;
+            float lerpFactor;
 
             while (progress < 1 && aGraphic && aGraphic.color == lastColor) //stop coroutine if alpha is modified by somebody else or if the image was deleted in the meantime
             {
-                aGraphic.color = anInitialColor.Lerp(aTargetColor, anAnimationCurve == null ? progress : anAnimationCurve.Evaluate(progress));
+                lerpFactor = anAnimationCurve == null ? progress : anAnimationCurve.Evaluate(progress);
+                aGraphic.color = anInitialColor.Lerp(aTargetColor, lerpFactor);
                 lastColor = aGraphic.color;
 
                 yield return Timing.WaitForOneFrame;

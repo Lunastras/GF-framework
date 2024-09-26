@@ -1,7 +1,7 @@
 
 public class CheckpointGameManager : CheckpointState
 {
-    public GameState CurrentState = 0;
+    public LevelState CurrentState = 0;
 
     public float SecondsSinceStart = 0;
 

@@ -11,15 +11,15 @@ public class GfTriggerMovSimpleModifier : GfTriggerMovGenericModifier
 
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
-        if (!m_onlyForPlayer || GfgManagerLevel.GetPlayer() == movement.transform)
+        if (!m_onlyForPlayer || GfgManagerLevel.Player.transform == movement.transform)
         {
             if (!m_massMultiplier.m_ignore)
-                movement.GetRunnerTemplate().SetMassMultiplier(m_massMultiplier, m_massMultiplier.m_priority, m_massMultiplier.m_overridePriority);
+                movement.GetRunner().SetMassMultiplier(m_massMultiplier, m_massMultiplier.m_priority, m_massMultiplier.m_overridePriority);
 
             if (!m_speedMultiplier.m_ignore)
-                movement.GetRunnerTemplate().SetSpeedMultiplier(m_speedMultiplier, m_speedMultiplier.m_priority, m_speedMultiplier.m_overridePriority);
+                movement.GetRunner().SetSpeedMultiplier(m_speedMultiplier, m_speedMultiplier.m_priority, m_speedMultiplier.m_overridePriority);
 
-            GfRunnerSimple simpleMovement = movement.GetRunnerTemplate() as GfRunnerSimple;
+            GfRunnerSimple simpleMovement = movement.GetRunner() as GfRunnerSimple;
             if (simpleMovement)
             {
                 if (!m_accelerationMultiplier.m_ignore)

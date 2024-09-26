@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 3311508591164743175}
   - component: {fileID: 4789195102426491770}
   - component: {fileID: 8347589423423134602}
-  - component: {fileID: 6900141592169219654}
   - component: {fileID: 7096779206322050527}
+  - component: {fileID: 5116152137301567932}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -33,7 +33,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 27.63, y: -19.27, z: 0}
 --- !u!81 &4789195102426491770
 AudioListener:
@@ -77,8 +77,8 @@ Camera:
   near clip plane: 0.1
   far clip plane: 1000
   field of view: 90
-  orthographic: 0
-  orthographic size: 5
+  orthographic: 1
+  orthographic size: 8
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -94,34 +94,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!114 &6900141592169219654
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7210558516081084339}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62b84bf63db85d041923bbe7d9522058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_mainTarget: {fileID: 0}
-  m_sensitivity: 0.7
-  m_targetFov: 90
-  m_positionOffset: {x: 0, y: 2, z: 0}
-  m_physCheckInterval: 0.02
-  m_dstFromtarget: 7
-  m_collisionRadius: 1.3
-  m_minDstFromtarget: 0
-  m_pitchMin: -89.9
-  m_pitchMax: 89.9
-  m_rotationSmoothTime: 0
-  m_movementSmoothTime: 0.095
-  m_distanceSmoothTime: 1
-  m_minimumDistanceSmoothTime: 0.05
-  m_invertedY: 1
-  Upvec: {x: 0, y: 1, z: 0}
 --- !u!114 &7096779206322050527
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -166,3 +138,20 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
+--- !u!114 &5116152137301567932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7210558516081084339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0707608de0f64d64caa1d9c37259f55a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_target: {fileID: 0}
+  m_sensitivity: 1
+  m_targetFov: 90
+  m_targetOffset: {x: 0, y: 3}
+  m_movementSmoothTime: 0.05

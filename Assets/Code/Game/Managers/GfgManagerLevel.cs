@@ -19,14 +19,11 @@ public class GfgManagerLevel : MonoBehaviour
 {
     public static GfgManagerLevel Instance { get; protected set; } = null;
 
-    protected Transform m_player = null;
+    protected GfgStatsCharacter m_player = null;
 
-    [SerializeField] protected GameMultiplayerType m_autoStartGameType = GameMultiplayerType.SINGLEPLAYER;
+    [SerializeField] protected GfcGameMultiplayerType m_autoStartGameType = GfcGameMultiplayerType.SINGLEPLAYER;
 
     [SerializeField] protected int m_missionIndex = 1;
-
-    //[SerializeField]
-    //protected Image m_loadFadeImage = null;
 
     [SerializeField]
     protected GameObject m_pauseScreen = null;
@@ -46,7 +43,6 @@ public class GfgManagerLevel : MonoBehaviour
     [SerializeField]
     protected GfgPathfinding[] m_pathfindingSystems = null;
 
-
     protected bool m_isPaused = false;
 
     public bool CanPause = true;
@@ -61,7 +57,7 @@ public class GfgManagerLevel : MonoBehaviour
 
     protected LevelData m_levelData = default;
 
-    [System.Serializable]
+    [Serializable]
     protected struct LevelData
     {
         public GfgPathfinding.NodePathSaveData[] paths;
@@ -106,11 +102,13 @@ public class GfgManagerLevel : MonoBehaviour
 
     protected CheckpointGameManager m_checkpointState = null;
 
-    protected GameState m_currentGameState = GameState.LEVEL_IDLE;
+    protected LevelState m_currentGameState = LevelState.LEVEL_IDLE;
 
     public static Action OnLevelStart;
 
     public static Action OnLevelEnd;
+
+    public static Action OnLevelEndSubmit;
 
     const float DEFAULT_SMOOTHTIME_ENV = 1;
 
@@ -124,9 +122,15 @@ public class GfgManagerLevel : MonoBehaviour
 
     protected float m_envSmoothingRef = 0;
 
-    protected void OnEnable()
+    protected bool m_isShowingDeathScreen = false;
+
+    // Start is called before the first frame update
+    protected void Awake()
     {
-        GfcManagerGame.ValidateGameManager();
+        if (Instance != this) Destroy(Instance);
+        Instance = this;
+
+        GfgManagerGame.InitializeGfBase();
 
         for (int i = 0; i < m_requiredSceneNames.Length; ++i)
         {
@@ -136,19 +140,9 @@ public class GfgManagerLevel : MonoBehaviour
                 SceneManager.LoadScene(sceneBuildIndex, LoadSceneMode.Additive);
             }
         }
-    }
 
-    // Start is called before the first frame update
-    protected void Awake()
-    {
-        if (Instance != this) Destroy(Instance);
-        Instance = this;
-
-        Instance = this;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-
-        GfgManagerCharacters.OnCharacterRemoved += OnCharacterKilled;
 
         m_levelDataPath = Application.persistentDataPath + "/" + gameObject.scene.name + ".dat";
 
@@ -192,7 +186,7 @@ public class GfgManagerLevel : MonoBehaviour
 
         if (!GfgManagerSceneLoader.CurrentlyLoading)
         {
-            GfcManagerGame.StartGame(m_autoStartGameType);
+            GfgManagerGame.StartGame(m_autoStartGameType);
         }
 
         if (null != m_calmMusic && null != m_calmMusic.Clip)
@@ -207,19 +201,26 @@ public class GfgManagerLevel : MonoBehaviour
             m_actionMusic.SetMixerVolume(m_currentActionVolume);
         }
 
+        GfgManagerCharacters.Instance.OnCharacterRemoved += OnCharacterKilled;
         GfgCheckpointManager.OnHardCheckpoint += OnHardCheckpoint;
         m_deathScreenMusic.LoadAudioClip();
         StartLevel();
     }
 
-    protected void OnDestroy()
+    protected void OnDisable()
     {
-        GfgManagerCharacters.OnCharacterRemoved -= OnCharacterKilled;
-        GfgCheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;
         m_actionMusic.SetMixerPitch(1);
         m_calmMusic.SetMixerPitch(1);
         m_actionMusic.SetMixerVolume(0);
         m_calmMusic.SetMixerVolume(1);
+    }
+
+    protected void OnDestroy()
+    {
+        if (GfgManagerCharacters.Instance)
+            GfgManagerCharacters.Instance.OnCharacterRemoved -= OnCharacterKilled;
+
+        GfgCheckpointManager.OnHardCheckpoint -= OnHardCheckpoint;
     }
 
     protected void FixedUpdate()
@@ -271,18 +272,23 @@ public class GfgManagerLevel : MonoBehaviour
 
         switch (m_currentGameState)
         {
-            case (GameState.LEVEL_IDLE):
+            case LevelState.LEVEL_IDLE:
                 break;
 
-            case (GameState.LEVEL_STARTED):
+            case LevelState.LEVEL_STARTED:
                 m_secondsSinceStart += Time.deltaTime;
                 break;
 
-            case (GameState.LEVEL_ENDED):
-                if (Input.GetKeyDown(KeyCode.Space) && (NetworkManager.Singleton.IsHost
-                || NetworkManager.Singleton.IsServer))
+            case LevelState.LEVEL_ENDED:
+
+                if (GfcInput.GetInput(GfcInputType.SUBMIT)
+                && (!NetworkManager.Singleton || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
                 {
-                    GfcManagerServer.LoadScene(GfgManagerLevel.GetNextMap(), ServerLoadingMode.KEEP_SERVER);
+                    OnLevelEndSubmit?.Invoke();
+
+                    string nextMap = GetNextMap();
+                    if (nextMap.IsEmpty())
+                        GfcManagerServer.LoadScene(nextMap, ServerLoadingMode.KEEP_SERVER);
                 }
                 break;
         }
@@ -308,7 +314,31 @@ public class GfgManagerLevel : MonoBehaviour
             RenderSettings.ambientGroundColor = ground;
             RenderSettings.ambientEquatorColor = equator;
         }
+
+        if (m_isShowingDeathScreen && Input.GetKeyDown(KeyCode.Space))
+        {
+            m_isShowingDeathScreen = false;
+            GfgHudManager.ToggleDeathScreen(false);
+            GfgCheckpointManager.Instance.ResetToHardCheckpoint();
+            GfgCameraController.Instance.SnapToTarget();
+            SetLevelMusicPitch(1, 0.2f);
+            m_deathMusicSource?.GetAudioSource()?.Stop();
+        }
     }
+
+    protected virtual void PlayerDiedInternal()
+    {
+        GfgHudManager.ToggleDeathScreen(true);
+        m_isShowingDeathScreen = true;
+        SetLevelMusicPitch(0, 2);
+        m_deathMusicSource = m_deathScreenMusic.Play();
+        m_deathScreenMusic.SetMixerVolume(0);
+        m_deathMusicVolumeSmoothRef = 0;
+        m_desiredDeathMusicVolume = 1;
+        m_currentDeathMusicVolume = 0;
+    }
+
+    public static void PlayerDied() { Instance.PlayerDiedInternal(); }
 
     public static float GetSecondsSinceStart()
     {
@@ -325,16 +355,16 @@ public class GfgManagerLevel : MonoBehaviour
         return Instance.m_resetsCount;
     }
 
-    public static GameState GetCurrentGameState()
+    public static LevelState GetCurrentGameState()
     {
         return Instance.m_currentGameState;
     }
 
     public static void StartLevel()
     {
-        if (Instance.m_currentGameState == GameState.LEVEL_IDLE)
+        if (Instance.m_currentGameState == LevelState.LEVEL_IDLE)
         {
-            Instance.m_currentGameState = GameState.LEVEL_STARTED;
+            Instance.m_currentGameState = LevelState.LEVEL_STARTED;
             OnLevelStart?.Invoke();
         }
     }
@@ -343,9 +373,9 @@ public class GfgManagerLevel : MonoBehaviour
 
     protected virtual void EndLevelInternal()
     {
-        if (Instance.m_currentGameState != GameState.LEVEL_ENDED)
+        if (Instance.m_currentGameState != LevelState.LEVEL_ENDED)
         {
-            Instance.m_currentGameState = GameState.LEVEL_ENDED;
+            Instance.m_currentGameState = LevelState.LEVEL_ENDED;
 
             Instance.CanPause = false;
             if (Instance.m_isPaused)
@@ -361,7 +391,7 @@ public class GfgManagerLevel : MonoBehaviour
             return;
 
         Instance.m_isPaused = !Instance.m_isPaused;
-        Time.timeScale = Instance.m_isPaused && !GfcManagerGame.IsMultiplayer ? 0 : 1;
+        Time.timeScale = Instance.m_isPaused && !GfgManagerGame.IsMultiplayer ? 0 : 1;
         Instance.m_pauseScreen.SetActive(Instance.m_isPaused);
         Cursor.visible = Instance.m_isPaused;
         Cursor.lockState = Instance.m_isPaused ? CursorLockMode.None : CursorLockMode.Locked;
@@ -369,15 +399,28 @@ public class GfgManagerLevel : MonoBehaviour
 
     public static bool IsPaused()
     {
-        return Instance.m_isPaused;
+        return Instance ? Instance.m_isPaused : false;
     }
 
-    public static float OnCheckpointReset(GfgCheckpointManager GfgCheckpointManager, bool hardCheckpoint)
+    public static float OnCheckpointReset(GfgCheckpointManager aCheckpointManager, bool anIsHardCheckpoint)
     {
-        return Instance.OnCheckpointResetInternal(GfgCheckpointManager, hardCheckpoint);
+        return Instance.OnCheckpointResetInternal(aCheckpointManager, anIsHardCheckpoint);
     }
 
-    protected virtual float OnCheckpointResetInternal(GfgCheckpointManager GfgCheckpointManager, bool hardCheckpoint) { return 0; }
+    protected virtual float OnCheckpointResetInternal(GfgCheckpointManager aCheckpointManager, bool anIsHardCheckpoint)
+    {
+        float delay = 0;
+
+        if (anIsHardCheckpoint)
+        {
+            GfgHudManager.ResetHardCheckpointVisuals();
+            //GameParticles.ClearParticles();
+        }
+        else
+            delay = GfgHudManager.ResetSoftCheckpointVisuals();
+
+        return delay;
+    }
 
     public static void OnCheckpointSet(GfgCheckpointManager GfgCheckpointManager, bool hardCheckpoint)
     {
@@ -388,12 +431,12 @@ public class GfgManagerLevel : MonoBehaviour
 
     public void QuitToMenu()
     {
-        GfcManagerGame.QuitToMenu();
+        GfgManagerGame.QuitToMenu();
     }
 
     public void QuitGame()
     {
-        GfcManagerGame.QuitToMenu();
+        GfgManagerGame.QuitToMenu();
     }
 
     public static void CheckpointStatesExecuted(GfgCheckpointManager GfgCheckpointManager)
@@ -412,16 +455,13 @@ public class GfgManagerLevel : MonoBehaviour
         if (enemyCount == 0) GfgManagerLevel.StartCalmMusic();
     }
 
-    public static Transform GetPlayer()
-    {
-        return Instance.m_player;
-    }
+    public static GfgStatsCharacter Player { get { return Instance.m_player; } set { Instance.m_player = value; } }
 
     public static Vector3 GetPlayerPositionOnScreen()
     {
         try
         {
-            return GfcManagerGame.Camera.WorldToScreenPoint(Instance.m_player.position);
+            return GfgCameraController.Instance.Camera.WorldToScreenPoint(Instance.m_player.transform.position);
         }
         catch (Exception) //bad practice, but it's better than 4 if checks
         {
@@ -431,7 +471,7 @@ public class GfgManagerLevel : MonoBehaviour
 
     public void OnCharacterKilled(GfgStatsCharacter character)
     {
-        if (character.GetCharacterType() == CharacterTypes.ENEMY && character.IsDead() && m_currentGameState != GameState.LEVEL_ENDED)
+        if (character.GetCharacterType() == CharacterTypes.ENEMY && character.IsDead() && m_currentGameState != LevelState.LEVEL_ENDED)
         {
             ++m_enemiesKilled;
         }
@@ -606,10 +646,18 @@ public class GfgManagerLevel : MonoBehaviour
 }
 
 
-[System.Serializable]
+[Serializable]
 public struct EnvironmentLightingColors
 {
     public Color Sky;
     public Color Equator;
     public Color Ground;
+}
+
+[Serializable]
+public enum LevelState
+{
+    LEVEL_IDLE,
+    LEVEL_STARTED,
+    LEVEL_ENDED
 }

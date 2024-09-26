@@ -1,9 +1,17 @@
 //order of these should be corresponding to that found in the build settings
-public enum GfcScene
+public enum GfcSceneId
 {
-    APARTMENT,
+    INVALID = -1,
+
     GF_BASE,
+    PHONE,
+
+    APARTMENT,
+
     ENV_PARK,
     ENV_RESTAURANT,
     ENV_MUSUEM,
+
+    CORN_LEVEL_0,
+    COUNT,
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEditor;
 
 public class CornMenuApartment : MonoBehaviour
 {
@@ -46,9 +47,9 @@ public class CornMenuApartment : MonoBehaviour
         Instance = this;
 
         for (int i = 0; i < m_actionButtonsInfo.Length; ++i)
-            Debug.Assert(i == (int)m_actionButtonsInfo[i].Type, "The type " + m_actionButtonsInfo[i].Type + " is at index " + i + ", it should be at index " + (int)m_actionButtonsInfo[i].Type);
+            if (i != (int)m_actionButtonsInfo[i].Type) Debug.LogError("The type " + m_actionButtonsInfo[i].Type + " is at index " + i + ", it should be at index " + (int)m_actionButtonsInfo[i].Type);
 
-        Debug.Assert(m_actionButtonsInfo.Length == (int)PlayerResources.COUNT, "The list only has " + m_actionButtonsInfo.Length + " elements, it should have " + (int)PlayerResources.COUNT);
+        if (m_actionButtonsInfo.Length != (int)PlayerResources.COUNT) Debug.LogError("The list only has " + m_actionButtonsInfo.Length + " elements, it should have " + (int)PlayerResources.COUNT);
 
         /*
         for (int i = 0; i < m_slidersConsumables.Length; ++i)
@@ -57,11 +58,15 @@ public class CornMenuApartment : MonoBehaviour
 
         Debug.Assert(m_slidersConsumables.Length == (int)PlayerConsumables.COUNT - PlayerSaveData.NON_0_TO_100_CONSUMABLES, "The list only has " + m_slidersConsumables.Length + " elements, it should have " + (int)PlayerConsumables.COUNT);
 */
-        GfcManagerGame.InitializeGfBase();
+        GfgManagerGame.InitializeGfBase();
+        GfgManagerGame.InitializeGfBase();
     }
 
     void Start()
     {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.Confined;
+
         m_actionButtons = new CornActionButton[PlayerSaveData.COUNT_RESOURCES];
         m_consumablesSliders = new GfxSliderText[PlayerSaveData.COUNT_0_TO_100_CONSUMABLES];
 
@@ -99,8 +104,8 @@ public class CornMenuApartment : MonoBehaviour
     private void UpdateGraphicsInternal()
     {
         var saveData = GfgManagerSaveData.GetActivePlayerSaveData();
-        float[] playerResources = saveData.Resources;
-        float[] playerConsumables = saveData.Consumables;
+        float[] playerResources = saveData.Data.Resources;
+        float[] playerConsumables = saveData.Data.Consumables;
 
         for (int i = 0; i < PlayerSaveData.COUNT_RESOURCES; ++i)
         {
@@ -115,26 +120,26 @@ public class CornMenuApartment : MonoBehaviour
 
         GfcStringBuffer stringBuffer = GfcPooling.GfcStringBuffer;
 
-        stringBuffer.Concatenate(playerConsumables[(int)PlayerConsumables.MONEY], 0);
-        stringBuffer.Concatenate('$');
+        stringBuffer.Append(playerConsumables[(int)PlayerConsumables.MONEY], 0);
+        stringBuffer.Append('$');
 
         m_textMoney.text = stringBuffer.GetStringCopy();
-        m_textSanity.text = saveData.MentalSanity.ToString();
+        m_textSanity.text = saveData.Data.MentalSanity.ToString();
         stringBuffer.Clear();
 
-        if (saveData.CurrentHour < 10)
-            stringBuffer.Concatenate('0');
+        if (saveData.Data.CurrentHour < 10)
+            stringBuffer.Append('0');
 
-        stringBuffer.Concatenate(saveData.CurrentHour);
-        stringBuffer.Concatenate(":00   ");
-        stringBuffer.Concatenate(GfcLocalization.GetDateString(saveData.CurrentDay, saveData.CurrentMonth));
+        stringBuffer.Append(saveData.Data.CurrentHour);
+        stringBuffer.Append(":00   ");
+        stringBuffer.Append(GfcLocalization.GetDateString(saveData.Data.CurrentDay, saveData.Data.CurrentMonth));
 
         m_textDateAndTime.text = stringBuffer.GetStringCopy();
 
         stringBuffer.Clear();
 
 
-        m_light.rotation = Quaternion.AngleAxis(360.0f * (saveData.CurrentHour / 24.0f) - 90, Vector3.right);
+        m_light.rotation = Quaternion.AngleAxis(360.0f * (saveData.Data.CurrentHour / 24.0f) - 90, Vector3.right);
     }
 
     public static void EndStatsPreview() { Instance.EndStatsPreviewInternal(); }

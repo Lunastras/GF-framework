@@ -578,7 +578,7 @@ CanvasGroup:
   m_GameObject: {fileID: 4881111961433869780}
   m_Enabled: 1
   m_Alpha: 1
-  m_Interactable: 1
+  m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
 --- !u!114 &3932134373659716363
@@ -598,7 +598,8 @@ MonoBehaviour:
   m_optionsButtonPrefab: {fileID: 3766172959617507501, guid: 607c3df8608350a4b8ca0a9ccb0502b8,
     type: 3}
   m_optionsButtonsParent: {fileID: 8163916210622867375}
-  m_transitionTime: 0.3
+  m_transitionTime: 0.4
+  m_transitionTimeNoName: 0.4
   m_speedMultiplierTextWrite: 1
   m_speedMultiplierTextErase: 1
   m_speedMultiplierFinish: 2
@@ -611,8 +612,98 @@ MonoBehaviour:
   m_forceWriteOnSubmit: 0
   m_transitionMixMode: 3
   m_continueText: {fileID: 9095293721861884215}
-  m_elementsTransitions: []
-  m_elementsTransitionsNoName: []
+  m_elementsTransitions:
+  - Transform: {fileID: 4531398300128808991}
+    TransitionData:
+      AnimationCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      LocalPositionStart: {x: 0, y: 400, z: 0}
+      LocalPositionEnd: {x: 0, y: 400, z: 0}
+      LocalScaleStart: {x: 1, y: 1, z: 1}
+      LocalScaleEnd: {x: 1, y: 1, z: 1}
+  - Transform: {fileID: 102528975752169005}
+    TransitionData:
+      AnimationCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      LocalPositionStart: {x: -400, y: 0, z: 0}
+      LocalPositionEnd: {x: 400, y: 0, z: 0}
+      LocalScaleStart: {x: 1, y: 1, z: 1}
+      LocalScaleEnd: {x: 1, y: 1, z: 1}
+  m_elementsTransitionsNoName:
+  - Transform: {fileID: 4531398300128808991}
+    TransitionData:
+      AnimationCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0.0000017993152
+          outSlope: 0.0000017993152
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 1
+          value: 0.0000017993152
+          inSlope: 0.0000017993152
+          outSlope: 0.0000017993152
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      LocalPositionStart: {x: 0, y: 0, z: 0}
+      LocalPositionEnd: {x: 0, y: 0, z: 0}
+      LocalScaleStart: {x: 0, y: 0, z: 0}
+      LocalScaleEnd: {x: 0, y: 0, z: 0}
 --- !u!114 &8816240311565658601
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -630,6 +721,7 @@ MonoBehaviour:
     LetterDelaySeconds: 0.01
     LetterTranslateSeconds: 0.3
     IgnoreWhitespace: 1
+    EarlyTransitionBreak: 1
     TranslationFadeIn:
       GlobalPosition: {x: 0, y: 0, z: 0}
       LocalPosition: {x: 0, y: 200, z: 0}
@@ -715,6 +807,7 @@ MonoBehaviour:
     LetterDelaySeconds: 0.01
     LetterTranslateSeconds: 0.3
     IgnoreWhitespace: 1
+    EarlyTransitionBreak: 1
     TranslationFadeIn:
       GlobalPosition: {x: 0, y: 0, z: 0}
       LocalPosition: {x: 0, y: 200, z: 0}

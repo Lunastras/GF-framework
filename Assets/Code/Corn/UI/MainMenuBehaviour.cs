@@ -21,17 +21,13 @@ public class MainMenuBehaviour : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Confined;
         Cursor.visible = true;
-
-
     }
 
     private void Start()
     {
         //m_fadeOverlay.CrossFadeAlpha(1f, 0f, true);
-        GfxUiTools.SetOverlayColor(Color.black);
-        GfxUiTools.CrossFadeBlackAlpha(1f, 0);
         EnableScreen(MenuScreens.MAIN);
-        GfxUiTools.CrossFadeBlackAlpha(0f, m_fadeDelay);
+        GfxUiTools.FadeOverlayAlpha(0f, m_fadeDelay);
         Time.timeScale = 1;
     }
 
@@ -54,43 +50,43 @@ public class MainMenuBehaviour : MonoBehaviour
 
     public void StartClientGame(int levelIndex)
     {
-        StartGame(levelIndex, GameMultiplayerType.CLIENT);
+        StartGame(levelIndex, GfcGameMultiplayerType.CLIENT);
     }
 
     public void StartSingleplayerGame(int levelIndex)
     {
-        StartGame(levelIndex, GameMultiplayerType.SINGLEPLAYER);
+        StartGame(levelIndex, GfcGameMultiplayerType.SINGLEPLAYER);
     }
 
     public void StartHostGame(int levelIndex)
     {
-        StartGame(levelIndex, GameMultiplayerType.HOST);
+        StartGame(levelIndex, GfcGameMultiplayerType.HOST);
     }
 
     public void StartServerGame(int levelIndex)
     {
-        StartGame(levelIndex, GameMultiplayerType.SERVER);
+        StartGame(levelIndex, GfcGameMultiplayerType.SERVER);
     }
 
-    protected void StartGame(int levelIndex, GameMultiplayerType gameType)
+    protected void StartGame(int levelIndex, GfcGameMultiplayerType gameType)
     {
-        if (gameType == GameMultiplayerType.SINGLEPLAYER)
+        if (gameType == GfcGameMultiplayerType.SINGLEPLAYER)
         {
-            GfcManagerGame.SetServerIp("127.0.0.1");
+            GfgManagerGame.SetServerIp("127.0.0.1");
         }
         else
         {
-            GfcManagerGame.SetServerIp(m_ipInputField.text, ushort.Parse(m_portInputField.text));
+            GfgManagerGame.SetServerIp(m_ipInputField.text, ushort.Parse(m_portInputField.text));
         }
 
-        GfgManagerSceneLoader.LoadScene(levelIndex, false, ServerLoadingMode.KEEP_SERVER, gameType);
+        GfgManagerSceneLoader.LoadScene(levelIndex, GfcGameState.INVALID, false, gameType, ServerLoadingMode.KEEP_SERVER);
     }
 
     private IEnumerator StartMenu()
     {
         yield return new WaitForSeconds(m_fadeDelay);
 
-        GfxUiTools.CrossFadeBlackAlpha(0f, m_fadeDelay);
+        GfxUiTools.FadeOverlayAlpha(0f, m_fadeDelay);
 
         yield return new WaitForSeconds(m_fadeDelay);
     }

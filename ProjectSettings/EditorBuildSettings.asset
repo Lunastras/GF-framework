@@ -6,11 +6,14 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Data/Scenes/Apartment.unity
-    guid: e162b25afd126974c8066d3f52543087
-  - enabled: 1
     path: Assets/Data/Scenes/GfBaseScene.unity
     guid: 27914b7d823475040993c03597a56e9c
+  - enabled: 1
+    path: Assets/Data/Scenes/Phone.unity
+    guid: 9179934f609e8b24490baa0c2e4ce26c
+  - enabled: 1
+    path: Assets/Data/Scenes/Apartment.unity
+    guid: e162b25afd126974c8066d3f52543087
   - enabled: 1
     path: Assets/Data/Scenes/Environment/Park.unity
     guid: ea18f0a7cdffc0d48a329ac3de3cad6d
@@ -20,6 +23,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Data/Scenes/Environment/Museum.unity
     guid: 11a86bacedc21994d98201053d7f54ba
+  - enabled: 1
+    path: Assets/Data/Scenes/Game Levels/CornLevel0.unity
+    guid: 1219f9e73be7bcf49bbc511116db3b59
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 79751fafe6694864a998e58059428777,
       type: 2}

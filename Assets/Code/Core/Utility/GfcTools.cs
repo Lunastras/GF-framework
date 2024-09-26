@@ -8,8 +8,48 @@ using System;
 using System.Collections.Generic;
 using static Unity.Mathematics.math;
 using System.Reflection;
+using System.Linq;
 public static class GfcToolsStatic
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasFlag(this uint aFlagMask, uint aFlag) { return GfcTools.HasFlag(aFlagMask, aFlag); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndUnsetBit(this ref uint aFlagMask, int aBitIndex) { return GfcTools.GetAndUnsetBit(ref aFlagMask, aBitIndex); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndSetBit(this ref uint aFlagMask, int aBitIndex) { return GfcTools.GetAndSetBit(ref aFlagMask, aBitIndex); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndSetBit(this ref uint aFlagMask, int aBitIndex, bool aState = true) { return GfcTools.GetAndSetBit(ref aFlagMask, aBitIndex, aState); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetBit(this uint aFlagMask, int aBitIndex) { return GfcTools.GetBit(aFlagMask, aBitIndex); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetBit(this ref uint aFlagMask, int aBitIndex) { GfcTools.SetBit(ref aFlagMask, aBitIndex); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetBit(this ref uint aFlagMask, int aBitIndex, bool aState) { GfcTools.SetBit(ref aFlagMask, aBitIndex, aState); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void UnsetBit(this ref uint aFlagMask, int aBitIndex) { GfcTools.UnsetBit(ref aFlagMask, aBitIndex); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasFlag(this ulong aFlagMask, ulong aFlag) { return GfcTools.HasFlag(aFlagMask, aFlag); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndUnsetBit(this ref ulong aFlagMask, int aBitIndex) { return GfcTools.GetAndUnsetBit(ref aFlagMask, aBitIndex); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndSetBit(this ref ulong aFlagMask, int aBitIndex) { return GfcTools.GetAndSetBit(ref aFlagMask, aBitIndex); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndSetBit(this ref ulong aFlagMask, int aBitIndex, bool aState = true) { return GfcTools.GetAndSetBit(ref aFlagMask, aBitIndex, aState); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetBit(this ulong aFlagMask, int aBitIndex) { return GfcTools.GetBit(aFlagMask, aBitIndex); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetBit(this ref ulong aFlagMask, int aBitIndex) { GfcTools.SetBit(ref aFlagMask, aBitIndex); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetBit(this ref ulong aFlagMask, int aBitIndex, bool aState) { GfcTools.SetBit(ref aFlagMask, aBitIndex, aState); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void UnsetBit(this ref ulong aFlagMask, int aBitIndex) { GfcTools.UnsetBit(ref aFlagMask, aBitIndex); }
 
     public static void SetSingleton<T>(this T anInstance, ref T aSingleton) where T : MonoBehaviour
     {
@@ -23,6 +63,24 @@ public static class GfcToolsStatic
         Color col = anImage.color;
         col.a = anAlpha;
         anImage.color = col;
+    }
+
+    private static IEnumerator<float> _SetActiveInFrames(GameObject aGameObject, bool anActive, int aCountFrames)
+    {
+        while (aCountFrames-- != 0) yield return Timing.WaitForOneFrame;
+        aGameObject.SetActive(anActive);
+    }
+
+    public static CoroutineHandle SetActiveInFrames(this GameObject aGameObject, bool anActive, int aCountFrames)
+    {
+        CoroutineHandle handle = default;
+
+        if (aCountFrames == 0)
+            aGameObject.SetActive(anActive);
+        else
+            handle = Timing.RunCoroutine(_SetActiveInFrames(aGameObject, anActive, aCountFrames));
+
+        return handle;
     }
 
     public static bool HasValueAt<T>(this T[] anArray, int anIndex) { return anArray != null && anArray.Length > anIndex; }
@@ -80,9 +138,60 @@ public static class GfcToolsStatic
 
     public static RectTransformData GetRectWorldData(this RectTransform aTransform, bool aCopyParent = true, Transform aNewParent = null) { return new(aTransform, aCopyParent, aNewParent); }
 
+    //code suggests compound assignment instead of if statement, but it does not work
+    public static bool GetComponentIfNull<T>(this Component aComponent, ref T aContainer) { if (aContainer == null) aContainer = aComponent.GetComponent<T>(); return aContainer != null; }
+
     public static bool GetComponent<T>(this Component aComponent, ref T aContainer) { aContainer = aComponent.GetComponent<T>(); return aContainer != null; }
 
+    public static bool GetComponent<T>(this GameObject aGameObject, ref T aContainer) { aContainer = aGameObject.GetComponent<T>(); return aContainer != null; }
+
     public static bool IsEmpty(this string aString) { return aString == null || aString.Length == 0; }
+
+    public static unsafe T IndexToEnum<T>(this int anEnumIndex) where T : unmanaged, Enum { return Index64ToEnum<T>((ulong)anEnumIndex); }
+
+    public static unsafe T Index64ToEnum<T>(this ulong anEnumIndex) where T : unmanaged, Enum
+    {
+        switch (sizeof(T))
+        {
+            case 1:
+                Debug.Assert(anEnumIndex <= byte.MaxValue);
+                return *(T*)(byte*)&anEnumIndex;
+
+            case 2:
+                Debug.Assert(anEnumIndex <= ushort.MaxValue);
+                return *(T*)(ushort*)&anEnumIndex;
+
+            case 4:
+                Debug.Assert(anEnumIndex <= uint.MaxValue);
+                return *(T*)(uint*)&anEnumIndex;
+
+            case 8: return *(T*)&anEnumIndex;
+
+            default:
+                throw new ArgumentException("The enum " + typeof(T) + " is outside the range of 8 bytes and cannot be evaluated.");
+        }
+    }
+
+    public static unsafe ulong Index64<T>(this T anEnum) where T : unmanaged, Enum
+    {
+        return sizeof(T) switch
+        {
+            1 => *(byte*)&anEnum,
+            2 => *(ushort*)&anEnum,
+            4 => *(uint*)&anEnum,
+            8 => *(ulong*)&anEnum,
+            _ => throw new ArgumentException("The enum " + typeof(T) + " is outside the range of 8 bytes and cannot be evaluated."),
+        };
+    }
+
+    public static unsafe int Index<T>(this T anEnum) where T : unmanaged, Enum
+    {
+        ulong index = Index64(anEnum);
+        Debug.Assert(index <= int.MaxValue);
+        return (int)index;
+    }
+
+    public static unsafe bool EqualsNoBox<T>(this T anEnum, T aSecondEnum) where T : unmanaged, Enum { return anEnum.Index() == aSecondEnum.Index(); }
 
     public static int Clamp(this int aNum, int aMin, int aMax) { return Math.Clamp(aNum, aMin, aMax); }
     public static long Clamp(this long aNum, long aMin, long aMax) { return Math.Clamp(aNum, aMin, aMax); }
@@ -119,6 +228,9 @@ public static class GfcToolsStatic
     public static int Abs(this int aSelf) { return Math.Abs(aSelf); }
     public static float Abs(this float aSelf) { return Math.Abs(aSelf); }
     public static double Abs(this double aSelf) { return Math.Abs(aSelf); }
+
+    public static float SafeInverse(this float aSelf) { return aSelf.Abs() < 0.00001f ? float.MaxValue : 1.0f / aSelf; }
+    public static double SafeInverse(this double aSelf) { return aSelf.Abs() < 0.000000001 ? double.MaxValue : 1.0 / aSelf; }
 
     public static void AbsSelf(this ref int aSelf) { aSelf = Math.Abs(aSelf); }
     public static void AbsSelf(this ref float aSelf) { aSelf = Math.Abs(aSelf); }
@@ -234,6 +346,7 @@ public static class GfcToolsStatic
 public class GfcTools
 {
     public const double EULER = 2.7182818284590452;
+    public const float EPSILON = 0.99999f;
 
     //godbless stack overflow
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -283,6 +396,90 @@ public class GfcTools
         {
             return Quaternion.identity;
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasFlag(uint aFlagMask, uint aFlag) { return 0 < (aFlagMask & aFlag); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndUnsetBit(ref uint aFlagMask, int aBitIndex)
+    {
+        bool state = GetBit(aFlagMask, aBitIndex);
+        UnsetBit(ref aFlagMask, aBitIndex);
+        return state;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndSetBit(ref uint aFlagMask, int aBitIndex)
+    {
+        bool state = GetBit(aFlagMask, aBitIndex);
+        SetBit(ref aFlagMask, aBitIndex);
+        return state;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndSetBit(ref uint aFlagMask, int aBitIndex, bool aState = true)
+    {
+        bool state = GetBit(aFlagMask, aBitIndex);
+        SetBit(ref aFlagMask, aBitIndex, aState);
+        return state;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetBit(uint aFlagMask, int aBitIndex) { return HasFlag(aFlagMask, (uint)(1 << aBitIndex)); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetBit(ref uint aFlagMask, int aBitIndex) { aFlagMask |= (uint)1 << aBitIndex; }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void UnsetBit(ref uint aFlagMask, int aBitIndex) { aFlagMask &= ~((uint)1 << aBitIndex); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetBit(ref uint aFlagMask, int aBitIndex, bool aState)
+    {
+        if (aState)
+            SetBit(ref aFlagMask, aBitIndex);
+        else
+            UnsetBit(ref aFlagMask, aBitIndex);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasFlag(ulong aFlagMask, ulong aFlag) { return 0 < (aFlagMask & aFlag); }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndUnsetBit(ref ulong aFlagMask, int aBitIndex)
+    {
+        bool state = GetBit(aFlagMask, aBitIndex);
+        UnsetBit(ref aFlagMask, aBitIndex);
+        return state;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndSetBit(ref ulong aFlagMask, int aBitIndex)
+    {
+        bool state = GetBit(aFlagMask, aBitIndex);
+        SetBit(ref aFlagMask, aBitIndex);
+        return state;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetAndSetBit(ref ulong aFlagMask, int aBitIndex, bool aState = true)
+    {
+        bool state = GetBit(aFlagMask, aBitIndex);
+        SetBit(ref aFlagMask, aBitIndex, aState);
+        return state;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool GetBit(ulong aFlagMask, int aBitIndex) { return HasFlag(aFlagMask, (ulong)(1 << aBitIndex)); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetBit(ref ulong aFlagMask, int aBitIndex) { aFlagMask |= (ulong)1 << aBitIndex; }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void UnsetBit(ref ulong aFlagMask, int aBitIndex) { aFlagMask &= ~((ulong)1 << aBitIndex); }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetBit(ref ulong aFlagMask, int aBitIndex, bool aState)
+    {
+        if (aState)
+            SetBit(ref aFlagMask, aBitIndex);
+        else
+            UnsetBit(ref aFlagMask, aBitIndex);
     }
 
     /*
@@ -431,17 +628,17 @@ public class GfcTools
     public static Vector3 RemoveAxis(Vector3 aLeftHand, Vector3 aRightHand) { RemoveAxis(ref aLeftHand, aRightHand); return aLeftHand; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Minus2(ref Vector2 aLeftHand, Vector2 aRightHand) { aLeftHand.x -= aRightHand.x; aLeftHand.y -= aRightHand.y; }
+    public static void Minus(ref Vector2 aLeftHand, Vector2 aRightHand) { aLeftHand.x -= aRightHand.x; aLeftHand.y -= aRightHand.y; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add2(ref Vector2 aLeftHand, Vector2 aRightHand) { aLeftHand.x += aRightHand.x; aLeftHand.y += aRightHand.y; }
+    public static void Add(ref Vector2 aLeftHand, Vector2 aRightHand) { aLeftHand.x += aRightHand.x; aLeftHand.y += aRightHand.y; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Mult2(ref Vector2 aLeftHand, float aRightHand) { aLeftHand.x *= aRightHand; aLeftHand.y *= aRightHand; }
+    public static void Mult(ref Vector2 aLeftHand, float aRightHand) { aLeftHand.x *= aRightHand; aLeftHand.y *= aRightHand; }
 
-    public static void Mult2(ref Vector2 aLeftHand, Vector2 aRightHand) { aLeftHand.x *= aRightHand.x; aLeftHand.y *= aRightHand.y; }
+    public static void Mult(ref Vector2 aLeftHand, Vector2 aRightHand) { aLeftHand.x *= aRightHand.x; aLeftHand.y *= aRightHand.y; }
 
-    public static void Div2(ref Vector2 aLeftHand, float rightHand) { float inv = 1.0f / rightHand; aLeftHand.x *= inv; aLeftHand.y *= inv; }
+    public static void Div(ref Vector2 aLeftHand, float rightHand) { float inv = 1.0f / rightHand; aLeftHand.x *= inv; aLeftHand.y *= inv; }
 
     public static void Normalize(ref Vector3 aVector)
     {
@@ -478,6 +675,22 @@ public class GfcTools
         GfTools.Mult3(ref b, sqrt(a.sqrMagnitude));
         return 2 * atan2(sqrt((a - b).sqrMagnitude), sqrt((a + b).sqrMagnitude)) * Mathf.Rad2Deg;
     }*/
+
+    public static IEnumerable<Type> GetSubclasses<T>() where T : class { return GetSubclasses<T>(typeof(T)); }
+
+    public static IEnumerable<Type> GetSubclasses<T>(Type aTypeInAssembly) where T : class { return Assembly.GetAssembly(aTypeInAssembly).GetTypes().Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T))); }
+
+    public static List<T> GetEnumerableOfType<T>(params object[] constructorArgs) where T : class, IComparable<T>
+    {
+        var subclasses = GetSubclasses<T>();
+        List<T> objects = new(subclasses.Count());
+        foreach (Type type in subclasses)
+        {
+            objects.Add((T)Activator.CreateInstance(type, constructorArgs));
+        }
+        objects.Sort();
+        return objects;
+    }
 
     public static bool RayIntersectsAABB(Vector3 org, Vector3 dirNorm, Bounds bound)
     {

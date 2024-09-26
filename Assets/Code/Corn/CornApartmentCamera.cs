@@ -34,7 +34,7 @@ public class CornApartmentCamera : MonoBehaviour
     {
         this.SetSingleton(ref ourInstance);
 
-        DontDestroyOnLoad(gameObject);
+        //DontDestroyOnLoad(gameObject);
         Camera = GetComponent<Camera>();
         m_transform = transform;
     }

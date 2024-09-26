@@ -38,7 +38,7 @@ public class GfTriggerMovBlackBars : GfMovementTriggerable
 
     public override void MgOnTrigger(GfMovementGeneric movement)
     {
-        if (!m_onlyForPlayer || GfgManagerLevel.GetPlayer() == movement.transform)
+        if (!m_onlyForPlayer || GfgManagerLevel.Player.transform == movement.transform)
         {
             GfxUiTools.SetBlackBars(m_turnOn, m_delay, m_constantOpacity, m_constantAnchors, m_ignoreTimeScale);
             if (m_destroyAfterTrigger)

@@ -35,3 +35,29 @@ public struct CharacterPortrait
     public StoryCharacter Character;
     public Sprite Sprite;
 }
+
+public enum CharacterEmotion
+{
+    NEUTRAL,
+    SMILE,
+    THINKING,
+    SURPRISED,
+    ANRGY,
+    SAD,
+
+    SUSPICIOUS,
+    EMBARRASED,
+    SMILE_BIG,
+    CRYING,
+}
+
+public enum CharacterSound
+{
+    NONE,
+    HMMM,
+    SIGH,
+    SWEAR,
+    LAUGH_1,
+    LAUGH_2,
+    LAUGH_3,
+}

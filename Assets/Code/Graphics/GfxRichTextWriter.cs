@@ -11,17 +11,26 @@ using System.Diagnostics;
 [Serializable]
 public class GfxRichTextWriter
 {
-    public TextMeshProUGUI TextMeshPro;
+    public TextMeshProUGUI TextMeshPro
+    {
+        get { return m_textMeshPro; }
+        set
+        {
+            if (m_textMeshPro) m_textMeshPro.OnPreRenderText -= OnPreRenderText;
+            m_textMeshPro = value;
+            m_textMeshPro.OnPreRenderText += OnPreRenderText;
+        }
+    }
 
-    public float LetterDelaySeconds;
+    private TransitionRuntimeData m_currentTransitionData;
 
-    public float LetterTranslateSeconds;
+    public FloatAndInv LetterDelaySeconds;
+
+    public FloatAndInv LetterTranslateSeconds;
+
+    public FloatAndInv SpeedMultiplier = new(1);
 
     public bool IgnoreWhitespace;
-
-    //During tests I realised the text is redrawn after I make it transparent when I mess with the scale.
-    //setting this to FALSE helped, but the added overhead is questionable, so I prefer keeping to to TRUE
-    public bool EarlyTransitionBreak = true;
 
     //public bool StaticVertexData = true;
 
@@ -29,13 +38,13 @@ public class GfxRichTextWriter
 
     public TextWriterTranslation TranslationFadeOut;
 
+    [SerializeField] protected TextMeshProUGUI m_textMeshPro;
+
+    private FloatAndInv m_writeAllSpeedMultiplier = new(0);
+
     private bool m_writeAllOnce = false;
 
     private float m_secondsSinceWriteAll = 0;
-
-    private float m_writeAllSpeedMultiplier = 0;
-
-    private float m_writeAllSpeedMultiplierInv = 0;
 
     private GfcCoroutineHandle m_textTransitionHandle = default;
 
@@ -45,44 +54,48 @@ public class GfxRichTextWriter
 
     private List<VertexData> m_vertexData = new(32);
 
+    private int m_lastFrameUpdated = 0;
+
     public GfxRichTextWriter() { }
-    public GfxRichTextWriter(GfxRichTextWriter aObjectToCopy)
+
+    public void RefreshValues()
     {
-        TextMeshPro = aObjectToCopy.TextMeshPro;
-        LetterDelaySeconds = aObjectToCopy.LetterDelaySeconds;
-        LetterTranslateSeconds = aObjectToCopy.LetterTranslateSeconds;
-        IgnoreWhitespace = aObjectToCopy.IgnoreWhitespace;
-        TranslationFadeIn = aObjectToCopy.TranslationFadeIn;
-        TranslationFadeOut = aObjectToCopy.TranslationFadeOut;
+        LetterDelaySeconds.Refresh();
+        LetterTranslateSeconds.Refresh();
+        SpeedMultiplier.Refresh();
+        m_writeAllSpeedMultiplier.Refresh();
+    }
+
+    public GfxRichTextWriter(GfxRichTextWriter anObjectToCopy)
+    {
+        m_textMeshPro = anObjectToCopy.m_textMeshPro;
+        LetterDelaySeconds = anObjectToCopy.LetterDelaySeconds;
+        LetterTranslateSeconds = anObjectToCopy.LetterTranslateSeconds;
+        IgnoreWhitespace = anObjectToCopy.IgnoreWhitespace;
+        TranslationFadeIn = anObjectToCopy.TranslationFadeIn;
+        TranslationFadeOut = anObjectToCopy.TranslationFadeOut;
     }
 
     public void SetString(string aString, bool aWriteTextInstant = true)
     {
-        TextMeshPro.SetText(aString);
+        m_textMeshPro.SetText(aString);
         if (aWriteTextInstant)
             WriteAllNoTransition(true, true);
     }
 
-    public string GetString() { return TextMeshPro.text; }
+    public string GetString() { return m_textMeshPro.text; }
 
-    public int TextLength { get { return TextMeshPro.textInfo.characterCount; } }
+    public int TextLength { get { return m_textMeshPro.textInfo.characterCount; } }
 
-    public bool WritingText()
-    {
-        return m_textEraseHandle.CoroutineIsRunning || m_textTransitionHandle.CoroutineIsRunning;
-    }
+    public bool WritingText() { return m_textEraseHandle.CoroutineIsRunning || m_textTransitionHandle.CoroutineIsRunning; }
 
-    private bool ValidCharacter(char aChar)
-    {
-        return !IgnoreWhitespace || (aChar != ' ' && aChar != '\n' && aChar != '\t'); //not an exhaustive list
-    }
+    private bool ValidCharacter(char aChar) { return !IgnoreWhitespace || (aChar != ' ' && aChar != '\n' && aChar != '\t'); }//not an exhaustive list
 
     public CoroutineHandle FinishTranslation(float aSpeedMultiplier = 1)
     {
         if (!m_writeAllOnce && m_textTransitionHandle.CoroutineIsRunning)
         {
-            m_writeAllSpeedMultiplier = aSpeedMultiplier;
-            m_writeAllSpeedMultiplierInv = aSpeedMultiplier < 0.00001f ? float.MaxValue : 1.0f / aSpeedMultiplier;
+            m_writeAllSpeedMultiplier.Value = aSpeedMultiplier;
             m_secondsSinceWriteAll = 0;
         }
 
@@ -90,30 +103,18 @@ public class GfxRichTextWriter
         return m_textTransitionHandle;
     }
 
-    public CoroutineHandle WriteText(string aString, float aSpeedMultiplier = 1) { SetString(aString, true); return WriteSubString(0, TextLength, true, aSpeedMultiplier, false); }
+    public CoroutineHandle WriteText(string aString, float aSpeedMultiplier = 1) { SetString(aString, true); return WriteStringAnimation(true, aSpeedMultiplier); }
 
-    public CoroutineHandle WriteText(float aSpeedMultiplier = 1) { return WriteSubString(0, TextLength, true, aSpeedMultiplier); }
+    public void RemoveText() { SetString(null); }
 
-    public void RemoveText()
-    {
-        m_textEraseHandle.KillCoroutine();
-        m_textTransitionHandle.KillCoroutine();
-
-        SetString(null);
-    }
-
-    public CoroutineHandle EraseText(float aSpeedMultiplier = 1)
-    {
-        m_textEraseHandle.RunCoroutineIfNotRunning(_EraseText(aSpeedMultiplier));
-        return m_textEraseHandle;
-    }
+    public CoroutineHandle EraseText(float aSpeedMultiplier = 1) { return m_textEraseHandle.RunCoroutineIfNotRunning(_EraseText(aSpeedMultiplier)); }
 
     private IEnumerator<float> _EraseText(float aSpeedMultiplier = 1)
     {
-        if (m_textTransitionHandle.CoroutineIsRunning)
-            yield return Timing.WaitUntilDone(m_textTransitionHandle);
+        m_textTransitionHandle.KillCoroutine();
 
-        yield return Timing.WaitUntilDone(WriteSubString(0, TextLength, false, aSpeedMultiplier), false);
+        yield return Timing.WaitUntilDone(WriteStringAnimation(false, aSpeedMultiplier), false);
+        m_textMeshPro.text = "";
 
         m_textEraseHandle.Finished();
     }
@@ -122,35 +123,85 @@ public class GfxRichTextWriter
     {
         m_textEraseHandle.KillCoroutine();
         m_textTransitionHandle.KillCoroutine();
-        TextMeshPro.ForceMeshUpdate(aIgnoreActiveState, aForceTextReparsing);
+        m_textMeshPro.ForceMeshUpdate(aIgnoreActiveState, aForceTextReparsing);
     }
 
-    //todo, doesn't do what it says it does
-    private CoroutineHandle WriteSubString(int aStartIndex, int aFinalIndex, bool aFadeIn, float aSpeedMultiplier = 1, bool aUpdateTmp = true)
-    {
-        m_textEraseHandle.KillCoroutine();
-        m_textTransitionHandle.KillCoroutine();
+    private CoroutineHandle WriteStringAnimation(bool aFadeIn, float aSpeedMultiplier = 1) { return m_textTransitionHandle.RunCoroutineIfNotRunning(_ExecuteCharacterTransition(aFadeIn, aSpeedMultiplier)); }
 
-        if (aUpdateTmp)
-            WriteAllNoTransition();
-
-        m_writeAllOnce = false;
-        m_secondsSinceWriteAll = 0;
-        m_writeAllSpeedMultiplier = 1;
-        m_writeAllSpeedMultiplierInv = 1;
-
-        if (aStartIndex != aFinalIndex)
-            m_textTransitionHandle.RunCoroutineIfNotRunning(_ExecuteCharacterTransition(aStartIndex, aFinalIndex, aFadeIn, aSpeedMultiplier));
-
-        return m_textTransitionHandle;
-    }
-
-    public virtual void ApplyStaticEffects(int aStartIndex, int aFinalIndex, int aIndexSign, TMP_TextInfo aTextInfo)
+    public virtual void ApplyStaticEffects(TMP_TextInfo aTextInfo)
     {
         TMP_CharacterInfo[] charsInfo = aTextInfo.characterInfo;
     }
 
-    private TMP_VertexDataUpdateFlags ApplyTransitionEffect(bool aFadeIn, float aTimeCoef, int aValidCharacterIndex, TMP_TextInfo aTextInfo, TMP_CharacterInfo aCharacterInfo, VertexData aOriginalVertexData)
+    [System.Serializable]
+    public struct FloatAndInv
+    {
+        public float Value
+        {
+            get { return m_value; }
+            set
+            {
+                m_value = value;
+                m_inverse = value.SafeInverse();
+            }
+        }
+
+        public FloatAndInv(float aValue = 0)
+        {
+            m_value = aValue;
+            m_inverse = aValue.SafeInverse();
+        }
+
+        public void Refresh() { Value = m_value; }
+
+        public readonly float Inverse { get { return m_inverse; } }
+
+        public static implicit operator float(FloatAndInv d) => d.Value;
+
+        [SerializeField] private float m_value;
+        private float m_inverse;
+    }
+
+    private TMP_VertexDataUpdateFlags ApplyTransitionEffectToText(bool aFadeIn, bool anEarlyBreak, ref int lastFinishedIndex, ref int validIndexOfLastFinished, float secondsSinceStart)
+    {
+        int validCharactersCount = 0;
+        TMP_TextInfo aTextInfo = m_textMeshPro.textInfo;
+        var charactersInfo = aTextInfo.characterInfo;
+        int characterCount = aTextInfo.characterCount;
+
+        TMP_VertexDataUpdateFlags vertexUpdateFlag = TMP_VertexDataUpdateFlags.None;
+
+        for (int i = lastFinishedIndex + 1; i < characterCount; i++)
+        {
+            TMP_CharacterInfo charInfo = charactersInfo[i];
+            if (ValidCharacter(charInfo.character))// Skips spaces
+            {
+                validCharactersCount++;
+                int validCharacterIndex = validIndexOfLastFinished + validCharactersCount;
+                float auxSecondsSinceStart = secondsSinceStart - validCharacterIndex * LetterDelaySeconds * SpeedMultiplier.Inverse * m_writeAllSpeedMultiplier.Inverse;
+                auxSecondsSinceStart.MaxSelf(m_secondsSinceWriteAll);
+
+                if (anEarlyBreak && auxSecondsSinceStart <= 0)
+                    break;
+
+                float timeCoef = (SpeedMultiplier * auxSecondsSinceStart * LetterTranslateSeconds.Inverse * m_writeAllSpeedMultiplier).Min(1);
+                float timeCoefAux = aFadeIn ? timeCoef : 1.0f - timeCoef;
+
+                vertexUpdateFlag |= ApplyTransitionEffectToChar(aFadeIn, timeCoefAux, validCharacterIndex, aTextInfo, charInfo, m_vertexData[validCharacterIndex]);
+
+                if (timeCoef >= 1)
+                {
+                    lastFinishedIndex = i;
+                    validCharactersCount = 0;
+                    validIndexOfLastFinished = validCharacterIndex;
+                }
+            }
+        }
+
+        return vertexUpdateFlag;
+    }
+
+    private TMP_VertexDataUpdateFlags ApplyTransitionEffectToChar(bool aFadeIn, float aTimeCoef, int aValidCharacterIndex, TMP_TextInfo aTextInfo, TMP_CharacterInfo aCharacterInfo, VertexData aOriginalVertexData)
     {
         TextWriterTranslation translation = aFadeIn ? TranslationFadeIn : TranslationFadeOut;
 
@@ -199,85 +250,44 @@ public class GfxRichTextWriter
         return TMP_VertexDataUpdateFlags.Colors32 | TMP_VertexDataUpdateFlags.Vertices;
     }
 
-    private IEnumerator<float> _ExecuteCharacterTransition(int aStartIndex, int aFinalIndex, bool aFadeIn, float aSpeedMultiplier = 1)
+    private void OnPreRenderText(TMP_TextInfo aTmpInfo)
     {
+        //UpdateOriginalVertexDataBuffer();
+
+        m_lastFrameUpdated = Time.frameCount;
+        UnityEngine.Debug.Log("Pre render callback");
+    }
+
+    private IEnumerator<float> _ExecuteCharacterTransition(bool aFadeIn, float aSpeedMultiplier = 1)
+    {
+        SpeedMultiplier.Value = aSpeedMultiplier;
+
+        if (TextLength == 0)
+            yield break;
+
+        m_textMeshPro.ForceMeshUpdate();
+
         float secondsSinceStart = 0;
-        float speedMultiplierInv = aSpeedMultiplier < 0.00001f ? float.MaxValue : 1.0f / aSpeedMultiplier;
-        float invLetterTranslateSeconds = aSpeedMultiplier * (LetterTranslateSeconds < 0.00001f ? float.MaxValue : 1.0f / LetterTranslateSeconds);
 
-        var textInfo = TextMeshPro.textInfo;
-        var charactersInfo = textInfo.characterInfo;
-        int characterCount = textInfo.characterCount;
+        m_writeAllOnce = false;
+        m_secondsSinceWriteAll = 0;
+        m_writeAllSpeedMultiplier.Value = 1;
 
-        int indexSign = (aFinalIndex - aStartIndex).Sign();
+        UpdateOriginalVertexDataBuffer();
 
-        aFinalIndex.MinSelf(characterCount - 1);
-
-        UpdateOriginalVertexDataBuffer(aStartIndex, aFinalIndex, indexSign, textInfo);
-
-        //todo make the routine work with aStartIndex bigger than aFinalIndex and write backwards
         TMP_VertexDataUpdateFlags vertexUpdateFlag = TMP_VertexDataUpdateFlags.None;
 
-        //make ccharacters invisible in the beginning
-        if (aFadeIn)
-        {
-            vertexUpdateFlag |= TMP_VertexDataUpdateFlags.Colors32;
-
-            for (int i = aStartIndex; i * indexSign <= aFinalIndex * indexSign; i += indexSign)
-            {
-                if (ValidCharacter(charactersInfo[i].character))
-                {
-                    int vertexIndexStart = charactersInfo[i].vertexIndex;
-                    Color32[] vertColors = textInfo.meshInfo[charactersInfo[i].materialReferenceIndex].colors32;
-
-                    for (int j = 0; j < VERT_COUNT; ++j)
-                        vertColors[vertexIndexStart + j].a = 0;
-                }
-            }
-        }
-
+        bool firstIteration = true;
+        int lastFinishedIndex = -1;
+        int characterCount = TextLength;
+        int lastIndex = characterCount - 1;
         int validIndexOfLastFinished = -1;
-        int lastFinishedIndex = aStartIndex - indexSign;
 
-        while (lastFinishedIndex < aFinalIndex)
+        while (lastFinishedIndex < lastIndex)
         {
-            int validCharactersCount = 0;
+            vertexUpdateFlag |= ApplyTransitionEffectToText(aFadeIn, !firstIteration, ref lastFinishedIndex, ref validIndexOfLastFinished, secondsSinceStart);
 
-            for (int i = lastFinishedIndex + indexSign; i * indexSign <= aFinalIndex * indexSign; i += indexSign)
-            {
-                TMP_CharacterInfo charInfo = charactersInfo[i];
-                if (ValidCharacter(charInfo.character))  // Skips spaces
-                {
-                    validCharactersCount++;
-                    int validCharacterIndex = validIndexOfLastFinished + validCharactersCount;
-                    float auxSecondsSinceStart = secondsSinceStart - validCharacterIndex * LetterDelaySeconds * speedMultiplierInv * m_writeAllSpeedMultiplierInv;
-                    auxSecondsSinceStart.MaxSelf(m_secondsSinceWriteAll);
-
-                    if (auxSecondsSinceStart <= 0 && EarlyTransitionBreak)
-                        break;
-
-                    float timeCoef = (auxSecondsSinceStart * invLetterTranslateSeconds * m_writeAllSpeedMultiplier).Min(1);
-                    float timeCoefAux = aFadeIn ? timeCoef : 1.0f - timeCoef;
-
-                    vertexUpdateFlag |= ApplyTransitionEffect(aFadeIn, timeCoefAux, validCharacterIndex, textInfo, charInfo, m_vertexData[validCharacterIndex]);
-
-                    if (timeCoef >= 1)
-                    {
-                        validCharactersCount = 0;
-                        validIndexOfLastFinished = validCharacterIndex;
-
-                        int lowerBound = aFinalIndex.Min(aStartIndex);
-                        int upperBound = aFinalIndex.Max(aStartIndex);
-
-                        while (i > lowerBound && i < upperBound && !ValidCharacter(charactersInfo[i + indexSign].character))
-                            i += indexSign;
-
-                        lastFinishedIndex = i;
-                    }
-                }
-            }
-
-            TextMeshPro.UpdateVertexData(vertexUpdateFlag);
+            m_textMeshPro.UpdateVertexData(vertexUpdateFlag);
             vertexUpdateFlag = TMP_VertexDataUpdateFlags.None;
 
             float timeOfWaitStart = Time.time;
@@ -286,21 +296,26 @@ public class GfxRichTextWriter
             float elapsedSeconds = Time.time - timeOfWaitStart;
             if (m_writeAllOnce) m_secondsSinceWriteAll += elapsedSeconds;
             secondsSinceStart += elapsedSeconds;
+            firstIteration = false;
         }
+
+        UnityEngine.Debug.Log("Finished routine");
 
         m_textTransitionHandle.Finished();
     }
 
     //update the the buffer data with the new original vertex data used for the transition lerping
-    private void UpdateOriginalVertexDataBuffer(int aStartIndex, int aFinalIndex, int aIndexSign, TMP_TextInfo aTextInfo)
+    private void UpdateOriginalVertexDataBuffer()
     {
+        TMP_TextInfo aTextInfo = m_textMeshPro.textInfo;
         TMP_CharacterInfo[] charsInfo = aTextInfo.characterInfo;
+        int length = TextLength;
 
-        ApplyStaticEffects(aStartIndex, aFinalIndex, aIndexSign, aTextInfo);
+        ApplyStaticEffects(aTextInfo);
 
         m_vertexData.Clear();
 
-        for (int i = aStartIndex; i * aIndexSign <= aFinalIndex * aIndexSign; i += aIndexSign)
+        for (int i = 0; i < length; i++)
         {
             if (ValidCharacter(charsInfo[i].character))
             {
@@ -326,7 +341,7 @@ public class GfxRichTextWriter
                     GfcTools.Add(ref center, vertPositions[vertexIndex]);
                 }
 
-                GfcTools.Mult(ref center, 0.25f);
+                GfcTools.Mult(ref center, 0.25f); //average of the positions, same as dividing by 4
 
                 for (int j = 0; j < VERT_COUNT; ++j)
                 {
@@ -380,51 +395,9 @@ internal struct VertexData
     public float LocalZRotationDeg;
 }
 
-internal struct VertexDataBasic
+internal struct TransitionRuntimeData
 {
-    public Vector4<Color32> Colors;
-    public Vector4<Vector3> WorldPositions;
-}
-
-internal struct Vector4<T>
-{
-    public T x;
-    public T y;
-    public T z;
-    public T w;
-
-    public T this[int index]
-    {
-        get
-        {
-            return index switch
-            {
-                0 => x,
-                1 => y,
-                2 => z,
-                3 => w,
-                _ => throw new IndexOutOfRangeException("Invalid Vector3 index(" + index + ")!"),
-            };
-        }
-        set
-        {
-            switch (index)
-            {
-                case 0:
-                    x = value;
-                    break;
-                case 1:
-                    y = value;
-                    break;
-                case 2:
-                    z = value;
-                    break;
-                case 3:
-                    w = value;
-                    break;
-                default:
-                    throw new IndexOutOfRangeException("Invalid Vector3 index(" + index + ")!");
-            }
-        }
-    }
+    public int ValidIndexOfLastFinishedChar;
+    public int LastFinishedIndex;
+    public bool FadeIn;
 }

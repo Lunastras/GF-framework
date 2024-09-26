@@ -108,30 +108,30 @@ public class GfcLocalization : MonoBehaviour
         GfcStringBuffer stringBuffer = Instance.m_stringBuffer;
         stringBuffer.Clear();
 
-        stringBuffer.Concatenate(aDay);
-        stringBuffer.Concatenate('/');
+        stringBuffer.Append(aDay);
+        stringBuffer.Append('/');
 
         switch (aMonth)
         {
-            case 0: stringBuffer.Concatenate("JAN"); break;
-            case 1: stringBuffer.Concatenate("FEB"); break;
-            case 2: stringBuffer.Concatenate("MAR"); break;
-            case 3: stringBuffer.Concatenate("APR"); break;
-            case 4: stringBuffer.Concatenate("MAY"); break;
-            case 5: stringBuffer.Concatenate("JUN"); break;
-            case 6: stringBuffer.Concatenate("JUL"); break;
-            case 7: stringBuffer.Concatenate("AUG"); break;
-            case 8: stringBuffer.Concatenate("SEP"); break;
-            case 9: stringBuffer.Concatenate("OCT"); break;
-            case 10: stringBuffer.Concatenate("NOV"); break;
-            case 11: stringBuffer.Concatenate("DEC"); break;
-            default: stringBuffer.Concatenate("UNKNOWN"); break;
+            case 0: stringBuffer.Append("JAN"); break;
+            case 1: stringBuffer.Append("FEB"); break;
+            case 2: stringBuffer.Append("MAR"); break;
+            case 3: stringBuffer.Append("APR"); break;
+            case 4: stringBuffer.Append("MAY"); break;
+            case 5: stringBuffer.Append("JUN"); break;
+            case 6: stringBuffer.Append("JUL"); break;
+            case 7: stringBuffer.Append("AUG"); break;
+            case 8: stringBuffer.Append("SEP"); break;
+            case 9: stringBuffer.Append("OCT"); break;
+            case 10: stringBuffer.Append("NOV"); break;
+            case 11: stringBuffer.Append("DEC"); break;
+            default: stringBuffer.Append("UNKNOWN"); break;
         }
 
         if (aYear >= 0)
         {
-            stringBuffer.Concatenate(' ');
-            stringBuffer.Concatenate(aYear);
+            stringBuffer.Append(' ');
+            stringBuffer.Append(aYear);
         }
 
         return stringBuffer.GetStringCopy();
@@ -157,8 +157,8 @@ public class GfcLocalization : MonoBehaviour
             else
             {
                 m_stringBuffer.Clear();
-                m_stringBuffer.Concatenate(aEntryName);
-                m_stringBuffer.Concatenate(UNKNOWN_ENTRY);
+                m_stringBuffer.Append(aEntryName);
+                m_stringBuffer.Append(UNKNOWN_ENTRY);
                 valueString = m_stringBuffer.GetStringCopy();
 
                 if (m_printErrorsWhenKeyInvalid)
