@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
+public abstract class GfgNotifyPanelGeneric : GfxNotifyPanelTemplate
 {
-    [SerializeField] protected GfxDoubleTextWriter m_mainTextWriter;
+    [SerializeField] protected GfgDoubleTextWriter m_mainTextWriter;
 
-    [SerializeField] protected GfxDoubleTextWriter m_nameTextWriter;
+    [SerializeField] protected GfgDoubleTextWriter m_nameTextWriter;
 
     [SerializeField] protected GameObject m_optionsButtonPrefab;
 
@@ -23,9 +23,9 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
 
     [SerializeField] protected float m_speedMultiplierFinish = 2;
 
-    [SerializeField] protected GfcInputType m_inputSubmit;
+    [SerializeField] protected GfgInputType m_inputSubmit = GfgInputType.SUBMIT;
 
-    [SerializeField] protected GfcInputType m_inputSkip;
+    [SerializeField] protected GfgInputType m_inputSkip = GfgInputType.RUN;
 
     [SerializeField] protected float m_messageWaitSecondsOnSkip = 0.2f;
 
@@ -113,7 +113,9 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
         float invTransitionTime = 1;
         GfxTextMessage currentMessage = default;
 
-        GfcInputTracker trackerSubmit = new(GfcInputType.SUBMIT);
+        GfgInputTracker trackerSubmit = new(m_inputSubmit, gameObject);
+        GfgInputTracker trackerSkip = new(m_inputSkip, gameObject);
+
         GfcAudioSource messageAudioSource = null;
 
         for (int transitionIndex = 0; transitionIndex < 2; ++transitionIndex)
@@ -142,7 +144,7 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
 
             for (float progress = 0; progress < GfcTools.EPSILON; progress += Time.deltaTime * invTransitionTime)
             {
-                if (GfcInput.GetInput(m_inputSkip) || trackerSubmit.PressedSinceLastCheck())
+                if (trackerSkip.Pressed() || trackerSubmit.PressedSinceLastCheck())
                 {
                     m_mainTextWriter.ForceWriteText();
                     m_nameTextWriter.ForceWriteText();
@@ -153,7 +155,6 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
                 yield return Timing.WaitForOneFrame;
             }
 
-            Time.timeScale = 1.0f;
             TransitionBox(transitionIndex == FADE_IN ? 1 : 0, transitionIndex == FADE_IN, hasNameBox);
 
             if (transitionIndex == FADE_IN && m_messagesBuffer.Count > 0) //perform this only in the first transition
@@ -177,9 +178,7 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
                     }
 
                     if (m_mainTextWriter.WritingText())
-                        yield return Timing.WaitUntilDone(m_mainTextWriter.WaitUntilTextFinishes(trackerSubmit, m_inputSkip, m_speedMultiplierFinish, m_forceWriteOnSubmit));
-
-                    Debug.Log("Finished writing the text I assume");
+                        yield return Timing.WaitUntilDone(m_mainTextWriter.WaitUntilTextFinishes(trackerSubmit, trackerSkip, m_speedMultiplierFinish, m_forceWriteOnSubmit));
 
                     trackerSubmit.PressedSinceLastCheck(); //reset the submit in case it was pressed while waiting for the text
 
@@ -202,9 +201,9 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
                     {
                         CoroutineHandle continueAnimationHandle = Timing.RunCoroutine(_AnimateContinueGraphics());
 
-                        if (GfcInput.GetInput(m_inputSkip))
+                        if (trackerSkip.Pressed())
                             yield return Timing.WaitForSeconds(m_messageWaitSecondsOnSkip);
-                        else while (!trackerSubmit.PressedSinceLastCheck() && !GfcInput.GetInput(m_inputSkip))
+                        else while (!trackerSubmit.PressedSinceLastCheck() && !trackerSkip.Pressed())
                                 yield return Timing.WaitForOneFrame;
 
                         if (continueAnimationHandle.IsValid) Timing.KillCoroutines(continueAnimationHandle);
@@ -215,17 +214,13 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
                     previousStringName = m_messagesBuffer[m_messageBufferIndex].Name;
                 } //for (; m_messageBufferIndex < m_messagesBuffer.Count; ++m_messageBufferIndex)
 
-                Debug.Log("Erasing text I assume");
                 m_mainTextWriter.EraseText(m_speedMultiplierTextErase);
             }
             else OnNotificationFadeOutEnd?.Invoke();
 
             if (transitionIndex == FADE_IN && BoxTextTransitionMode.MIX_END > m_transitionMixMode && m_mainTextWriter.WritingText())
-                yield return Timing.WaitUntilDone(m_mainTextWriter.WaitUntilTextFinishes(trackerSubmit, m_inputSkip, m_speedMultiplierFinish, m_forceWriteOnSubmit));
+                yield return Timing.WaitUntilDone(m_mainTextWriter.WaitUntilTextFinishes(trackerSubmit, trackerSkip, m_speedMultiplierFinish, m_forceWriteOnSubmit));
         }
-
-        //m_mainTextWriter.FinishTranslation();
-        //m_nameTextWriter.FinishTranslation();
 
         messageAudioSource?.Stop();
         m_messageBufferIndex = 0;
@@ -250,55 +245,6 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelTemplate
     public GfxTextMessage GetCurrentTextMessage() { return m_messagesBuffer[m_messageBufferIndex]; }
 
     public int GetCurrentTextMessageIndex() { return m_messageBufferIndex; }
-}
-
-public struct MessageOption
-{
-    public MessageOption(string aOptionText, bool anIsDisabled = false)
-    {
-        OptionText = aOptionText;
-        IsDisabled = anIsDisabled;
-    }
-
-    public string OptionText;
-
-    public bool IsDisabled;
-}
-
-public struct GfxTextMessage
-{
-    public GfxTextMessage(string aMainText = null, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
-    {
-        MainText = aMainText;
-        Name = aName;
-        OptionCallback = null;
-        Options = null;
-        Character = aCharacter;
-        Emotion = anEmotion;
-        Sound = null;
-    }
-
-    public GfxTextMessage(string aMainText, List<MessageOption> someOptions, Action<GfxTextMessage, GfxNotifyPanelGeneric, int> aOptionCallback, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
-    {
-        Options = someOptions;
-        OptionCallback = aOptionCallback;
-        MainText = aMainText;
-        Name = aName;
-        Character = aCharacter;
-        Emotion = anEmotion;
-        Sound = null;
-    }
-
-    public List<MessageOption> Options;
-    public Action<GfxTextMessage, GfxNotifyPanelGeneric, int> OptionCallback;
-
-    public string MainText;
-    public string Name;
-
-    public StoryCharacter Character;
-    public CharacterEmotion Emotion;
-
-    public GfcSound Sound;
 }
 
 public enum BoxTextTransitionMode

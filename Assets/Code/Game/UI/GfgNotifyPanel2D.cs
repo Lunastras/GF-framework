@@ -3,7 +3,7 @@ using UnityEngine;
 using MEC;
 using TMPro;
 
-public class GfxNotifyPanel2D : GfxNotifyPanelGeneric
+public class GfgNotifyPanel2D : GfgNotifyPanelGeneric
 {
     [SerializeField] protected TextMeshProUGUI m_continueText;
 

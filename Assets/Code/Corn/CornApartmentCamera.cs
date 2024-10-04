@@ -43,7 +43,7 @@ public class CornApartmentCamera : MonoBehaviour
     {
         if (CornMenuApartment.Instance)
         {
-            float xAxisMovement = GfcInput.GetAxisRaw(GfcInputType.MOVEMENT_X);
+            float xAxisMovement = GfgInput.GetAxisRaw(GfgInputType.MOVEMENT_X);
 
             if (xAxisMovement.Abs() > 0.001f)
             {

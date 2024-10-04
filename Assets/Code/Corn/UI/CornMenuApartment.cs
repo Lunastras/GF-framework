@@ -59,7 +59,6 @@ public class CornMenuApartment : MonoBehaviour
         Debug.Assert(m_slidersConsumables.Length == (int)PlayerConsumables.COUNT - PlayerSaveData.NON_0_TO_100_CONSUMABLES, "The list only has " + m_slidersConsumables.Length + " elements, it should have " + (int)PlayerConsumables.COUNT);
 */
         GfgManagerGame.InitializeGfBase();
-        GfgManagerGame.InitializeGfBase();
     }
 
     void Start()

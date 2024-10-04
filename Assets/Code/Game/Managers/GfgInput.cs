@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Rewired;
 
-public class GfcInput : MonoBehaviour
+public class GfgInput : MonoBehaviour
 {
-    private static GfcInput Instance = null;
+    private static GfgInput Instance = null;
 
     [SerializeField] private bool m_printErrors = true;
 
@@ -28,11 +28,11 @@ public class GfcInput : MonoBehaviour
 
         Instance = this;
 
-        AddDisplayInput(GfcInputType.MOVEMENT_X);
-        AddDisplayInput(GfcInputType.MOVEMENT_Y);
-        AddDisplayInput(GfcInputType.JUMP);
-        AddDisplayInput(GfcInputType.CROUCH);
-        AddDisplayInput(GfcInputType.RUN);
+        AddDisplayInput(GfgInputType.MOVEMENT_X);
+        AddDisplayInput(GfgInputType.MOVEMENT_Y);
+        AddDisplayInput(GfgInputType.JUMP);
+        AddDisplayInput(GfgInputType.CROUCH);
+        AddDisplayInput(GfgInputType.RUN);
     }
 
     /*
@@ -67,21 +67,21 @@ public class GfcInput : MonoBehaviour
         }
     }*/
 
-    private static string GetLocalizedLabel(GfcInputType aType)
+    private static string GetLocalizedLabel(GfgInputType aType)
     {
         //todo
         return aType.ToString();
     }
 
-    private static string GetLocalizedLabel(GfcInputCategory aGroupType)
+    private static string GetLocalizedLabel(GfgInputCategory aGroupType)
     {
         //todo
         return aGroupType.ToString();
     }
 
-    public static void AddDisplayInput(GfcInputType aType, string aLabel = null)
+    public static void AddDisplayInput(GfgInputType aType, string aLabel = null)
     {
-        if (aType != GfcInputType.NONE)
+        if (aType != GfgInputType.NONE)
         {
             aLabel ??= GetLocalizedLabel(aType);
 
@@ -116,9 +116,9 @@ public class GfcInput : MonoBehaviour
         }
     }
 
-    public static void RemoveDisplayInput(GfcInputType aType)
+    public static void RemoveDisplayInput(GfgInputType aType)
     {
-        if (aType != GfcInputType.NONE)
+        if (aType != GfgInputType.NONE)
         {
             int foundIndex = -1;
             for (int i = 0; i < Instance.m_displayedInputs.Count; i++)
@@ -144,9 +144,9 @@ public class GfcInput : MonoBehaviour
         }
     }
 
-    public static void AddDisplayInput(GfcInputCategory aGroupType, string aLabel = null)
+    public static void AddDisplayInput(GfgInputCategory aGroupType, string aLabel = null)
     {
-        if (aGroupType != GfcInputCategory.NONE)
+        if (aGroupType != GfgInputCategory.NONE)
         {
             aLabel ??= GetLocalizedLabel(aGroupType);
 
@@ -181,9 +181,9 @@ public class GfcInput : MonoBehaviour
         }
     }
 
-    public static void RemoveDisplayInput(GfcInputCategory aGroupType)
+    public static void RemoveDisplayInput(GfgInputCategory aGroupType)
     {
-        if (aGroupType != GfcInputCategory.NONE)
+        if (aGroupType != GfgInputCategory.NONE)
         {
             int foundIndex = -1;
             for (int i = 0; i < Instance.m_displayedInputs.Count; i++)
@@ -208,13 +208,14 @@ public class GfcInput : MonoBehaviour
     }
 
     public static Player GetPlayer(int aPlayerId = 0) { return ReInput.players.GetPlayer(aPlayerId); }
-    public static float GetAxis(GfcInputType aInputType, int aPlayerId = 0) { return aInputType == GfcInputType.NONE ? 0 : GetPlayer(aPlayerId).GetAxis((int)aInputType); }
-    public static float GetAxisRaw(GfcInputType aInputType, int aPlayerId = 0) { return aInputType == GfcInputType.NONE ? 0 : GetPlayer(aPlayerId).GetAxisRaw((int)aInputType); }
-    public static bool GetInput(GfcInputType aInputType, int aPlayerId = 0, float aError = AXIS_DEAD_ZONE) { return GetAxisRaw(aInputType, aPlayerId).Abs() > aError; }
+    //ignore input during transitions
+    public static float GetAxis(GfgInputType aInputType, int aPlayerId = 0) { return aInputType == GfgInputType.NONE || GfgManagerGame.GameStateTransitioning() ? 0 : GetPlayer(aPlayerId).GetAxis((int)aInputType); }
+    public static float GetAxisRaw(GfgInputType aInputType, int aPlayerId = 0) { return aInputType == GfgInputType.NONE || GfgManagerGame.GameStateTransitioning() ? 0 : GetPlayer(aPlayerId).GetAxisRaw((int)aInputType); }
+    public static bool GetInput(GfgInputType aInputType, int aPlayerId = 0, float aError = AXIS_DEAD_ZONE) { return GetAxisRaw(aInputType, aPlayerId).Abs() > aError; }
 }
 
 //used for generic inputs that should be compatible with a keyboard and a controller
-public enum GfcInputType
+public enum GfgInputType
 {
     NONE = -1,
 
@@ -251,7 +252,7 @@ public enum GfcInputType
 }
 
 //used to category together inputs (e.g. MOVEMENT with GfcInputType.MOVEMENT_X and GfcInputType.MOVEMENT_Y)
-public enum GfcInputCategory
+public enum GfgInputCategory
 {
     NONE,
     MOVEMENT,
@@ -259,18 +260,11 @@ public enum GfcInputCategory
 }
 
 [System.Serializable]
-public struct GfcInputDefine
+public struct GfgInputTracker
 {
-    public GfcInputType Type;
-    public GfcInputCategory Group;
-    public string AxisString;
-}
-
-[System.Serializable]
-public struct GfcInputTracker
-{
-    [SerializeField] private GfcInputType m_inputType;
+    [SerializeField] private GfgInputType m_inputType;
     [SerializeField] private float m_axisError;
+    public GameObject ParentGameObject;
 
     private int m_lastFrameOfUpdate;
 
@@ -282,17 +276,40 @@ public struct GfcInputTracker
 
     private bool m_stateCheckedThisFrame;
 
-    public GfcInputType InputType { get { return m_inputType; } set { m_inputType = value; UpdateState(); } }
-    public float AxisError { get { return m_axisError; } set { m_axisError = value; UpdateState(); } }
+    public GfgInputType InputType { readonly get { return m_inputType; } set { m_inputType = value; UpdateState(); } }
+    public float AxisError { readonly get { return m_axisError; } set { m_axisError = value; UpdateState(); } }
 
-    public GfcInputTracker(GfcInputType aType, int aPlayerId = 0, float aError = GfcInput.AXIS_DEAD_ZONE)
+    public GfgInputTracker(GfgInputType aType, GameObject aParentGameObject = null, int aPlayerId = 0, float aError = GfgInput.AXIS_DEAD_ZONE)
     {
         m_inputType = aType;
         m_axisError = aError;
         m_playerId = aPlayerId;
+        ParentGameObject = aParentGameObject;
         m_stateCheckedThisFrame = false;
         m_lastFrameOfUpdate = Time.frameCount;
-        m_previousPressedState = m_currentPressedState = GfcInput.GetInput(m_inputType, aPlayerId, m_axisError);
+        m_previousPressedState = m_currentPressedState = GfgInput.GetInput(m_inputType, aPlayerId, m_axisError);
+    }
+
+    public bool Pressed()
+    {
+        UpdateState();
+        return m_currentPressedState && ParentValid();
+    }
+
+    public bool PressedSinceLastCheck(bool aUniqueThisFrame = true)
+    {
+        UpdateState();
+        bool pressed = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && !m_previousPressedState && m_currentPressedState;
+        m_stateCheckedThisFrame |= aUniqueThisFrame;
+        return pressed && ParentValid();
+    }
+
+    public bool ReleasedSinceLastCheck(bool aUniqueThisFrame = true)
+    {
+        UpdateState();
+        bool released = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && m_previousPressedState && !m_currentPressedState;
+        m_stateCheckedThisFrame |= aUniqueThisFrame;
+        return released && ParentValid();
     }
 
     private void UpdateState()
@@ -301,44 +318,24 @@ public struct GfcInputTracker
         if (currentFrame != m_lastFrameOfUpdate)
         {
             m_previousPressedState = m_currentPressedState;
-            m_currentPressedState = GfcInput.GetInput(m_inputType, m_playerId, m_axisError);
+            m_currentPressedState = GfgInput.GetInput(m_inputType, m_playerId, m_axisError);
             m_lastFrameOfUpdate = currentFrame;
             m_stateCheckedThisFrame = false;
         }
     }
 
-    public bool Pressed()
-    {
-        UpdateState();
-        return m_currentPressedState;
-    }
-
-    public bool PressedSinceLastCheck(bool aUniqueThisFrame = true)
-    {
-        UpdateState();
-        bool pressed = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && !m_previousPressedState && m_currentPressedState;
-        m_stateCheckedThisFrame |= aUniqueThisFrame;
-        return pressed;
-    }
-
-    public bool ReleasedSinceLastCheck(bool aUniqueThisFrame = true)
-    {
-        UpdateState();
-        bool released = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && m_previousPressedState && !m_currentPressedState;
-        m_stateCheckedThisFrame |= aUniqueThisFrame;
-        return released;
-    }
+    private readonly bool ParentValid() { return ParentGameObject == null || ParentGameObject.activeInHierarchy; }
 }
 
 //this is used mainly for coroutines where we need to share an input becaue async functions cannot have ref structs as arguments
 [System.Serializable]
-public class GfcInputTrackerShared
+public class GfgInputTrackerShared
 {
-    [SerializeField] private GfcInputTracker m_inputTracker = new(GfcInputType.SUBMIT);
+    [SerializeField] private GfgInputTracker m_inputTracker = new(GfgInputType.SUBMIT);
 
-    public GfcInputTrackerShared(GfcInputType aType, int aPlayerId = 0, float aError = GfcInput.AXIS_DEAD_ZONE) { m_inputTracker = new(aType, aPlayerId, aError); }
+    public GfgInputTrackerShared(GfgInputType aType, GameObject aParentGameObject = null, int aPlayerId = 0, float aError = GfgInput.AXIS_DEAD_ZONE) { m_inputTracker = new(aType, aParentGameObject, aPlayerId, aError); }
 
-    public GfcInputTrackerShared(GfcInputTracker aTracker) { m_inputTracker = aTracker; }
+    public GfgInputTrackerShared(GfgInputTracker aTracker) { m_inputTracker = aTracker; }
 
     public bool Pressed() { return m_inputTracker.Pressed(); }
 
@@ -347,19 +344,19 @@ public class GfcInputTrackerShared
     public bool ReleasedSinceLastCheck(bool aUniqueThisFrame = true) { return m_inputTracker.ReleasedSinceLastCheck(aUniqueThisFrame); }
 }
 
-public static class GfcInputTrackerStatic
+public static class GfgInputTrackerStatic
 {
-    public static bool PressedFallback(this GfcInputTrackerShared aTrackerInstance, ref GfcInputTracker aTrackerFallback)
+    public static bool PressedFallback(this GfgInputTrackerShared aTrackerInstance, ref GfgInputTracker aTrackerFallback)
     {
         return aTrackerInstance != null ? aTrackerInstance.Pressed() : aTrackerFallback.Pressed();
     }
 
-    public static bool PressedSinceLastCheckFallback(this GfcInputTrackerShared aTrackerInstance, ref GfcInputTracker aTrackerFallback, bool aUniqueThisFrame = true)
+    public static bool PressedSinceLastCheckFallback(this GfgInputTrackerShared aTrackerInstance, ref GfgInputTracker aTrackerFallback, bool aUniqueThisFrame = true)
     {
         return aTrackerInstance != null ? aTrackerInstance.PressedSinceLastCheck(aUniqueThisFrame) : aTrackerFallback.PressedSinceLastCheck(aUniqueThisFrame);
     }
 
-    public static bool ReleasedSinceLastCheckFallback(this GfcInputTrackerShared aTrackerInstance, ref GfcInputTracker aTrackerFallback, bool aUniqueThisFrame = true)
+    public static bool ReleasedSinceLastCheckFallback(this GfgInputTrackerShared aTrackerInstance, ref GfgInputTracker aTrackerFallback, bool aUniqueThisFrame = true)
     {
         return aTrackerInstance != null ? aTrackerInstance.ReleasedSinceLastCheck(aUniqueThisFrame) : aTrackerFallback.ReleasedSinceLastCheck(aUniqueThisFrame);
     }
@@ -369,8 +366,8 @@ public struct DisplayedInputData
 {
     public string Label;
 
-    public GfcInputType Input;
-    public GfcInputCategory Category;
+    public GfgInputType Input;
+    public GfgInputCategory Category;
 
     public int RegisterCount;
 }

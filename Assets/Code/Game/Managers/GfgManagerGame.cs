@@ -8,6 +8,7 @@ using System;
 using MEC;
 using Unity.Netcode.Transports.UTP;
 using log4net.Filter;
+using Unity.Mathematics;
 
 public class GfgManagerGame : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class GfgManagerGame : MonoBehaviour
     protected static GfgManagerGame m_instance;
 
     public static GfgManagerGame Instance { get { return m_instance; } protected set { m_instance = value; } }
+
+    public Action<GfcGameState, GfcGameState> OnGameStateChanged;
 
     [SerializeField] private GameObject m_serverManagerPrefab = null;
 
@@ -31,7 +34,8 @@ public class GfgManagerGame : MonoBehaviour
 
     private GfcGameState m_previousTransitionState;
 
-    public Action<GfcGameState, GfcGameState> OnGameStateChanged;
+    private object m_gameStateLockHandle = null;
+    private uint m_gameStateLockKey = 0;
 
     public static CoroutineHandle GetGameStateTransitionHandle() { return Instance.m_gameStateTransitionHandle; }
 
@@ -115,28 +119,63 @@ public class GfgManagerGame : MonoBehaviour
     {
         CoroutineHandle transitionHandle = default;
 
-        if (aState == GfcGameState.INVALID)
+        if (!GameStateIsLocked())
         {
-            if (!anIgnoreInvalidGameState) Debug.LogError("The game state passed is invalid.");
-        }
-        else if (Instance.m_gameStateTransitionHandle.CoroutineIsRunning)
-        {
-            Debug.LogWarning("Already in the process of transitioning game state " + Instance.m_currentTransitionState + ", cannot transition to state: " + aState);
-        }
-        else if (aSmoothTransition)
-        {
-            Debug.Assert(!anAllowQueueIfNull, "Singleton queueing is not supported if we are using the smooth transition.");
+            if (aState == GfcGameState.INVALID)
+            {
+                if (!anIgnoreInvalidGameState) Debug.LogError("The game state passed is invalid.");
+            }
+            else if (Instance.m_gameStateTransitionHandle.CoroutineIsRunning)
+            {
+                Debug.LogWarning("Already in the process of transitioning game state " + Instance.m_currentTransitionState + ", cannot transition to state: " + aState);
+            }
+            else if (aSmoothTransition)
+            {
+                Debug.Assert(!anAllowQueueIfNull, "Singleton queueing is not supported if we are using the smooth transition.");
 
-            Instance.m_currentTransitionState = aState;
-            transitionHandle = Instance.m_gameStateTransitionHandle.RunCoroutineIfNotRunning(Instance._TransitionGameState(aWaitForSmoothTransitionFadeOut));
-        }
-        else
-        {
-            SetGameStateInternal(aState, anAllowQueueIfNull);
+                Instance.m_currentTransitionState = aState;
+                transitionHandle = Instance.m_gameStateTransitionHandle.RunCoroutineIfNotRunning(Instance._TransitionGameState(aWaitForSmoothTransitionFadeOut));
+            }
+            else
+            {
+                SetGameStateInternal(aState, anAllowQueueIfNull);
+            }
         }
 
         return transitionHandle;
     }
+
+    public static uint LockGameState(object aLockHandle)
+    {
+        uint key = 0;
+        if (Instance.m_gameStateLockHandle == null)
+        {
+            Instance.m_gameStateLockHandle = aLockHandle;
+            Instance.m_gameStateLockKey = key = (uint)((double)UnityEngine.Random.Range(0.0f, 1.0f) * uint.MaxValue);
+        }
+        else
+            Debug.LogError("Tried to lock the game state when its already locked by the object: (" + Instance.m_gameStateLockHandle + ").");
+
+        return key;
+    }
+
+    public static bool UnlockGameState(uint aLockKey)
+    {
+        bool success = false;
+        if (CanUnlockGameState(aLockKey))
+        {
+            Instance.m_gameStateLockHandle = null;
+            success = true;
+        }
+        else
+            Debug.LogError("The unlock key is invalid.");
+
+        return success;
+    }
+
+    public static bool GameStateIsLocked() { return Instance.m_gameStateLockHandle != null; }
+
+    public static bool CanUnlockGameState(uint aLockKey) { return Instance.m_gameStateLockHandle == null || aLockKey == Instance.m_gameStateLockKey; }
 
     private IEnumerator<float> _TransitionGameStateFadeOut(bool aFinishRoutineOnEnd)
     {
@@ -181,7 +220,6 @@ public class GfgManagerGame : MonoBehaviour
         if (!SceneManager.GetSceneByBuildIndex(sceneBuildIndex).isLoaded)
         {
             SceneManager.LoadScene(sceneBuildIndex, LoadSceneMode.Additive);
-            GfgScene.SetScenePersistent(GfcSceneId.GF_BASE, true);
         }
     }
 

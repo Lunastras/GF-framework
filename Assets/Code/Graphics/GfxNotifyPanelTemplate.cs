@@ -46,3 +46,53 @@ public abstract class GfxNotifyPanelTemplate : MonoBehaviour
 
     protected abstract IEnumerator<float> _DrawMessages();
 }
+
+
+public struct GfxTextMessage
+{
+    public GfxTextMessage(string aMainText = null, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
+    {
+        MainText = aMainText;
+        Name = aName;
+        OptionCallback = null;
+        Options = null;
+        Character = aCharacter;
+        Emotion = anEmotion;
+        Sound = null;
+    }
+
+    public GfxTextMessage(string aMainText, List<MessageOption> someOptions, Action<GfxTextMessage, GfxNotifyPanelTemplate, int> aOptionCallback, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
+    {
+        Options = someOptions;
+        OptionCallback = aOptionCallback;
+        MainText = aMainText;
+        Name = aName;
+        Character = aCharacter;
+        Emotion = anEmotion;
+        Sound = null;
+    }
+
+    public List<MessageOption> Options;
+    public Action<GfxTextMessage, GfxNotifyPanelTemplate, int> OptionCallback;
+
+    public string MainText;
+    public string Name;
+
+    public StoryCharacter Character;
+    public CharacterEmotion Emotion;
+
+    public GfcSound Sound;
+}
+
+public struct MessageOption
+{
+    public MessageOption(string aOptionText, bool anIsDisabled = false)
+    {
+        OptionText = aOptionText;
+        IsDisabled = anIsDisabled;
+    }
+
+    public string OptionText;
+
+    public bool IsDisabled;
+}

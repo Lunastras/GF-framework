@@ -44,13 +44,11 @@ public class GfgScene : MonoBehaviour
             LoadScene(m_persistentScenesOnStart[i], false, true);
         }
 
-        LoadScene(GfcSceneId.GF_BASE, false, true);
+        SetScenePersistent(GfcSceneId.GF_BASE, true);
 
         SceneManager.sceneUnloaded += OnSceneUnloaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
-
-    bool m_setGameStateCallbackSet = false;
 
     void Start()
     {
@@ -97,7 +95,6 @@ public class GfgScene : MonoBehaviour
     public static bool GetScenePersistent(GfcSceneId aScene)
     {
         Debug.Assert(aScene != GfcSceneId.INVALID);
-
         return Instance.m_scenesData[(int)aScene].PersistentScene;
     }
 
@@ -115,11 +112,12 @@ public class GfgScene : MonoBehaviour
         Debug.Assert(aScene != GfcSceneId.INVALID);
 
         SceneData sceneData = Instance.m_scenesData[(int)aScene];
-        sceneData.PersistentScene = aPersistentScene;
+        sceneData.PersistentScene |= aPersistentScene;
 
         Scene scene = SceneManager.GetSceneByBuildIndex((int)aScene);
         if (!scene.isLoaded && sceneData.LoadState == GfcSceneLoadState.UNLOADED)
         {
+            Debug.Log("Loading scene " + aScene);
             sceneData.LoadState = GfcSceneLoadState.LOADING;
             SceneManager.LoadScene((int)aScene, LoadSceneMode.Additive);
         }
@@ -135,7 +133,7 @@ public class GfgScene : MonoBehaviour
         Debug.Assert(aScene != GfcSceneId.INVALID);
 
         SceneData sceneData = Instance.m_scenesData[(int)aScene];
-        sceneData.PersistentScene = aPersistentScene;
+        sceneData.PersistentScene |= aPersistentScene;
         AsyncOperation operation = sceneData.Operation;
 
         if (operation == null && !SceneManager.GetSceneByBuildIndex((int)aScene).isLoaded)

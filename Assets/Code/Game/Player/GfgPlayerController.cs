@@ -68,7 +68,7 @@ public class GfgPlayerController : MonoBehaviour
 
     private Vector3 GetMovementInput(Vector3 upVec)
     {
-        Vector2 input = new(GfcInput.GetAxisRaw(GfcInputType.MOVEMENT_X), GfcInput.GetAxisRaw(GfcInputType.MOVEMENT_Y));
+        Vector2 input = new(GfgInput.GetAxisRaw(GfgInputType.MOVEMENT_X), GfgInput.GetAxisRaw(GfgInputType.MOVEMENT_Y));
 
         float movementDirMagnitude = input.magnitude;
         Vector3 movDir = Vector3.zero;
@@ -122,8 +122,8 @@ public class GfgPlayerController : MonoBehaviour
         {
             Vector3 upVec = m_movement.GetUpvecRotation();
 
-            auxFlagDash = GfcInput.GetInput(GfcInputType.RUN);
-            auxFlagJump = GfcInput.GetInput(GfcInputType.JUMP);
+            auxFlagDash = GfgInput.GetInput(GfgInputType.RUN);
+            auxFlagJump = GfgInput.GetInput(GfgInputType.JUMP);
             auxMovDir = GetMovementInput(upVec);
         }
 

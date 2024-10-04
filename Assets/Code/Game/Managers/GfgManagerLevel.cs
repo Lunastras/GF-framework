@@ -281,7 +281,7 @@ public class GfgManagerLevel : MonoBehaviour
 
             case LevelState.LEVEL_ENDED:
 
-                if (GfcInput.GetInput(GfcInputType.SUBMIT)
+                if (GfgInput.GetInput(GfgInputType.SUBMIT)
                 && (!NetworkManager.Singleton || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
                 {
                     OnLevelEndSubmit?.Invoke();

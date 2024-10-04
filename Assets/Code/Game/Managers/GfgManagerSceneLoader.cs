@@ -40,6 +40,8 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
     private bool m_fakeWait = false;
 
+    private uint m_gameStateKey;
+
     public static bool FakeWait
     {
         get
@@ -100,7 +102,8 @@ public class GfgManagerSceneLoader : MonoBehaviour
                 if (Instance.m_enableLogs) Debug.Log("Starting to load scene with build index " + aSceneBuildIndex);
 
                 Instance.m_scenesToUnload.Clear();
-                Instance.m_loadingRoutine.RunCoroutineIfNotRunning(_LoadAsyncHost());
+                Instance.m_gameStateKey = GfgManagerGame.LockGameState(Instance);
+                Instance.m_loadingRoutine.RunCoroutine(_LoadAsyncHost());
             }
             else
             {
@@ -154,7 +157,11 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
     private static IEnumerator<float> _LoadAsyncHost()
     {
+
+        GfgManagerGame.UnlockGameState(Instance.m_gameStateKey);
         yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GfcGameState.LOADING, true, false, false, false));
+
+        Instance.m_gameStateKey = GfgManagerGame.LockGameState(Instance);
 
         if (GfcManagerServer.HasInstance)
             GfcManagerServer.SetPlayerIsReady(false);
@@ -224,7 +231,10 @@ public class GfgManagerSceneLoader : MonoBehaviour
         yield return Timing.WaitUntilDone(GfgManagerGame.GetGameStateTransitionHandle()); //make sure the fade out of the first transition is done
 
         if (!Instance.m_fakeWait)
+        {
+            GfgManagerGame.UnlockGameState(Instance.m_gameStateKey);
             yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GameStateAfterLoad, true, false, false, false));
+        }
 
         if (mustHaveNetworkGame) GfcManagerServer.SetPlayerIsReady(true);
 
@@ -242,6 +252,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
             yield return Timing.WaitForSeconds(0.02f);
 
         Instance.m_fakeWait = false;
+        GfgManagerGame.UnlockGameState(Instance.m_gameStateKey);
         GfgManagerGame.SetGameState(GameStateAfterLoad, false);
     }
 }

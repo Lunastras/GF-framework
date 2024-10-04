@@ -10,11 +10,11 @@ public class CornTimestopPlayer : MonoBehaviour
 
     [SerializeField] private GfMovementGeneric m_movement;
 
-    [SerializeField] private GfcInputType m_timeStopInput;
+    [SerializeField] private GfgInputType m_timeStopInput;
 
     [SerializeField] private float m_depleteTime = 5;
 
-    private GfcInputTracker m_inputTrackerTimeStop;
+    private GfgInputTracker m_inputTrackerTimeStop;
 
     private float m_currentEnergyLevel = 1;
 

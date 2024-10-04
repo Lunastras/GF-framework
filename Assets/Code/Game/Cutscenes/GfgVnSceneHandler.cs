@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using MEC;
 using System.Threading.Tasks;
@@ -25,7 +24,7 @@ public class GfgVnSceneHandler : MonoBehaviour
 
     [HideInInspector] public GfcStringBuffer m_dialogueStringBuffer = new(32);
 
-    [HideInInspector] public Action<GfxTextMessage, GfxNotifyPanelGeneric, int> m_buttonCallback;
+    [HideInInspector] public Action<GfxTextMessage, GfxNotifyPanelTemplate, int> m_buttonCallback;
 
     [HideInInspector] public GfcCoroutineHandle m_actionCoroutineHandle = default;
 
@@ -54,11 +53,17 @@ public class GfgVnSceneHandler : MonoBehaviour
 
         Log("Writing scene: " + aSceneType.Name);
 
-        GfgVnScene scene = (GfgVnScene)Activator.CreateInstance(aSceneType);
+        GfgVnScene scene = (GfgVnScene)System.Activator.CreateInstance(aSceneType);
         return m_actionCoroutineHandle.RunCoroutineIfNotRunning(scene.PrepareScene(this));
     }
 
-    private void OnOptionSubmitCallback(GfxTextMessage aMessage, GfxNotifyPanelGeneric aNotifyPanel, int aIndex) { m_nextLabel = m_callbackActionsBuffer[aIndex]; }
+    private void OnOptionSubmitCallback(GfxTextMessage aMessage, GfxNotifyPanelTemplate aNotifyPanel, int aIndex)
+    {
+        if (aIndex < 0 || aIndex >= m_callbackActionsBuffer.Count)
+            LogError("The option index is invalid: " + aIndex + " count of options in buffer is: " + m_callbackActionsBuffer.Count);
+        else
+            m_nextLabel = m_callbackActionsBuffer[aIndex];
+    }
 }
 
 public abstract class GfgVnScene

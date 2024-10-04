@@ -5,7 +5,7 @@ using UnityEngine;
 public class CornManagerPhone : MonoBehaviour
 {
     private static CornManagerPhone Instance;
-    [SerializeField] private GfcInputTracker m_openPhoneInput;
+    [SerializeField] private GfgInputTracker m_openPhoneInput;
 
     [SerializeField] private GfcGameState[] m_statesWhereToggleEnabled;
 

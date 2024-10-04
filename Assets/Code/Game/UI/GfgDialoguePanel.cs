@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GfxDialoguePanel : MonoBehaviour
+public class GfgDialoguePanel : MonoBehaviour
 {
     public GfxImageInterpolator Portrait;
 
-    public GfxNotifyPanelGeneric PanelGeneric;
+    public GfgNotifyPanelGeneric PanelGeneric;
 
     void Start()
     {
