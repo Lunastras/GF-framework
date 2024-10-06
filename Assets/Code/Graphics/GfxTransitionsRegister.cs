@@ -1,0 +1,1 @@
+public class GfxTransitionsRegister : GfcSingletonContainerRegister<GfxTransitions, GfxTransitionGeneric, GfxTransitionType> { }

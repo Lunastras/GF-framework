@@ -159,7 +159,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
     {
 
         GfgManagerGame.UnlockGameState(Instance.m_gameStateKey);
-        yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GfcGameState.LOADING, true, false, false, false));
+        yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GfcGameState.LOADING, true));
 
         Instance.m_gameStateKey = GfgManagerGame.LockGameState(Instance);
 
@@ -233,7 +233,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
         if (!Instance.m_fakeWait)
         {
             GfgManagerGame.UnlockGameState(Instance.m_gameStateKey);
-            yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GameStateAfterLoad, true, false, false, false));
+            yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GameStateAfterLoad, true));
         }
 
         if (mustHaveNetworkGame) GfcManagerServer.SetPlayerIsReady(true);

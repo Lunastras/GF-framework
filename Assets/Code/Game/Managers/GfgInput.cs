@@ -209,8 +209,8 @@ public class GfgInput : MonoBehaviour
 
     public static Player GetPlayer(int aPlayerId = 0) { return ReInput.players.GetPlayer(aPlayerId); }
     //ignore input during transitions
-    public static float GetAxis(GfgInputType aInputType, int aPlayerId = 0) { return aInputType == GfgInputType.NONE || GfgManagerGame.GameStateTransitioning() ? 0 : GetPlayer(aPlayerId).GetAxis((int)aInputType); }
-    public static float GetAxisRaw(GfgInputType aInputType, int aPlayerId = 0) { return aInputType == GfgInputType.NONE || GfgManagerGame.GameStateTransitioning() ? 0 : GetPlayer(aPlayerId).GetAxisRaw((int)aInputType); }
+    public static float GetAxis(GfgInputType aInputType, int aPlayerId = 0) { return aInputType == GfgInputType.NONE || GfgManagerGame.GameStateTransitioningFadeInPhase() ? 0 : GetPlayer(aPlayerId).GetAxis((int)aInputType); }
+    public static float GetAxisRaw(GfgInputType aInputType, int aPlayerId = 0) { return aInputType == GfgInputType.NONE || GfgManagerGame.GameStateTransitioningFadeInPhase() ? 0 : GetPlayer(aPlayerId).GetAxisRaw((int)aInputType); }
     public static bool GetInput(GfgInputType aInputType, int aPlayerId = 0, float aError = AXIS_DEAD_ZONE) { return GetAxisRaw(aInputType, aPlayerId).Abs() > aError; }
 }
 

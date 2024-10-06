@@ -28,11 +28,17 @@ public class GfgManagerGame : MonoBehaviour
 
     [SerializeField] private GfcGameState m_gameState = GfcGameState.INVALID;
 
-    private GfcCoroutineHandle m_gameStateTransitionHandle;
+    private GfcGameState m_previousGameState;
 
-    private GfcGameState m_currentTransitionState;
+    private CoroutineHandle m_gameStateTransitionHandle;
 
-    private GfcGameState m_previousTransitionState;
+    private CoroutineHandle m_queuedGameStateTransitionHandle;
+
+    private GfcGameState m_gameStateAfterTransition = GfcGameState.INVALID;
+
+    private int m_queuedGameStateTransitionPriority;
+
+    private bool m_fadeOutGameStateTransition = false;
 
     private object m_gameStateLockHandle = null;
     private uint m_gameStateLockKey = 0;
@@ -41,9 +47,13 @@ public class GfgManagerGame : MonoBehaviour
 
     public static GfcGameState GetGameState() { return Instance.m_gameState; }
 
-    public static bool GameStateTransitioning() { return Instance.m_gameStateTransitionHandle.CoroutineHandle.IsValid; }
+    public static bool GameStateTransitioningFadeOutPhase() { return GameStateTransitioning() && Instance.m_fadeOutGameStateTransition; }
 
-    public static GfcGameState GetPreviousGameState() { return Instance.m_previousTransitionState; }
+    public static bool GameStateTransitioningFadeInPhase() { return GameStateTransitioning() && !Instance.m_fadeOutGameStateTransition; }
+
+    public static bool GameStateTransitioning() { return Instance.m_gameStateTransitionHandle.IsValid; }
+
+    public static GfcGameState GetPreviousGameState() { return Instance.m_previousGameState; }
 
     public static float GetInitialFixedDeltaTime { get { return Instance.m_initialFixedDeltaTime; } }
 
@@ -106,16 +116,16 @@ public class GfgManagerGame : MonoBehaviour
         QuitToMenu();
     }
 
-    private static void SetGameStateInternal(GfcGameState aState, bool anAllowQueueIfNull = false)
+    private static void SetGameStateInternal(GfcGameState aState)
     {
         if (aState != Instance.m_gameState)
-            Instance.m_previousTransitionState = Instance.m_gameState;
+            Instance.m_previousGameState = Instance.m_gameState;
 
         Instance.m_gameState = aState;
-        Instance.OnGameStateChanged?.Invoke(aState, Instance.m_previousTransitionState);
+        Instance.OnGameStateChanged?.Invoke(aState, Instance.m_previousGameState);
     }
 
-    public static CoroutineHandle SetGameState(GfcGameState aState, bool aSmoothTransition = true, bool anIgnoreInvalidGameState = false, bool anAllowQueueIfNull = false, bool aWaitForSmoothTransitionFadeOut = true)
+    public static CoroutineHandle SetGameState(GfcGameState aState, bool aSmoothTransition = true, GfxTransitionType aTransition = GfxTransitionType.BLACK_FADE, int aPriorityInQueue = 0)
     {
         CoroutineHandle transitionHandle = default;
 
@@ -123,26 +133,58 @@ public class GfgManagerGame : MonoBehaviour
         {
             if (aState == GfcGameState.INVALID)
             {
-                if (!anIgnoreInvalidGameState) Debug.LogError("The game state passed is invalid.");
-            }
-            else if (Instance.m_gameStateTransitionHandle.CoroutineIsRunning)
-            {
-                Debug.LogWarning("Already in the process of transitioning game state " + Instance.m_currentTransitionState + ", cannot transition to state: " + aState);
+                Debug.LogError("The game state passed is invalid.");
             }
             else if (aSmoothTransition)
             {
-                Debug.Assert(!anAllowQueueIfNull, "Singleton queueing is not supported if we are using the smooth transition.");
-
-                Instance.m_currentTransitionState = aState;
-                transitionHandle = Instance.m_gameStateTransitionHandle.RunCoroutineIfNotRunning(Instance._TransitionGameState(aWaitForSmoothTransitionFadeOut));
+                if (Instance.m_gameStateAfterTransition != aState && (!Instance.m_queuedGameStateTransitionHandle.IsValid || aPriorityInQueue > Instance.m_queuedGameStateTransitionPriority))
+                {
+                    Instance.m_queuedGameStateTransitionPriority = aPriorityInQueue;
+                    Timing.KillCoroutines(Instance.m_queuedGameStateTransitionHandle);
+                    GfxTransitionGeneric transition = GfxTransitions.Instance.GetSingleton(aTransition);
+                    transitionHandle = Timing.RunCoroutine(Instance._TransitionGameState(aState, transition));
+                    Instance.m_queuedGameStateTransitionHandle = transitionHandle;
+                }
             }
             else
             {
-                SetGameStateInternal(aState, anAllowQueueIfNull);
+                SetGameStateInternal(aState);
             }
         }
 
         return transitionHandle;
+    }
+
+    private IEnumerator<float> _TransitionGameState(GfcGameState aState, GfxTransitionGeneric aTransition)
+    {
+        yield return Timing.WaitForOneFrame; //don't execute immediately after RunCoroutine
+
+        if (GameStateTransitioningFadeInPhase())
+            yield return Timing.WaitUntilDone(m_gameStateTransitionHandle);
+
+        Timing.KillCoroutines(m_gameStateTransitionHandle);
+
+        m_gameStateTransitionHandle = m_queuedGameStateTransitionHandle; // make this the new main coroutine
+        m_queuedGameStateTransitionHandle = default;
+        m_queuedGameStateTransitionPriority = 0;
+        m_gameStateAfterTransition = aState;
+
+        m_fadeOutGameStateTransition = false;
+        yield return Timing.WaitUntilDone(aTransition.StartFadeIn());
+
+        SetGameStateInternal(aState);
+
+        m_fadeOutGameStateTransition = true;
+        m_gameStateAfterTransition = GfcGameState.INVALID;
+        m_gameStateTransitionHandle = Timing.RunCoroutine(_TransitionGameStateFadeOut(aTransition));
+    }
+
+    private IEnumerator<float> _TransitionGameStateFadeOut(GfxTransitionGeneric aTransition)
+    {
+        yield return Timing.WaitUntilDone(aTransition.StartFadeOut());
+
+        m_fadeOutGameStateTransition = false;
+        m_gameStateTransitionHandle = default;
     }
 
     public static uint LockGameState(object aLockHandle)
@@ -176,33 +218,6 @@ public class GfgManagerGame : MonoBehaviour
     public static bool GameStateIsLocked() { return Instance.m_gameStateLockHandle != null; }
 
     public static bool CanUnlockGameState(uint aLockKey) { return Instance.m_gameStateLockHandle == null || aLockKey == Instance.m_gameStateLockKey; }
-
-    private IEnumerator<float> _TransitionGameStateFadeOut(bool aFinishRoutineOnEnd)
-    {
-        yield return Timing.WaitUntilDone(GfxUiTools.FadeOverlayAlpha(0, 0.3f));
-
-        if (aFinishRoutineOnEnd)
-        {
-            Instance.m_gameStateTransitionHandle.Finished();
-        }
-    }
-
-    private IEnumerator<float> _TransitionGameState(bool aWaitForSmoothTransitionFadeOut)
-    {
-        yield return Timing.WaitUntilDone(GfxUiTools.FadeOverlayAlpha(1, 0.3f));
-        SetGameStateInternal(m_currentTransitionState, false);
-        CoroutineHandle fadeOutRoutine = Timing.RunCoroutine(_TransitionGameStateFadeOut(!aWaitForSmoothTransitionFadeOut));
-
-        if (aWaitForSmoothTransitionFadeOut)
-        {
-            yield return Timing.WaitUntilDone(fadeOutRoutine);
-            m_gameStateTransitionHandle.Finished();
-        }
-        else
-        {
-            Instance.m_gameStateTransitionHandle.CoroutineHandle = fadeOutRoutine;
-        }
-    }
 
     protected void ConnectionApprovalCallbackFunc(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {

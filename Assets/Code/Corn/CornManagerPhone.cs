@@ -18,7 +18,7 @@ public class CornManagerPhone : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (m_openPhoneInput.PressedSinceLastCheck() && !GfgManagerGame.GameStateTransitioning())
+        if (m_openPhoneInput.PressedSinceLastCheck())
         {
             bool validState = false;
             GfcGameState gameState = GfgManagerGame.GetGameState();

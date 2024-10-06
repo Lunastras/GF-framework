@@ -400,6 +400,8 @@ public class GfxUiTools : MonoBehaviour
 
     private static IEnumerator<float> _CrossFadeAlphaGroup(CanvasGroup aGroup, float aTargetAlpha, float aDurationSeconds, bool anIgnoreTimeScale, AnimationCurve anAnimationCurve)
     {
+        aGroup.alpha += 0.001f; //change it a bit to cancel out other coroutines
+
         float progress = 0;
         float anInitialAlpha = aGroup.alpha, lastAlpha = anInitialAlpha;
 
@@ -434,13 +436,19 @@ public class GfxUiTools : MonoBehaviour
     public static CoroutineHandle CrossFadeColor(Graphic aGraphic, Color aTargetColor, float aDurationSeconds, bool anIgnoreTimeScale, AnimationCurve anAnimationCurve = null)
     {
         if (aTargetColor != aGraphic.color)
+        {
             return Timing.RunCoroutine(_CrossFadeColor(aGraphic, aTargetColor, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve ?? Instance.m_defaultAnimationCurve));
+        }
         else
             return default;
     }
 
     private static IEnumerator<float> _CrossFadeColor(Graphic aGraphic, Color aTargetColor, float aDurationSeconds, bool anIgnoreTimeScale, AnimationCurve anAnimationCurve)
     {
+        Color color = aGraphic.color;
+        color.a += 0.001f; //change it a bit to cancel out other coroutines
+        aGraphic.color = color;
+
         float progress = 0;
         Color anInitialColor = aGraphic.color, lastColor = anInitialColor;
 
