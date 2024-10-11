@@ -23,9 +23,9 @@ public abstract class GfgNotifyPanelGeneric : GfxNotifyPanelTemplate
 
     [SerializeField] protected float m_speedMultiplierFinish = 2;
 
-    [SerializeField] protected GfgInputType m_inputSubmit = GfgInputType.SUBMIT;
+    [SerializeField] protected GfcInputType m_inputSubmit = GfcInputType.SUBMIT;
 
-    [SerializeField] protected GfgInputType m_inputSkip = GfgInputType.RUN;
+    [SerializeField] protected GfcInputType m_inputSkip = GfcInputType.RUN;
 
     [SerializeField] protected float m_messageWaitSecondsOnSkip = 0.2f;
 
@@ -113,8 +113,8 @@ public abstract class GfgNotifyPanelGeneric : GfxNotifyPanelTemplate
         float invTransitionTime = 1;
         GfxTextMessage currentMessage = default;
 
-        GfgInputTracker trackerSubmit = new(m_inputSubmit, gameObject);
-        GfgInputTracker trackerSkip = new(m_inputSkip, gameObject);
+        GfcInputTracker trackerSubmit = new(m_inputSubmit, gameObject);
+        GfcInputTracker trackerSkip = new(m_inputSkip, gameObject);
 
         GfcAudioSource messageAudioSource = null;
 

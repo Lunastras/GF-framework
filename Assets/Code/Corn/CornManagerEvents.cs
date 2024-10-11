@@ -47,6 +47,7 @@ public class CornManagerEvents : MonoBehaviour
     {
         string message;
         CornEventCostAndRewards eventDetails = CornManagerBalancing.GetEventCostAndRewards(aEvent);
+        CoroutineHandle eventHandle = default;
 
         if (CanAfford(aEvent))
         {
@@ -60,6 +61,18 @@ public class CornManagerEvents : MonoBehaviour
             else //perform the event normally
             {
                 //event stuff
+
+                switch (aEvent.EventType)
+                {
+                    case CornEventType.WORK:
+                        eventHandle = Timing.RunCoroutine(_ExecuteWorkEvent());
+                        break;
+
+                    case CornEventType.SOCIAL:
+                        eventHandle = CornManagerStory.StartStoryScene(aEvent.Scene);
+                        break;
+                }
+
                 message = "<i>Pretty</i> cool event <color=red>" + aEvent.EventType.ToString() + "</color> was finished.";
             }
         }
@@ -71,26 +84,10 @@ public class CornManagerEvents : MonoBehaviour
 
         List<string> messagesBuffer = GetMessagesBuffer();
         messagesBuffer.Add(message);
-        messagesBuffer.Add(message);
-        messagesBuffer.Add(message);
-        messagesBuffer.Add(message);
 
         eventDetails.ApplyModifiersToPlayer(0);
 
-        CoroutineHandle eventHandle = default;
-
         GfxUiTools.RemoveSelectedGameObject();
-
-        switch (aEvent.EventType)
-        {
-            case CornEventType.WORK:
-                eventHandle = Timing.RunCoroutine(_ExecuteWorkEvent());
-                break;
-
-            case CornEventType.SOCIAL:
-                eventHandle = CornManagerStory.StartStoryScene((StoryCharacter)aEvent.EventTypeSub);
-                break;
-        }
 
         if (eventHandle.IsValid) yield return Timing.WaitUntilDone(eventHandle);
 
@@ -239,14 +236,16 @@ public class CornManagerEvents : MonoBehaviour
 [Serializable]
 public struct CornEvent
 {
-    public CornEvent(CornEventType aEventType, uint aEventTypeSub = 0)
+    public CornEvent(CornEventType aEventType, uint aEventTypeSub = 0, Type aScene = null)
     {
         EventType = aEventType;
         EventTypeSub = aEventTypeSub;
+        Scene = aScene;
     }
 
     public CornEventType EventType;
     public uint EventTypeSub; //the sub event of the EventType, single EventType can have multiple events. For story scenes, this can be the ID of the character the player is meeting with
+    public Type Scene;
 }
 
 public enum CornEventType

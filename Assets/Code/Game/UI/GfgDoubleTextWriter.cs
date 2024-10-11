@@ -70,22 +70,22 @@ public class GfgDoubleTextWriter : MonoBehaviour
         return ret;
     }
 
-    public CoroutineHandle WaitUntilTextFinishes(GfgInputType aSubmitInput = GfgInputType.NONE, GfgInputType aSkipInput = GfgInputType.RUN, float aFinishSpeedMultiplier = 1, bool aForceWriteOnSubmit = false)
+    public CoroutineHandle WaitUntilTextFinishes(GfcInputType aSubmitInput = GfcInputType.NONE, GfcInputType aSkipInput = GfcInputType.RUN, float aFinishSpeedMultiplier = 1, bool aForceWriteOnSubmit = false)
     {
-        return WaitUntilTextFinishes(new GfgInputTracker(aSubmitInput), new GfgInputTracker(aSkipInput), aFinishSpeedMultiplier, aForceWriteOnSubmit);
+        return WaitUntilTextFinishes(new GfcInputTracker(aSubmitInput), new GfcInputTracker(aSkipInput), aFinishSpeedMultiplier, aForceWriteOnSubmit);
     }
 
-    public CoroutineHandle WaitUntilTextFinishes(GfgInputTracker aSubmitInputTracker, GfgInputTracker aSkipInputTracker, float aFinishSpeedMultiplier = 1, bool aForceWriteOnSubmit = false)
+    public CoroutineHandle WaitUntilTextFinishes(GfcInputTracker aSubmitInputTracker, GfcInputTracker aSkipInputTracker, float aFinishSpeedMultiplier = 1, bool aForceWriteOnSubmit = false)
     {
         return Timing.RunCoroutine(_WaitUntilTextFinishesInternal(aSubmitInputTracker, null, aSkipInputTracker, aFinishSpeedMultiplier, aForceWriteOnSubmit));
     }
 
-    public CoroutineHandle WaitUntilTextFinishes(GfgInputTrackerShared aSubmitInputTracker, GfgInputTracker aSkipInputTracker, float aFinishSpeedMultiplier = 1, bool aForceWriteOnSubmit = false)
+    public CoroutineHandle WaitUntilTextFinishes(GfcInputTrackerShared aSubmitInputTracker, GfcInputTracker aSkipInputTracker, float aFinishSpeedMultiplier = 1, bool aForceWriteOnSubmit = false)
     {
         return Timing.RunCoroutine(_WaitUntilTextFinishesInternal(default, aSubmitInputTracker, aSkipInputTracker, aFinishSpeedMultiplier, aForceWriteOnSubmit));
     }
 
-    protected IEnumerator<float> _WaitUntilTextFinishesInternal(GfgInputTracker aFallbackInputTracker, GfgInputTrackerShared aSubmitInputTrackerHeap, GfgInputTracker aSkipInputTracker, float aFinishSpeedMultiplier, bool aForceWriteOnSubmit)
+    protected IEnumerator<float> _WaitUntilTextFinishesInternal(GfcInputTracker aFallbackInputTracker, GfcInputTrackerShared aSubmitInputTrackerHeap, GfcInputTracker aSkipInputTracker, float aFinishSpeedMultiplier, bool aForceWriteOnSubmit)
     {
         bool finishTranslationPressed = false;
 

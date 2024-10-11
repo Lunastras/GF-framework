@@ -28,7 +28,7 @@ public class GfgManagerGame : MonoBehaviour
 
     [SerializeField] private GfcGameState m_gameState = GfcGameState.INVALID;
 
-    private GfcGameState m_previousGameState;
+    private GfcGameState m_previousGameState = GfcGameState.INVALID;
 
     private CoroutineHandle m_gameStateTransitionHandle;
 

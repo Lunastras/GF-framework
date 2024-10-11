@@ -53,8 +53,8 @@ public class GfgVnSceneHandler : MonoBehaviour
 
         Log("Writing scene: " + aSceneType.Name);
 
-        GfgVnScene scene = (GfgVnScene)System.Activator.CreateInstance(aSceneType);
-        return m_actionCoroutineHandle.RunCoroutineIfNotRunning(scene.PrepareScene(this));
+        GfgVnScene scene = (GfgVnScene)Activator.CreateInstance(aSceneType);
+        return m_actionCoroutineHandle.RunCoroutineIfNotRunning(scene._ExecuteActions(this));
     }
 
     private void OnOptionSubmitCallback(GfxTextMessage aMessage, GfxNotifyPanelTemplate aNotifyPanel, int aIndex)
@@ -68,29 +68,41 @@ public class GfgVnSceneHandler : MonoBehaviour
 
 public abstract class GfgVnScene
 {
+    public enum GfgVnScenePlayable
+    {
+        NO_CONDITIONS,
+        PLAYABLE,
+        UNPLAYABLE,
+    }
+
     private GfgVnSceneHandler m_handler;
 
     private const string NEXT_LABEL_ERROR = "Cannot set the next label multiple times in a single label! Next() and Option() calls need to be in different labels!";
 
     protected abstract void Begin();
 
+    public static GfgVnScenePlayable CanPlayScene<T>() { return CanPlayScene(typeof(T)); }
+
+    private const string CAN_PLAY_FUNC_NAME = "CanPlay";
+
+    public static GfgVnScenePlayable CanPlayScene(Type aScene)
+    {
+        GfgVnScenePlayable ret = GfgVnScenePlayable.NO_CONDITIONS;
+        MethodInfo canPlayFunc = aScene.GetMethod(CAN_PLAY_FUNC_NAME, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+
+        if (canPlayFunc != null)
+        {
+            bool playable = (bool)canPlayFunc.Invoke(null, null);
+            ret = playable ? GfgVnScenePlayable.PLAYABLE : GfgVnScenePlayable.UNPLAYABLE;
+        }
+
+        return ret;
+    }
+
     public void EndCurrentScene()
     {
         m_handler.m_actionCoroutineHandle.KillCoroutine();
         //go to menu or something dunno, todo
-    }
-
-    public IEnumerator<float> PrepareScene(GfgVnSceneHandler aHandler)
-    {
-        m_handler = aHandler;
-
-        m_handler.m_dialogueStringBuffer.Clear();
-        m_handler.m_dialogueStringBuffer.Append(GetType().Name);
-        m_handler.m_currentSceneNameLength = m_handler.m_dialogueStringBuffer.Length;
-
-        Next(Begin);
-
-        return _ExecuteActions();
     }
 
     private void ExecuteLabel(MethodInfo aLabelMethod)
@@ -111,9 +123,15 @@ public abstract class GfgVnScene
         aLabelMethod?.Invoke(this, null);
     }
 
-    private IEnumerator<float> _ExecuteActions()
+    public IEnumerator<float> _ExecuteActions(GfgVnSceneHandler aHandler)
     {
+        m_handler = aHandler;
+        m_handler.m_dialogueStringBuffer.Clear();
+        m_handler.m_dialogueStringBuffer.Append(GetType().Name);
+        m_handler.m_currentSceneNameLength = m_handler.m_dialogueStringBuffer.Length;
         GfxNotifyPanelTemplate notifyPanel = m_handler.NotifyPanel;
+
+        Next(Begin);
 
     StartLabel:
 

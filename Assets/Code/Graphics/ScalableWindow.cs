@@ -99,7 +99,7 @@ public class ScalableWindow : MonoBehaviour
         {
             bool mouseIsPressed = Input.GetMouseButton(0);
 
-            Vector3 mousePos = Input.mousePosition;
+            Vector3 mousePos = GfcCursor.MousePosition;
 
             if (m_screenIsBorder && false)
             {

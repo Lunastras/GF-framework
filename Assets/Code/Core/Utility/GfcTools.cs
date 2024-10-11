@@ -139,11 +139,11 @@ public static class GfcToolsStatic
     public static RectTransformData GetRectWorldData(this RectTransform aTransform, bool aCopyParent = true, Transform aNewParent = null) { return new(aTransform, aCopyParent, aNewParent); }
 
     //code suggests compound assignment instead of if statement, but it does not work
-    public static bool GetComponentIfNull<T>(this Component aComponent, ref T aContainer) { if (aContainer == null) aContainer = aComponent.GetComponent<T>(); return aContainer != null; }
+    public static Component GetComponentIfNull<T>(this Component aComponent, ref T aContainer) where T : Component { if (aContainer == null) aContainer = aComponent.GetComponent<T>(); return aContainer; }
 
-    public static bool GetComponent<T>(this Component aComponent, ref T aContainer) { aContainer = aComponent.GetComponent<T>(); return aContainer != null; }
+    public static Component GetComponent<T>(this Component aComponent, ref T aContainer) where T : Component { aContainer = aComponent.GetComponent<T>(); return aContainer; }
 
-    public static bool GetComponent<T>(this GameObject aGameObject, ref T aContainer) { aContainer = aGameObject.GetComponent<T>(); return aContainer != null; }
+    public static Component GetComponent<T>(this GameObject aGameObject, ref T aContainer) where T : Component { aContainer = aGameObject.GetComponent<T>(); return aContainer; }
 
     public static bool IsEmpty(this string aString) { return aString == null || aString.Length == 0; }
 

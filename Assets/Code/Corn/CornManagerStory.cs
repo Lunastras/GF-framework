@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using MEC;
 using System.Linq;
-using System.Reflection;
-using UnityEngine.TextCore.Text;
 
 public class _VNC_P0_PROTAG_0 : TestDialogue { }
 public class _VNC_P0_GF_0 : TestDialogue { }
@@ -43,7 +41,7 @@ public class CornManagerStory : MonoBehaviour
 
     [SerializeField] protected CornStoryPhase[] m_storyPhases;
 
-    protected List<StoryCharacter> m_availableCharactersBuffer = new((int)StoryCharacter.COUNT);
+    protected List<CornStoryVnSceneDetails> m_availableEventsBuffer = new((int)StoryCharacter.COUNT);
 
     const string VN_SCENE_PREFIX = "_VNC_P";
     private void Start()
@@ -210,7 +208,7 @@ public class CornManagerStory : MonoBehaviour
         return eventClassType;
     }
 
-    public static CoroutineHandle StartStoryScene(StoryCharacter aCharacter)
+    private static Type GetStoryScene(StoryCharacter aCharacter, bool anIncrementProgress)
     {
         var saveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
         int currentPhaseIndex = saveData.CurrentStoryPhase;
@@ -225,8 +223,12 @@ public class CornManagerStory : MonoBehaviour
         if (currentProgressForCharacter < currentPhase[indexOfEvent].Count)
         {
             eventClassType = GetTypeOfScene(aCharacter, currentPhaseIndex, currentProgressForCharacter);
-            saveData.CurrentStoryPhaseProgress[(int)aCharacter]++;
-            CheckIfCurrentPhaseDone();
+
+            if (anIncrementProgress)
+            {
+                saveData.CurrentStoryPhaseProgress[(int)aCharacter]++;
+                CheckIfCurrentPhaseDone();
+            }
         }
         else
         {
@@ -237,19 +239,29 @@ public class CornManagerStory : MonoBehaviour
         {
             Debug.LogError("There is no story scene for character: " + aCharacter + " ");
             eventClassType = typeof(TestDialogue); //return default dialogue scene
-
         }
 
-        return GfgManagerVnScene.StartScene(eventClassType, GfgVnSceneHandlerType.DIALOGUE);
+        return eventClassType;
     }
 
-    public static List<StoryCharacter> GetAvailableCharactersForEvent()
+    public static CoroutineHandle StartStoryScene(Type aScene)
+    {
+        if (aScene == null)
+        {
+            aScene = typeof(TestDialogue);
+            Debug.LogError("The passed scene was null, executing the test scene instead.");
+        }
+
+        return GfgManagerVnScene.StartScene(aScene, GfgVnSceneHandlerType.DIALOGUE);
+    }
+
+    public static List<CornStoryVnSceneDetails> GetAvailableEvents()
     {
         var saveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
         int currentPhaseIndex = saveData.CurrentStoryPhase;
         CornStoryEventInPhase[] currentPhase = Instance.m_storyPhases[currentPhaseIndex].Events;
 
-        List<StoryCharacter> availableCharacters = Instance.m_availableCharactersBuffer;
+        var availableCharacters = Instance.m_availableEventsBuffer;
         availableCharacters.Clear();
 
         for (int i = 0; i < currentPhase.Length; i++)
@@ -259,7 +271,14 @@ public class CornManagerStory : MonoBehaviour
 
             if (progressForCurrentCharacter < currentEvent.Count)
             {
-                availableCharacters.Add(currentEvent.Character);
+                Type scene = GetStoryScene(currentEvent.Character, false);
+                if (GfgVnScene.CanPlayScene(scene) != GfgVnScene.GfgVnScenePlayable.UNPLAYABLE)
+                {
+                    CornStoryVnSceneDetails storyEvent;
+                    storyEvent.Character = currentEvent.Character;
+                    storyEvent.Scene = scene;
+                    availableCharacters.Add(storyEvent);
+                }
             }
         }
 
@@ -308,4 +327,10 @@ internal struct CornStoryScene
     public StoryCharacter Character;
     public int Phase;
     public int Number;
+}
+
+public struct CornStoryVnSceneDetails
+{
+    public StoryCharacter Character;
+    public Type Scene;
 }

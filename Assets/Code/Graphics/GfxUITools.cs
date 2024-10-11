@@ -97,7 +97,7 @@ public class GfxUiTools : MonoBehaviour
 
     public static bool IsMouseOverUICollision(GameObject ui)
     {
-        return EventSystem.current.IsPointerOverGameObject() && ui == GetUIObjectUnderMouse(Input.mousePosition);
+        return EventSystem.current.IsPointerOverGameObject() && ui == GetUIObjectUnderMouse(GfcCursor.MousePosition);
     }
 
     public static bool IsMouseOverUICollision(Vector3 mousePosition, GameObject ui)
@@ -107,7 +107,7 @@ public class GfxUiTools : MonoBehaviour
 
     public static GameObject GetUIObjectUnderMouse()
     {
-        return GetUIObjectUnderMouse(Input.mousePosition);
+        return GetUIObjectUnderMouse(GfcCursor.MousePosition);
     }
 
     public static CoroutineHandle FadeOverlayAlpha(float alpha, float durationSeconds, bool ignoreTimeScale = false)

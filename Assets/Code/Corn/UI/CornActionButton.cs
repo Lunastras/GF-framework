@@ -45,7 +45,7 @@ public class CornActionButton : MonoBehaviour
 
     void Update()
     {
-        if (WorldPointOfReference) m_transform.position = CornApartmentCamera.Instance.Camera.WorldToScreenPoint(WorldPointOfReference.position);
+        if (WorldPointOfReference) m_transform.position = GfcCamera.MainCamera.WorldToScreenPoint(WorldPointOfReference.position);
     }
 
     private void OnButtonEvent(GfxButtonCallbackType aType, GfxButton aButton, bool aState)

@@ -905,6 +905,7 @@ GameObject:
   - component: {fileID: 1146425269}
   - component: {fileID: 1146425268}
   - component: {fileID: 1146425267}
+  - component: {fileID: 1146425271}
   m_Layer: 0
   m_Name: CornPhoneCamera
   m_TagString: Untagged
@@ -1030,6 +1031,18 @@ Transform:
   m_Father: {fileID: 1177135034}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 21.15, y: 0, z: 0}
+--- !u!114 &1146425271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1146425265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd1fe0b1c4495b043ae3ba14381931a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1177135032
 GameObject:
   m_ObjectHideFlags: 0
