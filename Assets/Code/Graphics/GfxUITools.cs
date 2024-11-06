@@ -37,27 +37,14 @@ public class GfxUiTools : MonoBehaviour
     [SerializeField] private AnimationCurve m_defaultAnimationCurve;
 
     private static GfxUiTools Instance;
-    private static List<RaycastResult> RaycastResults = new(1);
-    private static PointerEventData PointerEventData;
 
     private GfxButton m_displayedNotificationButton = null;
-
-    private GameObject m_gameObjectToSelect;
-    private bool m_inTheProcessOfSelectingGameObject = false;
-
-    private bool m_inTheProcessOfDeselectingGameObject = false;
-
-    private CoroutineHandle m_selectingGameObjectCoroutine = default;
-    private CoroutineHandle m_deselectingGameObjectCoroutine = default;
-
-    private HashSet<GameObject> m_objectsToDeselect = new(4);
 
     // Start is called before the first frame update
     void Awake()
     {
         this.SetSingleton(ref Instance);
 
-        PointerEventData = new PointerEventData(EventSystem.current);
 
         if (m_colourOverlay)
         {
@@ -95,21 +82,6 @@ public class GfxUiTools : MonoBehaviour
 
     public static Sprite GetIconWeapon() { return Instance.m_iconWeapon; }
 
-    public static bool IsMouseOverUICollision(GameObject ui)
-    {
-        return EventSystem.current.IsPointerOverGameObject() && ui == GetUIObjectUnderMouse(GfcCursor.MousePosition);
-    }
-
-    public static bool IsMouseOverUICollision(Vector3 mousePosition, GameObject ui)
-    {
-        return EventSystem.current.IsPointerOverGameObject() && ui == GetUIObjectUnderMouse(mousePosition);
-    }
-
-    public static GameObject GetUIObjectUnderMouse()
-    {
-        return GetUIObjectUnderMouse(GfcCursor.MousePosition);
-    }
-
     public static CoroutineHandle FadeOverlayAlpha(float alpha, float durationSeconds, bool ignoreTimeScale = false)
     {
         return FadeOverlayAlpha(alpha, durationSeconds, ignoreTimeScale, Instance.m_defaultAnimationCurve);
@@ -128,37 +100,6 @@ public class GfxUiTools : MonoBehaviour
         Instance.m_colourOverlay.color = color;
     }
 
-    public static GameObject GetUIObjectUnderMouse(Vector3 mousePosition)
-    {
-        PointerEventData.position = mousePosition;
-        EventSystem.current.RaycastAll(PointerEventData, RaycastResults);
-
-        int count = RaycastResults.Count;
-        int lowestIndex = -1;
-        float lowestDepth = int.MaxValue;
-
-        for (int i = 0; i < count; ++i)
-        {
-            float depth = RaycastResults[i].distance;
-            if (depth < lowestDepth)
-            {
-                lowestDepth = depth;
-                lowestIndex = i;
-            }
-        }
-
-        GameObject obj = null;
-        if (lowestIndex != -1)
-            obj = RaycastResults[lowestIndex].gameObject;
-
-        return obj;
-    }
-
-    public static bool IsMouseOverUI()
-    {
-        return EventSystem.current.IsPointerOverGameObject();
-    }
-
     public static void WriteDisableReason(GfxButton aButton)
     {
         string reason = aButton.GetDisabledReason();
@@ -173,68 +114,6 @@ public class GfxUiTools : MonoBehaviour
     {
         if (Instance.m_displayedNotificationButton == aButton)
             WriteBottomNotification(null, BottomNotificationType.ERROR);
-    }
-
-    private IEnumerator<float> _SetSelectedGameObject()
-    {
-        m_inTheProcessOfSelectingGameObject = true;
-
-        while (EventSystem.current.alreadySelecting)
-            yield return Timing.WaitForOneFrame;
-
-        EventSystem.current.SetSelectedGameObject(m_gameObjectToSelect);
-        m_gameObjectToSelect = null;
-        m_inTheProcessOfSelectingGameObject = false;
-        m_selectingGameObjectCoroutine = default;
-    }
-
-    private IEnumerator<float> _RemoveSelectedGameObject()
-    {
-        m_inTheProcessOfSelectingGameObject = true;
-
-        while (EventSystem.current.alreadySelecting)
-            yield return Timing.WaitForOneFrame;
-
-        if (m_objectsToDeselect.Contains(EventSystem.current.currentSelectedGameObject))
-            EventSystem.current.SetSelectedGameObject(null);
-
-        m_objectsToDeselect.Clear();
-        m_inTheProcessOfDeselectingGameObject = false;
-        m_deselectingGameObjectCoroutine = default;
-    }
-
-    public static CoroutineHandle SetSelectedGameObject(GameObject aGameObject)
-    {
-        Debug.Assert(Instance, "bruh cum e null asta???");
-        Debug.Assert(Instance.m_objectsToDeselect != null, "COAIE E STRICAT UNITY");
-
-        if (Instance.m_objectsToDeselect.Contains(aGameObject))
-            Instance.m_objectsToDeselect.Remove(aGameObject);
-
-        Instance.m_gameObjectToSelect = aGameObject;
-        if (!Instance.m_inTheProcessOfSelectingGameObject)
-            Instance.m_selectingGameObjectCoroutine = Timing.RunCoroutine(Instance._SetSelectedGameObject());
-
-        return Instance.m_selectingGameObjectCoroutine;
-    }
-
-    public static CoroutineHandle RemoveSelectedGameObject() { return SetSelectedGameObject(null); }
-
-    public static CoroutineHandle RemoveSelectedGameObject(GameObject aGameObject)
-    {
-        if (Instance.m_gameObjectToSelect == aGameObject)
-        {
-            Instance.m_gameObjectToSelect = null;
-        }
-        else
-        {
-            Instance.m_objectsToDeselect.Add(aGameObject);
-            if (!Instance.m_inTheProcessOfDeselectingGameObject)
-                Instance.m_deselectingGameObjectCoroutine = Timing.RunCoroutine(Instance._RemoveSelectedGameObject());
-        }
-
-
-        return Instance.m_deselectingGameObjectCoroutine;
     }
 
     public static void WriteBottomNotification(string aText, BottomNotificationType aNotificationType = BottomNotificationType.NORMAL)

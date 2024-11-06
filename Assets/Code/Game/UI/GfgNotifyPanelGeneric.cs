@@ -58,21 +58,20 @@ public abstract class GfgNotifyPanelGeneric : GfxNotifyPanelTemplate
 
     private bool m_waitingForOptionSelect = true;
 
-    public virtual CoroutineHandle InitializeOptionButton(GfxTextMessage aTextMessage, GfxButton anInstantiatedButton, MessageOption aOption, int aIndex) { return default; }
+    public virtual CoroutineHandle InitializeOptionButton(GfxTextMessage aTextMessage, GfxButton anInstantiatedButton, GfxNotifyOption aOption, int aIndex) { return default; }
 
-    public virtual CoroutineHandle InitializeOptionButtons(GfxTextMessage aTextMessage)
+    public virtual IEnumerator<float> _InitializeOptionButtons(GfxTextMessage aTextMessage)
     {
         for (int optionIndex = 0; optionIndex < aTextMessage.Options.Count; ++optionIndex)
         {
-            GfxButton button = Instantiate(m_optionsButtonPrefab).GetComponent<GfxButton>();
+            GfxButton button = GfcPooling.Instantiate(m_optionsButtonPrefab).GetComponent<GfxButton>();
             CoroutineHandle initializeButtonHandle = InitializeOptionButton(aTextMessage, button, aTextMessage.Options[optionIndex], optionIndex);
+            if (initializeButtonHandle.IsValid) yield return Timing.WaitUntilDone(initializeButtonHandle);
 
             button.OnButtonEventCallback += OnOptionCallback;
             button.Index = optionIndex;
-            button.SetDisabled(aTextMessage.Options[optionIndex].IsDisabled);
+            button.SetDisabled(aTextMessage.Options[optionIndex].IsDisabled, aTextMessage.Options[optionIndex].DisabledReason);
         }
-
-        return default;
     }
 
     public override void ClearVisuals()
@@ -188,7 +187,7 @@ public abstract class GfgNotifyPanelGeneric : GfxNotifyPanelTemplate
                         m_waitingForOptionSelect = true;
 
                         //draw options here
-                        yield return Timing.WaitUntilDone(InitializeOptionButtons(currentMessage), false);
+                        yield return Timing.WaitUntilDone(Timing.RunCoroutine(_InitializeOptionButtons(currentMessage)));
 
                         while (m_waitingForOptionSelect)
                             yield return Timing.WaitForSeconds(0.0333f); //check at an fps of 30
@@ -221,6 +220,9 @@ public abstract class GfgNotifyPanelGeneric : GfxNotifyPanelTemplate
             if (transitionIndex == FADE_IN && BoxTextTransitionMode.MIX_END > m_transitionMixMode && m_mainTextWriter.WritingText())
                 yield return Timing.WaitUntilDone(m_mainTextWriter.WaitUntilTextFinishes(trackerSubmit, trackerSkip, m_speedMultiplierFinish, m_forceWriteOnSubmit));
         }
+
+        //m_mainTextWriter.ForceWriteText();
+        //m_nameTextWriter.ForceWriteText();
 
         messageAudioSource?.Stop();
         m_messageBufferIndex = 0;

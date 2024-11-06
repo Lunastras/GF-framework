@@ -37,7 +37,7 @@ public abstract class GfxNotifyPanelTemplate : MonoBehaviour
     {
         CoroutineHandle handle = default;
         if (m_messagesBuffer.Count > 0)
-            handle = m_currentNotifyCoroutine.RunCoroutineIfNotRunning(_DrawMessages());
+            handle = m_currentNotifyCoroutine.RunCoroutineIfNotRunning(_DrawMessages(), Segment.LateUpdate);
 
         return handle;
     }
@@ -61,7 +61,7 @@ public struct GfxTextMessage
         Sound = null;
     }
 
-    public GfxTextMessage(string aMainText, List<MessageOption> someOptions, Action<GfxTextMessage, GfxNotifyPanelTemplate, int> aOptionCallback, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
+    public GfxTextMessage(string aMainText, List<GfxNotifyOption> someOptions, Action<GfxTextMessage, GfxNotifyPanelTemplate, int> aOptionCallback, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
     {
         Options = someOptions;
         OptionCallback = aOptionCallback;
@@ -72,7 +72,7 @@ public struct GfxTextMessage
         Sound = null;
     }
 
-    public List<MessageOption> Options;
+    public List<GfxNotifyOption> Options;
     public Action<GfxTextMessage, GfxNotifyPanelTemplate, int> OptionCallback;
 
     public string MainText;
@@ -84,15 +84,17 @@ public struct GfxTextMessage
     public GfcSound Sound;
 }
 
-public struct MessageOption
+public struct GfxNotifyOption
 {
-    public MessageOption(string aOptionText, bool anIsDisabled = false)
+    public GfxNotifyOption(string aOptionText, bool anIsDisabled = false, string aDisabledReason = null)
     {
         OptionText = aOptionText;
         IsDisabled = anIsDisabled;
+        DisabledReason = aDisabledReason;
     }
 
     public string OptionText;
+    public string DisabledReason;
 
     public bool IsDisabled;
 }

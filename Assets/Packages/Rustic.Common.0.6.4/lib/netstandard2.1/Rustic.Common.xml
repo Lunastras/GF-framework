@@ -1,0 +1,512 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rustic.Common</name>
+    </assembly>
+    <members>
+        <member name="T:Rustic.Arithmetic">
+            <summary>Collection of extension methods and utility functions related to integer arithmetic.</summary>
+            <remarks>Most functions are ported from https://graphics.stanford.edu/~seander/bithacks.html</remarks>
+        </member>
+        <member name="F:Rustic.Arithmetic.IntWidth">
+            <summary>The size of any given 32bit signed integer.</summary>
+            <remarks>Its 32.</remarks>
+        </member>
+        <member name="F:Rustic.Arithmetic.IntShift">
+            <summary>The number of shifts required to obtain the number of b in a 32-bit signed integer and vice versa.</summary>
+        </member>
+        <member name="F:Rustic.Arithmetic.PtrWidth">
+            <summary>The size of any given native signed integer.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.IntsToContainBits(System.Int32@)">
+            <summary>The number of integers required to represent a minimum of <paramref name="n"/> b.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.BitsContainedInInts(System.Int32@)">
+            <summary>Returns the number of b represented by the number of <paramref name="n"/> b.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Negate(System.Int32@)">
+            <summary>Negates the <paramref name="value"/>.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Negate(System.Int64@)">
+            <summary>Negates the <paramref name="value"/>.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Negate(System.IntPtr)">
+            <summary>Negates the <paramref name="value"/>.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.NegateIf(System.Int32@,System.Int32@)">
+            <summary>Negates the value <paramref name="negate"/>, if the condition <paramref name="value"/> is 1.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.NegateIf(System.Int64@,System.Int64@)">
+            <summary>Negates the value <paramref name="negate"/>, if the condition <paramref name="value"/> is 1.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.GetFastModMultiplier(System.UInt32@)">
+            <summary>Returns approximate reciprocal of the divisor: ceil(2**64 / divisor).</summary>
+            <remarks>This should only be used on 64-bit.</remarks>
+        </member>
+        <member name="M:Rustic.Arithmetic.FastMod(System.UInt32@,System.UInt32@,System.UInt64@)">
+            <summary>Performs a mod operation using the multiplier pre-computed with <see cref="M:Rustic.Arithmetic.GetFastModMultiplier(System.UInt32@)"/>.</summary>
+            <remarks>This should only be used on 64-bit.</remarks>
+        </member>
+        <member name="M:Rustic.Arithmetic.FastMod2(System.Int32@,System.Int32@)">
+            <summary>Performs a mod operation on a 32bit signed integer where the divisor is a multiple of 2.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.FastMod2(System.UInt32@,System.UInt32@)">
+            <summary>Performs a mod operation on a 32bit unsigned integer where the divisor is a multiple of 2.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.FastMod2(System.Int64@,System.Int64@)">
+            <summary>Performs a mod operation on a 64bit signed integer where the divisor is a multiple of 2.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.FastMod2(System.UInt64@,System.UInt64@)">
+            <summary>Performs a mod operation on a 64bit unsigned integer where the divisor is a multiple of 2.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.HasZeroByte(System.UInt32@)">
+            <summary>Determines whether the <pramref name="value"/> contains one or more zeroed bytes.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.HasZeroByte(System.UInt64@)">
+            <summary>Determines whether the <pramref name="value"/> contains one or more zeroed bytes.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Mix(System.UInt64)">
+            <summary>MurrMurrHash3 bit mixer.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Mix2(System.UInt64)">
+            <summary>Trained low entropy bit mixer.</summary>
+            <remarks>Source: https://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html</remarks>
+        </member>
+        <member name="M:Rustic.Arithmetic.Abs(System.Int32@)">
+            <summary>Computes the unchecked absolute of a value.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Abs(System.Int64@)">
+            <summary>Computes the unchecked absolute of a value.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Abs(System.IntPtr)">
+            <summary>Computes the unchecked absolute of a value.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Max(System.Int32@,System.Int32@)">
+            <summary>Computes the maximum of two given positive integers.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Min(System.Int32@,System.Int32@)">
+            <summary>Computes the minimum of two given positive integers.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Max(System.Int64@,System.Int64@)">
+            <summary>Computes the maximum of two given positive integers.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Min(System.Int64@,System.Int64@)">
+            <summary>Computes the minimum of two given positive integers.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Max(System.IntPtr,System.IntPtr)">
+            <summary>Computes the maximum of two given positive integers.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Min(System.IntPtr,System.IntPtr)">
+            <summary>Computes the minimum of two given positive integers.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.IsPow2(System.Int32@)">
+            <summary>Evaluate whether a given integral value is a power of 2.</summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:Rustic.Arithmetic.IsPow2(System.UInt32@)">
+            <summary>Evaluate whether a given integral value is a power of 2.</summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:Rustic.Arithmetic.IsPow2(System.Int64@)">
+            <summary>Evaluate whether a given integral value is a power of 2.</summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:Rustic.Arithmetic.IsPow2(System.UInt64@)">
+            <summary>Evaluate whether a given integral value is a power of 2.</summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:Rustic.Arithmetic.IsPow2(System.IntPtr)">
+            <summary>Evaluate whether a given integral value is a power of 2.</summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:Rustic.Arithmetic.IsPow2(System.UIntPtr)">
+            <summary>Evaluate whether a given integral value is a power of 2.</summary>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:Rustic.Arithmetic.DigitCount(System.UInt32@)">
+            <summary>Computes the number of decimal digits required to represent the integer value.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Log10(System.UInt32@)">
+            <summary>Computes the base 10 logarithm of on a 64bit unsigned integer value.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Log10(System.UInt64@)">
+            <summary>Computes the base 10 logarithm of on a 64bit unsigned integer value.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.Log2(System.UInt32@)">
+            <summary>Performs a base 2 logarithm operation on an integer using a LUT.</summary>
+            <remarks>The value is floored to the next lowest multiple of two from the value, i.e. Log2Floor(3) == Log2(2), and Log2Floor(16) == Log2(16).</remarks>
+        </member>
+        <member name="M:Rustic.Arithmetic.Log2(System.UInt64@)">
+            <summary>Performs a base 2 logarithm operation on an integer using a LUT.</summary>
+            <remarks>The value is floored to the next lowest multiple of two from the value, i.e. Log2Floor(3) == Log2(2), and Log2Floor(16) == Log2(16).</remarks>
+        </member>
+        <member name="M:Rustic.Arithmetic.RoundUpToEven(System.UInt32)">
+            <summary>If the value is even, returns the value; otherwise increases the value by one.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.FillTailingZeros(System.UInt32)">
+            <summary>Fills tailing zero b with ones.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.CountTrailingZeroBits(System.UInt32@)">
+            <summary>Counts the number of tailing zero b.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.GetBits(System.Double@)">
+            <summary>Returns the storage of the value.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.FromBits(System.UInt64@)">
+            <summary>Returns the floating-point number of the storage.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.GetBits(System.Single@)">
+            <summary>Returns the storage of the value.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.FromBits(System.UInt32@)">
+            <summary>Returns the floating-point number of the storage.</summary>
+        </member>
+        <member name="M:Rustic.Arithmetic.RotateLeft(System.UInt32@,System.Int32@)">
+            <summary>
+            Rotates the specified value left by the specified number of bits.
+            Similar in behavior to the x86 instruction ROL.
+            </summary>
+            <param name="value">The value to rotate.</param>
+            <param name="offset">The number of bits to rotate by.
+            Any value outside the range [0..31] is treated as congruent mod 32.</param>
+            <returns>The rotated value.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.RotateLeft(System.UInt64@,System.Int32@)">
+            <summary>
+            Rotates the specified value left by the specified number of bits.
+            Similar in behavior to the x86 instruction ROL.
+            </summary>
+            <param name="value">The value to rotate.</param>
+            <param name="offset">The number of bits to rotate by.
+            Any value outside the range [0..63] is treated as congruent mod 64.</param>
+            <returns>The rotated value.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.RotateLeft(System.UIntPtr@,System.Int32@)">
+            <summary>
+            Rotates the specified value left by the specified number of bits.
+            Similar in behavior to the x86 instruction ROL.
+            </summary>
+            <param name="value">The value to rotate.</param>
+            <param name="offset">The number of bits to rotate by.
+            Any value outside the range [0..31] is treated as congruent mod 32 on a 32-bit process,
+            and any value outside the range [0..63] is treated as congruent mod 64 on a 64-bit process.</param>
+            <returns>The rotated value.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.RotateRight(System.UInt32@,System.Int32@)">
+            <summary>
+            Rotates the specified value right by the specified number of bits.
+            Similar in behavior to the x86 instruction ROR.
+            </summary>
+            <param name="value">The value to rotate.</param>
+            <param name="offset">The number of bits to rotate by.
+            Any value outside the range [0..31] is treated as congruent mod 32.</param>
+            <returns>The rotated value.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.RotateRight(System.UInt64@,System.Int32@)">
+            <summary>
+            Rotates the specified value right by the specified number of bits.
+            Similar in behavior to the x86 instruction ROR.
+            </summary>
+            <param name="value">The value to rotate.</param>
+            <param name="offset">The number of bits to rotate by.
+            Any value outside the range [0..63] is treated as congruent mod 64.</param>
+            <returns>The rotated value.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.RotateRight(System.UIntPtr@,System.Int32@)">
+            <summary>
+            Rotates the specified value right by the specified number of bits.
+            Similar in behavior to the x86 instruction ROR.
+            </summary>
+            <param name="value">The value to rotate.</param>
+            <param name="offset">The number of bits to rotate by.
+            Any value outside the range [0..31] is treated as congruent mod 32 on a 32-bit process,
+            and any value outside the range [0..63] is treated as congruent mod 64 on a 64-bit process.</param>
+            <returns>The rotated value.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.Pow(System.UInt32,System.UInt32)">
+            <summary>
+            Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+            </summary>
+            <param name="a">The base</param>
+            <param name="n">The exponent</param>
+            <returns>The result of the operation <c>a^n</c>.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.Pow(System.Int32,System.Int32)">
+            <summary>
+            Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+            </summary>
+            <param name="a">The base</param>
+            <param name="n">The exponent</param>
+            <returns>The result of the operation <c>a^n</c>.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.Pow(System.UInt64,System.UInt64)">
+            <summary>
+            Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+            </summary>
+            <param name="a">The base</param>
+            <param name="n">The exponent</param>
+            <returns>The result of the operation <c>a^n</c>.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.Pow(System.Int64,System.Int64)">
+            <summary>
+            Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+            </summary>
+            <param name="a">The base</param>
+            <param name="n">The exponent</param>
+            <returns>The result of the operation <c>a^n</c>.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.Pow(System.UIntPtr,System.UIntPtr)">
+            <summary>
+            Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+            </summary>
+            <param name="a">The base</param>
+            <param name="n">The exponent</param>
+            <returns>The result of the operation <c>a^n</c>.</returns>
+        </member>
+        <member name="M:Rustic.Arithmetic.Pow(System.IntPtr,System.IntPtr)">
+            <summary>
+            Computes the base <paramref name="a"/> to the power of <paramref name="n"/>.
+            </summary>
+            <param name="a">The base</param>
+            <param name="n">The exponent</param>
+            <returns>The result of the operation <c>a^n</c>.</returns>
+        </member>
+        <member name="T:Rustic.LocalRandom">
+            <summary>Collection of extensions and utility functionality related to <see cref="T:System.Random"/> instances.</summary>
+        </member>
+        <member name="P:Rustic.LocalRandom.Shared">
+            <summary>Gets the thread-local random pool.</summary>
+        </member>
+        <member name="M:Rustic.LocalRandom.ChooseFrom``1(System.Random,System.ReadOnlySpan{``0})">
+            <summary>Chooses a element from the collection using the random.</summary>
+            <typeparam name="T">The type of the value.</typeparam>
+        </member>
+        <member name="M:Rustic.LocalRandom.ChooseFrom``1(System.Random,System.Collections.Generic.IReadOnlyList{``0})">
+            <summary>Chooses a element from the collection using the random.</summary>
+            <typeparam name="T">The type of the value.</typeparam>
+        </member>
+        <member name="P:Rustic.LocalRandom.PosixPortable">
+            <summary>Posix portable file name characters.</summary>
+        </member>
+        <member name="M:Rustic.LocalRandom.GetString(System.Random,System.ReadOnlySpan{System.Char},System.Int32)">
+            <summary>Returns a random string of a specific length, with characters exclusively from an alphabet.</summary>
+        </member>
+        <member name="M:Rustic.LocalRandom.ChooseMany``1(System.Random,System.Collections.Generic.IReadOnlyList{``0},System.Int32)">
+            <summary>Chooses a number of elements from the collection.</summary>
+            <typeparam name="T">The type of the value.</typeparam>
+        </member>
+        <member name="T:Rustic.StrBuilder">
+            <summary>
+                This class represents a mutable string. Initially allocated in the stack, resorts to the <see cref="P:System.Buffers.ArrayPool`1.Shared"/> when growing.
+            </summary>
+        </member>
+        <member name="M:Rustic.StrBuilder.#ctor(System.Span{System.Char})">
+            <summary>
+                Initializes a new <see cref="T:Rustic.StrBuilder"/> with the specified buffer.
+            </summary>
+            <param name="initialBuffer">The stack-buffer used to build the string.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.#ctor(System.Int32)">
+            <summary>
+                Initializes a new <see cref="T:Rustic.StrBuilder"/> with a array from the <see cref="P:System.Buffers.ArrayPool`1.Shared"/> with the specific size.
+            </summary>
+            <param name="initialCapacity">The minimum capacity of the pool-array.</param>
+        </member>
+        <member name="P:Rustic.StrBuilder.Length">
+            <summary>
+                The length of the string.
+            </summary>
+        </member>
+        <member name="P:Rustic.StrBuilder.Capacity">
+            <summary>
+                The current capacity of the builder.
+            </summary>
+        </member>
+        <member name="M:Rustic.StrBuilder.EnsureCapacity(System.Int32)">
+            <summary>
+                Ensures that the builder has at least the given capacity.
+            </summary>
+            <param name="capacity">The minimum capacity of the pool-array.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.GetPinnableReference">
+            <summary>
+                Get a pinnable reference to the builder.
+                Does not ensure there is a null char after <see cref="P:Rustic.StrBuilder.Length" />
+                This overload is pattern matched in the C# 7.3+ compiler so you can omit
+                the explicit method call, and write eg "fixed (char* c = builder)"
+            </summary>
+        </member>
+        <member name="M:Rustic.StrBuilder.GetPinnableReference(System.Boolean)">
+            <summary>
+                Get a pinnable reference to the builder.
+            </summary>
+            <param name="terminate">Ensures that the builder has a null char after <see cref="P:Rustic.StrBuilder.Length" /></param>
+        </member>
+        <member name="P:Rustic.StrBuilder.Item(System.Int32)">
+            <summary>
+                Gets the char at the given index.
+            </summary>
+            <param name="index">The zero-based index of the element.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.ToString">
+            <summary>
+                Creates the string from the builder and disposes the instance.
+            </summary>
+            <returns>The string represented by the builder.</returns>
+        </member>
+        <member name="P:Rustic.StrBuilder.RawChars">
+            <summary>Returns the underlying storage of the builder.</summary>
+        </member>
+        <member name="M:Rustic.StrBuilder.AsSpan(System.Boolean)">
+            <summary>
+                Returns a span around the contents of the builder.
+            </summary>
+            <param name="terminate">Ensures that the builder has a null char after <see cref="P:Rustic.StrBuilder.Length" /></param>
+        </member>
+        <member name="M:Rustic.StrBuilder.AsSpan">
+            <summary>
+                Returns the span representing the current string.
+            </summary>
+        </member>
+        <member name="M:Rustic.StrBuilder.AsSpan(System.Int32)">
+            <summary>
+                Returns the span representing a portion of the current string.
+            </summary>
+            <param name="start">The zero-based index of the first char.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.AsSpan(System.Int32,System.Int32)">
+            <summary>
+                Returns the span representing a portion of the current string.
+            </summary>
+            <param name="start">The zero-based index of the first char.</param>
+            <param name="length">The number of characters after the <paramref name="start"/>.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.TryCopyTo(System.Span{System.Char},System.Int32@)">
+            <inheritdoc cref="M:System.Span`1.TryCopyTo(System.Span{`0})"/>
+        </member>
+        <member name="M:Rustic.StrBuilder.Insert(System.Int32,System.Char,System.Int32)">
+            <summary>
+                Inserts a character a specific number of times at the <paramref name="index"/>.
+            </summary>
+            <param name="index">The index at which to insert the characters.</param>
+            <param name="value">The value of the characters to insert.</param>
+            <param name="count">The number of characters to insert.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.Insert(System.Int32,System.Char)">
+            <summary>
+                Inserts a character at the <paramref name="index"/>.
+            </summary>
+            <param name="index">The index at which to insert the character.</param>
+            <param name="value">The value of the character to insert.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.Insert(System.Int32,System.String)">
+            <summary>
+                Inserts a string at the <paramref name="index"/>.
+            </summary>
+            <param name="index">The index at which to insert the character.</param>
+            <param name="value">The string to insert.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.Append(System.Char)">
+            <summary>
+                Appends the character to the end of the builder.
+            </summary>
+            <param name="value">The character.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.Append(System.String)">
+            <summary>
+                Appends the string to the end of the builder.
+            </summary>
+            <param name="value">The string to append.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.Append(System.Char,System.Int32)">
+            <summary>
+                Appends a character a specific number of times at the end of the builder.
+            </summary>
+            <param name="value">The value of the characters to insert.</param>
+            <param name="count">The number of characters to insert.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.Append(System.Char*,System.Int32)">
+            <summary>
+                Appends a unmanaged char-array to the builder
+            </summary>
+            <param name="value">The pointer to the first character to append.</param>
+            <param name="length">The number of characters after the <paramref name="value"/> pointer.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.Append(System.ReadOnlySpan{System.Char})">
+            <summary>
+                Appends a span to the builder.
+            </summary>
+            <param name="value">The span to append.</param>
+        </member>
+        <member name="M:Rustic.StrBuilder.AppendSpan(System.Int32)">
+            <summary>
+                Appends a mutable span of a specific length to the builder.
+            </summary>
+            <param name="length">The length of the span to append.</param>
+            <returns>The span at the end of the builder.</returns>
+        </member>
+        <member name="M:Rustic.StrBuilder.Grow(System.Int32)">
+            <summary>
+                Resize the internal buffer either by doubling current buffer size or
+                by adding <paramref name="additionalCapacityBeyondPos" /> to
+                <see cref="F:Rustic.StrBuilder._pos" /> whichever is greater.
+            </summary>
+            <param name="additionalCapacityBeyondPos">
+                Number of chars requested beyond current position.
+            </param>
+        </member>
+        <member name="M:Rustic.StrBuilder.Dispose">
+            <inheritdoc cref="M:System.IDisposable.Dispose"/>
+        </member>
+        <member name="T:Rustic.StringExtensions">
+            <inheritdoc cref="T:System.String"/>
+        </member>
+        <member name="M:Rustic.StringExtensions.IsEmpty(System.String)">
+            <inheritdoc cref="M:System.String.IsNullOrEmpty(System.String)"/>
+        </member>
+        <member name="M:Rustic.StringExtensions.IsWhiteSpace(System.String)">
+            <inheritdoc cref="M:System.String.IsNullOrWhiteSpace(System.String)"/>
+        </member>
+        <member name="M:Rustic.StringExtensions.Join(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <inheritdoc cref="M:System.String.Join(System.String,System.Collections.Generic.IEnumerable{System.String})"/>
+        </member>
+        <member name="M:Rustic.StringExtensions.Join``1(System.String,System.Collections.Generic.IEnumerable{``0})">
+            <inheritdoc cref="M:System.String.Join``1(System.String,System.Collections.Generic.IEnumerable{``0})"/>
+        </member>
+        <member name="M:Rustic.StringExtensions.Join(System.String,System.String[])">
+            <inheritdoc cref="M:System.String.Join(System.String,System.String[])"/>
+        </member>
+        <member name="M:Rustic.StringExtensions.Join(System.String,System.Object[])">
+            <inheritdoc cref="M:System.String.Join(System.String,System.Object[])"/>
+        </member>
+        <member name="T:Rustic.ThrowHelper">
+            <summary>Centralized functionality related to validation and throwing exceptions.</summary>
+        </member>
+        <member name="T:System.Diagnostics.UnreachableException">
+            <summary>
+            Exception thrown when the program executes an instruction that was thought to be unreachable.
+            </summary>
+        </member>
+        <member name="M:System.Diagnostics.UnreachableException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Diagnostics.UnreachableException"/> class with the default error message.
+            </summary>
+        </member>
+        <member name="M:System.Diagnostics.UnreachableException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Diagnostics.UnreachableException"/>
+            class with a specified error message.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+        </member>
+        <member name="M:System.Diagnostics.UnreachableException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Diagnostics.UnreachableException"/>
+            class with a specified error message and a reference to the inner exception that is the cause of
+            this exception.
+            </summary>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception.</param>
+        </member>
+    </members>
+</doc>

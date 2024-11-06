@@ -1,0 +1,9 @@
+- name: 🏠 Home
+  href: index.md
+  items:
+  - name: Quick Start
+    href: quick-start.md
+  - name: Docs Overview
+    href: docs-overview.md
+  - name: How to Create Glyph Collection
+    href: creating-collection.md

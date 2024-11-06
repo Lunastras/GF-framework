@@ -141,7 +141,7 @@ public class GfgManagerGame : MonoBehaviour
                 {
                     Instance.m_queuedGameStateTransitionPriority = aPriorityInQueue;
                     Timing.KillCoroutines(Instance.m_queuedGameStateTransitionHandle);
-                    GfxTransitionGeneric transition = GfxTransitions.Instance.GetSingleton(aTransition);
+                    GfcTransitionParent transition = GfxTransitions.Instance.GetSingleton(aTransition);
                     transitionHandle = Timing.RunCoroutine(Instance._TransitionGameState(aState, transition));
                     Instance.m_queuedGameStateTransitionHandle = transitionHandle;
                 }
@@ -155,7 +155,7 @@ public class GfgManagerGame : MonoBehaviour
         return transitionHandle;
     }
 
-    private IEnumerator<float> _TransitionGameState(GfcGameState aState, GfxTransitionGeneric aTransition)
+    private IEnumerator<float> _TransitionGameState(GfcGameState aState, GfcTransitionParent aTransition)
     {
         yield return Timing.WaitForOneFrame; //don't execute immediately after RunCoroutine
 
@@ -169,19 +169,23 @@ public class GfgManagerGame : MonoBehaviour
         m_queuedGameStateTransitionPriority = 0;
         m_gameStateAfterTransition = aState;
 
+        GfcInput.InputEnabled = false;
+
         m_fadeOutGameStateTransition = false;
         yield return Timing.WaitUntilDone(aTransition.StartFadeIn());
 
         SetGameStateInternal(aState);
 
+        GfcInput.InputEnabled = true;
         m_fadeOutGameStateTransition = true;
         m_gameStateAfterTransition = GfcGameState.INVALID;
         m_gameStateTransitionHandle = Timing.RunCoroutine(_TransitionGameStateFadeOut(aTransition));
     }
 
-    private IEnumerator<float> _TransitionGameStateFadeOut(GfxTransitionGeneric aTransition)
+    private IEnumerator<float> _TransitionGameStateFadeOut(GfcTransitionParent aTransition)
     {
         yield return Timing.WaitUntilDone(aTransition.StartFadeOut());
+        yield return Timing.WaitForOneFrame;
 
         m_fadeOutGameStateTransition = false;
         m_gameStateTransitionHandle = default;

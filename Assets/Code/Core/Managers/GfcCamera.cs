@@ -19,11 +19,6 @@ public class GfcCamera : MonoBehaviour
         Debug.Assert(this.GetComponent(ref m_camera));
         MainCamera = m_camera;
         Cameras.Add(m_camera);
-
-        if (MainCamera)
-            Debug.Log("Found camera for " + GetSignature());
-        else
-            Debug.LogError("PULA CAMERA FOR " + GetSignature());
     }
 
     private string GetSignature() { return " " + gameObject.name + " " + Time.frameCount + " " + GetType(); }
@@ -31,7 +26,7 @@ public class GfcCamera : MonoBehaviour
     protected void OnDisable()
     {
         int thisCameraIndex = -1;
-        Camera anActiveCamera = null; //keep this camera if there are none
+        Camera anActiveCamera = m_camera; //keep this camera if there are none
 
         for (int i = 0; i < Cameras.Count; i++)
         {
@@ -55,8 +50,5 @@ public class GfcCamera : MonoBehaviour
 
         if (thisCameraIndex >= 0)
             Cameras.RemoveAtSwapBack(thisCameraIndex);
-
-        Debug.Log("Will disable now... " + GetSignature());
-        Debug.Assert(MainCamera, Time.frameCount);
     }
 }

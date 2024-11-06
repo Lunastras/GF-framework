@@ -13,7 +13,6 @@ public class GfgDoubleTextWriter : MonoBehaviour
 
     private GfxRichTextWriter m_textEraser;
 
-    // Start is called before the first frame update
     void Start()
     {
         Debug.Assert(m_textWriterMain);

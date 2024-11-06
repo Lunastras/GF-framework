@@ -1,11 +1,4 @@
-using System;
-using System.Collections.Generic;
-using Codice.Client.BaseCommands.BranchExplorer;
-using TMPro;
-using UnityEditor.Graphs;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class GfxButton2D : GfxButton
@@ -20,7 +13,7 @@ public class GfxButton2D : GfxButton
 
     public bool LocalTransformRelativeToOriginal = true;
 
-    private Color[] m_colorAtBeginningOfTransition = null;
+    public Color[] m_colorAtBeginningOfTransition = null;
 
     public Color[] m_originalColors;
 
@@ -48,18 +41,23 @@ public class GfxButton2D : GfxButton
             m_originalColors = new Color[countColors];
             m_colorAtBeginningOfTransition = new Color[countColors];
 
-            int currentIndex = 0;
-
-            foreach (Graphic graphic in GraphicsPanel)
-                m_originalColors[currentIndex++] = graphic.color;
-
-            foreach (Graphic graphic in GraphicsContent)
-                m_originalColors[currentIndex++] = graphic.color;
+            UpdateOriginalColors();
 
             m_initialized2DButton = true;
         }
 
         base.Initialize();
+    }
+
+    public void UpdateOriginalColors()
+    {
+        int currentIndex = 0;
+
+        foreach (Graphic graphic in GraphicsPanel)
+            m_originalColors[currentIndex++] = graphic.color;
+
+        foreach (Graphic graphic in GraphicsContent)
+            m_originalColors[currentIndex++] = graphic.color;
     }
 
     protected override void SetTransitionLerpState(float aTransitionPoint, GfxButtonHightlightState aDesiredState)

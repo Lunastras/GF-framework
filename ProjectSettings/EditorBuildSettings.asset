@@ -27,6 +27,10 @@ EditorBuildSettings:
     path: Assets/Data/Scenes/Game Levels/CornLevel0.unity
     guid: 1219f9e73be7bcf49bbc511116db3b59
   m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: e13aa9b7f31b33747bcd8e828c609102,
+      type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000,
+      guid: d4c316745fd1ed445b09b6b388fa3993, type: 2}
     com.unity.addressableassets: {fileID: 11400000, guid: 79751fafe6694864a998e58059428777,
       type: 2}
     com.unity.localization.settings: {fileID: 11400000, guid: 1a67f1c3ac84a574ab6a9c137af457ea,

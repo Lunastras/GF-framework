@@ -41,6 +41,11 @@ public class GfcPhysics : MonoBehaviour
     [SerializeField]
     public LayerMask m_physicsIgnoreLayerMask;
 
+    /**Returns the fixed update count since GfcPhysics was instantiated.*/
+    public static int FixedUpdateCount { get { return Instance.m_fixedUpdateCount; } }
+
+    private int m_fixedUpdateCount = 0;
+
     private void Awake()
     {
         if (Instance != null)
@@ -63,6 +68,11 @@ public class GfcPhysics : MonoBehaviour
         }
 
         Instance = this;
+    }
+
+    private void FixedUpdate()
+    {
+        m_fixedUpdateCount++;
     }
 
     public static int GetLayerMask(int layer) => Instance.m_layerMasks[layer];
@@ -88,7 +98,7 @@ public class GfcPhysics : MonoBehaviour
     }
 
     /** Get the layer mask of objects that can be considered ground
-    */
+*/
     public static int CollisionsNoGroundLayers()
     {
         return Instance.m_collisionsNonGroundLayerMask;
@@ -110,14 +120,14 @@ public class GfcPhysics : MonoBehaviour
     }
 
     /** Get the layer mask of objects that can be considered ground
-    */
+*/
     public static int GroundLayers()
     {
         return Instance.m_groundLayerMask;
     }
 
     /** Get the layer mask of wallrunnable objects
-    */
+*/
     public static int WallrunLayers()
     {
         return Instance.m_wallrunLayerMask;
@@ -125,7 +135,7 @@ public class GfcPhysics : MonoBehaviour
 
     /** Get the layer mask of objects that have collisions
     * that should not affect physics.
-    */
+*/
     public static int IgnoreLayers()
     {
         return Instance.m_physicsIgnoreLayerMask;

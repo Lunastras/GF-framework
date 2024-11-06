@@ -1,0 +1,1074 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fad9d36fb691a84fb906682a04a0681, type: 3}
+  m_Name: GlyphMapKeyboard
+  m_EditorClassIdentifier: 
+  controllerDataFiles: {fileID: 11400000, guid: d21d2b20df8369642b76aafbb2576ba7,
+    type: 2}
+  controllerGuid: 
+  glyphs:
+  - inputID: 0
+    description: None
+    positiveDescription: None
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 1
+    description: A
+    positiveDescription: A
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: c30bddfacca41d34bb409128f0a5a2a5, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 2
+    description: B
+    positiveDescription: B
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: dcff8d2beaa3d9a4f93af3d7089ddba1, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 3
+    description: C
+    positiveDescription: C
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 2c886dec7bf5dce4397b8f5e30db252b, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 4
+    description: D
+    positiveDescription: D
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 01409064c43137f4a81b2b4d9c1906d6, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 5
+    description: E
+    positiveDescription: E
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: c73fbf4be6d24d34e97cb13238fe1ae4, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 6
+    description: F
+    positiveDescription: F
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 8cfed2e6731de2148b8af65a6b18336e, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 7
+    description: G
+    positiveDescription: G
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 26bd85a147a2a6442b176964a99610c7, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 8
+    description: H
+    positiveDescription: H
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a975d8d954c32f44d82fdd9e0365dee1, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 9
+    description: I
+    positiveDescription: I
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a9e89313dcb40d7408ec5100f14f1d30, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 10
+    description: J
+    positiveDescription: J
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: c4923f28326a15a4dba372d6b72dfe79, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 11
+    description: K
+    positiveDescription: K
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 0c7079e4fc5e5ee4c96a80cada7bebbe, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 12
+    description: L
+    positiveDescription: L
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: d17bc7950e4642e4f99404d57e7ce232, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 13
+    description: M
+    positiveDescription: M
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 0f4dcba2f1c33cf4089a6d4f1ee48524, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 14
+    description: N
+    positiveDescription: N
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a4df08e6fa4eb8a49b914430c2a85c9c, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 15
+    description: O
+    positiveDescription: O
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 22fe2dd40367e1d408dbba8137450c4b, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 16
+    description: P
+    positiveDescription: P
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 18d25e97efbbd464882b0917bdb842e4, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 17
+    description: Q
+    positiveDescription: Q
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 48b95c339ecc4464493c37a840275cbb, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 18
+    description: R
+    positiveDescription: R
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 709a4d88f02f40e47be790ce4216f3d2, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 19
+    description: S
+    positiveDescription: S
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 1682883820fb5724eb5fa54de404bf1d, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 20
+    description: T
+    positiveDescription: T
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 303f78504ff62b04a9b024ce53c1e737, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 21
+    description: U
+    positiveDescription: U
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 961ba994d43859241bfd740856c5af6d, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 22
+    description: V
+    positiveDescription: V
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: b8360b760d1a2264c974366fd8bde008, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 23
+    description: W
+    positiveDescription: W
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 969c388df974f7242b7a2fe16a69aefd, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 24
+    description: X
+    positiveDescription: X
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 014a5d774685da24a808ed899e8113b4, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 25
+    description: Y
+    positiveDescription: Y
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 7abc7d0d0a11a7a49b2d50f3442da89d, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 26
+    description: Z
+    positiveDescription: Z
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 78f9c715216c79043968ba9db6204d69, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 27
+    description: 0
+    positiveDescription: 0
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 9d7b200dd19a8c44ea216ae6e73d79c7, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 28
+    description: 1
+    positiveDescription: 1
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 854666ac0abfd0145937e7eed88fed56, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 29
+    description: 2
+    positiveDescription: 2
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 6390ab92594bfd2428a051e42da1e25c, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 30
+    description: 3
+    positiveDescription: 3
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 4707a47689aad914bacc57d7f03327e1, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 31
+    description: 4
+    positiveDescription: 4
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 4bc7e1cfb3b024240a791b37198ce48a, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 32
+    description: 5
+    positiveDescription: 5
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: ed95eac2715cc40428c527da87049db2, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 33
+    description: 6
+    positiveDescription: 6
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 9d4659898fa61bf4f80a8d2b2a0c81cc, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 34
+    description: 7
+    positiveDescription: 7
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: ba62aa8cf1dab8a4791e157bf114b452, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 35
+    description: 8
+    positiveDescription: 8
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 4644f44dcd130c548940363124b4b774, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 36
+    description: 9
+    positiveDescription: 9
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 4ead062d601beae4da8ab1d3472cc71c, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 37
+    description: Keypad 0
+    positiveDescription: Keypad 0
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: d024ee51acec1064aae53c94b275d975, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 38
+    description: Keypad 1
+    positiveDescription: Keypad 1
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 2726ed6c4374ebd40880eb5d516ea68e, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 39
+    description: Keypad 2
+    positiveDescription: Keypad 2
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 087400213e1610f4fbea541cedaa4d19, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 40
+    description: Keypad 3
+    positiveDescription: Keypad 3
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 41
+    description: Keypad 4
+    positiveDescription: Keypad 4
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 42
+    description: Keypad 5
+    positiveDescription: Keypad 5
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 43
+    description: Keypad 6
+    positiveDescription: Keypad 6
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 44
+    description: Keypad 7
+    positiveDescription: Keypad 7
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 45
+    description: Keypad 8
+    positiveDescription: Keypad 8
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 46
+    description: Keypad 9
+    positiveDescription: Keypad 9
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 47
+    description: Keypad .
+    positiveDescription: Keypad .
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 41a7a13833ac1ac46a72e68c1adef8c5, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 48
+    description: Keypad /
+    positiveDescription: Keypad /
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a3bef05fac4a51642981e64915cea2e1, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 49
+    description: Keypad *
+    positiveDescription: Keypad *
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 15782f6bbf00e0740944186aa51aaf24, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 50
+    description: Keypad -
+    positiveDescription: Keypad -
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 0469b49332bcd584eb26a97d1947f094, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 51
+    description: Keypad +
+    positiveDescription: Keypad +
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 38d7b92668e054443b66fb0a20a250a3, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 52
+    description: Keypad Enter
+    positiveDescription: Keypad Enter
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 034201da95cc78a4eb486200063f6005, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 53
+    description: Keypad =
+    positiveDescription: Keypad =
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 38d7b92668e054443b66fb0a20a250a3, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 54
+    description: Space
+    positiveDescription: Space
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: edd23a120308cc641873d71005aa2cfa, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 55
+    description: Backspace
+    positiveDescription: Backspace
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: c360d6c1082487547af23a606a960a8c, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 56
+    description: Tab
+    positiveDescription: Tab
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 3c7624799fb99a243a485455bbcfc3c4, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 57
+    description: Clear
+    positiveDescription: Clear
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 58
+    description: Return
+    positiveDescription: Return
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 034201da95cc78a4eb486200063f6005, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 59
+    description: Pause
+    positiveDescription: Pause
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a2c11399baa60d44d9b513a7ed11c6f6, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 60
+    description: ESC
+    positiveDescription: ESC
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 06b1aa473446b1f4a961443e43b7731c, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 61
+    description: '!'
+    positiveDescription: '!'
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 854666ac0abfd0145937e7eed88fed56, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 62
+    description: '"'
+    positiveDescription: '"'
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 63
+    description: '#'
+    positiveDescription: '#'
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 64
+    description: $
+    positiveDescription: $
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 65
+    description: '&'
+    positiveDescription: '&'
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 66
+    description: ''''
+    positiveDescription: ''''
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 67
+    description: (
+    positiveDescription: (
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 68
+    description: )
+    positiveDescription: )
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 69
+    description: '*'
+    positiveDescription: '*'
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 15782f6bbf00e0740944186aa51aaf24, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 70
+    description: +
+    positiveDescription: +
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 71
+    description: ','
+    positiveDescription: ','
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 74dbc09af73d4174c987e2cbb0e9a9e7, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 72
+    description: '-'
+    positiveDescription: '-'
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 73
+    description: .
+    positiveDescription: .
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 74
+    description: /
+    positiveDescription: /
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a3bef05fac4a51642981e64915cea2e1, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 75
+    description: ':'
+    positiveDescription: ':'
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 6daf71d34c1886a4f9b7d5aef2bc8b37, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 76
+    description: ;
+    positiveDescription: ;
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 6daf71d34c1886a4f9b7d5aef2bc8b37, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 77
+    description: <
+    positiveDescription: <
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 74dbc09af73d4174c987e2cbb0e9a9e7, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 78
+    description: =
+    positiveDescription: =
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 38d7b92668e054443b66fb0a20a250a3, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 79
+    description: '>'
+    positiveDescription: '>'
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 41a7a13833ac1ac46a72e68c1adef8c5, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 80
+    description: '?'
+    positiveDescription: '?'
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 81
+    description: '@'
+    positiveDescription: '@'
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 82
+    description: '['
+    positiveDescription: '['
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 61be087aec21585448a828687b6776af, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 83
+    description: \
+    positiveDescription: \
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a3bef05fac4a51642981e64915cea2e1, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 84
+    description: ']'
+    positiveDescription: ']'
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 785d3630670d35f4ca836285f3131294, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 85
+    description: ^
+    positiveDescription: ^
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 86
+    description: _
+    positiveDescription: _
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 87
+    description: Back Quote
+    positiveDescription: Back Quote
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 88
+    description: Delete
+    positiveDescription: Delete
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: b6829d0451ef6804b8576415576e1cc7, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 89
+    description: Up Arrow
+    positiveDescription: Up Arrow
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: f8961f7e2ce09f64cbd1f9e9030129e6, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 90
+    description: Down Arrow
+    positiveDescription: Down Arrow
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 1c34f1875019d6144889ff27f1fde3cf, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 91
+    description: Right Arrow
+    positiveDescription: Right Arrow
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 5efcf4804c28325429e9111a92b595b7, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 92
+    description: Left Arrow
+    positiveDescription: Left Arrow
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 0c2b2845135658f4092942ef0e6dc908, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 93
+    description: Insert
+    positiveDescription: Insert
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: d024ee51acec1064aae53c94b275d975, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 94
+    description: Home
+    positiveDescription: Home
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: d66a6f9af43b05f44b4e282366daf325, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 95
+    description: End
+    positiveDescription: End
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 2726ed6c4374ebd40880eb5d516ea68e, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 96
+    description: Page Up
+    positiveDescription: Page Up
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: c6e874a9ed6b04b498aa4b1f8e062524, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 97
+    description: Page Down
+    positiveDescription: Page Down
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: e8ab928d86e637c4d976c6dd00d503f4, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 98
+    description: F1
+    positiveDescription: F1
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: f137b5432016d104089400659c33e495, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 99
+    description: F2
+    positiveDescription: F2
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 62120b5fea7ec4f4b9ab668459314eb7, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 100
+    description: F3
+    positiveDescription: F3
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 24cdf506ad6a4fc4fa5d7c3d8a2e846d, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 101
+    description: F4
+    positiveDescription: F4
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: dc773d2f3ffe8544f92aadb76bb062ed, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 102
+    description: F5
+    positiveDescription: F5
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a9ce6e889861cc948875a0f73a50ae8a, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 103
+    description: F6
+    positiveDescription: F6
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 4165989d455a96743bdba699d4439506, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 104
+    description: F7
+    positiveDescription: F7
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: c72c2adf3e8ae7641919ae3fab5e378d, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 105
+    description: F8
+    positiveDescription: F8
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 4d83ee430fd0fb8419c1bd0e7f40205f, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 106
+    description: F9
+    positiveDescription: F9
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 3fb43117279573e4fa57a3244501dd88, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 107
+    description: F10
+    positiveDescription: F10
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 4f699fdc9c68cd243a7161f34ff90da4, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 108
+    description: F11
+    positiveDescription: F11
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a2c11399baa60d44d9b513a7ed11c6f6, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 109
+    description: F12
+    positiveDescription: F12
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 4edfe55c7d262954c9c9313711a8438f, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 110
+    description: F13
+    positiveDescription: F13
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 111
+    description: F14
+    positiveDescription: F14
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 112
+    description: F15
+    positiveDescription: F15
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 113
+    description: Numlock
+    positiveDescription: Numlock
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 6b638476d72cb624087f37edc1cce3c2, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 114
+    description: Caps Lock
+    positiveDescription: Caps Lock
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: bd8c093876ab5db4d8c718855356a144, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 115
+    description: Scroll Lock
+    positiveDescription: Scroll Lock
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 116
+    description: Right Shift
+    positiveDescription: Right Shift
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 76b6be3ae2aad934f95940e8ce269e6b, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 117
+    description: Left Shift
+    positiveDescription: Left Shift
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 76b6be3ae2aad934f95940e8ce269e6b, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 118
+    description: Right Control
+    positiveDescription: Right Control
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 9255149070668ad4ba193b4efaee71f1, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 119
+    description: Left Control
+    positiveDescription: Left Control
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 9255149070668ad4ba193b4efaee71f1, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 120
+    description: Right Alt
+    positiveDescription: Right Alt
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 51231374d2d5afe46a2b51a0097055b4, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 121
+    description: Left Alt
+    positiveDescription: Left Alt
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: 51231374d2d5afe46a2b51a0097055b4, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 122
+    description: Right Command
+    positiveDescription: Right Command
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a9352cc867c658843914ee47a58318be, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 123
+    description: Left Command
+    positiveDescription: Left Command
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a9352cc867c658843914ee47a58318be, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 124
+    description: Left Windows
+    positiveDescription: Left Windows
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a24731e0a1294124080d9168e969d5d6, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 125
+    description: Right Windows
+    positiveDescription: Right Windows
+    negativeDescription: 
+    sprite: {fileID: 21300000, guid: a24731e0a1294124080d9168e969d5d6, type: 3}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 126
+    description: AltGr
+    positiveDescription: AltGr
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 127
+    description: Help
+    positiveDescription: Help
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 128
+    description: Print
+    positiveDescription: Print
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 129
+    description: SysReq
+    positiveDescription: SysReq
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 130
+    description: Break
+    positiveDescription: Break
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  - inputID: 131
+    description: Menu
+    positiveDescription: Menu
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 

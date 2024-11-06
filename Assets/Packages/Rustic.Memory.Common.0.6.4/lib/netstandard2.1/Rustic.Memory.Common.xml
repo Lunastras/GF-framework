@@ -1,0 +1,250 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rustic.Memory.Common</name>
+    </assembly>
+    <members>
+        <member name="T:Rustic.Memory.IReadOnlyCollectionDebugView`1">
+            <summary>Proxy class used for displaying a <see cref="T:System.Collections.Generic.IReadOnlyCollection`1"/> in the debugger.</summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Rustic.Memory.IReadOnlyCollectionDebugView`1.#ctor(System.Collections.Generic.IReadOnlyCollection{`0})">
+            <summary>Intializes a new instance of <see cref="T:Rustic.Memory.IReadOnlyCollectionDebugView`1"/>.</summary>
+            <param name="collection">The collection to display.</param>
+        </member>
+        <member name="P:Rustic.Memory.IReadOnlyCollectionDebugView`1.Items">
+            <summary>A shallow-copy of the items of the collection.</summary>
+        </member>
+        <member name="T:Rustic.Memory.EnumerableExtensions">
+            <summary>Extensions for types implementing <see cref="T:System.Collections.Generic.IEnumerable`1"/>.</summary>
+        </member>
+        <member name="M:Rustic.Memory.EnumerableExtensions.WithIndex``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>Zips the sequence of elements with a incrementing count from zero, indicating the index of the item in a array-list.</summary>
+            <typeparam name="T">The type of elements in the sequence.</typeparam>
+            <param name="source">The sequence of elements.</param>
+        </member>
+        <member name="T:Rustic.Memory.MemoryCopyHelper">
+            <summary>Utility methods assisting with handling sections of memory</summary>
+        </member>
+        <member name="M:Rustic.Memory.MemoryCopyHelper.CopyToReversed``1(``0@,``0@,System.UIntPtr)">
+            <summary>Copies the source to the destination buffer, starting at the last element in source to the first element in destination.</summary>
+            <param name="src">The source buffer</param>
+            <param name="dst">The destination buffer</param>
+            <param name="len">The number of elements to copy. Must be less or equal then the minimum of both buffer lengths.</param>
+            <typeparam name="T">The type of the element to copy.</typeparam>
+        </member>
+        <member name="M:Rustic.Memory.MemoryCopyHelper.CopyToReversed``1(System.ReadOnlySpan{``0},System.Span{``0})">
+            <summary>Copies the source to the destination buffer, starting at the last element in source to the first element in destination.</summary>
+            <param name="src">The source buffer. Must be smaller or equal in size to the destination.</param>
+            <param name="dst">The destination buffer. Must be greater or equal in size ot the source.</param>
+            <typeparam name="T">The type of the element to copy.</typeparam>
+            <exception cref="T:System.ArgumentOutOfRangeException">If the source buffer is greater is size then the destination.</exception>
+        </member>
+        <member name="M:Rustic.Memory.MemoryCopyHelper.TryCopyToReversed``1(System.ReadOnlySpan{``0},System.Span{``0})">
+            <summary>Copies the source to the destination buffer, starting at the last element in source to the first element in destination.</summary>
+            <param name="src">The source buffer. Must be smaller or equal in size to the destination.</param>
+            <param name="dst">The destination buffer. Must be greater or equal in size ot the source.</param>
+            <typeparam name="T">The type of the element to copy.</typeparam>
+            <exception cref="T:System.ArgumentOutOfRangeException">If the source buffer is greater is size then the destination.</exception>
+        </member>
+        <member name="T:Rustic.Memory.SpanSortHelper`1">
+            <summary>Provides the function <see cref="M:Rustic.Memory.SpanSortHelper`1.Sort(System.Span{`0},System.Comparison{`0})"/> with which a <see cref="T:System.Span`1"/> can be sorted.</summary>
+            <typeparam name="T">The type of elements in the collection.</typeparam>
+        </member>
+        <member name="F:Rustic.Memory.SpanSortHelper`1.IntrosortSizeThreshold">
+            <summary>
+            This is the threshold where Introspective sort switches to Insertion sort.
+            Empirically, 16 seems to speed up most cases without slowing down others, at least for integers.
+            Large value types may benefit from a smaller number.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.SpanSortHelper`1.Sort(System.Span{`0},System.Comparison{`0})">
+            <summary>Sorts the elements of the span using the comparer.</summary>
+            <param name="keys">The span to sort.</param>
+            <param name="comparer">The comparer used to sort the span.</param>
+        </member>
+        <member name="T:Rustic.Memory.SpanSortHelper`2">
+            <summary>Provides the function <see cref="M:Rustic.Memory.SpanSortHelper`2.Sort(System.Span{`0}@,System.Span{`1}@,System.Comparison{`0})"/> with which a <see cref="T:System.Span`1"/> can be sorted.</summary>
+            <typeparam name="K">The type of the keys.</typeparam>
+            <typeparam name="V">The type of the values.</typeparam>
+        </member>
+        <member name="F:Rustic.Memory.SpanSortHelper`2.IntrosortSizeThreshold">
+            <summary>
+            This is the threshold where Introspective sort switches to Insertion sort.
+            Empirically, 16 seems to speed up most cases without slowing down others, at least for integers.
+            Large value types may benefit from a smaller number.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.SpanSortHelper`2.Sort(System.Span{`0}@,System.Span{`1}@,System.Comparison{`0})">
+            <summary>Sorts <paramref name="keys"/> using the comparer, mirroring changed to the <paramref name="values"/>.</summary>
+            <param name="keys">The keys to sort.</param>
+            <param name="values">The values to sort by the keys.</param>
+            <param name="comparer">The comparer used to sort the keys.</param>
+        </member>
+        <member name="T:Rustic.Memory.VecIter`1">
+            <summary>
+                Enumerates the elements of a segment of an array.
+            </summary>
+            <typeparam name="T">The type of items of the array.</typeparam>
+        </member>
+        <member name="M:Rustic.Memory.VecIter`1.#ctor(`0[],System.Int32,System.Int32)">
+            <summary>
+                Initializes a new instance of the iterator.
+            </summary>
+            <param name="array">The array to iterate.</param>
+            <param name="offset">The index of the first element to iterate.</param>
+            <param name="count">The number of elements to iterate.</param>
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.Array">
+            <inheritdoc cref="P:System.ArraySegment`1.Array"/>
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.Current">
+            <inheritdoc cref="P:System.Collections.Generic.IEnumerator`1.Current" />
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.System#Collections#Generic#IEnumerator{T}#Current">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.System#Collections#IEnumerator#Current">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.Length">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.Index">
+            <summary>
+                The current position of the enumerator.
+            </summary>
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.IsEmpty">
+            <summary>
+                Returns a value that indicates whether the current segment is empty.
+            </summary>
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.Offset">
+            <inheritdoc cref="P:System.ArraySegment`1.Offset"/>
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.Item(System.Int32)">
+            <inheritdoc cref="P:System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)" />
+        </member>
+        <member name="P:Rustic.Memory.VecIter`1.System#Collections#Generic#IReadOnlyList{T}#Item(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.VecIter`1.AsSpan">
+            <summary>
+                Returns the segment represented by the <see cref="T:Rustic.Memory.VecIter`1"/> as a span.
+            </summary>
+            <returns>The span representing the segment.</returns>
+        </member>
+        <member name="M:Rustic.Memory.VecIter`1.GetEnumerator">
+            <inheritdoc cref="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" />
+        </member>
+        <member name="M:Rustic.Memory.VecIter`1.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.VecIter`1.System#Collections#Generic#IEnumerable{T}#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.VecIter`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.VecIter`1.MoveNext">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.VecIter`1.Reset">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.VecIter`1.op_Implicit(Rustic.Memory.VecIter{`0})~System.ArraySegment{`0}">
+            <summary>
+                Instantiates a new <see cref="T:System.ArraySegment`1"/> representing the same segment as the iterator.
+            </summary>
+            <param name="segment">The iterator.</param>
+        </member>
+        <member name="T:Rustic.Memory.VecIterExtensions">
+            <summary>
+                Extension methods for <see cref="T:System.ArraySegment`1"/> and <see cref="T:System.Array"/>.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.VecIterExtensions.GetIterator``1(System.ArraySegment{``0})">
+            <summary>
+                Initializes a new <see cref="T:Rustic.Memory.VecIter`1"/> for the segment.
+            </summary>
+            <param name="segment">The segment.</param>
+            <typeparam name="T">The type of elements in the array.</typeparam>
+        </member>
+        <member name="M:Rustic.Memory.VecIterExtensions.GetIterator``1(``0[])">
+            <summary>
+                Initializes a new <see cref="T:Rustic.Memory.VecIter`1"/> for the array.
+            </summary>
+            <param name="array">The array.</param>
+            <typeparam name="T">The type of elements in the array.</typeparam>
+        </member>
+        <member name="M:Rustic.Memory.VecIterExtensions.GetIterator``1(``0[],System.Int32)">
+             <summary>
+                 Initializes a new <see cref="T:Rustic.Memory.VecIter`1"/> for the array.
+             </summary>
+             <param name="array">The array.</param>
+             <param name="offset">The zero-based index of the first element in the array.</param>
+             <typeparam name="T">The type of elements in the array.</typeparam>
+            
+            
+        </member>
+        <member name="M:Rustic.Memory.VecIterExtensions.GetIterator``1(``0[],System.Int32,System.Int32)">
+            <summary>
+                Initializes a new <see cref="T:Rustic.Memory.VecIter`1"/> for the array.
+            </summary>
+            <param name="array">The array.</param>
+            <param name="offset">The zero-based index of the first element in the array.</param>
+            <param name="count">The number of elements form the <paramref name="offset"/>.</param>
+            <typeparam name="T">The type of elements in the array.</typeparam>
+        </member>
+        <member name="T:System.MemoryExtensions">
+            <summary>
+                Extensions for <see cref="T:System.Span`1"/>, <see cref="T:System.ReadOnlySpan`1"/>.
+            </summary>
+        </member>
+        <member name="M:System.MemoryExtensions.Sort``1(System.Span{``0})">
+            <summary>
+                Sorts the elements in the entire <see cref="T:System.Span`1" /> using the <see cref="T:System.IComparable`1" /> implementation of each element of the <see cref="T:System.Span`1"/>.
+            </summary>
+            <param name="span">>The <see cref="T:System.Span`1"/> to sort.</param>
+            <typeparam name="T">The type of the elements of the span.</typeparam>
+        </member>
+        <member name="M:System.MemoryExtensions.Sort``2(System.Span{``0},``1)">
+            <summary>
+                Sorts the elements in the entire <see cref="T:System.Span`1" /> using the <typeparamref name="C" />.
+            </summary>
+            <param name="span">The <see cref="T:System.Span`1"/> to sort.</param>
+            <param name="comparer"></param>
+            <typeparam name="T">The type of the elements of the span.</typeparam>
+            <typeparam name="C">The type of the comparer to use to compare elements.</typeparam>
+        </member>
+        <member name="M:System.MemoryExtensions.Sort``1(System.Span{``0},System.Comparison{``0})">
+            <summary>
+                Sorts the elements in the entire <see cref="T:System.Span`1" /> using the specified <see cref="T:System.Comparison`1" />.
+            </summary>
+            <param name="span">The <see cref="T:System.Span`1"/> to sort.</param>
+            <param name="comparison">The <see cref="T:System.Comparison`1"/> to use when comparing elements.</param>
+            <typeparam name="T">The type of the elements of the span.</typeparam>
+        </member>
+        <member name="M:System.MemoryExtensions.Union``1(System.ReadOnlySpan{``0}@,System.ReadOnlySpan{``0}@,System.Span{``0}@)">
+            <summary>
+                Computes the union of two sets.
+            </summary>
+            <param name="set">The left set.</param>
+            <param name="other">The right set.</param>
+            <param name="output">The output buffer.</param>
+            <typeparam name="T">The type of the elements of the sets.</typeparam>
+        </member>
+        <member name="M:System.MemoryExtensions.Union``2(System.ReadOnlySpan{``0}@,System.ReadOnlySpan{``0}@,System.Span{``0}@,``1@)">
+            <summary>
+                Computes the union of two sets.
+            </summary>
+            <param name="set">The left set.</param>
+            <param name="other">The right set.</param>
+            <param name="output">The output buffer.</param>
+            <param name="comparer">The comparer used to compare two elements.</param>
+            <typeparam name="T">The type of the elements of the sets.</typeparam>
+            <typeparam name="C">The type of the comparer.</typeparam>
+        </member>
+    </members>
+</doc>

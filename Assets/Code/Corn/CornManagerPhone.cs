@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MEC;
@@ -7,35 +6,87 @@ using MEC;
 public class CornManagerPhone : MonoBehaviour
 {
     private static CornManagerPhone Instance;
-    [SerializeField] private GfcInputTracker m_openPhoneInput;
+
+    [SerializeField] private GfcInputType m_openPhoneInput;
 
     [SerializeField] private GameObject m_prefabMessagesNotifyPanel;
 
-    [SerializeField] private GameObject m_prefabCharacterInHub;
+    [SerializeField] private GameObject m_prefabAvatarsInHub;
+
+    [SerializeField] private Transform m_sceneHandleParent;
 
     [SerializeField] private GfcGameState[] m_statesWhereToggleEnabled;
 
-    private List<CornMessageEventInstance> m_messageScenes;
+    [SerializeField] private Transform m_avatarsParent;
 
-    private int m_currentlyShownEventIndex = -1;
+    private List<CornMessageEventInstance> m_messageScenes = new(8);
+
+    private CornAvatarInteract m_currentlyShownAvatarEvent = null;
+
+    private Type m_queuedSocialEventAfterMessages = null;
+
+    GfcInputTracker m_openPhoneInputTracker;
 
     // Start is called before the first frame update
     void Awake()
     {
+        m_openPhoneInputTracker = new(m_openPhoneInput);
+        m_openPhoneInputTracker.DisplayPromptString = new("Open Phone");
         this.SetSingleton(ref Instance);
     }
 
     void Start()
     {
         GfgManagerGame.Instance.OnGameStateChanged += OnGameStateChanged;
+
+        if (GfgManagerGame.GetPreviousGameState() == GfcGameState.INVALID)
+            OnGameStateChanged(GfgManagerGame.GetGameState(), GfgManagerGame.GetPreviousGameState());
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        bool validState = false;
+        GfcGameState gameState = GfgManagerGame.GetGameState();
+
+        for (int i = 0; !validState && i < m_statesWhereToggleEnabled.Length; i++)
+        {
+            validState = gameState == m_statesWhereToggleEnabled[i];
+        }
+
+        if (validState && !GfgManagerGame.GameStateTransitioningFadeInPhase() && m_openPhoneInputTracker.PressedSinceLastCheck())
+        {
+            GfcGameState gameStateToSet = gameState == GfcGameState.PHONE ? GfgManagerGame.GetPreviousGameState() : GfcGameState.PHONE;
+            GfgManagerGame.SetGameState(gameStateToSet);
+        }
     }
 
     public static void CheckAvailableStoryScenes()
     {
+        ClearAllMessageScenes();
         AddMessageScenes(CornManagerStory.GetAvailableEvents());
     }
 
-    public static bool AddMessageScenes(CornStoryVnSceneDetails aScene, bool anUpdateScenes)
+    public static void QueueSocialEventAfterMessages(Type aScene)
+    {
+        Debug.Assert(Instance.m_queuedSocialEventAfterMessages == null);
+        Instance.m_queuedSocialEventAfterMessages = aScene;
+    }
+
+    protected static void StartSocialEventIfEventWasQueued()
+    {
+        if (Instance.m_queuedSocialEventAfterMessages != null)
+        {
+            CornManagerStory.IncrementStoryProgress(Instance.m_messageScenes[Instance.m_currentlyShownAvatarEvent.PhoneEventIndex].SceneDetails);
+            ClearAllMessageScenes();
+            CornEvent cornEvent = new(CornEventType.SOCIAL);
+            cornEvent.Scene = Instance.m_queuedSocialEventAfterMessages;
+            CornManagerEvents.ExecuteEvent(cornEvent);
+            Instance.m_queuedSocialEventAfterMessages = null;
+        }
+    }
+
+    public static bool AddMessageScenes(CornStoryVnSceneDetails aScene)
     {
         bool success = false;
         Debug.Assert(aScene.Scene != null);
@@ -49,10 +100,24 @@ public class CornManagerPhone : MonoBehaviour
 
         if (canAdd)
         {
-            success = true;
-            Instance.m_messageScenes.Add(new(aScene));
+            CornAvatarInteract avatar = GfcPooling.Instantiate(Instance.m_prefabAvatarsInHub).GetComponent<CornAvatarInteract>();
+            avatar.PhoneEventIndex = Instance.m_messageScenes.Count;
+            avatar.SetStoryCharacter(aScene.Character);
+            avatar.transform.SetParent(Instance.m_avatarsParent);
 
-            UpdateMessages();
+            Vector3 spawnPosition = UnityEngine.Random.insideUnitSphere * 1;
+            spawnPosition.y = 0;
+            spawnPosition.Normalize();
+            spawnPosition *= UnityEngine.Random.Range(3, 7);
+            spawnPosition.y = 1;
+
+            avatar.transform.localPosition = spawnPosition;
+            avatar.transform.localRotation = Quaternion.AngleAxis(UnityEngine.Random.Range(0, 360), Vector3.up);
+
+            CornMessageEventInstance messageEvent = new(aScene);
+            messageEvent.Avatar = avatar;
+
+            Instance.m_messageScenes.Add(messageEvent);
         }
         else
         {
@@ -62,16 +127,41 @@ public class CornManagerPhone : MonoBehaviour
         return success;
     }
 
-    public static bool AddMessageScenes(IEnumerable<CornStoryVnSceneDetails> aScene)
+    public static void AddMessageScenes(IEnumerable<CornStoryVnSceneDetails> someScenes)
     {
-        bool success = true;
-        foreach (CornStoryVnSceneDetails vnScene in aScene)
-            success &= AddMessageScenes(vnScene, false);
+        foreach (CornStoryVnSceneDetails vnScene in someScenes)
+            AddMessageScenes(vnScene);
+    }
 
-        if (success)
-            UpdateMessages();
+    public static void ClearAllMessageScenes()
+    {
+        while (Instance.m_messageScenes.Count > 0)
+            RemoveMessageScene(0);
+    }
 
-        return success;
+    public static void RemoveMessageScene(int aSceneIndex)
+    {
+        if (aSceneIndex < Instance.m_messageScenes.Count)
+        {
+            CornMessageEventInstance messageEvent = Instance.m_messageScenes[aSceneIndex];
+
+            if (messageEvent.EventHandle.CoroutineHandle.IsValid)
+            {
+                Timing.KillCoroutines(messageEvent.EventHandle);
+                GfcPooling.Destroy(messageEvent.PanelTemplate.gameObject);
+
+                messageEvent.EventHandle = default;
+                messageEvent.PanelTemplate = null;
+                Instance.m_messageScenes[aSceneIndex] = messageEvent;
+            }
+
+            CloseMessageScene(aSceneIndex);
+            Instance.m_messageScenes[aSceneIndex].EventHandle.KillCoroutine();
+            Instance.m_messageScenes[aSceneIndex].Avatar.DestroySelf();
+            Instance.m_messageScenes[aSceneIndex] = Instance.m_messageScenes[^1];
+            Instance.m_messageScenes[^1].Avatar.PhoneEventIndex = aSceneIndex;
+            Instance.m_messageScenes.RemoveAt(Instance.m_messageScenes.Count - 1);
+        }
     }
 
     public static bool RemoveMessageScenes(Type aScene)
@@ -86,38 +176,22 @@ public class CornManagerPhone : MonoBehaviour
             foundItem = Instance.m_messageScenes[currIndex].SceneDetails.Scene == aScene;
 
         if (foundItem)
-        {
-            CloseMessageScene(--currIndex);
-            Instance.m_messageScenes[currIndex] = Instance.m_messageScenes[^1];
-            Instance.m_messageScenes.RemoveAt(Instance.m_messageScenes.Count - 1);
-            UpdateMessages();
-        }
+            RemoveMessageScene(--currIndex);
 
         return foundItem;
     }
 
+    public static CornAvatarInteract GetCurrentlyShownAvatar() { return Instance.m_currentlyShownAvatarEvent; }
+
     public static void CloseMessageScene(int aSceneIndex)
     {
         CornMessageEventInstance messageEvent = Instance.m_messageScenes[aSceneIndex];
-        if (Instance.m_currentlyShownEventIndex == aSceneIndex)
+
+        if (Instance.m_currentlyShownAvatarEvent && Instance.m_currentlyShownAvatarEvent.PhoneEventIndex == aSceneIndex)
         {
-            Debug.Assert(false, "Not implemented");
+            if (messageEvent.PanelTemplate) messageEvent.PanelTemplate.gameObject.SetActiveGf(false);
+            Instance.m_currentlyShownAvatarEvent = null;
         }
-
-        if (Instance.m_messageScenes[aSceneIndex].EventHandle.IsValid)
-        {
-            Timing.KillCoroutines(messageEvent.EventHandle);
-            GfcPooling.Destroy(messageEvent.PanelTemplate.gameObject);
-
-            messageEvent.EventHandle = default;
-            messageEvent.PanelTemplate = null;
-            Instance.m_messageScenes[aSceneIndex] = messageEvent;
-        }
-    }
-
-    private static void UpdateMessages()
-    {
-        Debug.Log("Events available: " + Instance.m_messageScenes.Count);
     }
 
     private void OnGameStateChanged(GfcGameState aNewState, GfcGameState anOldState)
@@ -128,35 +202,45 @@ public class CornManagerPhone : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    public static void PressedAvatar(int anEventIndex)
     {
-        if (m_openPhoneInput.PressedSinceLastCheck())
+        if (Instance.m_currentlyShownAvatarEvent == null)
         {
-            bool validState = false;
-            GfcGameState gameState = GfgManagerGame.GetGameState();
+            CornMessageEventInstance eventInstance = Instance.m_messageScenes[anEventIndex];
+            Instance.m_currentlyShownAvatarEvent = Instance.m_messageScenes[anEventIndex].Avatar;
 
-            for (int i = 0; !validState && i < m_statesWhereToggleEnabled.Length; i++)
+            if (eventInstance.PanelTemplate == null)
             {
-                validState = gameState == m_statesWhereToggleEnabled[i];
+                eventInstance.PanelTemplate = GfcPooling.Instantiate(Instance.m_prefabMessagesNotifyPanel).GetComponent<GfgVnSceneHandler>();
+                eventInstance.PanelTemplate.transform.SetParent(Instance.m_sceneHandleParent, false);
             }
 
-            if (validState)
-            {
-                GfcGameState gameStateToSet = gameState == GfcGameState.PHONE ? GfgManagerGame.GetPreviousGameState() : GfcGameState.PHONE;
-                GfgManagerGame.SetGameState(gameStateToSet);
-            }
+            eventInstance.EventHandle.RunCoroutineIfNotRunning(Instance._ExecuteMessageEvent(eventInstance.Avatar, eventInstance.PanelTemplate));
+            Instance.m_messageScenes[anEventIndex] = eventInstance;
+
+            eventInstance.PanelTemplate.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("Requested event at index " + anEventIndex + ", but the event at index " + Instance.m_currentlyShownAvatarEvent.PhoneEventIndex + " is already being executed.");
         }
     }
 
-    public static void PressedCharacter(int anEventIndex)
+    private IEnumerator<float> _ExecuteMessageEvent(CornAvatarInteract anAvatar, GfgVnSceneHandler aSceneHandler)
     {
+        CornMessageEventInstance eventInstance = Instance.m_messageScenes[anAvatar.PhoneEventIndex];
 
+        yield return Timing.WaitForOneFrame; //wait for the scene handle to initialize
+        yield return Timing.WaitUntilDone(aSceneHandler.StartScene(eventInstance.SceneDetails.Scene));
+
+        StartSocialEventIfEventWasQueued();
+        RemoveMessageScene(anAvatar.PhoneEventIndex);
     }
 
     public static void PressedBack()
     {
-        CloseMessageScene(Instance.m_currentlyShownEventIndex);
+        if (Instance.m_currentlyShownAvatarEvent)
+            CloseMessageScene(Instance.m_currentlyShownAvatarEvent.PhoneEventIndex);
     }
 }
 
@@ -167,9 +251,11 @@ internal struct CornMessageEventInstance
         SceneDetails = aSceneDetails;
         PanelTemplate = null;
         EventHandle = default;
+        Avatar = null;
     }
 
+    public CornAvatarInteract Avatar;
     public CornStoryVnSceneDetails SceneDetails;
-    public GfxNotifyPanelTemplate PanelTemplate;
-    public CoroutineHandle EventHandle;
+    public GfgVnSceneHandler PanelTemplate;
+    public GfcCoroutineHandle EventHandle;
 }

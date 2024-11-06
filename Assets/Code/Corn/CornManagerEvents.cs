@@ -1,9 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MEC;
 using System;
-using Unity.Collections;
 
 public class CornManagerEvents : MonoBehaviour
 {
@@ -53,7 +51,7 @@ public class CornManagerEvents : MonoBehaviour
         {
             bool wasteTime = eventDetails.EventHasCornRoll && MentalSanity < UnityEngine.Random.Range(1, DICE_ROLL_NUM_FACES);
 
-            if (wasteTime)
+            if (wasteTime && false) //delme
             {
                 eventDetails = CornManagerBalancing.GetEventCostAndRewards(CornEventType.CORN);
                 message = "You wasted time and didn't do anything... You watched corn videos obsessively.";
@@ -87,7 +85,7 @@ public class CornManagerEvents : MonoBehaviour
 
         eventDetails.ApplyModifiersToPlayer(0);
 
-        GfxUiTools.RemoveSelectedGameObject();
+        GfcCursor.RemoveSelectedGameObject();
 
         if (eventHandle.IsValid) yield return Timing.WaitUntilDone(eventHandle);
 
@@ -194,7 +192,7 @@ public class CornManagerEvents : MonoBehaviour
         if (anFadeToBlack)
         {
             GfxUiTools.FadeOverlayAlpha(1, fadeTime);
-            GfxUiTools.RemoveSelectedGameObject();
+            GfcCursor.RemoveSelectedGameObject();
 
             yield return Timing.WaitForSeconds(fadeTime);
         }

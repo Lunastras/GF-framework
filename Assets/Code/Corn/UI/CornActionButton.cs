@@ -1,10 +1,4 @@
-
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using TMPro;
 
 public class CornActionButton : MonoBehaviour
 {
@@ -45,7 +39,7 @@ public class CornActionButton : MonoBehaviour
 
     void Update()
     {
-        if (WorldPointOfReference) m_transform.position = GfcCamera.MainCamera.WorldToScreenPoint(WorldPointOfReference.position);
+        if (WorldPointOfReference) m_transform.position = CornApartmentCamera.Instance.Camera.WorldToScreenPoint(WorldPointOfReference.position);
     }
 
     private void OnButtonEvent(GfxButtonCallbackType aType, GfxButton aButton, bool aState)

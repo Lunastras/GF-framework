@@ -115,7 +115,7 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _FadeDistanceOffset: 0.5
+    - _FadeDistanceOffset: 0
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossinessSource: 0
@@ -134,7 +134,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _StartFadeDistance: 4
+    - _StartFadeDistance: 2
     - _Surface: 0
     - _WorkflowMode: 1
     - _ZWrite: 1

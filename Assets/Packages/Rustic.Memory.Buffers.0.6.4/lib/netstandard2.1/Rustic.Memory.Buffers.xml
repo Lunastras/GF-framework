@@ -1,0 +1,322 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rustic.Memory.Buffers</name>
+    </assembly>
+    <members>
+        <member name="T:Rustic.Memory.BufWriter`1">
+            <summary>
+                Reusable <see cref="T:System.Buffers.IBufferWriter`1"/> intended for use as a thread-static singleton.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="F:Rustic.Memory.BufWriter`1.Buffer">
+            <summary>
+            The internal storage.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.#ctor">
+            <summary>
+                Initializes a new instance of <see cref="T:Rustic.Memory.BufWriter`1"/>.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.#ctor(System.Int32)">
+            <summary>
+                Initializes a new instance of <see cref="T:Rustic.Memory.BufWriter`1"/>.
+            </summary>
+            <param name="initialCapacity">The minimum capacity of the writer.</param>
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.RawStorage">
+            <summary>
+                Returns the underlying storage of the list.
+            </summary>
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.Length">
+            <inheritdoc cref="P:System.Collections.Generic.List`1.Count" />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.System#Collections#ICollection#IsSynchronized">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.System#Collections#ICollection#SyncRoot">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.System#Collections#Generic#ICollection{T}#IsReadOnly">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.Capacity">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.IsEmpty">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.IsDefault">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.Count">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.Item(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.Item(System.Index)">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.Rustic#Memory#IReadOnlyVector{T}#Item(System.Index)">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.BufWriter`1.System#Collections#Generic#IList{T}#Item(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Advance(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.GetMemory(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.GetSpan(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Add(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Clear">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.System#Collections#Generic#ICollection{T}#Contains(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Insert(System.Int32,`0@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.RemoveAt(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.System#Collections#Generic#ICollection{T}#Remove(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.CopyTo(`0[],System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.System#Collections#ICollection#CopyTo(System.Array,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.ToSpan(`0[]@)">
+            <summary>
+            Returns the <see cref="T:System.Span`1"/> representing the written / requested portion of the buffer.
+            <see cref="M:Rustic.Memory.BufWriter`1.Reset"/>s the buffer.
+            </summary>
+            <param name="array">The internal array</param>
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.ToMemory(`0[]@)">
+            <summary>
+            Returns the <see cref="T:System.Memory`1"/> representing the written / requested portion of the buffer.
+            <see cref="M:Rustic.Memory.BufWriter`1.Reset"/>s the buffer.
+            </summary>
+            <param name="array">The internal array</param>
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.ToSegment">
+            <summary>
+            Returns the <see cref="T:System.ArraySegment`1"/> representing the written / requested portion of the buffer.
+            <see cref="M:Rustic.Memory.BufWriter`1.Reset"/>s the buffer.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.ToArray">
+            <summary>
+            Returns a array containing a shallow-copy of the written / requested portion of the buffer.
+            </summary>
+            <returns>A array containing a shallow-copy of the written / requested portion of the buffer.</returns>
+            <remarks>
+                Resets the object.
+            </remarks>
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.ToArray(System.Boolean)">
+            <summary>
+            Returns a array containing a shallow-copy of the written / requested portion of the buffer.
+            </summary>
+            <param name="dispose">Whether to dispose the object, or reset.</param>
+            <returns>A array containing a shallow-copy of the written / requested portion of the buffer.</returns>
+            <remarks>
+                Resets or disposes the object.
+            </remarks>
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Reset">
+            <summary>Resets the writer to the initial state and returns the buffer to the array-pool.</summary>
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Dispose(System.Boolean)">
+            <inheritdoc cref="M:System.IDisposable.Dispose" />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.GetEnumerator">
+            <inheritdoc cref="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.System#Collections#Generic#IEnumerable{T}#GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Grow(System.Int32)">
+            <summary>Grows the buffer so that it can contain at least <paramref name="additionalCapacityBeyondPos"/>.</summary>
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Reserve(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.InsertRange(System.Int32,System.ReadOnlySpan{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.RemoveRange(System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Sort``1(System.Int32,System.Int32,``0@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Reverse(System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.AsSpan">
+            <inheritdoc cref="M:Rustic.Memory.BufWriter`1.AsSpan(System.Int32,System.Int32)" />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.AsSpan(System.Int32)">
+            <inheritdoc cref="M:Rustic.Memory.BufWriter`1.AsSpan(System.Int32,System.Int32)" />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.AsSpan(System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.IndexOf``1(System.Int32,System.Int32,`0@,``0@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.LastIndexOf``1(System.Int32,System.Int32,`0@,``0@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.BinarySearch``1(System.Int32,System.Int32,`0@,``0@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.TryCopyTo(System.Span{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.Sort(System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.IndexOf(System.Int32,System.Int32,`0@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.LastIndexOf(System.Int32,System.Int32,`0@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.BufWriter`1.BinarySearch(System.Int32,System.Int32,`0@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Rustic.Memory.PoolBufWriter`1">
+            <summary>
+                Reusable <see cref="T:System.Buffers.IBufferWriter`1"/> intended for use as a thread-static singleton.
+            </summary>
+            <typeparam name="T">The type of the items.</typeparam>
+            <remarks>
+                Usage:
+            <code>
+                var obj = [...]
+            <br/>
+                PoolBufWriter&lt;byte&gt; writer = new();
+            <br/>
+                Serializer.Serialize(writer, obj);
+            <br/>
+                DoWork(writer.ToSpan(out byte[] poolArray));
+            <br/>
+                ArrayPool&lt;byte&gt;.Return(poolArray);
+            </code>
+             - or -
+            <code>
+                var obj = [...]
+            <br/>
+                PoolBufWriter&lt;byte&gt; writer = new();
+            <br/>
+                Serializer.Serialize(writer, obj);
+            <br/>
+                return writer.ToArray(dispose: true);
+            </code>
+            </remarks>
+        </member>
+        <member name="M:Rustic.Memory.PoolBufWriter`1.#ctor(System.Buffers.ArrayPool{`0})">
+            <summary>
+                Initializes a new instance of <see cref="T:Rustic.Memory.BufWriter`1"/>.
+            </summary>
+            <param name="pool">The array pool from which to rent.</param>
+        </member>
+        <member name="M:Rustic.Memory.PoolBufWriter`1.#ctor(System.Int32,System.Buffers.ArrayPool{`0})">
+            <summary>
+                Initializes a new instance of <see cref="T:Rustic.Memory.BufWriter`1"/>.
+            </summary>
+            <param name="initialCapacity">The minimum capacity of the writer.</param>
+            <param name="pool">The array pool from which to rent.</param>
+        </member>
+        <member name="M:Rustic.Memory.PoolBufWriter`1.Grow(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.PoolBufWriter`1.Reset">
+            <summary>Resets the writer.</summary>
+        </member>
+        <member name="T:Rustic.Memory.RentArray`1">
+             <summary>Allows renting a array without necessarily allocating.</summary>
+             <typeparam name="T"></typeparam>
+             <remarks>
+             <para>To be used when tiny arrays of exact size are required by hot API, to reduce load on the GC.
+             Each thread used a separate array pool from which arrays of continuously increasing size are stored.</para>
+             <para>Only use <see cref="M:Rustic.Memory.RentArray`1.Rent(System.Int32)"/> tiny arrays.</para>
+             <para>Can grow, but should be avoided where possible because the grow increment is one item.</para>
+             <code>
+             using (RentArray&lt;Type&gt; rent = new(2) { typeof(int), typeof(T) })
+             {
+                 DoSomething(rent);
+             }
+            
+             void DoSomething(params Type[] paramTypes)
+             {
+                 [...]
+             }
+             </code>
+             </remarks>
+        </member>
+        <member name="M:Rustic.Memory.RentArray`1.#ctor(System.Int32)">
+            <summary>Rents a new array of the specified length from the pool.</summary>
+            <param name="length">The length of the array.</param>
+        </member>
+        <member name="P:Rustic.Memory.RentArray`1.Array">
+            <summary>The array backing the list</summary>
+        </member>
+        <member name="P:Rustic.Memory.RentArray`1.Item(System.Int32)">
+            <summary>Returns the reference to the element at the specified position inside the backing.</summary>
+            <param name="index">The index.</param>
+            <remarks>Does not respect the <see cref="P:Rustic.Memory.RentArray`1.Count"/> as an upper limit.</remarks>
+        </member>
+        <member name="P:Rustic.Memory.RentArray`1.Count">
+            <summary>Returns the number of elements added to the list.</summary>
+        </member>
+        <member name="P:Rustic.Memory.RentArray`1.Capacity">
+            <summary>The number of elements the array can hold.</summary>
+        </member>
+        <member name="M:Rustic.Memory.RentArray`1.Add(`0@)">
+            <summary>Adds the specified item to the list.</summary>
+            <param name="item">The item to add.</param>
+        </member>
+        <member name="M:Rustic.Memory.RentArray`1.Dispose">
+            <summary>Returns the array to the pool and resets this instance.</summary>
+        </member>
+        <member name="M:Rustic.Memory.RentArray`1.GetEnumerator">
+            <inheritdoc cref="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" />
+        </member>
+        <member name="M:Rustic.Memory.RentArray`1.Rent(System.Int32)">
+            <summary>Rents an array with the exact number of elements.</summary>
+            <param name="length">The number of elements.</param>
+            <returns>The rented array.</returns>
+        </member>
+        <member name="M:Rustic.Memory.RentArray`1.Return(`0[])">
+            <summary>Returns a rented array to the pool, or discards the array for GC.</summary>
+            <param name="rented">The array to return.</param>
+        </member>
+        <member name="M:Rustic.Memory.RentArray`1.op_Implicit(Rustic.Memory.RentArray{`0}@)~`0[]">
+            <inheritdoc cref="P:Rustic.Memory.RentArray`1.Array"/>
+        </member>
+    </members>
+</doc>

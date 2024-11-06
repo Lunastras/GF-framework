@@ -1,4 +1,4 @@
-public class GfxTransitions : GfcSingletonContainer<GfxTransitionGeneric, GfxTransitionType>
+public class GfxTransitions : GfcSingletonContainer<GfcTransitionParent, GfxTransitionType>
 {
     public static GfxTransitions Instance { get { return GetInstance<GfxTransitions>(); } }
 }

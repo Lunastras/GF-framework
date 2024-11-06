@@ -11,6 +11,32 @@ using System.Reflection;
 using System.Linq;
 public static class GfcToolsStatic
 {
+    //the list must be a class because this doesn't work with structs
+    public static int AddSorted<T>(this IList<T> aList, T aValue, bool anAscending = true) where T : IComparable<T>
+    {
+        Debug.Assert(aList.GetType().IsClass, "This function does not work for value types. Please use 'GetSortedIndex' instead and insert it at the respective index");
+        int sortedIndex = aList.GetSortedIndex(aValue, anAscending);
+        aList.Insert(sortedIndex, aValue);
+        return sortedIndex;
+    }
+
+    public static int GetSortedIndex<T>(this IList<T> aList, T aValue, bool anAscending = true) where T : IComparable<T>
+    {
+        int low = 0, high = aList.Count, mid;
+        int sortSign = anAscending ? -1 : 1;
+
+        while (low < high)
+        {
+            mid = (low + high) >> 1;
+            if (aList[mid].CompareTo(aValue) == sortSign)
+                low = mid + 1;
+            else
+                high = mid;
+        }
+
+        return low;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool HasFlag(this uint aFlagMask, uint aFlag) { return GfcTools.HasFlag(aFlagMask, aFlag); }
 
@@ -58,6 +84,33 @@ public static class GfcToolsStatic
         aSingleton = anInstance;
     }
 
+    public static bool ActiveInHierarchyGf(this GameObject aGameObject)
+    {
+        bool activeInHierarchy = aGameObject.activeInHierarchy;
+
+        if (activeInHierarchy)
+        {
+            Transform currentObj = aGameObject.transform;
+
+            do
+            {
+                currentObj.TryGetComponent(out GfcTransitionActive customActive);
+                activeInHierarchy = customActive == null || !customActive.FadingOut();
+                currentObj = currentObj.parent;
+            } while (activeInHierarchy && currentObj);
+        }
+
+        return activeInHierarchy;
+    }
+
+    public static void SetActiveGf(this GameObject aGameObject, bool anActive)
+    {
+        if (aGameObject.TryGetComponent(out GfcTransitionActive customActive))
+            customActive.SetActive(anActive);
+        else
+            aGameObject.SetActive(anActive);
+    }
+
     public static void SetAlpha(this Image anImage, float anAlpha)
     {
         Color col = anImage.color;
@@ -99,14 +152,14 @@ public static class GfcToolsStatic
         {
             aTransform.localPosition = aTransformData.Position;
             aTransform.localRotation = aTransformData.Rotation;
-            aTransform.localScale = aTransformData.Scale;
         }
         else
         {
             aTransform.position = aTransformData.Position;
             aTransform.rotation = aTransformData.Rotation;
-            aTransform.localScale = aTransformData.Scale;
         }
+
+        aTransform.localScale = aTransformData.Scale;
     }
 
     public static void SetRectTransformdData(this RectTransform aTransform, RectTransformData aData, bool aLocalTransform = false)

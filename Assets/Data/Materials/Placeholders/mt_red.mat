@@ -22,6 +22,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: mt_red
   m_Shader: {fileID: 4800000, guid: 34e465490c627f043a438d68be42b7df, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALPHATEST_ON
   - _DITHERED_SHADOWS
@@ -34,6 +36,7 @@ Material:
   stringTagMap:
     RenderType: TransparentCutout
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -112,7 +115,7 @@ Material:
     - _DitherIntensity: 1
     - _DitherScale: 1
     - _DstBlend: 0
-    - _FadeDistanceOffset: 0.5
+    - _FadeDistanceOffset: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.477
     - _GlossinessSource: 0
@@ -132,7 +135,7 @@ Material:
     - _SpecSource: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StartFadeDistance: 5
+    - _StartFadeDistance: 2
     - _Surface: 0
     - _UVSec: 0
     - _ZWrite: 1

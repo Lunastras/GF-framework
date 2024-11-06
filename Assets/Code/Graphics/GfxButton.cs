@@ -3,18 +3,21 @@ using UnityEngine;
 using System;
 using UnityEngine.EventSystems;
 using System.Reflection;
+using UnityEngine.UI;
 
-public abstract class GfxButton : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointerEnterHandler, IPointerExitHandler
+public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHandler, IPointerEnterHandler, IPointerExitHandler
 {
+    public GfcUnityEvent OnSubmit = new();
+
     [SerializeField] protected GfxButtonHightlightState m_highlightStateDefault = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = Color.white, PixelsPerUnit = 1 };
 
     [SerializeField] protected GfxButtonHightlightState m_highlightStateDisabled = new() { Scale = new(1, 1, 1), Opacity = 0.6f, ColorContent = Color.white, ColorPanel = Color.white, PixelsPerUnit = 1 };
 
-    [SerializeField] protected GfxButtonHightlightState m_highlightStateSelected = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = Color.white, PixelsPerUnit = 1 };
+    [SerializeField] protected GfxButtonHightlightState m_highlightStateSelected = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.75f, 0.75f, 0.75f, 1), PixelsPerUnit = 1 };
 
-    [SerializeField] protected GfxButtonHightlightState m_highlightStateSubmit = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = Color.white, PixelsPerUnit = 1 };
+    [SerializeField] protected GfxButtonHightlightState m_highlightStateSubmit = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.75f, 0.75f, 0.75f, 1), PixelsPerUnit = 1 };
 
-    [SerializeField] protected GfxButtonHightlightState m_highlightStatePinned = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = Color.white, PixelsPerUnit = 1 };
+    [SerializeField] protected GfxButtonHightlightState m_highlightStatePinned = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.5f, 0.5f, 0.5f, 1), PixelsPerUnit = 1 };
 
     public int Index = 0;
 
@@ -71,6 +74,8 @@ public abstract class GfxButton : MonoBehaviour, ISelectHandler, IDeselectHandle
     public void OnPointerExit(PointerEventData aEventData) { if (m_deselectOnPointerExit || true) SetSelected(false); }
 
     public bool IsSelectable() { return m_isInteractable && (!m_isDisabled || !m_disabledReason.IsEmpty()); }
+
+    public override void Interact(GfcCursorRayhit aHit) { Submit(); }
 
     private bool m_initialisedButton = false;
 
@@ -129,6 +134,7 @@ public abstract class GfxButton : MonoBehaviour, ISelectHandler, IDeselectHandle
     {
         if (!m_isDisabled && m_isInteractable)
         {
+            OnSubmit.Invoke();
             OnEventCallbackInternal(GfxButtonCallbackType.SUBMIT, true);
             m_soundSubmit?.PlaySingleInstance();
         }

@@ -59,6 +59,12 @@ public class GfxDoubleNotifyPanel : GfxNotifyPanelTemplate
             m_mainNotifyPanel.transform.SetAsFirstSibling();
         }
 
+        CoroutineHandle mainHandle = m_mainNotifyPanel.GetCoroutineHandle();
+        CoroutineHandle secondaryHandle = m_secondaryNotifyPanel.GetCoroutineHandle();
+
+        if (mainHandle.IsValid) yield return Timing.WaitUntilDone(mainHandle);
+        if (secondaryHandle.IsValid) yield return Timing.WaitUntilDone(secondaryHandle);
+
         m_messageBufferIndex = 0;
         m_messagesBuffer.Clear();
         m_currentNotifyCoroutine.Finished();

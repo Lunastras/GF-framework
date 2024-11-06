@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Rewired;
+using LMirman.RewiredGlyphs;
 
 public class GfcInput : MonoBehaviour
 {
@@ -8,21 +10,38 @@ public class GfcInput : MonoBehaviour
 
     [SerializeField] private bool m_printErrors = true;
 
-    [SerializeField] private GameObject m_displayedInputPrefab;
+    [SerializeField] private GfcInputDisplayPromptParent m_displayedInputsParent;
 
-    [SerializeField] private RectTransform m_displayedInputsParent;
-
-    private List<DisplayedInputData> m_displayedInputs = new(8);
+    private List<GfcDisplayedInputData> m_displayedInputs = new(8);
 
     public const float AXIS_DEAD_ZONE = 0.0001f;
 
-    private bool m_dirtyDisplayedInput = true;
-
     private bool m_inputEnabled = true;
 
-    public static bool TakeInput { get { return Instance.m_inputEnabled; } set { Instance.m_inputEnabled = value; } }
+    public static bool InputEnabled { get { return Instance.m_inputEnabled; } set { Instance.m_inputEnabled = value; } }
 
     private List<ActionElementMap> m_actionsElementsBuffer = new(8);
+
+    private int m_fixedUpdateCountOfUpdate = 1;
+
+    private const int FIXED_DELTAS_UNTIL_REMOVE_DISPLAY = 2;
+    private const int FIXED_DELTAS_UNTIL_UPDATE_DISPLAY = 4;
+
+
+    public static List<ActionElementMap> ActionsElementsBuffer
+    {
+        get
+        {
+            Debug.Assert(Instance.m_actionsElementsBuffer.Count == 0, "The actions elements buffer was not emptied after use.");
+            return Instance.m_actionsElementsBuffer;
+        }
+    }
+
+    private static void SetDisplayDirty()
+    {
+        if (Instance.m_fixedUpdateCountOfUpdate == -1)
+            Instance.m_fixedUpdateCountOfUpdate = GfcPhysics.FixedUpdateCount + FIXED_DELTAS_UNTIL_UPDATE_DISPLAY;
+    }
 
     // Start is called before the first frame update
     void Awake()
@@ -32,48 +51,74 @@ public class GfcInput : MonoBehaviour
 
         Instance = this;
 
-        AddDisplayInput(GfcInputType.MOVEMENT_X);
-        AddDisplayInput(GfcInputType.MOVEMENT_Y);
-        AddDisplayInput(GfcInputType.JUMP);
-        AddDisplayInput(GfcInputType.CROUCH);
-        AddDisplayInput(GfcInputType.RUN);
+        Debug.Assert(m_displayedInputsParent);
     }
 
-    /*
-    void Update()
+    void FixedUpdate()
     {
-        if (m_dirtyDisplayedInput)
+        int fixedUpdateCount = GfcPhysics.FixedUpdateCount;
+        for (int i = 0; i < m_displayedInputs.Count; i++)
         {
-            for (int i = 0; i < m_displayedInputs.Count; ++i)
+            GfcDisplayedInputData data = m_displayedInputs[i];
+            int numComponents = m_displayedInputs[i].Labels.Count;
+            bool valid = false;
+
+            for (int j = 0; j < numComponents; j++) //fixme
             {
-                if (m_displayedInputs[i].Input != GfcInputType.NONE)
+                int fixedUpdatesSinceLastUpdate = fixedUpdateCount - data.Labels[j].LastUpdateFixedUpdateCount;
+                if (data.Labels[j].LabelString != null && fixedUpdatesSinceLastUpdate >= FIXED_DELTAS_UNTIL_REMOVE_DISPLAY)
                 {
-                    GetPlayer().controllers.maps.GetElementMapsWithAction((int)m_displayedInputs[i].Input, true, m_actionsElementsBuffer);
-
-                    string s = "The input " + m_displayedInputs[i].Input + " has the following " + m_actionsElementsBuffer.Count + " maps: ";
-
-                    for (int j = 0; j < m_actionsElementsBuffer.Count; j++)
-                    {
-                        var keycode = m_actionsElementsBuffer[j].elementIdentifierName;
-                        s += keycode + " ";
-                    }
-
-                    // Debug.Log(s);
+                    data.Labels.RemoveAt(j);
+                    data.UpdateLabelString();
+                    SetDisplayDirty();
+                    j--; //check this index again
                 }
-                else //Write the category
+                else
                 {
-                    //ReInput.mapping.ActionsInCategory((int)m_displayedInputs[i].Category, )
-                }
+                    if (data.Labels[j].LabelString == null)
+                        break;
 
+                    valid = true;
+                }
             }
 
-            m_dirtyDisplayedInput = false;
+            if (!valid)
+            {
+                m_displayedInputs.RemoveAt(i);
+                SetDisplayDirty();
+                i--; //check this index again
+            }
+            else
+            {
+                m_displayedInputs[i] = data;
+            }
         }
-    }*/
+
+        if (m_fixedUpdateCountOfUpdate != -1 && m_fixedUpdateCountOfUpdate <= fixedUpdateCount)
+        {
+            SortPrompts();
+            m_displayedInputsParent.UpdatePrompts(m_displayedInputs);
+            m_fixedUpdateCountOfUpdate = -1;
+        }
+    }
+
+    void SortPrompts()
+    {
+        int count = m_displayedInputs.Count;
+        for (int i = 0; i < count; i++)
+        {
+            GfcDisplayedInputData data = m_displayedInputs[i];
+            m_displayedInputsParent.CalculateLength(ref data, 0);
+            m_displayedInputs[i] = data;
+        }
+
+        m_displayedInputs.Sort((a, b) => b.CompareTo(a));
+    }
 
     private static string GetLocalizedLabel(GfcInputType aType)
     {
         //todo
+
         return aType.ToString();
     }
 
@@ -83,138 +128,59 @@ public class GfcInput : MonoBehaviour
         return aGroupType.ToString();
     }
 
-    public static void AddDisplayInput(GfcInputType aType, string aLabel = null)
+    public static Sprite GetGlyph(ControllerType aControllerType, int anActionId, int aPlayerId = 0)
     {
-        if (aType != GfcInputType.NONE)
-        {
-            aLabel ??= GetLocalizedLabel(aType);
-
-            int foundIndex = -1;
-            //was initially thinking of using a dictionary instead of a list so the search isn't O(n), but we will have at most something like 16 inputs anyway and using a Dictionary with structs will cause boxing, so an array is better for this
-            for (int i = 0; i < Instance.m_displayedInputs.Count; i++)
-                if (aType == Instance.m_displayedInputs[i].Input)
-                {
-                    foundIndex = i;
-                    break;
-                }
-
-            DisplayedInputData data;
-
-            if (foundIndex < 0)
-            {
-                data = new()
-                {
-                    Input = aType,
-                    Label = aLabel,
-                };
-
-                Instance.m_dirtyDisplayedInput = true;
-                Instance.m_displayedInputs.Add(data);
-            }
-            else
-            {
-                data = Instance.m_displayedInputs[foundIndex];
-                data.RegisterCount++;
-                Instance.m_displayedInputs[foundIndex] = data;
-            }
-        }
+        return InputGlyphs.GetGlyph(aControllerType, anActionId, Pole.Positive, out _, aPlayerId).GetSprite(AxisRange.Full);
     }
 
-    public static void RemoveDisplayInput(GfcInputType aType)
+    public static void UpdateDisplayInput(GfcInputCategory aCategoryType, string aLabel = null) { UpdateDisplayInput(GfcInputType.NONE, aCategoryType, aLabel); }
+    public static void UpdateDisplayInput(GfcInputType anInputType, string aLabel = null) { UpdateDisplayInput(anInputType, GfcInputCategory.NONE, aLabel); }
+    public static void UpdateDisplayInput(GfcInputType aType, GfcInputCategory aCategoryType, string aLabel = null)
     {
-        if (aType != GfcInputType.NONE)
-        {
-            int foundIndex = -1;
-            for (int i = 0; i < Instance.m_displayedInputs.Count; i++)
-                if (aType == Instance.m_displayedInputs[i].Input)
-                {
-                    foundIndex = i;
-                    break;
-                }
+        Debug.Assert(aType != GfcInputType.NONE ^ aCategoryType != GfcInputCategory.NONE, "Only one of these can be none/valid.");
 
-            DisplayedInputData data;
-
-            if (foundIndex > 0)
+        int foundIndex = -1;
+        //was initially thinking of using a dictionary instead of a list so the search isn't O(n), but we will have at most something like 16 inputs anyway and using a Dictionary with structs will cause boxing, so an array is better for this
+        for (int i = 0; i < Instance.m_displayedInputs.Count; i++)
+            if ((aType != GfcInputType.NONE && aType == Instance.m_displayedInputs[i].Input)
+            || (aCategoryType != GfcInputCategory.NONE && aCategoryType == Instance.m_displayedInputs[i].Category))
             {
-                data = Instance.m_displayedInputs[foundIndex];
-                data.RegisterCount--;
-                Instance.m_displayedInputs[foundIndex] = data;
-
-                if (data.RegisterCount == 0)
-                    Instance.m_displayedInputs.RemoveAt(foundIndex);
-
-                Instance.m_dirtyDisplayedInput = true;
+                foundIndex = i;
+                break;
             }
+
+        GfcDisplayedInputData data;
+
+        aLabel ??= aType != GfcInputType.NONE ? GetLocalizedLabel(aType) : GetLocalizedLabel(aCategoryType);
+
+        if (foundIndex < 0)
+        {
+            data = new()
+            {
+                Input = aType,
+                Label = aLabel,
+                Category = aCategoryType,
+            };
+
+            data.LabelUsed(aLabel);
+            Instance.m_displayedInputs.Add(data);
+            SetDisplayDirty();
         }
-    }
-
-    public static void AddDisplayInput(GfcInputCategory aGroupType, string aLabel = null)
-    {
-        if (aGroupType != GfcInputCategory.NONE)
+        else
         {
-            aLabel ??= GetLocalizedLabel(aGroupType);
+            data = Instance.m_displayedInputs[foundIndex];
 
-            int foundIndex = -1;
-            //was initially thinking of using a dictionary instead of a list so the search isn't O(n), but we will have at most something like 16 inputs anyway and using a Dictionary with structs will cause boxing, so an array is better for this
-            for (int i = 0; i < Instance.m_displayedInputs.Count; i++)
-                if (aGroupType == Instance.m_displayedInputs[i].Category)
-                {
-                    foundIndex = i;
-                    break;
-                }
+            if (data.LabelUsed(aLabel))
+                SetDisplayDirty();
 
-            DisplayedInputData data;
-
-            if (foundIndex < 0)
-            {
-                data = new()
-                {
-                    Category = aGroupType,
-                    Label = aLabel,
-                };
-
-                Instance.m_dirtyDisplayedInput = true;
-                Instance.m_displayedInputs.Add(data);
-            }
-            else
-            {
-                data = Instance.m_displayedInputs[foundIndex];
-                data.RegisterCount++;
-                Instance.m_displayedInputs[foundIndex] = data;
-            }
-        }
-    }
-
-    public static void RemoveDisplayInput(GfcInputCategory aGroupType)
-    {
-        if (aGroupType != GfcInputCategory.NONE)
-        {
-            int foundIndex = -1;
-            for (int i = 0; i < Instance.m_displayedInputs.Count; i++)
-                if (aGroupType == Instance.m_displayedInputs[i].Category)
-                {
-                    foundIndex = i;
-                    break;
-                }
-
-            DisplayedInputData data;
-
-            if (foundIndex > 0)
-            {
-                data = Instance.m_displayedInputs[foundIndex];
-                data.RegisterCount--;
-                Instance.m_displayedInputs[foundIndex] = data;
-
-                if (data.RegisterCount == 0)
-                    Instance.m_displayedInputs.RemoveAt(foundIndex);
-            }
+            Instance.m_displayedInputs[foundIndex] = data;
         }
     }
 
     public static Player GetPlayer(int aPlayerId = 0) { return ReInput.players.GetPlayer(aPlayerId); }
     //ignore input during transitions
-    public static float GetAxis(GfcInputType aInputType, int aPlayerId = 0) { return aInputType == GfcInputType.NONE || !TakeInput ? 0 : GetPlayer(aPlayerId).GetAxis((int)aInputType); }
-    public static float GetAxisRaw(GfcInputType aInputType, int aPlayerId = 0) { return aInputType == GfcInputType.NONE || !TakeInput ? 0 : GetPlayer(aPlayerId).GetAxisRaw((int)aInputType); }
+    public static float GetAxis(GfcInputType aInputType, int aPlayerId = 0) { return aInputType == GfcInputType.NONE || !InputEnabled ? 0 : GetPlayer(aPlayerId).GetAxis((int)aInputType); }
+    public static float GetAxisRaw(GfcInputType aInputType, int aPlayerId = 0) { return aInputType == GfcInputType.NONE || !InputEnabled ? 0 : GetPlayer(aPlayerId).GetAxisRaw((int)aInputType); }
     public static bool GetInput(GfcInputType aInputType, int aPlayerId = 0, float aError = AXIS_DEAD_ZONE) { return GetAxisRaw(aInputType, aPlayerId).Abs() > aError; }
 }
 
@@ -267,12 +233,24 @@ public enum GfcInputCategory
 public struct GfcInputTracker
 {
     [SerializeField] private GfcInputType m_inputType;
-    [SerializeField] private float m_axisError;
+
+    public GfcInputCategory InputCategory;
+
+    public float AxisError;
+
     public GameObject ParentGameObject;
+
+    public int PlayerId;
+
+    public bool AllowFrameSkipping;
+
+    public bool DisplayPrompt;
+
+    [HideInInspector] public GfcLocalizedString DisplayPromptString;
 
     private int m_lastFrameOfUpdate;
 
-    private int m_playerId;
+    private int m_lastFrameOfCheck;
 
     private bool m_currentPressedState;
 
@@ -280,18 +258,24 @@ public struct GfcInputTracker
 
     private bool m_stateCheckedThisFrame;
 
-    public GfcInputType InputType { readonly get { return m_inputType; } set { m_inputType = value; UpdateState(); } }
-    public float AxisError { readonly get { return m_axisError; } set { m_axisError = value; UpdateState(); } }
+    private bool m_waitingForReleaseAfterFrameSkip;
 
-    public GfcInputTracker(GfcInputType aType, GameObject aParentGameObject = null, int aPlayerId = 0, float aError = GfcInput.AXIS_DEAD_ZONE)
+    public readonly GfcInputType InputType { get { return m_inputType; } }
+
+    public GfcInputTracker(GfcInputType aType, GameObject aParentGameObject = null, int aPlayerId = 0, float aError = GfcInput.AXIS_DEAD_ZONE, bool anAllowFrameSkipping = false, GfcLocalizedString aDisplayPromptString = default, bool aDisplayPrompt = true, GfcInputCategory anInputCategory = GfcInputCategory.NONE)
     {
+        InputCategory = anInputCategory;
         m_inputType = aType;
-        m_axisError = aError;
-        m_playerId = aPlayerId;
+        AxisError = aError;
+        PlayerId = aPlayerId;
+        AllowFrameSkipping = anAllowFrameSkipping;
+        m_waitingForReleaseAfterFrameSkip = false;
         ParentGameObject = aParentGameObject;
         m_stateCheckedThisFrame = false;
-        m_lastFrameOfUpdate = Time.frameCount;
-        m_previousPressedState = m_currentPressedState = GfcInput.GetInput(m_inputType, aPlayerId, m_axisError);
+        DisplayPrompt = aDisplayPrompt;
+        DisplayPromptString = aDisplayPromptString;
+        m_lastFrameOfUpdate = m_lastFrameOfCheck = 0;
+        m_previousPressedState = m_currentPressedState = false;
     }
 
     public bool Pressed()
@@ -305,7 +289,7 @@ public struct GfcInputTracker
         UpdateState();
         bool pressed = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && !m_previousPressedState && m_currentPressedState;
         m_stateCheckedThisFrame |= aUniqueThisFrame;
-        return pressed && ParentValid();
+        return pressed && !IgnoreInput();
     }
 
     public bool ReleasedSinceLastCheck(bool aUniqueThisFrame = true)
@@ -313,22 +297,37 @@ public struct GfcInputTracker
         UpdateState();
         bool released = (!m_stateCheckedThisFrame || !aUniqueThisFrame) && m_previousPressedState && !m_currentPressedState;
         m_stateCheckedThisFrame |= aUniqueThisFrame;
-        return released && ParentValid();
+        return released && !IgnoreInput();
     }
 
     private void UpdateState()
     {
         int currentFrame = Time.frameCount;
-        if (currentFrame != m_lastFrameOfUpdate)
+        if (currentFrame != m_lastFrameOfCheck)
         {
-            m_previousPressedState = m_currentPressedState;
-            m_currentPressedState = GfcInput.GetInput(m_inputType, m_playerId, m_axisError);
-            m_lastFrameOfUpdate = currentFrame;
-            m_stateCheckedThisFrame = false;
+            if (ParentValid())
+            {
+                m_previousPressedState = m_currentPressedState;
+                m_currentPressedState = GfcInput.GetInput(m_inputType, PlayerId, AxisError);
+                m_waitingForReleaseAfterFrameSkip = !AllowFrameSkipping && m_currentPressedState && (m_waitingForReleaseAfterFrameSkip || currentFrame != m_lastFrameOfUpdate + 1);
+
+                if (!IgnoreInput() && DisplayPrompt)
+                    GfcInput.UpdateDisplayInput(m_inputType, InputCategory, DisplayPromptString);
+
+                m_lastFrameOfUpdate = currentFrame;
+                m_stateCheckedThisFrame = false;
+            }
+            else
+            {
+                m_previousPressedState = m_stateCheckedThisFrame = m_currentPressedState = false;
+            }
+
+            m_lastFrameOfCheck = currentFrame;
         }
     }
 
-    private readonly bool ParentValid() { return ParentGameObject == null || ParentGameObject.activeInHierarchy; }
+    private readonly bool IgnoreInput() { return m_waitingForReleaseAfterFrameSkip || !GfcInput.InputEnabled; }
+    private readonly bool ParentValid() { return ParentGameObject == null || ParentGameObject.ActiveInHierarchyGf(); }
 }
 
 //this is used mainly for coroutines where we need to share an input becaue async functions cannot have ref structs as arguments
@@ -366,12 +365,108 @@ public static class GfcInputTrackerStatic
     }
 }
 
-public struct DisplayedInputData
+public struct GfcDisplayedInputDataLabel : IComparable<GfcDisplayedInputDataLabel>, IEquatable<GfcDisplayedInputDataLabel>
+{
+    public string LabelString;
+    public int LastUpdateFixedUpdateCount;
+
+    public int CompareTo(GfcDisplayedInputDataLabel aLabel)
+    {
+        if (LabelString == null || aLabel.LabelString == null)
+        {
+            if (aLabel.LabelString == LabelString) return 0;
+            if (LabelString == null && aLabel.LabelString != null) return 1;
+            return -1; //aLabel.LabelString is null and LabelString isn't
+        }
+
+        return LabelString.CompareTo(aLabel.LabelString);
+    }
+
+    public bool Equals(GfcDisplayedInputDataLabel aLabel)
+    {
+        return CompareTo(aLabel) == 0;
+    }
+}
+
+public struct GfcDisplayedInputData : IComparable<GfcDisplayedInputData>
 {
     public string Label;
-
+    public Vector4<GfcDisplayedInputDataLabel> Labels;
     public GfcInputType Input;
     public GfcInputCategory Category;
+    public float PromptLength;
 
-    public int RegisterCount;
+    public readonly int CompareTo(GfcDisplayedInputData aData)
+    {
+        /*
+        int ret = 0;
+        if (aData.Input != Input || aData.Category != Category)
+        {
+            ret = 1;
+            if (aData.Category > Category || (aData.Input > Input && Category == GfcInputCategory.NONE))
+                ret = -1;
+        }*/
+
+        return (PromptLength - aData.PromptLength).Sign();
+    }
+
+    bool m_threwWarning;
+
+    public void UpdateLabelString()
+    {
+        GfcStringBuffer stringBuffer = GfcPooling.GfcStringBuffer;
+        int numComponents = Labels.Count;
+        string label;
+
+        for (int i = 0; i < numComponents; i++)
+        {
+            label = Labels[i].LabelString;
+            if (label != null)
+            {
+                if (i > 0) stringBuffer.Append('/');
+                stringBuffer.Append(Labels[i].LabelString);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        Label = stringBuffer.GetStringCopy();
+        stringBuffer.Clear();
+    }
+
+    public bool LabelUsed(string aLabel)
+    {
+        Debug.Assert(aLabel != null);
+
+        int labelIndex = 0;
+        int numComponents = Labels.Count;
+        for (; labelIndex < numComponents && Labels[labelIndex].LabelString != null && aLabel != Labels[labelIndex].LabelString; ++labelIndex) ;
+
+        bool validIndex = labelIndex < numComponents;
+        bool addNewLabel = validIndex && Labels[labelIndex].LabelString == null;
+
+        if (validIndex)
+        {
+            GfcDisplayedInputDataLabel label = new() { LabelString = aLabel, LastUpdateFixedUpdateCount = GfcPhysics.FixedUpdateCount };
+            if (addNewLabel)
+            {
+                Labels.Insert(Labels.GetSortedIndex(label), label);
+            }
+            else
+            {
+                Labels[labelIndex] = label;
+            }
+
+            UpdateLabelString();
+        }
+        else if (!m_threwWarning)
+        {
+            Debug.LogWarning("There are over 4 prompts for the input of type " + Input + "/" + Category + ", cannot register prompt " + aLabel);
+            m_threwWarning = true;
+        }
+
+        return addNewLabel;
+    }
 }

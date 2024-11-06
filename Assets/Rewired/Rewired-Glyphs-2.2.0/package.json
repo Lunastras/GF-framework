@@ -1,0 +1,34 @@
+{
+  "name": "com.lmirman.rewiredglyphs",
+  "version": "2.2.0",
+  "displayName": "Rewired Glyphs",
+  "description": "An expansion for Guavaman's Rewired Unity Asset that provides a simple to use API for showing input icons to the player at runtime based on their input method and bindings.",
+  "hideInEditor": true,
+	"documentationUrl": "https://orange-panda.github.io/Rewired-Glyphs/",
+  "keywords": [
+    "input",
+    "TextMeshPro",
+    "ugui",
+    "ui",
+    "Unity UI"
+  ],
+  "author": {
+    "name": "Luke Mirman",
+    "url": "http://lukemirman.com/"
+  },
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.6"
+  },
+  "samples": [
+    {
+      "displayName": "Kenney Pixel Prompts",
+      "description": "Example sprite sheets, glyph maps, and glyph collection using Kenney Pixel Prompts asset.\n\nThe icons used are public domain (CC0) from Kenney assets. For more information and licensing info refer to https://kenney.nl/assets/input-prompts-pixel-16",
+      "path": "Samples~/Kenney Pixel Prompts"
+    },
+		{
+			"displayName": "Xelu Prompts",
+			"description": "Example sprite sheets, glyph maps, and glyph collection using Xelu Controller Prompts asset.\n\nThe icons used are public domain (CC0) from Xelu. For more information and licensing info refer to https://thoseawesomeguys.com/prompts/",
+			"path": "Samples~/Xelu Prompts"
+		}
+  ]
+}

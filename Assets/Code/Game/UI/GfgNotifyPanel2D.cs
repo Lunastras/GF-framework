@@ -57,7 +57,7 @@ public class GfgNotifyPanel2D : GfgNotifyPanelGeneric
         }
     }
 
-    public override CoroutineHandle InitializeOptionButton(GfxTextMessage aTextMessage, GfxButton anInstantiatedButton, MessageOption aOption, int aIndex)
+    public override CoroutineHandle InitializeOptionButton(GfxTextMessage aTextMessage, GfxButton anInstantiatedButton, GfxNotifyOption aOption, int aIndex)
     {
         GfxPanel panel = anInstantiatedButton as GfxPanel;
 

@@ -13,10 +13,8 @@ GameObject:
   - component: {fileID: 1837272480768579649}
   - component: {fileID: 6510915077153339753}
   - component: {fileID: 7816851404012036743}
-  - component: {fileID: 1933077951610216671}
   - component: {fileID: 24130825128514252}
   - component: {fileID: 889783095523931982}
-  - component: {fileID: 8860564039993265132}
   m_Layer: 0
   m_Name: CornAssets
   m_TagString: Untagged
@@ -247,22 +245,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_storyPhases: []
---- !u!114 &1933077951610216671
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3931108508837045004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b8bcceffa5f4f434e912e01b0e0bcf7b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_openPhoneInput:
-    m_inputType: 6
-    m_axisError: 0.001
-  m_statesWhereToggleEnabled: 040000000500000003000000
 --- !u!114 &24130825128514252
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,7 +259,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_handlers:
   - Type: 0
-    Handler: {fileID: 8860564039993265132}
+    Handler: {fileID: 0}
   - Type: 1
     Handler: {fileID: 0}
 --- !u!114 &889783095523931982
@@ -304,21 +286,6 @@ MonoBehaviour:
     Sprite: {fileID: -1333737022, guid: a13a51f83f213de409da24acdc73e02e, type: 3}
   - Character: 4
     Sprite: {fileID: 21300000, guid: 09b4bcfa7d3649a45bc7c94b46439ad4, type: 3}
---- !u!114 &8860564039993265132
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3931108508837045004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27aea8642c4ff30428fd09e0f3baa7c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  NotifyPanel: {fileID: 0}
-  m_currentSceneNameLength: 0
-  m_hasCachedDialogueSetting: 0
 --- !u!1 &8905493975539314348
 GameObject:
   m_ObjectHideFlags: 0
@@ -332,6 +299,7 @@ GameObject:
   - component: {fileID: 3786488131392984875}
   - component: {fileID: 6655595076971933538}
   - component: {fileID: 6076022166139806644}
+  - component: {fileID: 3748345678597849733}
   m_Layer: 0
   m_Name: CameraDefault
   m_TagString: Untagged
@@ -471,3 +439,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GameStates: 010000000200000006000000
   m_instantDisable: 1
+--- !u!114 &3748345678597849733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8905493975539314348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd1fe0b1c4495b043ae3ba14381931a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

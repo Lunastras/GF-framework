@@ -329,6 +329,11 @@ public class GfxRichTextWriter : MonoBehaviour
             }
         }
     }
+
+    protected void OnDestroy()
+    {
+        WriteAllNoTransition();
+    }
 }
 
 [System.Serializable]

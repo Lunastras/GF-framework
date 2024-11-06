@@ -56,13 +56,13 @@ public struct GfcCoroutineHandle
         if (!CoroutineIsRunning)
             CoroutineHandle = Timing.RunCoroutine(aEnumerator, aSegment, aTag);
 
+        Debug.Assert(CoroutineHandle.IsValid);
         return CoroutineHandle;
     }
 
     public CoroutineHandle RunCoroutine(IEnumerator<float> aEnumerator, Segment aSegment = Segment.Update, string aTag = null)
     {
         CoroutineHandle = Timing.RunCoroutine(aEnumerator, aSegment, aTag);
-
         return CoroutineHandle;
     }
 

@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class GfxPanel : GfxButton2D
@@ -79,7 +76,6 @@ public class GfxPanel : GfxButton2D
 
         if (TransitionCurve != null)
             aTransitionPoint = TransitionCurve.Evaluate(aTransitionPoint);
-
 
         m_panelImage.pixelsPerUnitMultiplier = Mathf.Lerp(m_stateAtTransitionStart.PixelsPerUnityMult, aDesiredState.PixelsPerUnit, aTransitionPoint);
 
@@ -290,12 +286,10 @@ public class GfxPanel : GfxButton2D
         m_iconImage.sprite = aIcon;
     }
 
-    protected void SetIconColor(Color aColor, bool aActivateIcon = false)
+    public void SetIconColor(Color aColor)
     {
-        if (aActivateIcon)
-            SetIconActive(true);
-
         m_iconImage.color = aColor;
+        UpdateOriginalColors();
     }
 
     public void SetTextOnly(string aString, HorizontalAlignmentOptions aXAlignment = HorizontalAlignmentOptions.Center, VerticalAlignmentOptions aYAlignment = VerticalAlignmentOptions.Middle)

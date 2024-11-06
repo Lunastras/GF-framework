@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39aeeac722abefe418ceefb14f459f67, type: 3}
+  m_Name: GlyphCollection
+  m_EditorClassIdentifier: 
+  controllerDataFiles: {fileID: 11400000, guid: d21d2b20df8369642b76aafbb2576ba7,
+    type: 2}
+  key: default
+  guidMaps:
+  - controllerType: 2
+    guid: 19002688-7406-4f4a-8340-8d25335406c8
+    glyphMap: {fileID: 11400000, guid: 6ce51b62156d0e14bbf3b93b2031e024, type: 2}
+  - controllerType: 0
+    guid: 19002688-7406-4f4a-8340-8d25335406c8
+    glyphMap: {fileID: 11400000, guid: a935797017626fb4a867260ec96e8d4d, type: 2}
+  - controllerType: 1
+    guid: 19002688-7406-4f4a-8340-8d25335406c8
+    glyphMap: {fileID: 11400000, guid: c86f04746b106b444864c39cc4012cdf, type: 2}
+  templateMaps:
+  - symbolPreference: 1
+    glyphMap: {fileID: 11400000, guid: 6ce51b62156d0e14bbf3b93b2031e024, type: 2}
+  - symbolPreference: 2
+    glyphMap: {fileID: 11400000, guid: 6ce51b62156d0e14bbf3b93b2031e024, type: 2}
+  - symbolPreference: 3
+    glyphMap: {fileID: 11400000, guid: 6ce51b62156d0e14bbf3b93b2031e024, type: 2}
+  - symbolPreference: 0
+    glyphMap: {fileID: 11400000, guid: 6ce51b62156d0e14bbf3b93b2031e024, type: 2}
+  unboundGlyph:
+    inputID: -1
+    description: UNBOUND
+    positiveDescription: 
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  nullGlyph:
+    inputID: -1
+    description: NULL
+    positiveDescription: 
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 
+  uninitializedGlyph:
+    inputID: -1
+    description: UNINITIALIZED
+    positiveDescription: 
+    negativeDescription: 
+    sprite: {fileID: 0}
+    positiveSprite: {fileID: 0}
+    negativeSprite: {fileID: 0}
+    textMeshSpriteSheetName: 

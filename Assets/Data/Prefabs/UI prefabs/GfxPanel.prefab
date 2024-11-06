@@ -187,6 +187,9 @@ GameObject:
   - component: {fileID: 1961060263577219096}
   - component: {fileID: 2847639877425395280}
   - component: {fileID: 4380806839912147959}
+  - component: {fileID: 583141436729026336}
+  - component: {fileID: 6407006081036249597}
+  - component: {fileID: 700189971430369434}
   m_Layer: 5
   m_Name: GfxPanel
   m_TagString: Untagged
@@ -291,6 +294,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5fafa289e531dc4e923f8c951745c9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Interactable: 1
+  InteractVisible: 1
+  OnSubmit:
+    m_PersistentCalls:
+      m_Calls: []
   m_highlightStateDefault:
     Scale: {x: 1, y: 1, z: 1}
     PositionOffset: {x: 0, y: 0, z: 0}
@@ -370,12 +378,12 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   LocalTransformRelativeToOriginal: 1
+  m_colorAtBeginningOfTransition: []
   m_originalColors: []
   m_panelRectTransform: {fileID: 3025674762138243394}
   m_iconImage: {fileID: 6058613348835011851}
   m_textLeft: {fileID: 6140442975584145579}
   m_textRight: {fileID: 2251822614314750368}
-  m_blessedParticleSystem: {fileID: 0}
   m_contentsRectTransform: {fileID: 6534653225186097668}
   m_contentInPadding: 12
   m_contentPadding: {x: 12, y: 12}
@@ -410,6 +418,44 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &583141436729026336
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3766172959617507501}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
+--- !u!114 &6407006081036249597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3766172959617507501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64b1a4cefbaf8cb47a10cdf53ac9ea3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_hideOnStart: 1
+  m_canvasGroup: {fileID: 0}
+--- !u!114 &700189971430369434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3766172959617507501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e38cdc327318e94a8d0f346e84dfd8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5330285438682334867
 GameObject:
   m_ObjectHideFlags: 0

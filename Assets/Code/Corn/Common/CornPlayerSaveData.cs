@@ -41,6 +41,8 @@ public class PlayerSaveData
 
         public int MaxMentalSanity = CornManagerEvents.DICE_ROLL_NUM_FACES;
 
+        public HashSet<string> FinishedNonSpecificScenes = new(8);
+
         public TimeSpan ProgressTime(int aHoursSpan)
         {
             CurrentHour += aHoursSpan;

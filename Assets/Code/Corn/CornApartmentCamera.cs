@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class CornApartmentCamera : MonoBehaviour
+public class CornApartmentCamera : GfcCamera
 {
     [SerializeField] private float m_distanceFromTarget = 16;
 
@@ -23,8 +23,6 @@ public class CornApartmentCamera : MonoBehaviour
 
     protected static CornApartmentCamera ourInstance = null;
 
-    public Camera Camera { get; private set; } = null;
-
     private Transform m_transform;
 
     private float m_currentRotationSpeed;
@@ -33,9 +31,6 @@ public class CornApartmentCamera : MonoBehaviour
     void Awake()
     {
         this.SetSingleton(ref ourInstance);
-
-        //DontDestroyOnLoad(gameObject);
-        Camera = GetComponent<Camera>();
         m_transform = transform;
     }
 
@@ -43,7 +38,7 @@ public class CornApartmentCamera : MonoBehaviour
     {
         if (CornMenuApartment.Instance)
         {
-            float xAxisMovement = GfgInput.GetAxisRaw(GfgInputType.MOVEMENT_X);
+            float xAxisMovement = GfcInput.GetAxisRaw(GfcInputType.MOVEMENT_X);
 
             if (xAxisMovement.Abs() > 0.001f)
             {

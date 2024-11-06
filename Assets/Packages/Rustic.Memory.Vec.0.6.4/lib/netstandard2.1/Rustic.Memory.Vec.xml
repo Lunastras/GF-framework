@@ -1,0 +1,727 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rustic.Memory.Vec</name>
+    </assembly>
+    <members>
+        <member name="T:Rustic.Memory.PoolVec`1">
+            <summary>
+                Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="T:System.Collections.Generic.List`1"/>.
+                The list allocated from a <see cref="T:System.Buffers.ArrayPool`1"/>.
+            </summary>
+            <typeparam name="T">The type of items of the list.</typeparam>
+        </member>
+        <member name="F:Rustic.Memory.PoolVec`1._pool">
+            <summary>The pool from which to rent and to wich to return the internal storage.</summary>
+        </member>
+        <member name="M:Rustic.Memory.PoolVec`1.#ctor(System.Buffers.ArrayPool{`0})">
+            <summary>Initializes a new list.</summary>
+            <param name="pool">The pool from which to allocate.</param>
+        </member>
+        <member name="M:Rustic.Memory.PoolVec`1.#ctor(System.ArraySegment{`0},System.Buffers.ArrayPool{`0})">
+            <summary>Initializes a new list with a initial buffer.</summary>
+            <param name="initialBuffer">The initial buffer.</param>
+            <param name="pool">The pool from which to allocate.</param>
+        </member>
+        <member name="M:Rustic.Memory.PoolVec`1.#ctor(System.Int32,System.Buffers.ArrayPool{`0})">
+            <summary>Initializes a new list with a specified minimum initial capacity.</summary>
+            <param name="initialMinimumCapacity">The minimum initial capacity.</param>
+            <param name="pool">The pool from which to allocate.</param>
+        </member>
+        <member name="M:Rustic.Memory.PoolVec`1.Grow(System.Int32)">
+            <summary>Grows the list to have at least additional capacity beyond pos.</summary>
+            <param name="additionalCapacityBeyondPos">Additional capacity beyond pos.</param>
+        </member>
+        <member name="M:Rustic.Memory.PoolVec`1.Dispose">
+            <inheritdoc cref="M:System.IDisposable.Dispose"/>
+        </member>
+        <member name="M:Rustic.Memory.PoolVec`1.Dispose(System.Boolean)">
+            <inheritdoc cref="M:System.IDisposable.Dispose"/>
+        </member>
+        <member name="T:Rustic.Memory.RefVec`1">
+            <summary>
+                Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="T:System.Collections.Generic.List`1"/>.
+            </summary>
+            <typeparam name="T">The type of items of the list.</typeparam>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.#ctor(System.Span{`0})">
+            <summary>
+                Initializes a new list with a initial buffer.
+            </summary>
+            <param name="initialBuffer">The initial buffer.</param>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.#ctor(System.Int32)">
+            <summary>
+                Initializes a new list with a specified minimum initial capacity.
+            </summary>
+            <param name="initialMinimumCapacity">The minimum initial capacity.</param>
+        </member>
+        <member name="P:Rustic.Memory.RefVec`1.Capacity">
+            <inheritdoc cref="P:System.Collections.Generic.List`1.Capacity"/>
+        </member>
+        <member name="P:Rustic.Memory.RefVec`1.Length">
+            <inheritdoc cref="P:System.Collections.Generic.List`1.Count"/>
+        </member>
+        <member name="P:Rustic.Memory.RefVec`1.Count">
+            <inheritdoc cref="P:System.Collections.Generic.List`1.Count"/>
+        </member>
+        <member name="P:Rustic.Memory.RefVec`1.IsEmpty">
+            <inheritdoc cref="P:System.Span`1.IsEmpty"/>
+        </member>
+        <member name="P:Rustic.Memory.RefVec`1.Item(System.Int32)">
+            <inheritdoc cref="P:System.Collections.Generic.List`1.Item(System.Int32)"/>
+        </member>
+        <member name="P:Rustic.Memory.RefVec`1.Item(System.Index@)">
+            <summary>
+                Gets or sets the element at the specified <paramref name="index"/>.
+            </summary>
+            <param name="index">The index of the element to get or set.</param>
+        </member>
+        <member name="P:Rustic.Memory.RefVec`1.Item(System.Range@)">
+            <summary>
+                Gets a span of elements of elements from the specified <paramref name="range"/>.
+            </summary>
+            <param name="range">The range of elements to get or set.</param>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.EnsureCapacity(System.Int32)">
+            <summary>
+                Ensures that the list has a minimum capacity.
+            </summary>
+            <param name="capacity">The minimum capacity.</param>
+            <returns>The new capacity.</returns>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.GetPinnableReference">
+            <summary>
+                Get a pinnable reference to the list.
+                Does not ensure there is a null T after <see cref="P:Rustic.Memory.RefVec`1.Length" />
+                This overload is pattern matched in the C# 7.3+ compiler so you can omit
+                the explicit method call, and write eg "fixed (T* c = list)"
+            </summary>
+        </member>
+        <member name="P:Rustic.Memory.RefVec`1.RawStorage">
+            <summary>
+                Returns the underlying storage of the list.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.AsSpan">
+            <summary>
+                Returns a span around the contents of the list.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.AsSpan(System.Int32)">
+            <summary>
+                Returns a span around a portion of the contents of the list.
+            </summary>
+            <param name="start">The zero-based index of the first element.</param>
+            <returns>The span representing the content.</returns>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.AsSpan(System.Int32,System.Int32)">
+            <summary>
+                Returns a span around a portion of the contents of the list.
+            </summary>
+            <param name="start">The zero-based index of the first element.</param>
+            <param name="length">The number of elements from the <paramref name="start"/>.</param>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Add(`0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Add(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.AddRange(System.ReadOnlySpan{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.AddRange(System.Collections.Generic.IEnumerable{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.AppendSpan(System.Int32)">
+            <summary>
+                Appends a span to the list, and return the handle.
+            </summary>
+            <param name="length">The length of the span to add.</param>
+            <returns>The span appended to the list.</returns>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.BinarySearch(`0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.BinarySearch(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.BinarySearch(`0@,System.Collections.Generic.IComparer{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.BinarySearch(`0,System.Collections.Generic.IComparer{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.BinarySearch(System.Int32,System.Int32,`0@,System.Collections.Generic.IComparer{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.BinarySearch(System.Int32,System.Int32,`0,System.Collections.Generic.IComparer{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Clear">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Clear"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Contains(`0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Contains(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Contains(`0@,System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+                Determines whether an element is in the list.
+            </summary>
+            <param name="item">The object to locate in the list. The value can be null for reference types.</param>
+            <param name="comparer">The comparer used to determine whether two items are equal.</param>
+            <returns><see langword="true"/> if item is found in the list; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.CopyTo(System.Span{`0})">
+            <inheritdoc cref="M:System.Span`1.CopyTo(System.Span{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.IndexOf(`0@)">
+            <inheritdoc cref="M:System.Collections.Generic.IList`1.IndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.IndexOf(`0@,System.Collections.Generic.IEqualityComparer{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.IList`1.IndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Insert(System.Int32,`0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Insert(System.Int32,`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.InsertRange(System.Int32,System.ReadOnlySpan{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.InsertRange(System.Int32,System.Collections.Generic.IEnumerable{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.LastIndexOf(`0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.LastIndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.LastIndexOf(`0@,System.Collections.Generic.IEqualityComparer{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.LastIndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Remove(`0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Remove(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Remove(`0@,System.Collections.Generic.IEqualityComparer{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Remove(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.RemoveAt(System.Int32)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.RemoveAt(System.Int32)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.RemoveRange(System.Int32,System.Int32)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.RemoveRange(System.Int32,System.Int32)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Reverse">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Reverse"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Reverse(System.Int32,System.Int32)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Reverse(System.Int32,System.Int32)"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Sort">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Sort"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Sort(System.Comparison{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Sort(System.Comparison{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Sort(System.Collections.Generic.IComparer{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Sort(System.Collections.Generic.IComparer{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Sort(System.Int32,System.Int32,System.Collections.Generic.IComparer{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Sort(System.Int32,System.Int32,System.Collections.Generic.IComparer{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.ToArray">
+            <inheritdoc cref="M:System.Span`1.ToArray"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.ToList">
+            <summary>
+            Creates a <see cref="T:System.Collections.Generic.List`1"/> from a <see cref="T:Rustic.Memory.RefVec`1"/>.
+            </summary>
+            <returns>A <see cref="T:System.Collections.Generic.List`1"/> that contains elements form the input sequence.</returns>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Dispose">
+            <inheritdoc cref="M:System.IDisposable.Dispose"/>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Grow(System.Int32)">
+            <summary>
+                Resize the internal buffer either by doubling current buffer size or
+                by adding <paramref name="additionalCapacityBeyondPos" /> to
+                <see cref="F:Rustic.Memory.RefVec`1._pos" /> whichever is greater.
+            </summary>
+            <param name="additionalCapacityBeyondPos">
+                Number of chars requested beyond current position.
+            </param>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.GetEnumerator">
+            <inheritdoc cref="M:System.Collections.Generic.IEnumerable`1.GetEnumerator"/>
+        </member>
+        <member name="T:Rustic.Memory.RefVec`1.Enumerator">
+            <summary>Enumerates the elements of a <see cref="T:Rustic.Memory.RefVec`1"/>.</summary>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Enumerator.#ctor(Rustic.Memory.RefVec{`0})">
+            <summary>Initialize the enumerator.</summary>
+            <param name="list">The list to enumerate.</param>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Enumerator.MoveNext">
+            <summary>Advances the enumerator to the next element of the span.</summary>
+        </member>
+        <member name="P:Rustic.Memory.RefVec`1.Enumerator.Current">
+            <summary>Gets the element at the current position of the enumerator.</summary>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Enumerator.Reset">
+            <summary>Resets the enumerator to the initial state.</summary>
+        </member>
+        <member name="M:Rustic.Memory.RefVec`1.Enumerator.Dispose">
+            <summary>Disposes the enumerator.</summary>
+        </member>
+        <member name="T:Rustic.Memory.RefVecExtensions">
+            <summary>Collection of extensions and utility functions related to <see cref="T:Rustic.Memory.RefVec`1"/>.</summary>
+        </member>
+        <member name="M:Rustic.Memory.RefVecExtensions.SequenceEqual``1(Rustic.Memory.RefVec{``0},Rustic.Memory.RefVec{``0})">
+            <summary>
+            Determines whether two lists are equal by comparing the elements using IEquatable{T}.Equals(T).
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Rustic.Memory.RefVecExtensions.SequenceCompareTo``1(Rustic.Memory.RefVec{``0},Rustic.Memory.RefVec{``0})">
+            <summary>
+            Determines the relative order of the lists being compared by comparing the elements using IComparable{T}.CompareTo(T).
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Rustic.Memory.Vec`1">
+            <summary>
+                Represents a strongly typed list of object that can be accessed by ref. Provides a similar interface as <see cref="T:System.Collections.Generic.List`1"/>.
+            </summary>
+            <typeparam name="T">The type of items of the list.</typeparam>
+        </member>
+        <member name="F:Rustic.Memory.Vec`1.Data">
+            <summary>
+            The internal storage.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.#ctor">
+            <summary>
+                Initializes a new list.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.#ctor(System.ArraySegment{`0})">
+            <summary>
+                Initializes a new list with a initial buffer.
+            </summary>
+            <param name="initialBuffer">The initial buffer.</param>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.#ctor(System.Int32)">
+            <summary>
+                Initializes a new list with a specified minimum initial capacity.
+            </summary>
+            <param name="initialMinimumCapacity">The minimum initial capacity.</param>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.Capacity">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.Length">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.Count">
+            <inheritdoc cref="P:Rustic.Memory.IVector`1.Count" />
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.System#Collections#ICollection#IsSynchronized">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.System#Collections#ICollection#SyncRoot">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.System#Collections#Generic#ICollection{T}#IsReadOnly">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.IsEmpty">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.IsDefault">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.RawStorage">
+            <summary>
+                Returns the underlying RawStorage of the list.
+            </summary>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.Item(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.Rustic#Memory#IReadOnlyVector{T}#Item(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.System#Collections#Generic#IList{T}#Item(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.System#Collections#Generic#IReadOnlyList{T}#Item(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.Item(System.Index)">
+            <inheritdoc />
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.Rustic#Memory#IReadOnlyVector{T}#Item(System.Index)">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.Item(System.Range)">
+            <summary>
+                Gets a span of elements of elements from the specified <paramref name="range"/>.
+            </summary>
+            <param name="range">The range of elements to get or set.</param>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.EnsureCapacity(System.Int32)">
+            <summary>
+                Ensures that the list has a minimum capacity.
+            </summary>
+            <param name="capacity">The minimum capacity.</param>
+            <returns>The new capacity.</returns>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.AsSpan(System.Int32,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Add(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.AppendSpan(System.Int32)">
+            <summary>
+                Appends a span to the list, and return the handle.
+            </summary>
+            <param name="length">The length of the span to add.</param>
+            <returns>The span appended to the list.</returns>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.BinarySearch``1(System.Int32,System.Int32,`0@,``0@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Clear">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Clear"/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.System#Collections#Generic#ICollection{T}#Contains(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.TryCopyTo(System.Span{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.CopyTo(`0[],System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.System#Collections#ICollection#CopyTo(System.Array,System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.IndexOf``1(System.Int32,System.Int32,`0@,``0@)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.System#Collections#Generic#IList{T}#IndexOf(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Insert(System.Int32,`0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Insert(System.Int32,`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.System#Collections#Generic#IList{T}#Insert(System.Int32,`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.InsertRange(System.Int32,System.ReadOnlySpan{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.InsertRange(System.Int32,System.Collections.Generic.IEnumerable{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.LastIndexOf``1(System.Int32,System.Int32,`0@,``0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.LastIndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.System#Collections#Generic#ICollection{T}#Remove(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.RemoveAt(System.Int32)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.RemoveAt(System.Int32)"/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.RemoveRange(System.Int32,System.Int32)">
+            <inheritdoc  />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Reverse(System.Int32,System.Int32)">
+            <inheritdoc  />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Sort``1(System.Int32,System.Int32,``0@)">
+            <inheritdoc  />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.ToArray">
+            <inheritdoc cref="M:System.Span`1.ToArray"/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.ToList">
+            <summary>
+            Creates a <see cref="T:System.Collections.Generic.List`1"/> from a <see cref="T:Rustic.Memory.RefVec`1"/>.
+            </summary>
+            <returns>A <see cref="T:System.Collections.Generic.List`1"/> that contains elements form the input sequence.</returns>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Reserve(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Grow(System.Int32)">
+            <summary>
+                Resize the internal buffer either by doubling current buffer size or
+                by adding <paramref name="additionalCapacityBeyondPos" /> to
+                <see cref="P:Rustic.Memory.Vec`1.Length" /> whichever is greater.
+            </summary>
+            <param name="additionalCapacityBeyondPos">
+                Number of chars requested beyond current position.
+            </param>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.GetEnumerator">
+            <inheritdoc cref="M:System.Collections.Generic.IEnumerable`1.GetEnumerator"/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.System#Collections#Generic#IEnumerable{T}#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Sort(System.Int32,System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.IndexOf(System.Int32,System.Int32,`0@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.LastIndexOf(System.Int32,System.Int32,`0@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.BinarySearch(System.Int32,System.Int32,`0@)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Rustic.Memory.Vec`1.Enumerator">
+            <summary>Enumerates the elements of a <see cref="T:Rustic.Memory.Vec`1"/>.</summary>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Enumerator.#ctor(Rustic.Memory.Vec{`0})">
+            <summary>Initialize the enumerator.</summary>
+            <param name="list">The list to enumerate.</param>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Enumerator.MoveNext">
+            <summary>Advances the enumerator to the next element of the span.</summary>
+        </member>
+        <member name="P:Rustic.Memory.Vec`1.Enumerator.Current">
+            <summary>Gets the element at the current position of the enumerator.</summary>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Enumerator.Reset">
+            <summary>Resets the enumerator to the initial state.</summary>
+        </member>
+        <member name="M:Rustic.Memory.Vec`1.Enumerator.Dispose">
+            <summary>Disposes the enumerator.</summary>
+        </member>
+        <member name="T:Rustic.Memory.IReadOnlyVector`1">
+            <summary>Represents a strongly typed vector of object that can be accessed by ref. Provides a similar interface as <see cref="T:System.Collections.Generic.List`1"/>.</summary>
+            <typeparam name="T">The type of items of the vector.</typeparam>
+        </member>
+        <member name="P:Rustic.Memory.IReadOnlyVector`1.IsEmpty">
+            <summary>Returns a value that indicates whether the vector is empty.</summary>
+        </member>
+        <member name="P:Rustic.Memory.IReadOnlyVector`1.IsDefault">
+            <summary>Returns a value that indicates whether the vector is at its default value, no memory is allocated.</summary>
+        </member>
+        <member name="P:Rustic.Memory.IReadOnlyVector`1.Count">
+            <summary>Returns the number of elements in the vector.</summary>
+        </member>
+        <member name="P:Rustic.Memory.IReadOnlyVector`1.Capacity">
+            <inheritdoc cref="P:System.Collections.Generic.List`1.Capacity"/>
+        </member>
+        <member name="P:Rustic.Memory.IReadOnlyVector`1.Item(System.Int32)">
+            <summary>Gets the element at the specified <paramref name="index"/>.</summary>
+            <param name="index">The index of the element to get or set.</param>
+        </member>
+        <member name="P:Rustic.Memory.IReadOnlyVector`1.Item(System.Index)">
+            <summary>Gets the element at the specified <paramref name="index"/>.</summary>
+            <param name="index">The index of the element to get or set.</param>
+        </member>
+        <member name="M:Rustic.Memory.IReadOnlyVector`1.AsSpan(System.Int32,System.Int32)">
+            <summary>Creates a new span over a target vector.</summary>
+            <returns>The span representation of the vector.</returns>
+        </member>
+        <member name="M:Rustic.Memory.IReadOnlyVector`1.IndexOf``1(System.Int32,System.Int32,`0@,``0@)">
+            <summary>
+            Reports the zero-based index of the first occurrence of the specified <paramref name="item"/> in the vector.
+            </summary>
+            <typeparam name="E">The type of the comparer.</typeparam>
+            <param name="start">The zero-based starting index of the range to search.</param>
+            <param name="count">The length of the range to search.</param>
+            <param name="item">The element to locate.</param>
+            <param name="comparer">The comparer implementation to use when comparing elements.</param>
+        </member>
+        <member name="M:Rustic.Memory.IReadOnlyVector`1.IndexOf(System.Int32,System.Int32,`0@)">
+            <summary>
+            Reports the zero-based index of the first occurrence of the specified <paramref name="item"/> in the vector.
+            </summary>
+            <param name="start">The zero-based starting index of the range to search.</param>
+            <param name="count">The length of the range to search.</param>
+            <param name="item">The element to locate.</param>
+        </member>
+        <member name="M:Rustic.Memory.IReadOnlyVector`1.LastIndexOf``1(System.Int32,System.Int32,`0@,``0@)">
+            <summary>
+            Reports the zero-based index of the first occurrence of the specified <paramref name="item"/> in the vector.
+            </summary>
+            <typeparam name="E">The type of the comparer.</typeparam>
+            <param name="start">The zero-based starting index of the range to search.</param>
+            <param name="count">The length of the range to search.</param>
+            <param name="item">The element to locate.</param>
+            <param name="comparer">The comparer implementation to use when comparing elements.</param>
+        </member>
+        <member name="M:Rustic.Memory.IReadOnlyVector`1.LastIndexOf(System.Int32,System.Int32,`0@)">
+            <summary>
+            Reports the zero-based index of the first occurrence of the specified <paramref name="item"/> in the vector.
+            </summary>
+            <param name="start">The zero-based starting index of the range to search.</param>
+            <param name="count">The length of the range to search.</param>
+            <param name="item">The element to locate.</param>
+        </member>
+        <member name="M:Rustic.Memory.IReadOnlyVector`1.BinarySearch``1(System.Int32,System.Int32,`0@,``0@)">
+            <summary>Searches a range of elements in the sorted vector for an element using the <see cref="P:System.Collections.Generic.Comparer`1.Default"/> and returns the zero-based index of the element.</summary>
+            <typeparam name="C">The type of the comparer.</typeparam>
+            <param name="start">The zero-based starting index of the range to search.</param>
+            <param name="count">The length of the range to search.</param>
+            <param name="item">The element to locate.</param>
+            <param name="comparer">The comparer implementation to use when comparing elements.</param>
+        </member>
+        <member name="M:Rustic.Memory.IReadOnlyVector`1.BinarySearch(System.Int32,System.Int32,`0@)">
+            <summary>Searches a range of elements in the sorted vector for an element using the <see cref="P:System.Collections.Generic.Comparer`1.Default"/> and returns the zero-based index of the element.</summary>
+            <param name="start">The zero-based starting index of the range to search.</param>
+            <param name="count">The length of the range to search.</param>
+            <param name="item">The element to locate.</param>
+        </member>
+        <member name="M:Rustic.Memory.IReadOnlyVector`1.TryCopyTo(System.Span{`0})">
+            <inheritdoc cref="M:System.Span`1.TryCopyTo(System.Span{`0})"/>
+        </member>
+        <member name="T:Rustic.Memory.IVector`1">
+            <summary>Represents a strongly typed vector of object that can be accessed by ref. Provides a similar interface as <see cref="T:System.Collections.Generic.List`1"/>.</summary>
+            <typeparam name="T">The type of items of the vector.</typeparam>
+        </member>
+        <member name="P:Rustic.Memory.IVector`1.Item(System.Int32)">
+            <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
+            <param name="index">The index of the element to get or set.</param>
+        </member>
+        <member name="P:Rustic.Memory.IVector`1.Item(System.Index)">
+            <summary>Gets or sets the element at the specified <paramref name="index"/>.</summary>
+            <param name="index">The index of the element to get or set.</param>
+        </member>
+        <member name="P:Rustic.Memory.IVector`1.Count">
+            <summary>Returns the number of elements in the vector.</summary>
+        </member>
+        <member name="M:Rustic.Memory.IVector`1.Reserve(System.Int32)">
+            <summary>Ensures that the collection can contain at least <paramref name="additionalCapacity"/> more elements.</summary>
+            <param name="additionalCapacity">The number of additional elements the collection must be able to contain.</param>
+            <returns>The new capacity of the collection.</returns>
+        </member>
+        <member name="M:Rustic.Memory.IVector`1.InsertRange(System.Int32,System.ReadOnlySpan{`0})">
+            <summary>Inserts a range of <paramref name="values"/> into the vector at the specified index.</summary>
+            <param name="index">The index at which to insert the first element.</param>
+            <param name="values">The collection of values to insert.</param>
+        </member>
+        <member name="M:Rustic.Memory.IVector`1.RemoveRange(System.Int32,System.Int32)">
+            <summary>Removes a specified range of values for the vector.</summary>
+            <param name="start">The zero-based starting index of the range to remove.</param>
+            <param name="count">The length of the range to remove.</param>
+        </member>
+        <member name="M:Rustic.Memory.IVector`1.Sort``1(System.Int32,System.Int32,``0@)">
+            <summary>Sorts a range of elements in the vector using the specified <paramref name="comparer"/>.</summary>
+            <typeparam name="C">The type of the comparer.</typeparam>
+            <param name="start">The zero-based starting index of the range to sort.</param>
+            <param name="count">The length of the range to sort.</param>
+            <param name="comparer">The comparer implementation to use when comparing elements.</param>
+        </member>
+        <member name="M:Rustic.Memory.IVector`1.Sort(System.Int32,System.Int32)">
+            <summary>Sorts a range of elements in the vector using the <see cref="P:System.Collections.Generic.Comparer`1.Default"/>.</summary>
+            <param name="start">The zero-based starting index of the range to sort.</param>
+            <param name="count">The length of the range to sort.</param>
+        </member>
+        <member name="M:Rustic.Memory.IVector`1.Reverse(System.Int32,System.Int32)">
+            <summary>Reveses the order of a range of elements in the vector.</summary>
+            <param name="start">The zero-based starting index of the range to reverse.</param>
+            <param name="count">The length of the range to reverse.</param>
+        </member>
+        <member name="T:Rustic.Memory.ReadOnlyVectorTraits">
+            <summary>Collection of extensions and utility functions related to <see cref="T:Rustic.Memory.IReadOnlyVector`1"/>.</summary>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.AsSpan``1(Rustic.Memory.IReadOnlyVector{``0})">
+            <summary>Creates a new span over a target vector.</summary>
+            <typeparam name="T">The type of elements in the vector.</typeparam>
+            <returns>The span representation of the vector.</returns>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.AsSpan``1(Rustic.Memory.IReadOnlyVector{``0},System.Index)">
+            <summary>Creates a new span over a target vector.</summary>
+            <typeparam name="T">The type of elements in the vector.</typeparam>
+            <returns>The span representation of the vector.</returns>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.AsSpan``1(Rustic.Memory.IReadOnlyVector{``0},System.Range)">
+            <summary>Creates a new span over a target vector.</summary>
+            <typeparam name="T">The type of elements in the vector.</typeparam>
+            <returns>The span representation of the vector.</returns>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.IndexOf``1(Rustic.Memory.IReadOnlyVector{``0},System.Range,``0@)">
+            <inheritdoc cref="M:System.Collections.Generic.IList`1.IndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.IndexOf``2(Rustic.Memory.IReadOnlyVector{``0},System.Range,``0@,``1@)">
+            <inheritdoc cref="M:System.Collections.Generic.IList`1.IndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.IndexOf``1(Rustic.Memory.IReadOnlyVector{``0},``0@)">
+            <inheritdoc cref="M:System.Collections.Generic.IList`1.IndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.IndexOf``2(Rustic.Memory.IReadOnlyVector{``0},``0@,``1@)">
+            <inheritdoc cref="M:System.Collections.Generic.IList`1.IndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.LastIndexOf``1(Rustic.Memory.IReadOnlyVector{``0},System.Range,``0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.LastIndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.LastIndexOf``2(Rustic.Memory.IReadOnlyVector{``0},System.Range,``0@,``1)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.LastIndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.LastIndexOf``1(Rustic.Memory.IReadOnlyVector{``0},``0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.LastIndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.LastIndexOf``2(Rustic.Memory.IReadOnlyVector{``0},``0@,``1)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.LastIndexOf(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.BinarySearch``1(Rustic.Memory.IReadOnlyVector{``0},System.Range,``0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.BinarySearch(`0,System.Collections.Generic.IComparer{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.BinarySearch``2(Rustic.Memory.IReadOnlyVector{``0},System.Range,``0@,``1)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.BinarySearch(`0,System.Collections.Generic.IComparer{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.BinarySearch``1(Rustic.Memory.IReadOnlyVector{``0},``0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.BinarySearch(`0,System.Collections.Generic.IComparer{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.BinarySearch``2(Rustic.Memory.IReadOnlyVector{``0},``0@,``1)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.BinarySearch(`0,System.Collections.Generic.IComparer{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.CopyTo``1(Rustic.Memory.IReadOnlyVector{``0},System.Span{``0})">
+            <inheritdoc cref="M:System.Span`1.CopyTo(System.Span{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.ReadOnlyVectorTraits.Contains``1(Rustic.Memory.IReadOnlyVector{``0},``0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Contains(`0)"/>
+        </member>
+        <member name="T:Rustic.Memory.VectorTraits">
+            <summary>Collection of extensions and utility functions related to <see cref="T:Rustic.Memory.IVector`1"/>.</summary>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.AddRange``1(Rustic.Memory.IVector{``0},System.ReadOnlySpan{``0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.AddRange(System.Collections.Generic.IEnumerable{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.InsertRange``1(Rustic.Memory.IVector{``0},System.Index,System.ReadOnlySpan{``0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.InsertRange(System.Int32,System.Collections.Generic.IEnumerable{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.Remove``1(Rustic.Memory.IVector{``0},``0@)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Remove(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.Remove``2(Rustic.Memory.IVector{``0},``0@,``1)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Remove(`0)"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.RemoveRange``1(Rustic.Memory.IVector{``0},System.Range)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.RemoveRange(System.Int32,System.Int32)"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.RemoveAt``1(Rustic.Memory.IVector{``0},System.Index)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.RemoveAt(System.Int32)"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.SwapRemove``1(Rustic.Memory.IVector{``0},System.Int32)">
+            <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
+            <typeparam name="T">The type of elements in the vector.</typeparam>
+            <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.SwapRemove``1(Rustic.Memory.IVector{``0},System.Index)">
+            <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
+            <typeparam name="T">The type of elements in the vector.</typeparam>
+            <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.Sort``1(Rustic.Memory.IVector{``0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Sort"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.Sort``2(Rustic.Memory.IVector{``0},``1)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Sort(System.Collections.Generic.IComparer{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.Sort``1(Rustic.Memory.IVector{``0},System.Comparison{``0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Sort(System.Comparison{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.Reverse``1(Rustic.Memory.IVector{``0},System.Range)">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Reverse"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.Reverse``1(Rustic.Memory.IVector{``0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.Reverse"/>
+        </member>
+        <member name="M:Rustic.Memory.VectorTraits.TryPop``1(Rustic.Memory.IVector{``0},``0@)">
+            <summary>Attempts to remove the topmost element from the stack.</summary>
+            <param name="self">The stack</param>
+            <param name="value">The value removed from the stack, or default</param>
+            <typeparam name="T">The type of elements in the stack</typeparam>
+            <returns><c>true</c> if a value was removed; otherwise <c>false</c></returns>
+        </member>
+    </members>
+</doc>

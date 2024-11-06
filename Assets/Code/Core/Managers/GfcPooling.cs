@@ -5,6 +5,8 @@ using UnityEditor;
 using MEC;
 using Unity.Collections;
 using System;
+using Unity.Plastic.Antlr3.Runtime;
+using UnityEngine.SceneManagement;
 
 public class GfcPooling : MonoBehaviour
 {
@@ -43,7 +45,9 @@ public class GfcPooling : MonoBehaviour
     //magic value for the destruction of objects, we really just assume an object cannot be in this position unless we set it here
     //looks like bad design, but it's nicer than using a component specific for keeping track of objects in the pool
     //If these values are too high/low, the physics stop working
-    private static readonly Vector3 DESTROY_POSITION = new(9997, 9997, 9997);
+    private static readonly Vector3 DESTROY_POSITION = new(99997, 99997, 99997);
+    private static readonly Vector3 DEACTIVATE_NEXT_FRAME_POSITION = new(-99997, 99997, 99997);
+
 
     private void Awake()
     {
@@ -101,7 +105,7 @@ public class GfcPooling : MonoBehaviour
 
                 int i = lastIndex;
                 if (mustBeInactive)
-                    while (currentPool[i] && !currentPool[i].activeSelf && --i >= 0) ; //go through the list until an inactive element is found
+                    while (currentPool[i] && (!currentPool[i].activeSelf ^ !ObjectQueuedForPool(currentPool[i])) && --i >= 0) ; //go through the list until an inactive element is found //changes don't work
 
                 if (i >= 0)
                 {
@@ -123,7 +127,7 @@ public class GfcPooling : MonoBehaviour
             spawnedObject.name = objectName;
         }
 
-        spawnedObject.SetActive(true);
+        spawnedObject.SetActiveGf(true);
 
         if (spawnedObject)
         {
@@ -137,6 +141,9 @@ public class GfcPooling : MonoBehaviour
 
         return spawnedObject;
     }
+
+    public static bool ObjectIsInPool(GameObject aGameObject) { return (aGameObject.transform.position.Equals(DESTROY_POSITION) || aGameObject.transform.position.Equals(DEACTIVATE_NEXT_FRAME_POSITION)) && aGameObject.scene.buildIndex == (int)GfcSceneId.GF_BASE; }
+    public static bool ObjectQueuedForPool(GameObject aGameObject) { return aGameObject.transform.position.Equals(DEACTIVATE_NEXT_FRAME_POSITION) && aGameObject.scene.buildIndex == (int)GfcSceneId.GF_BASE; }
 
     public static GameObject Instantiate(string prefabName, Transform parent = null, bool instantiateInWorldSpace = false, bool mustBeInactive = true)
     {
@@ -180,44 +187,77 @@ public class GfcPooling : MonoBehaviour
         return Instantiate(objectToSpawn, position, rotation, parent, mustBeInactive);
     }
 
-    public static void DestroyChildren(Transform obj, bool deleteSelf = false)
+    public static void DestroyChildren(Transform obj, bool deleteSelf = false, bool anInsertInPool = false, bool aKeepActive = false, bool anUseTransition = true)
     {
-        while (obj.childCount > 0)
-            GfcPooling.Destroy(obj.GetChild(0).gameObject);
+        int currentChildIndex = 0;
+        int childCount = obj.childCount;
+        for (int i = 0; i < childCount; i++)
+        {
+            Transform currentChild = obj.GetChild(currentChildIndex);
+            if (anInsertInPool)
+                GfcPooling.DestroyInsert(currentChild.gameObject, 0, aKeepActive, true, anUseTransition);
+            else
+                GfcPooling.Destroy(currentChild.gameObject, 0, true, anUseTransition);
+
+            //in case the object has an destroy animation and is still parented, go to the next index
+            if (currentChild && currentChild.parent == obj)
+                currentChildIndex++;
+        }
 
         if (deleteSelf)
             GfcPooling.Destroy(obj.gameObject);
     }
 
-    public static void Destroy(GameObject objectToDestroy, float delay = 0, bool goOverCapacity = true)
+    private IEnumerator<float> _DeactivateOneFrameLate(GameObject aGameObject)
     {
-        if (delay > 0)
-            Timing.RunCoroutine(_WaitUntilDestroy(delay, objectToDestroy, false, goOverCapacity));
-        else
-            InternalDestroy(objectToDestroy, false, goOverCapacity);
+        yield return Timing.WaitForOneFrame;
+        if (ObjectQueuedForPool(aGameObject)) //if it was moved out of the pool, don't deactivate
+        {
+            locSetObjectPosition(aGameObject.transform, DESTROY_POSITION, false);
+            aGameObject.SetActive(false);
+        }
     }
 
-    public static void DestroyInsert(GameObject objectToDestroy, float delay = 0, bool keepActive = false, bool goOverCapacity = true)
+    private static CoroutineHandle InternalDestroy(GameObject objectToDestroy, float delay, bool keepActive, bool goOverCapacity, bool anUseTransition, bool anInsertInPool)
     {
-        if (PoolSizeAvailable(objectToDestroy) == 0)
+        if (anInsertInPool && PoolSizeAvailable(objectToDestroy) == 0)
             Pool(objectToDestroy, 1, false);
 
-        if (delay > 0)
-            Timing.RunCoroutine(_WaitUntilDestroy(delay, objectToDestroy, keepActive, goOverCapacity));
+        CoroutineHandle handle = default;
+        GfcTransitionActive transitionActive = null;
+        anUseTransition = anUseTransition && objectToDestroy.TryGetComponent(out transitionActive);
+
+        if (delay > 0 || anUseTransition)
+            handle = Timing.RunCoroutine(_WaitUntilDestroy(delay, objectToDestroy, false, goOverCapacity, transitionActive));
         else
             InternalDestroy(objectToDestroy, keepActive, goOverCapacity);
+
+        return handle;
     }
 
-    public static IEnumerator<float> _WaitUntilDestroy(float time, GameObject objectToDestroy, bool keepActive, bool goOverCapacity)
+    public static CoroutineHandle Destroy(GameObject objectToDestroy, float delay = 0, bool goOverCapacity = true, bool anUseTransition = true)
+    {
+        return InternalDestroy(objectToDestroy, delay, false, goOverCapacity, anUseTransition, false);
+    }
+
+    public static CoroutineHandle DestroyInsert(GameObject objectToDestroy, float delay = 0, bool keepActive = false, bool goOverCapacity = true, bool anUseTransition = true)
+    {
+        return InternalDestroy(objectToDestroy, delay, keepActive, goOverCapacity, anUseTransition, true);
+    }
+
+    public static IEnumerator<float> _WaitUntilDestroy(float time, GameObject objectToDestroy, bool keepActive, bool goOverCapacity, GfcTransitionActive aTransitionActive)
     {
         yield return Timing.WaitForSeconds(time);
+        if (aTransitionActive)
+            yield return Timing.WaitUntilDone(aTransitionActive.SetActive(false, keepActive));
+
         InternalDestroy(objectToDestroy, keepActive, goOverCapacity);
     }
 
     private static IEnumerator<float> _AddObjectToPool(GameObject objectToDestroy, List<GameObject> currentPool)
     {
         yield return Timing.WaitForOneFrame;
-        currentPool.Add(objectToDestroy); //we wait one frame before putting it in the pool because Unity doesn't like it when an object is enabled and disabled in the same frame
+        //we wait one frame before putting it in the pool because Unity doesn't like it when an object is enabled and disabled in the same frame
     }
 
     protected void OnDestroy()
@@ -283,38 +323,39 @@ public class GfcPooling : MonoBehaviour
         }
     }
 
-    private static void InternalDestroy(GameObject aObjectToDestroy, bool aKeepActive, bool aGoOverCapacity)
+    private static void InternalDestroy(GameObject anObjectToDestroy, bool aKeepActive, bool aGoOverCapacity)
     {
         bool destroyObject = true;
 
-        if (aObjectToDestroy)
+        if (anObjectToDestroy)
         {
-            bool activeState = false;
-            if (Instance && Instance.isActiveAndEnabled && Instance.m_pools.TryGetValue(aObjectToDestroy.name, out PoolStruct pool) && null != pool.list)
+            if (Instance && Instance.isActiveAndEnabled && Instance.m_pools.TryGetValue(anObjectToDestroy.name, out PoolStruct pool) && null != pool.list)
             {
                 var currentPool = pool.list;
-                bool alreadyInPool = aObjectToDestroy.transform.position.Equals(DESTROY_POSITION);
+                bool alreadyInPool = ObjectIsInPool(anObjectToDestroy);
                 destroyObject = !alreadyInPool;
                 aGoOverCapacity |= aKeepActive;
 
                 if (!alreadyInPool && (aGoOverCapacity || currentPool.Count < currentPool.Capacity))
                 {
-                    Timing.RunCoroutine(_AddObjectToPool(aObjectToDestroy, currentPool));
-                    locSetObjectPosition(aObjectToDestroy.transform, DESTROY_POSITION, false);
+                    currentPool.Add(anObjectToDestroy);
                     destroyObject = false;
-                    alreadyInPool = true;
+                    anObjectToDestroy.transform.SetParent(null);
+
+                    Vector3 newPos = DESTROY_POSITION;
+                    if (!aKeepActive)
+                    {
+                        newPos = DEACTIVATE_NEXT_FRAME_POSITION;
+                        Timing.RunCoroutine(Instance._DeactivateOneFrameLate(anObjectToDestroy));
+                    }
+
+                    locSetObjectPosition(anObjectToDestroy.transform, newPos, false);
+                    SceneManager.MoveGameObjectToScene(anObjectToDestroy, SceneManager.GetSceneByBuildIndex((int)GfcSceneId.GF_BASE));
                 }
-
-                activeState = !alreadyInPool || aKeepActive;
             }
-
-            aObjectToDestroy.SetActive(activeState);
-            aObjectToDestroy.transform.SetParent(null);
 
             if (destroyObject)
-            {
-                GameObject.Destroy(aObjectToDestroy);
-            }
+                GameObject.Destroy(anObjectToDestroy);
         }
     }
 

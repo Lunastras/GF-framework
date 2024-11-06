@@ -1,0 +1,504 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rustic.Memory.Inline</name>
+    </assembly>
+    <members>
+        <member name="T:Rustic.Memory.TinyRoSpan">
+            <summary>Partially inlined immutable collection of function parameters.</summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.Empty``1">
+            <summary>Returns an empty <see cref="T:Rustic.Memory.TinyRoSpan`1"/>.</summary>
+            <typeparam name="T">The type of the span.</typeparam>
+            <returns>An empty <see cref="T:Rustic.Memory.TinyRoSpan`1"/>.</returns>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(``0)">
+            <summary>Initializes a new parameter span with one value.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="arg0">The first value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(``0,``0)">
+            <summary>Initializes a new parameter span with one value.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="arg0">The first value.</param>
+            <param name="arg1">The second value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(``0,``0,``0)">
+            <summary>Initializes a new parameter span with one value.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="arg0">The first value.</param>
+            <param name="arg1">The second value.</param>
+            <param name="arg2">The third value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(``0,``0,``0,``0)">
+            <summary>Initializes a new parameter span with one value.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="arg0">The first value.</param>
+            <param name="arg1">The second value.</param>
+            <param name="arg2">The third value.</param>
+            <param name="arg3">The fourth value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(System.ReadOnlySpan{``0})">
+            <summary>Initializes a new parameter span with a sequence of values.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The values collection.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(System.Span{``0})">
+            <summary>Initializes a new parameter span with a sequence of values.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The values collection.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(``0[],System.Int32)">
+            <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The values collection.</param>
+            <param name="start">The zero-based index of the first value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(``0[],System.Int32,System.Int32)">
+            <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The values collection.</param>
+            <param name="start">The zero-based index of the first value.</param>
+            <param name="length">The number of values form the <paramref name="start"/>.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(``0[])">
+            <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The sequence of values.</param>
+            <remarks>
+                If <paramref name="values"/> if of the type [I] Array, [II] (ReadOnly-)Memory, or [III] ArraySegment,
+                then <see cref="T:Rustic.Memory.TinyRoSpan`1"/> uses the allocated memory of <paramref name="values"/>.
+            <br/>
+                If a deep copy is desired use <see cref="M:Rustic.Memory.TinyRoSpan.Copy``2(``1)"/>.
+            </remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(System.ReadOnlyMemory{``0})">
+            <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The sequence of values.</param>
+            <remarks>
+                If <paramref name="values"/> if of the type [I] Array, [II] (ReadOnly-)Memory, or [III] ArraySegment,
+                then <see cref="T:Rustic.Memory.TinyRoSpan`1"/> uses the allocated memory of <paramref name="values"/>.
+            <br/>
+                If a deep copy is desired use <see cref="M:Rustic.Memory.TinyRoSpan.Copy``2(``1)"/>.
+            </remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(System.Memory{``0})">
+            <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The sequence of values.</param>
+            <remarks>
+                If <paramref name="values"/> if of the type [I] Array, [II] (ReadOnly-)Memory, or [III] ArraySegment,
+                then <see cref="T:Rustic.Memory.TinyRoSpan`1"/> uses the allocated memory of <paramref name="values"/>.
+            <br/>
+                If a deep copy is desired use <see cref="M:Rustic.Memory.TinyRoSpan.Copy``2(``1)"/>.
+            </remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.From``1(System.ArraySegment{``0})">
+            <summary>Initializes a new parameter span with a sequence of values. Does not allocate or copy.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The sequence of values.</param>
+            <remarks>
+                If <paramref name="values"/> if of the type [I] Array, [II] (ReadOnly-)Memory, or [III] ArraySegment,
+                then <see cref="T:Rustic.Memory.TinyRoSpan`1"/> uses the allocated memory of <paramref name="values"/>.
+            <br/>
+                If a deep copy is desired use <see cref="M:Rustic.Memory.TinyRoSpan.Copy``2(``1)"/>.
+            </remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.Copy``2(``1)">
+            <summary>Initializes a new parameter span with a sequence of values. Performs a shallow-copy of the sequence of values.</summary>
+            <typeparam name="T"></typeparam>
+            <typeparam name="E"></typeparam>
+            <param name="values">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan.SequenceEquals``1(Rustic.Memory.TinyRoSpan{``0}@,Rustic.Memory.TinyRoSpan{``0}@)">
+            <summary>
+                Determines whether two sequences are equal by comparing the elements.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Rustic.Memory.TinyRoSpan`1">
+            <summary>A structure representing a immutable sequence of function parameters.</summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.#ctor(System.Int32,`0,`0,`0,`0)">
+            <summary>Initializes a new parameter span with values.</summary>
+            <param name="length">The number of non default values.</param>
+            <param name="arg0">The first value.</param>
+            <param name="arg1">The second value.</param>
+            <param name="arg2">The third value.</param>
+            <param name="arg3">The fourth value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.#ctor(System.ReadOnlySpan{`0})">
+            <summary>Initializes a new parameter span with a sequence of values.</summary>
+            <param name="values">The values collection.</param>
+        </member>
+        <member name="P:Rustic.Memory.TinyRoSpan`1.Length">
+            <summary>The number of items in the params span.</summary>
+        </member>
+        <member name="P:Rustic.Memory.TinyRoSpan`1.IsEmpty">
+            <summary>Returns true if Length is 0.</summary>
+        </member>
+        <member name="P:Rustic.Memory.TinyRoSpan`1.Item(System.Int32)">
+            <inheritdoc cref="P:System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)" />
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.Equals(System.Object)">
+            <inheritdoc cref="M:System.Object.Equals(System.Object)" />
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.GetHashCode">
+            <inheritdoc cref="M:System.Object.GetHashCode" />
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.CopyTo(System.Span{`0})">
+            <inheritdoc cref="M:System.Span`1.CopyTo(System.Span{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.TryCopyTo(System.Span{`0})">
+            <inheritdoc cref="M:System.Span`1.TryCopyTo(System.Span{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.op_Equality(Rustic.Memory.TinyRoSpan{`0},Rustic.Memory.TinyRoSpan{`0})">
+            <summary>
+                Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
+                this does *not* check to see if the *contents* are equal.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.op_Inequality(Rustic.Memory.TinyRoSpan{`0},Rustic.Memory.TinyRoSpan{`0})">
+            <summary>
+                Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
+                this does *not* check to see if the *contents* are equal.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.ToSpan">
+            <summary>Retrieves the backing span of the <see cref="T:Rustic.Memory.TinyRoSpan`1"/> or allocates a array which is returned as a span.</summary>
+            <returns>The span containing all items.</returns>
+            <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.ToSpan(System.Boolean)">
+            <summary>Returns the span representation of the <see cref="T:Rustic.Memory.TinyRoSpan`1"/>.</summary>
+            <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="T:Rustic.Memory.TinyRoSpan`1"/>.</param>
+            <returns>The span containing all items.</returns>
+            <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.op_Implicit(`0@)~Rustic.Memory.TinyRoSpan{`0}">
+            <summary>Initializes a new span from the value.</summary>
+            <param name="self">The value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.op_Implicit(System.ReadOnlySpan{`0}@)~Rustic.Memory.TinyRoSpan{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.op_Implicit(System.Span{`0}@)~Rustic.Memory.TinyRoSpan{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.op_Implicit(`0[]@)~Rustic.Memory.TinyRoSpan{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.op_Implicit(System.ValueTuple{`0,`0}@)~Rustic.Memory.TinyRoSpan{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.op_Implicit(System.ValueTuple{`0,`0,`0}@)~Rustic.Memory.TinyRoSpan{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.op_Implicit(System.ValueTuple{`0,`0,`0,`0}@)~Rustic.Memory.TinyRoSpan{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.GetEnumerator">
+            <inheritdoc cref="M:System.Collections.Generic.IEnumerable`1.GetEnumerator"/>
+        </member>
+        <member name="T:Rustic.Memory.TinyRoSpan`1.Enumerator">
+            <summary>Enumerates the elements of a <see cref="T:Rustic.Memory.TinyRoSpan`1"/>.</summary>
+        </member>
+        <member name="F:Rustic.Memory.TinyRoSpan`1.Enumerator._span">
+            <summary>The span being enumerated.</summary>
+        </member>
+        <member name="F:Rustic.Memory.TinyRoSpan`1.Enumerator._index">
+            <summary>The next index to yield.</summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.Enumerator.#ctor(Rustic.Memory.TinyRoSpan{`0})">
+            <summary>Initialize the enumerator.</summary>
+            <param name="TinyRoSpan">The span to enumerate.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.Enumerator.MoveNext">
+            <summary>Advances the enumerator to the next element of the span.</summary>
+        </member>
+        <member name="P:Rustic.Memory.TinyRoSpan`1.Enumerator.Current">
+            <summary>Gets the element at the current position of the enumerator.</summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.Enumerator.Reset">
+            <summary>Resets the enumerator to the initial state.</summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoSpan`1.Enumerator.Dispose">
+            <summary>Disposes the enumerator.</summary>
+        </member>
+        <member name="T:Rustic.Memory.TinyRoVec">
+            <summary>Partially inlined immutable collection of function parameters.</summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.Empty``1">
+            <summary>Returns an empty <see cref="T:Rustic.Memory.TinyRoVec`1"/>.</summary>
+            <typeparam name="T">The type of the span.</typeparam>
+            <returns>An empty <see cref="T:Rustic.Memory.TinyRoVec`1"/>.</returns>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.From``1(``0@)">
+            <summary>Initializes a new parameter span with one value.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="arg0">The first value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.From``1(``0@,``0@)">
+            <summary>Initializes a new parameter span with one value.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="arg0">The first value.</param>
+            <param name="arg1">The second value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.From``1(``0@,``0@,``0@)">
+            <summary>Initializes a new parameter span with one value.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="arg0">The first value.</param>
+            <param name="arg1">The second value.</param>
+            <param name="arg2">The third value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.From``1(``0@,``0@,``0@,``0@)">
+            <summary>Initializes a new parameter span with one value.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="arg0">The first value.</param>
+            <param name="arg1">The second value.</param>
+            <param name="arg2">The third value.</param>
+            <param name="arg3">The fourth value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.From``1(System.ArraySegment{``0}@)">
+            <summary>Initializes a new parameter span with a sequence of values.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The values array.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.From``1(``0[])">
+            <summary>Initializes a new parameter span with a sequence of values.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The values array.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.From``1(``0[],System.Int32)">
+            <summary>Initializes a new parameter span with a sequence of values.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The values collection.</param>
+            <param name="start">The zero-based index of the first value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.From``1(``0[],System.Int32,System.Int32)">
+            <summary>Initializes a new parameter span with a sequence of values.</summary>
+            <typeparam name="T"></typeparam>
+            <param name="values">The values collection.</param>
+            <param name="start">The zero-based index of the first value.</param>
+            <param name="length">The number of values form the <paramref name="start"/>.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec.Copy``2(``1)">
+            <summary>Initializes a new parameter span with a sequence of values. Performs a shallow copy.</summary>
+            <typeparam name="T"></typeparam>
+            <typeparam name="E"></typeparam>
+            <param name="values">The sequence of values.</param>
+        </member>
+        <member name="T:Rustic.Memory.TinyRoVec`1">
+            <summary>A structure representing a immutable sequence of function parameters.</summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.#ctor(System.Int32,`0@,`0@,`0@,`0@)">
+            <summary>Initializes a new parameter span with one value.</summary>
+            <param name="length">The number of non default values.</param>
+            <param name="arg0">The first value.</param>
+            <param name="arg1">The second value.</param>
+            <param name="arg2">The third value.</param>
+            <param name="arg3">The fourth value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.#ctor(System.ArraySegment{`0}@)">
+            <summary>Initializes a new parameter span with a sequence of parameters.</summary>
+            <param name="segment">The segment of parameters.</param>
+        </member>
+        <member name="P:Rustic.Memory.TinyRoVec`1.Count">
+            <inheritdoc/>
+        </member>
+        <member name="P:Rustic.Memory.TinyRoVec`1.IsEmpty">
+            <inheritdoc cref="P:Rustic.Memory.IReadOnlyVector`1.IsEmpty"/>
+        </member>
+        <member name="P:Rustic.Memory.TinyRoVec`1.Item(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.CopyTo(System.Span{`0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.TryCopyTo(System.Span{`0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.Equals(Rustic.Memory.TinyRoVec{`0}@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.op_Equality(Rustic.Memory.TinyRoVec{`0},Rustic.Memory.TinyRoVec{`0})">
+            <summary>
+                Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
+                this does *not* necessarily check to see if the *contents* are equal.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.op_Inequality(Rustic.Memory.TinyRoVec{`0},Rustic.Memory.TinyRoVec{`0})">
+            <summary>
+                Returns <see langword="false"/> if left and right point at the same memory and have the same length.  Note that
+                this does *not* check to see if the *contents* are equal.
+            </summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.ToSpan">
+            <summary>Retrieves the backing span of the <see cref="T:Rustic.Memory.TinyRoVec`1"/> or allocates a array which is returned as a span.</summary>
+            <returns>The span containing all items.</returns>
+            <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.ToSpan(System.Boolean)">
+            <summary>Returns the span representation of the <see cref="T:Rustic.Memory.TinyRoVec`1"/>.</summary>
+            <param name="onlyIfCheap">Whether return an empty span instead of allocating an array, if no span is backing the <see cref="T:Rustic.Memory.TinyRoVec`1"/>.</param>
+            <returns>The span containing all items.</returns>
+            <remarks>When using .NET Standard 2.1 or greater, or .NET Core 2.1 or greater the operation always is cheap and never allocates.</remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.op_Implicit(`0@)~Rustic.Memory.TinyRoVec{`0}">
+            <summary>Initializes a new span from the value.</summary>
+            <param name="self">The value.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.op_Implicit(`0[]@)~Rustic.Memory.TinyRoVec{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.op_Implicit(System.ArraySegment{`0}@)~Rustic.Memory.TinyRoVec{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.op_Implicit(System.ValueTuple{`0,`0}@)~Rustic.Memory.TinyRoVec{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.op_Implicit(System.ValueTuple{`0,`0,`0}@)~Rustic.Memory.TinyRoVec{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.op_Implicit(System.ValueTuple{`0,`0,`0,`0}@)~Rustic.Memory.TinyRoVec{`0}">
+            <summary>Initializes a new span from the sequence.</summary>
+            <param name="self">The sequence of values.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.GetEnumerator">
+            <inheritdoc cref="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" />
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.System#Collections#Generic#IEnumerable{T}#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="T:Rustic.Memory.TinyRoVec`1.Enumerator">
+            <summary>Enumerates the elements of a <see cref="T:Rustic.Memory.TinyRoVec`1"/>.</summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.Enumerator.#ctor(Rustic.Memory.TinyRoVec{`0}@)">
+            <summary>Initialize the enumerator.</summary>
+            <param name="TinyRoVec">The span to enumerate.</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.Enumerator.MoveNext">
+            <summary>Advances the enumerator to the next element of the span.</summary>
+        </member>
+        <member name="P:Rustic.Memory.TinyRoVec`1.Enumerator.Current">
+            <summary>Gets the element at the current position of the enumerator.</summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.Enumerator.Reset">
+            <summary>Resets the enumerator to the initial state.</summary>
+        </member>
+        <member name="M:Rustic.Memory.TinyRoVec`1.Enumerator.Dispose">
+            <summary>Disposes the enumerator.</summary>
+        </member>
+        <member name="T:Rustic.Memory.TinyVec`1">
+            <summary>Partially inlined mutable collection of items.</summary>
+            <remarks>Use with care, because <see cref="T:Rustic.Memory.TinyVec`1"/> is a struct, and thus requires a reference to mutate.</remarks>
+            <example>A usage example is usage as <see cref="T:System.Collections.Generic.Dictionary`2"/> values when interacting via the CollectionsMarshal methods.</example>
+        </member>
+        <member name="F:Rustic.Memory.TinyVec`1.SingleValueGuard">
+            Always empty list indicating that the TinyVec has exactly one element in _singleValue.
+            The guard is used in this manner to ensure that `TinyVec{T} v = default` is valid.
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.#ctor(`0)">
+            <summary>
+            Initializes a new <see cref="T:Rustic.Memory.TinyVec`1"/> with a single value.
+            </summary>
+            <param name="item">The single item populating this list</param>
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.#ctor(System.Int32)">
+            <summary>
+            Initializes a new <see cref="T:Rustic.Memory.TinyVec`1"/> with the specified capacity.
+            </summary>
+            <param name="capacity">The capacity.</param>
+        </member>
+        <member name="P:Rustic.Memory.TinyVec`1.IsEmpty">
+            <inheritdoc cref="P:Rustic.Memory.IReadOnlyVector`1.IsEmpty"/>
+        </member>
+        <member name="P:Rustic.Memory.TinyVec`1.Count">
+            <summary>
+            Number of entries in this collections.
+            </summary>
+        </member>
+        <member name="P:Rustic.Memory.TinyVec`1.Capacity">
+            <summary>Returns the maximum number of elements the vector can hold before resizing.</summary>
+        </member>
+        <member name="P:Rustic.Memory.TinyVec`1.Item(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.GetEnumerator">
+            <inheritdoc cref="M:Rustic.Memory.Vec`1.GetEnumerator" />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.Add(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.AddRange(System.ReadOnlySpan{`0})">
+            <inheritdoc cref="M:System.Collections.Generic.List`1.AddRange(System.Collections.Generic.IEnumerable{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.Remove(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.IndexOf(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.Insert(System.Int32,`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.InsertRange(System.Int32,System.ReadOnlySpan{`0})">
+            <inheritdoc cref="M:Rustic.Memory.IVector`1.InsertRange(System.Int32,System.ReadOnlySpan{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.RemoveAt(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.SwapRemove(System.Int32)">
+            <summary>Removes the element at the specified <paramref name="index"/> from the vector by over-writing it with the last element.</summary>
+            <remarks>No block of elements in moved. The order of the vector is disturbed.</remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.Clear">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.Contains(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.CopyTo(`0[],System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.TryCopyTo(System.Span{`0})">
+            <inheritdoc cref="M:Rustic.Memory.IReadOnlyVector`1.TryCopyTo(System.Span{`0})"/>
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.AsSpan(System.Int32,System.Int32)">
+            <summary>
+            Returns a span view over the values in the collection.
+            </summary>
+            <param name="start">The start index.</param>
+            <param name="length">The length of the span.</param>
+            <remarks>Do not modify the length of the collection while handling the span!</remarks>
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.AsSpan(System.Int32)">
+            <inhertidoc cref="M:Rustic.Memory.TinyVec`1.AsSpan(System.Int32,System.Int32)"/>
+        </member>
+        <member name="M:Rustic.Memory.TinyVec`1.AsSpan">
+            <inhertidoc cref="M:Rustic.Memory.TinyVec`1.AsSpan(System.Int32,System.Int32)"/>
+        </member>
+    </members>
+</doc>
