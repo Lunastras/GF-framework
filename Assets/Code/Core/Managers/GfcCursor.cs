@@ -75,9 +75,9 @@ public class GfcCursor : BaseInput
         return EventSystem.current.IsPointerOverGameObject() && ui == GetUIObjectUnderPosition(mousePosition).gameObject;
     }
 
-    public static GfcCursorRayhit GetGameObjectUnderMouse(bool anIgnoreUi = false, int aLayerMask = int.MaxValue)
+    public static GfcCursorRayhit GetGameObjectUnderMouse(bool anIgnoreUi = false, int aLayerMask = int.MaxValue, QueryTriggerInteraction aQuerryTriggerInteraction = QueryTriggerInteraction.Ignore)
     {
-        return GetGameObjectUnderPosition(MousePosition, anIgnoreUi);
+        return GetGameObjectUnderPosition(MousePosition, anIgnoreUi, aLayerMask, aQuerryTriggerInteraction);
     }
 
     public static GfcCursorRayhit GetGameObjectUnderPosition(Vector3 aPosition, bool anIgnoreUi = false, int aLayerMask = int.MaxValue, QueryTriggerInteraction aQuerryTriggerInteraction = QueryTriggerInteraction.Ignore)

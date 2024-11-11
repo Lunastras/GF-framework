@@ -236,6 +236,12 @@ public abstract class GfgNotifyPanelGeneric : GfxNotifyPanelTemplate
     {
         if (aType == GfxButtonCallbackType.SUBMIT)
         {
+            if (m_messagesBuffer.Count <= m_messageBufferIndex || m_messageBufferIndex < 0)
+            {
+                Debug.LogError("Bad index for some reason " + m_messagesBuffer + " but messages in buffer are " + m_messagesBuffer.Count);
+                m_messageBufferIndex = m_messagesBuffer.Count - 1; //some weird bug happened where this idex was all messed up
+            }
+
             OnOptionCallbackInternal(aType, aButton, aState);
             m_messagesBuffer[m_messageBufferIndex].OptionCallback.Invoke(m_messagesBuffer[m_messageBufferIndex], this, aButton.Index);
             m_waitingForOptionSelect = false;//I need to figure out if some signal thing exists

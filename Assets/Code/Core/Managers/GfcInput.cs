@@ -8,8 +8,6 @@ public class GfcInput : MonoBehaviour
 {
     private static GfcInput Instance = null;
 
-    [SerializeField] private bool m_printErrors = true;
-
     [SerializeField] private GfcInputDisplayPromptParent m_displayedInputsParent;
 
     private List<GfcDisplayedInputData> m_displayedInputs = new(8);

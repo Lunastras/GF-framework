@@ -57,7 +57,7 @@ public class GfcClickInteract : MonoBehaviour
 
     void CheckInteract(bool anInteract)
     {
-        var hitInfo = GfcCursor.GetGameObjectUnderMouse();
+        var hitInfo = GfcCursor.GetGameObjectUnderMouse(false, m_layermask, m_queryTriggerInteraction);
         GfcInteractable component = SetHoveredInteract(hitInfo);
 
         if (component)

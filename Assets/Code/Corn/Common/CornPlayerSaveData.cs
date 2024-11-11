@@ -209,12 +209,14 @@ public class PlayerSaveData
     public bool ValidateSaveFile()
     {
         bool validData = true;
+        bool createdNewSave = false;
 
         if (Data == null)
         {
-            Debug.LogWarning("The game data was null, save file might be corrupted.");
+            Debug.LogWarning("The game data was null, save file might be corrupted or there was no save found.");
             Data = new();
             validData = false;
+            createdNewSave = true;
         }
 
         validData &= ValidateArrayValues(ref Data.Resources, (int)PlayerResources.COUNT, START_RESOURCE_VALUE);
@@ -226,7 +228,7 @@ public class PlayerSaveData
         //used to take into account any changes made to the initial sum of money
         Data.Consumables[(int)PlayerConsumables.MONEY] = Mathf.Max(0, Data.Consumables[(int)PlayerConsumables.MONEY] + INITIAL_SUM_OF_MONEY - m_originalMaxSumMoney);
 
-        return validData;
+        return validData || createdNewSave;
     }
 }
 

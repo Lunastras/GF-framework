@@ -21,6 +21,8 @@ public class GfcPooling : MonoBehaviour
 
     private List<Component> m_sharedSomponentsBuffer = new(16);
 
+    public static bool ExitingPlaymode = false;
+
     private struct PoolStruct
     {
         public PoolStruct(int poolSize, GameObject prefab = null)
@@ -48,7 +50,6 @@ public class GfcPooling : MonoBehaviour
     private static readonly Vector3 DESTROY_POSITION = new(99997, 99997, 99997);
     private static readonly Vector3 DEACTIVATE_NEXT_FRAME_POSITION = new(-99997, 99997, 99997);
 
-
     private void Awake()
     {
         if (Instance != this)
@@ -62,6 +63,17 @@ public class GfcPooling : MonoBehaviour
         }
 
         poolsToInstantiate = null;
+        ExitingPlaymode = false;
+        EditorApplication.playModeStateChanged += ModeChanged;
+    }
+
+    void ModeChanged(PlayModeStateChange aStateChange)
+    {
+        if (aStateChange == PlayModeStateChange.ExitingPlayMode)
+        {
+            ExitingPlaymode = true;
+            EditorApplication.playModeStateChanged -= ModeChanged;
+        }
     }
 
     public static GfcStringBuffer GfcStringBuffer
@@ -93,50 +105,54 @@ public class GfcPooling : MonoBehaviour
 
     private static GameObject InternalInstantiate(GameObject objectToSpawn, string objectName, Vector3 position, Quaternion rotation, Transform parent, bool instantiateInWorldSpace = true, bool mustBeInactive = true, Transform transformReference = null)
     {
-        //Debug.Log("called to instantiate: " + objectToSpawn.name);
         GameObject spawnedObject = null;
-        GetNameWithoutNumberParenthesis(ref objectName);
-        if (Instance.m_pools.TryGetValue(objectName, out PoolStruct pool))
+
+        if (!ExitingPlaymode)
         {
-            var currentPool = pool.list;
-            if (null != currentPool && currentPool.Count > 0)
+            //Debug.Log("called to instantiate: " + objectToSpawn.name);
+            GetNameWithoutNumberParenthesis(ref objectName);
+            if (Instance.m_pools.TryGetValue(objectName, out PoolStruct pool))
             {
-                int lastIndex = currentPool.Count - 1;
-
-                int i = lastIndex;
-                if (mustBeInactive)
-                    while (currentPool[i] && (!currentPool[i].activeSelf ^ !ObjectQueuedForPool(currentPool[i])) && --i >= 0) ; //go through the list until an inactive element is found //changes don't work
-
-                if (i >= 0)
+                var currentPool = pool.list;
+                if (null != currentPool && currentPool.Count > 0)
                 {
-                    spawnedObject = currentPool[i];
-                    currentPool.RemoveAtSwapBack(i);
+                    int lastIndex = currentPool.Count - 1;
+
+                    int i = lastIndex;
+                    if (mustBeInactive)
+                        while (currentPool[i] && (!currentPool[i].activeSelf ^ !ObjectQueuedForPool(currentPool[i])) && --i >= 0) ; //go through the list until an inactive element is found //changes don't work
+
+                    if (i >= 0)
+                    {
+                        spawnedObject = currentPool[i];
+                        currentPool.RemoveAtSwapBack(i);
+                    }
                 }
             }
-        }
-        else
-        {
-            pool.prefab = objectToSpawn;
-            pool.list = null;
-            Instance.m_pools.Add(objectName, pool);
-        }
+            else
+            {
+                pool.prefab = objectToSpawn;
+                pool.list = null;
+                Instance.m_pools.Add(objectName, pool);
+            }
 
-        if (null == spawnedObject && objectToSpawn)
-        {
-            spawnedObject = GameObject.Instantiate(objectToSpawn);
-            spawnedObject.name = objectName;
-        }
+            if (null == spawnedObject && objectToSpawn)
+            {
+                spawnedObject = GameObject.Instantiate(objectToSpawn);
+                spawnedObject.name = objectName;
+            }
 
-        spawnedObject.SetActiveGf(true);
+            spawnedObject.SetActiveGf(true);
 
-        if (spawnedObject)
-        {
-            spawnedObject.transform.SetParent(parent);
-            locSetObjectPositionAndRotation(spawnedObject.transform, position, rotation, !instantiateInWorldSpace, transformReference);
-        }
-        else
-        {
-            Debug.LogError("GfPooling: Couldn't spawn an object of name '" + objectName + "', no pool exists of the object.");
+            if (spawnedObject)
+            {
+                spawnedObject.transform.SetParent(parent);
+                locSetObjectPositionAndRotation(spawnedObject.transform, position, rotation, !instantiateInWorldSpace, transformReference);
+            }
+            else
+            {
+                Debug.LogError("GfPooling: Couldn't spawn an object of name '" + objectName + "', no pool exists of the object.");
+            }
         }
 
         return spawnedObject;
@@ -220,17 +236,21 @@ public class GfcPooling : MonoBehaviour
 
     private static CoroutineHandle InternalDestroy(GameObject objectToDestroy, float delay, bool keepActive, bool goOverCapacity, bool anUseTransition, bool anInsertInPool)
     {
-        if (anInsertInPool && PoolSizeAvailable(objectToDestroy) == 0)
-            Pool(objectToDestroy, 1, false);
-
         CoroutineHandle handle = default;
-        GfcTransitionActive transitionActive = null;
-        anUseTransition = anUseTransition && objectToDestroy.TryGetComponent(out transitionActive);
 
-        if (delay > 0 || anUseTransition)
-            handle = Timing.RunCoroutine(_WaitUntilDestroy(delay, objectToDestroy, false, goOverCapacity, transitionActive));
-        else
-            InternalDestroy(objectToDestroy, keepActive, goOverCapacity);
+        if (!ExitingPlaymode)
+        {
+            if (anInsertInPool && PoolSizeAvailable(objectToDestroy) == 0)
+                Pool(objectToDestroy, 1, false);
+
+            GfcTransitionActive transitionActive = null;
+            anUseTransition = anUseTransition && objectToDestroy.TryGetComponent(out transitionActive);
+
+            if (delay > 0 || anUseTransition)
+                handle = Timing.RunCoroutine(_WaitUntilDestroy(delay, objectToDestroy, false, goOverCapacity, transitionActive));
+            else
+                InternalDestroy(objectToDestroy, keepActive, goOverCapacity);
+        }
 
         return handle;
     }

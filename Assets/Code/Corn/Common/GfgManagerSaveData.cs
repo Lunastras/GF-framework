@@ -9,6 +9,8 @@ public class GfgManagerSaveData : MonoBehaviour
 
     private System.DateTime m_dateTimeOfProgramStart;
 
+    [SerializeField] private bool m_printLogs = true;
+
     private const string SAVE_DATA_PATH = "SaveData/";
 
     private const string SAVE_DATA_FILENAME = "SAVE_PROFILE_";
@@ -48,7 +50,7 @@ public class GfgManagerSaveData : MonoBehaviour
     {
         if (Instance.m_playerSaveData == null)
         {
-            Debug.Log("No save file loaded, automatically loading data...");
+            if (Instance.m_printLogs) Debug.Log("No save file loaded, automatically loading data...");
             int currentSaveIndex;
             bool foundSave = false;
 
@@ -95,14 +97,14 @@ public class GfgManagerSaveData : MonoBehaviour
         {
             if (!aPlayerSaveData.ValidateSaveFile())
                 Debug.LogError("Save file validation failed, the save file might be corrupted... :(");
-            else
+            else if (Instance.m_printLogs)
                 Debug.Log("Save file " + aPlayerSaveData.GetName() + " loaded and validated successfuly");
 
             Instance.m_timeOfLastSave = Time.unscaledTimeAsDouble;
             Instance.m_playerSaveData = aPlayerSaveData;
             Instance.m_usedSaveDataSlot = aSaveIndex;
 
-            Debug.Log("Save '" + aPlayerSaveData.GetName() + "' was loaded. Using save slot " + aSaveIndex + ".");
+            if (Instance.m_printLogs) Debug.Log("Save '" + aPlayerSaveData.GetName() + "' was loaded. Using save slot " + aSaveIndex + ".");
         }
         else
             Debug.LogError("The given PlayerSaveData is null!");

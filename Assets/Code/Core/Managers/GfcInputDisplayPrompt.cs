@@ -18,11 +18,14 @@ public class GfcInputDisplayPrompt : MonoBehaviour
         m_rectTransform = GetComponent<RectTransform>();
         this.GetComponentIfNull(ref m_tmp);
         Debug.Assert(m_tmp);
+        Debug.Assert(m_prefabIconSprites);
+        Debug.Assert(m_spritesParent);
+        Debug.Assert(m_rectTransform);
     }
 
     private void OnDisable()
     {
-        //GfcPooling.DestroyChildren(m_tmp.transform, false, true, false, false);
+        GfcPooling.DestroyChildren(m_spritesParent, false, true, false, false);
     }
 
     public float GetPromptLength(GfcDisplayedInputData aDisplayInputData, float aPadding, int aPlayerId)
@@ -50,13 +53,12 @@ public class GfcInputDisplayPrompt : MonoBehaviour
 
     public void SetDisplayPrompt(GfcDisplayedInputData aDisplayInputData, float aPadding, int aPlayerId)
     {
-        GfcPooling.DestroyChildren(m_tmp.transform, false, true, false, false);
+        GfcPooling.DestroyChildren(m_spritesParent, false, true, false, false);
 
         m_tmp.enabled = true; //it sets itself to false randomly for some reason
         m_tmp.SetText(aDisplayInputData.Label);
 
-        RectTransform textTransform = m_tmp.GetComponent<RectTransform>();
-        float transformHeight = GetComponent<RectTransform>().sizeDelta.y;
+        float transformHeight = GetSpriteLength();
 
         List<ActionElementMap> actionsElementsBuffer = GfcInput.ActionsElementsBuffer;
         if (aDisplayInputData.Input != GfcInputType.NONE)
@@ -74,7 +76,7 @@ public class GfcInputDisplayPrompt : MonoBehaviour
                 spriteImage.color = Color.white;
 
                 RectTransform spriteTransform = spriteImage.GetComponent<RectTransform>();
-                spriteTransform.SetParent(textTransform, false);
+                spriteTransform.SetParent(m_spritesParent, false);
                 spriteTransform.SetSizeDelta(transformHeight, transformHeight);
 
                 spriteTransform.SetPos(-i * (aPadding + transformHeight) - iconsOffset, 0);

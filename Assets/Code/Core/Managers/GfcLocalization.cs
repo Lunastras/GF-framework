@@ -14,7 +14,7 @@ public class GfcLocalization : MonoBehaviour
     private StringTableLink[] m_stringTableLinks = null;
 
     [SerializeField]
-    private bool m_printErrorsWhenKeyInvalid = true;
+    private bool m_printErrors = true;
 
     protected static GfcLocalization Instance = null;
     protected Dictionary<string, string>[] m_cachedStringLists = null;
@@ -79,7 +79,7 @@ public class GfcLocalization : MonoBehaviour
 
             for (int i = 0; i < countStringTables; ++i)
             {
-                if (null == m_stringTables[i])
+                if (null == m_stringTables[i] && m_printErrors)
                     Debug.LogError("The type " + (GfcLocalizationStringTable)i + " does not have a string table assigned.");
             }
         }
@@ -166,7 +166,7 @@ public class GfcLocalization : MonoBehaviour
                 m_stringBuffer.Append(UNKNOWN_ENTRY);
                 valueString = m_stringBuffer.GetStringCopy();
 
-                if (m_printErrorsWhenKeyInvalid)
+                if (m_printErrors)
                     Debug.LogError("Could not find the entry '" + aEntryName + "' in the table '" + m_stringTables[tableIndex].name + "' (type: '" + aStringTableType + "' ).");
             }
         }
