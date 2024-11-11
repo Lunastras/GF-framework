@@ -82,11 +82,6 @@ public class GfgNotifyPanel2D : GfgNotifyPanelGeneric
     {
     }
 
-    protected override void SubmitOnText(int aMessageIndex, bool aHasName)
-    {
-        m_continueText.enabled = false;
-    }
-
     protected override IEnumerator<float> _AnimateContinueGraphics()
     {
         m_continueText.enabled = true;
