@@ -30,6 +30,8 @@ public class CornManagerEvents : MonoBehaviour
         Cursor.visible = true;
     }
 
+    public static bool ExecutingEvent { get { return !Instance.m_canPlayEvent; } }
+
     public static void ExecuteEvent(CornEvent aEvent)
     {
         if (Instance.m_canPlayEvent)
@@ -59,7 +61,6 @@ public class CornManagerEvents : MonoBehaviour
             else //perform the event normally
             {
                 //event stuff
-
                 switch (aEvent.EventType)
                 {
                     case CornEventType.WORK:
@@ -89,6 +90,8 @@ public class CornManagerEvents : MonoBehaviour
 
         if (eventHandle.IsValid) yield return Timing.WaitUntilDone(eventHandle);
 
+        CornManagerPhone.CanTogglePhone = false;
+
         CoroutineHandle apartmentLoadRoutine = GfgManagerSceneLoader.LoadScene(GfcSceneId.APARTMENT, GfcGameState.APARTMENT);
         if (apartmentLoadRoutine.IsValid)
         {
@@ -96,8 +99,13 @@ public class CornManagerEvents : MonoBehaviour
             yield return Timing.WaitUntilDone(apartmentLoadRoutine);
         }
 
+        CornManagerPhone.LoadAvailableStoryScenes();
+
         CoroutineHandle transitionCoroutine = ProgressTime(eventDetails.HoursDuration, messagesBuffer);
         yield return Timing.WaitUntilDone(transitionCoroutine);
+
+        CornManagerPhone.CanTogglePhone = true;
+
 
         Instance.m_canPlayEvent = true;
     }

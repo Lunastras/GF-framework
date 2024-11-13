@@ -11,7 +11,7 @@ public abstract class GfxNotifyPanelTemplate : MonoBehaviour
 
     protected List<GfxTextMessage> m_messagesBuffer = new(8);
 
-    public Action<GfxTextMessage, int> OnTextWriteCallback;
+    public Action<GfxTextMessage, int> OnDrawMessageCallback;
 
     public Action OnNotificationFadeInStart;
 
@@ -50,7 +50,7 @@ public abstract class GfxNotifyPanelTemplate : MonoBehaviour
 
 public struct GfxTextMessage
 {
-    public GfxTextMessage(string aMainText = null, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
+    public GfxTextMessage(string aMainText = null, string aName = null, GfcStoryCharacter aCharacter = GfcStoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
     {
         MainText = aMainText;
         Name = aName;
@@ -61,7 +61,7 @@ public struct GfxTextMessage
         Sound = null;
     }
 
-    public GfxTextMessage(string aMainText, List<GfxNotifyOption> someOptions, Action<GfxTextMessage, GfxNotifyPanelTemplate, int> aOptionCallback, string aName = null, StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
+    public GfxTextMessage(string aMainText, List<GfxNotifyOption> someOptions, Action<GfxTextMessage, GfxNotifyPanelTemplate, int> aOptionCallback, string aName = null, GfcStoryCharacter aCharacter = GfcStoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL)
     {
         Options = someOptions;
         OptionCallback = aOptionCallback;
@@ -78,7 +78,7 @@ public struct GfxTextMessage
     public string MainText;
     public string Name;
 
-    public StoryCharacter Character;
+    public GfcStoryCharacter Character;
     public CharacterEmotion Emotion;
 
     public GfcSound Sound;

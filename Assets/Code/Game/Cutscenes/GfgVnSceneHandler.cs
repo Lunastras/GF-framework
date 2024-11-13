@@ -53,8 +53,6 @@ public class GfgVnSceneHandler : MonoBehaviour
 
         Assert(0 == ActionCoroutineHandle.KillCoroutine(), "A coroutine was already being executed.");
 
-        Log("Writing scene: " + aSceneType.Name);
-
         GfgVnScene scene = (GfgVnScene)Activator.CreateInstance(aSceneType);
         return ActionCoroutineHandle.RunCoroutineIfNotRunning(scene._ExecuteActions(this));
     }
@@ -278,7 +276,7 @@ public abstract class GfgVnScene
     private void CheckForNextLabel() { Assert(m_handler.NextLabel == null, NEXT_LABEL_ERROR); }
 
     protected void SayKey(string aUniqueKeyPostfix) { SayKey(aUniqueKeyPostfix, m_handler.HasCachedDialogueSetting ? m_handler.CachedDialogueSetting : default); }
-    protected void SayKey(string aUniqueKeyPostfix, StoryCharacter aCharacter, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL, string aNameOverride = null) { SayKey(aUniqueKeyPostfix, new(aCharacter, anEmotion, aNameOverride)); }
+    protected void SayKey(string aUniqueKeyPostfix, GfcStoryCharacter aCharacter, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL, string aNameOverride = null) { SayKey(aUniqueKeyPostfix, new(aCharacter, anEmotion, aNameOverride)); }
 
     protected void SayKey(string aUniqueKeyPostfix, CornDialogueSetting aSetting = default)
     {
@@ -290,20 +288,20 @@ public abstract class GfgVnScene
         SayUntranslated(GfcLocalization.GetString(GfcLocalizationStringTable.DIALOGUE, m_handler.DialogueStringBuffer), aSetting);
     }
 
-    private string GetCharacterName(StoryCharacter aCharacter)
+    private string GetCharacterName(GfcStoryCharacter aCharacter)
     {
         //todo
         return aCharacter.ToString();
     }
 
-    private GfcSound GetCharacterSound(StoryCharacter aCharacter, CharacterSound aCharacterSound)
+    private GfcSound GetCharacterSound(GfcStoryCharacter aCharacter, CharacterSound aCharacterSound)
     {
         //todo
         return null;
     }
 
     protected void Say(string aText) { SayUntranslated(aText, m_handler.HasCachedDialogueSetting ? m_handler.CachedDialogueSetting : default); }
-    protected void Say(string aText, StoryCharacter aCharacter, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL, string aNameOverride = null) { SayUntranslated(aText, new(aCharacter, anEmotion, aNameOverride)); }
+    protected void Say(string aText, GfcStoryCharacter aCharacter, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL, string aNameOverride = null) { SayUntranslated(aText, new(aCharacter, anEmotion, aNameOverride)); }
     protected void Say(string aText, CornDialogueSetting aSetting) { SayUntranslated(GetTranslatedText(aText), aSetting); }
 
     protected void SayUntranslated(string aText, CornDialogueSetting aSetting)
@@ -314,11 +312,11 @@ public abstract class GfgVnScene
         if (aText != null)
         {
             string name = aSetting.NameOverride;
-            if (name == null && aSetting.Character != StoryCharacter.NONE)
+            if (name == null && aSetting.Character != GfcStoryCharacter.NONE)
                 name = GetCharacterName(aSetting.Character);
 
             GfcSound sound = aSetting.SoundOverride;
-            if (sound == null && aSetting.Character != StoryCharacter.NONE && aSetting.CharacterSound != CharacterSound.NONE)
+            if (sound == null && aSetting.Character != GfcStoryCharacter.NONE && aSetting.CharacterSound != CharacterSound.NONE)
                 sound = GetCharacterSound(aSetting.Character, aSetting.CharacterSound);
 
             GfxTextMessage message = default;
@@ -430,7 +428,7 @@ public struct CornDialogueAction
 
 public struct CornDialogueSetting
 {
-    public CornDialogueSetting(StoryCharacter aCharacter = StoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL, string aNameOverride = null)
+    public CornDialogueSetting(GfcStoryCharacter aCharacter = GfcStoryCharacter.NONE, CharacterEmotion anEmotion = CharacterEmotion.NEUTRAL, string aNameOverride = null)
     {
         Character = aCharacter;
         CharacterEmotion = anEmotion;
@@ -439,7 +437,7 @@ public struct CornDialogueSetting
         CharacterSound = CharacterSound.NONE;
     }
 
-    public StoryCharacter Character;
+    public GfcStoryCharacter Character;
     public CharacterEmotion CharacterEmotion;
     public CharacterSound CharacterSound;
 

@@ -27,6 +27,10 @@ public class CornManagerPhone : MonoBehaviour
 
     GfcInputTracker m_openPhoneInputTracker;
 
+    protected bool m_canTogglePhone = true;
+
+    public static bool CanTogglePhone { get { return Instance.m_canTogglePhone; } set { Instance.m_canTogglePhone = value; } }
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -35,33 +39,37 @@ public class CornManagerPhone : MonoBehaviour
         this.SetSingleton(ref Instance);
     }
 
-    void Start()
-    {
-        GfgManagerGame.Instance.OnGameStateChanged += OnGameStateChanged;
-
-        if (GfgManagerGame.GetPreviousGameState() == GfcGameState.INVALID)
-            OnGameStateChanged(GfgManagerGame.GetGameState(), GfgManagerGame.GetPreviousGameState());
-    }
-
     // Update is called once per frame
     void Update()
     {
-        bool validState = false;
-        GfcGameState gameState = GfgManagerGame.GetGameState();
-
-        for (int i = 0; !validState && i < m_statesWhereToggleEnabled.Length; i++)
+        if (CanTogglePhone)
         {
-            validState = gameState == m_statesWhereToggleEnabled[i];
+            bool validState = false;
+            GfcGameState gameState = GfgManagerGame.GetGameState();
+
+            for (int i = 0; !validState && i < m_statesWhereToggleEnabled.Length; i++)
+                validState = gameState == m_statesWhereToggleEnabled[i];
+
+            if (validState && !GfgManagerGame.GameStateTransitioningFadeInPhase() && m_openPhoneInputTracker.PressedSinceLastCheck())
+                TogglePhone();
         }
+    }
 
-        if (validState && !GfgManagerGame.GameStateTransitioningFadeInPhase() && m_openPhoneInputTracker.PressedSinceLastCheck())
+    public static void TogglePhone()
+    {
+        Instance.TogglePhoneInternal();
+    }
+
+    protected void TogglePhoneInternal()
+    {
+        if (CanTogglePhone)
         {
-            GfcGameState gameStateToSet = gameState == GfcGameState.PHONE ? GfgManagerGame.GetPreviousGameState() : GfcGameState.PHONE;
+            GfcGameState gameStateToSet = GfgManagerGame.GetGameState() == GfcGameState.PHONE ? GfgManagerGame.GetPreviousGameState() : GfcGameState.PHONE;
             GfgManagerGame.SetGameState(gameStateToSet);
         }
     }
 
-    public static void CheckAvailableStoryScenes()
+    public static void LoadAvailableStoryScenes()
     {
         ClearAllMessageScenes();
         AddMessageScenes(CornManagerStory.GetAvailableEvents());
@@ -191,14 +199,6 @@ public class CornManagerPhone : MonoBehaviour
         {
             if (messageEvent.PanelTemplate) messageEvent.PanelTemplate.gameObject.SetActiveGf(false);
             Instance.m_currentlyShownAvatarEvent = null;
-        }
-    }
-
-    private void OnGameStateChanged(GfcGameState aNewState, GfcGameState anOldState)
-    {
-        if (aNewState == GfcGameState.APARTMENT && (anOldState == GfcGameState.INVALID || anOldState == GfcGameState.LOADING))
-        {
-            CheckAvailableStoryScenes();
         }
     }
 

@@ -6,18 +6,18 @@ public class GfgDialoguePanel : MonoBehaviour
 {
     public GfxImageInterpolator Portrait;
 
-    public GfgNotifyPanelGeneric PanelGeneric;
+    public GfxNotifyPanelGeneric PanelGeneric;
 
     void Start()
     {
-        PanelGeneric.OnTextWriteCallback += OnTextWriteInternal;
+        PanelGeneric.OnDrawMessageCallback += OnTextWriteInternal;
         PanelGeneric.OnNotificationFadeOutEnd += OnNotificationFadeOutEnd;
         PanelGeneric.OnNotificationFadeInStart += OnNotificationFadeInStart;
     }
 
     private void OnTextWriteInternal(GfxTextMessage aMessage, int aMessageIndex)
     {
-        Portrait.SetSprite(GfxCharacterPortraits.GetPortrait(aMessage.Character));
+        Portrait.SetSprite(GfxCharacterPortraits.GetPortraitData(aMessage.Character).MainSprite);
     }
 
     private void OnNotificationFadeOutEnd()
@@ -27,6 +27,6 @@ public class GfgDialoguePanel : MonoBehaviour
 
     public void OnNotificationFadeInStart()
     {
-        Portrait.SetSprite(GfxCharacterPortraits.GetPortrait(PanelGeneric.GetTextMessage(0).Character), true);
+        Portrait.SetSprite(GfxCharacterPortraits.GetPortraitData(PanelGeneric.GetTextMessage(0).Character).MainSprite, true);
     }
 }

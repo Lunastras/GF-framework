@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum StoryCharacter
+public enum GfcStoryCharacter
 {
-    NONE = -1,
+    NONE,
     PROTAG,
     GF,
     DUNNO,

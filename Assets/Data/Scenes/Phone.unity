@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_openPhoneInput: 6
-  m_prefabMessagesNotifyPanel: {fileID: 1081603293412695589, guid: f554c30d6d8899b44addb897097a843c,
+  m_prefabMessagesNotifyPanel: {fileID: 5801674869962584519, guid: be28f55a9096db74981a53a0ec698d00,
     type: 3}
   m_prefabAvatarsInHub: {fileID: 1686083429600780732, guid: c88bf2a7da1539f4e9d4b4dae066ebce,
     type: 3}
@@ -315,16 +315,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_characterPortraits:
   - Character: 0
-    Sprite: {fileID: 0}
+    MainSprite: {fileID: 0}
+    PhoneSprite: {fileID: 0}
   - Character: 1
-    Sprite: {fileID: 5469719733586568908, guid: 9d1579ce34ab785439447338cd4b95a5,
-      type: 3}
+    MainSprite: {fileID: 0}
+    PhoneSprite: {fileID: 0}
   - Character: 2
-    Sprite: {fileID: 21300000, guid: 69426199f598519419149e1b4e4e8b94, type: 3}
+    MainSprite: {fileID: 0}
+    PhoneSprite: {fileID: 0}
   - Character: 3
-    Sprite: {fileID: -1333737022, guid: a13a51f83f213de409da24acdc73e02e, type: 3}
+    MainSprite: {fileID: 0}
+    PhoneSprite: {fileID: 0}
   - Character: 4
-    Sprite: {fileID: 21300000, guid: 09b4bcfa7d3649a45bc7c94b46439ad4, type: 3}
+    MainSprite: {fileID: 0}
+    PhoneSprite: {fileID: 0}
 --- !u!114 &280884131
 MonoBehaviour:
   m_ObjectHideFlags: 0

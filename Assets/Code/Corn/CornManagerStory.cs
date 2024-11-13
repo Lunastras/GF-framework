@@ -42,7 +42,7 @@ public class CornManagerStory : MonoBehaviour
 
     protected List<CornStoryVnSceneDetails> m_nonPhaseSpecificEvents = new(8);
 
-    protected List<CornStoryVnSceneDetails> m_availableEventsBuffer = new((int)StoryCharacter.COUNT);
+    protected List<CornStoryVnSceneDetails> m_availableEventsBuffer = new((int)GfcStoryCharacter.COUNT);
 
     const string VN_SCENE_PHASE_PREFIX = "_VNC_P";
 
@@ -95,7 +95,7 @@ public class CornManagerStory : MonoBehaviour
                 while (currentIndex < name.Length && name[currentIndex] != '_')
                     nameBuffer.Append(name[currentIndex++]);
 
-                if (!Enum.TryParse(nameBuffer, out StoryCharacter storyCharacter))
+                if (!Enum.TryParse(nameBuffer, out GfcStoryCharacter storyCharacter))
                 {
                     Debug.LogError("Error parsing story character name '" + nameBuffer.StringBuffer + "' in scene: " + name);
                     break;
@@ -147,7 +147,7 @@ public class CornManagerStory : MonoBehaviour
                 while (currentIndex < name.Length && name[currentIndex] != '_')
                     nameBuffer.Append(name[currentIndex++]);
 
-                if (!Enum.TryParse(nameBuffer, out StoryCharacter storyCharacter))
+                if (!Enum.TryParse(nameBuffer, out GfcStoryCharacter storyCharacter))
                 {
                     Debug.LogError("Error parsing story character name '" + nameBuffer.StringBuffer + "' in scene: " + name);
                     break;
@@ -164,7 +164,7 @@ public class CornManagerStory : MonoBehaviour
             }
         }
 
-        int characterCount = (int)StoryCharacter.COUNT; //cols
+        int characterCount = (int)GfcStoryCharacter.COUNT; //cols
 
         //phases are rows
         highestPhase++;
@@ -190,7 +190,7 @@ public class CornManagerStory : MonoBehaviour
                 int eventsInPhase = characterEventsInPhase[i * characterCount + j];
                 if (eventsInPhase != 0)
                 {
-                    m_storyPhases[i].Events[nonNullEvents].Character = (StoryCharacter)j;
+                    m_storyPhases[i].Events[nonNullEvents].Character = (GfcStoryCharacter)j;
                     m_storyPhases[i].Events[nonNullEvents].Count = eventsInPhase;
                     nonNullEvents++;
                 }
@@ -204,14 +204,14 @@ public class CornManagerStory : MonoBehaviour
             for (int j = 0; j < countCharacters; j++)
             {
                 int countEvents = m_storyPhases[i].Events[j].Count;
-                StoryCharacter storyCharacter = m_storyPhases[i].Events[j].Character;
+                GfcStoryCharacter storyCharacter = m_storyPhases[i].Events[j].Character;
                 for (int x = 0; x < countEvents; x++)
                     GetTypeOfScene(storyCharacter, i, x);
             }
         }
     }
 
-    public static Type GetTypeOfScene(StoryCharacter aCharacter, int aPhase, int aScene, bool aPrintErrors = true)
+    public static Type GetTypeOfScene(GfcStoryCharacter aCharacter, int aPhase, int aScene, bool aPrintErrors = true)
     {
         Type eventClassType;
         GfcStringBuffer stringBuffer = GfcPooling.GfcStringBuffer;
@@ -233,7 +233,7 @@ public class CornManagerStory : MonoBehaviour
         return eventClassType;
     }
 
-    private static Type GetStoryScene(StoryCharacter aCharacter)
+    private static Type GetStoryScene(GfcStoryCharacter aCharacter)
     {
         var saveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
         int currentPhaseIndex = saveData.CurrentStoryPhase;
@@ -376,7 +376,7 @@ public class CornManagerStory : MonoBehaviour
 [Serializable]
 public struct CornStoryEventInPhase
 {
-    public StoryCharacter Character;
+    public GfcStoryCharacter Character;
     public int Count;
 }
 
@@ -388,14 +388,14 @@ public struct CornStoryPhase
 
 internal struct CornStoryScene
 {
-    public StoryCharacter Character;
+    public GfcStoryCharacter Character;
     public int Phase;
     public int Number;
 }
 
 public struct CornStoryVnSceneDetails
 {
-    public StoryCharacter Character;
+    public GfcStoryCharacter Character;
     public Type Scene;
     public bool PhaseSpecific;
 }
@@ -406,14 +406,39 @@ public class TestDialoguePhone : GfgVnScene
     {
         bool canAffordEvent = CornManagerEvents.CanAfford(new CornEvent(CornEventType.SOCIAL));
 
-        Say("Hello loser...", new(StoryCharacter.PROTAG));
+        Say("Hello loser...", new(GfcStoryCharacter.PROTAG));
         Say("Let's see, do you wish to see my cock?");
+        Say("Let's see, do you wish to see my cock?");
+        Say("Let's see, do you wish to see my cock?1");
+        Say("Let's see, do you wish to see my cock?1");
+        Say("Let's see, do you wish to see my cock?2");
+        Say("Let's see, do you wish to see my cock?3");
+        Say("Let's see, do you wish to see my cock?4");
+        Say("Let's see, do you wish to see my cock?65");
+        Say("Let's see, do you wish to see my cock?6");
+        Say("Let's see, do you wish to see my cock?7");
 
-        Say("...", new CornDialogueSetting(StoryCharacter.GF));
 
-        Say("............Well... this is awkward...", new CornDialogueSetting(StoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("..Bad.", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...Sponge", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
 
-        Say("Gimme an Answer", new(StoryCharacter.GF));
+
+        Say("............Well... this is awkward...", new CornDialogueSetting(GfcStoryCharacter.PROTAG));
+
+        Say("Bruh.", new CornDialogueSetting(GfcStoryCharacter.GF));
+
+        Say("Gimme an Answer");
         {
             Append(" Cool dick");
 
@@ -424,12 +449,16 @@ public class TestDialoguePhone : GfgVnScene
 
     void Yes()
     {
-        Say("Goody...", new CornDialogueSetting(StoryCharacter.GF));
+        Say("Yee", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("Pls gibe", new CornDialogueSetting(GfcStoryCharacter.GF));
+
+        Say("Goody...", new CornDialogueSetting(GfcStoryCharacter.PROTAG));
         CornManagerPhone.QueueSocialEventAfterMessages(typeof(TestDialogue));
     }
 
     void No()
     {
-        Say("Zannen desuyo", new CornDialogueSetting(StoryCharacter.GF));
+        Say("Hell nahh shit is too small for me ", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("Zannen desuyo", new CornDialogueSetting(GfcStoryCharacter.PROTAG));
     }
 }

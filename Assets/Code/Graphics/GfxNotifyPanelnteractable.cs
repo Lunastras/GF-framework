@@ -11,9 +11,9 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
     [SerializeField] protected Transform m_optionsButtonsParent;
 
-    [SerializeField] protected float m_transitionTime;
+    [SerializeField] protected float m_transitionTime = 0.3f;
 
-    [SerializeField] protected float m_transitionTimeNoName;
+    [SerializeField] protected float m_transitionTimeNoName = 0.3f;
 
     [SerializeField] protected float m_speedMultiplierTextWrite = 1;
 
@@ -49,7 +49,26 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
         return default;
     }
 
-    public virtual CoroutineHandle InitializeOptionButton(GfxTextMessage aTextMessage, GfxButton anInstantiatedButton, GfxNotifyOption aOption, int aIndex) { return default; }
+    public virtual CoroutineHandle InitializeOptionButton(GfxTextMessage aTextMessage, GfxButton anInstantiatedButton, GfxNotifyOption aOption, int aIndex)
+    {
+        GfxPanel panel = anInstantiatedButton as GfxPanel;
+
+        if (panel)
+        {
+            GfxPanelCreateData createData = GfxUiTools.GetDefaultPanelCreateData();
+            createData.ButtonCreateData.Parent = m_optionsButtonsParent;
+            createData.IndecesColumnRow = new(0, aIndex);
+
+            panel.SetCreateData(createData, true);
+            panel.SetTextOnly(aOption.OptionText);
+        }
+        else
+        {
+            Debug.LogError("The spawned option button does not have a GfxPanel component. If it shouldn't, then override this function and initialize the button properly");
+        }
+
+        return default;
+    }
 
     public virtual IEnumerator<float> _InitializeOptionButtons(GfxTextMessage aTextMessage)
     {
@@ -108,7 +127,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
             //messageAudioSource?.Stop();
             // messageAudioSource = m_messagesBuffer[m_messageBufferIndex].Sound?.PlaySingleInstance();
             m_lastWrittenMessageIndex = m_messageBufferIndex;
-            OnTextWriteInternal(m_messagesBuffer[m_messageBufferIndex], m_messageBufferIndex);
+            OnDrawMessageCallback?.Invoke(m_messagesBuffer[m_messageBufferIndex], m_messageBufferIndex);
             DrawCurrentMessage();
         }
     }
@@ -228,15 +247,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
         m_currentNotifyCoroutine.Finished();
     }
 
-    protected abstract IEnumerator<float> _AnimateContinueGraphics();
-
-    protected abstract void OnTextWrite(GfxTextMessage aMessage, int aMessageIndex);
-
-    protected void OnTextWriteInternal(GfxTextMessage aMessage, int aMessageIndex)
-    {
-        OnTextWrite(aMessage, aMessageIndex);
-        OnTextWriteCallback?.Invoke(aMessage, aMessageIndex);
-    }
+    protected virtual IEnumerator<float> _AnimateContinueGraphics() { yield break; }
 }
 
 public enum BoxTextTransitionMode

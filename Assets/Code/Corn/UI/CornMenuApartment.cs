@@ -95,6 +95,9 @@ public class CornMenuApartment : MonoBehaviour
             m_consumablesSliders[i].SetName(((PlayerConsumables)i).ToString());
         }
 
+        if (!CornManagerEvents.ExecutingEvent)
+            CornManagerPhone.LoadAvailableStoryScenes();
+
         UpdateGraphicsInternal();
     }
 
@@ -180,7 +183,15 @@ public class CornMenuApartment : MonoBehaviour
                 break;
 
             case GfxButtonCallbackType.SUBMIT:
-                CornManagerEvents.ExecuteEvent(new(eventType));
+                switch (eventType)
+                {
+                    case CornEventType.SOCIAL:
+                        CornManagerPhone.TogglePhone();
+                        break;
+                    default:
+                        CornManagerEvents.ExecuteEvent(new(eventType));
+                        break;
+                }
                 break;
         }
     }

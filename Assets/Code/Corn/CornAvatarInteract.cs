@@ -15,9 +15,9 @@ public class CornAvatarInteract : GfcInteractable
 
     public int PhoneEventIndex = -1;
 
-    private StoryCharacter m_storyCharacter = StoryCharacter.NONE;
+    private GfcStoryCharacter m_storyCharacter = GfcStoryCharacter.NONE;
 
-    public void SetStoryCharacter(StoryCharacter aCharacter)
+    public void SetStoryCharacter(GfcStoryCharacter aCharacter)
     {
         m_storyCharacter = aCharacter;
     }

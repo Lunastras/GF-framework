@@ -5,7 +5,7 @@ using TMPro;
 using MEC;
 using System;
 
-public class GfgDoubleTextWriter : MonoBehaviour
+public class GfxDoubleTextWriter : MonoBehaviour
 {
     [SerializeField] private GfxRichTextWriter m_textWriterMain;
 

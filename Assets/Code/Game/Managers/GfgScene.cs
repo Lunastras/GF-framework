@@ -117,7 +117,6 @@ public class GfgScene : MonoBehaviour
         Scene scene = SceneManager.GetSceneByBuildIndex((int)aScene);
         if (!scene.isLoaded && sceneData.LoadState == GfcSceneLoadState.UNLOADED)
         {
-            Debug.Log("Loading scene " + aScene);
             sceneData.LoadState = GfcSceneLoadState.LOADING;
             SceneManager.LoadScene((int)aScene, LoadSceneMode.Additive);
         }

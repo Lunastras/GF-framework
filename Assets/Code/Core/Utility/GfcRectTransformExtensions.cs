@@ -1,8 +1,39 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 //made by Eldoir from the Unity forums
 public static class GfcRectTransformExtensions
 {
+    /// <summary>Sometimes sizeDelta works, sometimes rect works, sometimes neither work and you need to get the layout properties.
+    /// This method provides a simple way to get the size of a RectTransform, no matter what's driving it or what the anchor values are.
+    /// </summary>
+    /// <param name="rectTransform">The rect transform to check.</param>
+    /// <returns>The proper size of the RectTransform.</returns>
+    public static Vector2 GetProperSize(this RectTransform rectTransform) //, bool attemptToRefreshLayout = false)
+    {
+        Vector2 size = new(rectTransform.rect.width, rectTransform.rect.height);
+
+        if (size.x == 0 && size.y == 0)
+        {
+            size.x = LayoutUtility.GetPreferredWidth(rectTransform);
+            size.y = LayoutUtility.GetPreferredHeight(rectTransform);
+        }
+
+        if (size.x == 0 && size.y == 0)
+        {
+            LayoutGroup layoutGroup = rectTransform.GetComponent<LayoutGroup>();
+
+            if (layoutGroup != null)
+            {
+                size.x = layoutGroup.preferredWidth;
+                size.y = layoutGroup.preferredHeight;
+            }
+        }
+
+
+        return size;
+    }
+
     public static void SetLeft(this RectTransform aRt, float aLeft) { aRt.offsetMin = new Vector2(aLeft, aRt.offsetMin.y); }
 
     public static void SetRight(this RectTransform aRt, float aRight) { aRt.offsetMax = new Vector2(-aRight, aRt.offsetMax.y); }
@@ -18,6 +49,8 @@ public static class GfcRectTransformExtensions
     public static void SetPos(this RectTransform aRt, float aPosX, float aPosY) { aRt.anchoredPosition = new Vector2(aPosX, aPosY); }
 
     public static void SetPos(this RectTransform aRt, Vector2 aAnchoredPosition) { aRt.anchoredPosition = aAnchoredPosition; }
+
+    public static void SetSizeDelta(this RectTransform aRt, Vector2 aSize) { aRt.sizeDelta = aSize; }
 
     public static void SetSizeDelta(this RectTransform aRt, float aLength, float aHeight) { aRt.sizeDelta = new Vector2(aLength, aHeight); }
 

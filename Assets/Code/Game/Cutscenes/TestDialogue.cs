@@ -8,14 +8,14 @@ public class TestDialogue : GfgVnScene
     {
         Environment(GfcSceneId.ENV_MUSUEM);
 
-        Say("I suck dick", new(StoryCharacter.PROTAG));
+        Say("I suck dick", new(GfcStoryCharacter.PROTAG));
         Say("Neat trick, right?");
 
-        Say("I am gay", new CornDialogueSetting(StoryCharacter.GF));
+        Say("I am gay", new CornDialogueSetting(GfcStoryCharacter.GF));
 
-        SayUntranslated("............Well... this is awkward...", new CornDialogueSetting(StoryCharacter.GF));
+        SayUntranslated("............Well... this is awkward...", new CornDialogueSetting(GfcStoryCharacter.GF));
 
-        SayKey("MuhDickTest", new(StoryCharacter.GF));
+        SayKey("MuhDickTest", new(GfcStoryCharacter.GF));
         {
             Append(" Cool dick");
 
@@ -40,10 +40,10 @@ public class TestDialogue : GfgVnScene
     {
         Environment(GfcSceneId.ENV_PARK);
 
-        Say("Bruh", StoryCharacter.GF);
+        Say("Bruh", GfcStoryCharacter.GF);
         SayKey("Lmao");
 
-        Say("Bruh", StoryCharacter.DUNNO);
+        Say("Bruh", GfcStoryCharacter.DUNNO);
         Option("Yuh", Test2Num);
     }
 
@@ -56,7 +56,7 @@ public class TestDialogue : GfgVnScene
     void Test3Num()
     {
         Environment(GfcSceneId.ENV_RESTAURANT);
-        Say("non", new CornDialogueSetting(StoryCharacter.TEST));
+        Say("non", new CornDialogueSetting(GfcStoryCharacter.TEST));
         Say("eheh");
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 using MEC;
 using TMPro;
 
-public class GfgNotifyPanel2D : GfgNotifyPanelGeneric
+public class GfgNotifyPanel2D : GfxNotifyPanelGeneric
 {
     [SerializeField] protected TextMeshProUGUI m_continueText;
 
@@ -55,31 +55,6 @@ public class GfgNotifyPanel2D : GfgNotifyPanelGeneric
             if (m_elementsCanvasGroup[i])
                 m_elementsCanvasGroup[i].alpha = evaluatedCoef;
         }
-    }
-
-    public override CoroutineHandle InitializeOptionButton(GfxTextMessage aTextMessage, GfxButton anInstantiatedButton, GfxNotifyOption aOption, int aIndex)
-    {
-        GfxPanel panel = anInstantiatedButton as GfxPanel;
-
-        if (panel)
-        {
-            GfxPanelCreateData createData = GfxUiTools.GetDefaultPanelCreateData();
-            createData.ButtonCreateData.Parent = m_optionsButtonsParent;
-            createData.IndecesColumnRow = new(0, aIndex);
-
-            panel.SetCreateData(createData, true);
-            panel.SetTextOnly(aOption.OptionText);
-        }
-        else
-        {
-            Debug.LogError("The spawned option button does not have a GfxPanel component.");
-        }
-
-        return default;
-    }
-
-    protected override void OnTextWrite(GfxTextMessage aMessage, int aMessageIndex)
-    {
     }
 
     protected override IEnumerator<float> _AnimateContinueGraphics()

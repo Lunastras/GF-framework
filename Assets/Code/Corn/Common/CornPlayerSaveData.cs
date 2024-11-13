@@ -221,7 +221,7 @@ public class PlayerSaveData
 
         validData &= ValidateArrayValues(ref Data.Resources, (int)PlayerResources.COUNT, START_RESOURCE_VALUE);
         validData &= ValidateArrayValues(ref Data.Consumables, (int)PlayerConsumables.COUNT, START_RESOURCE_VALUE);
-        validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)StoryCharacter.COUNT, 0);
+        validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
 
         Data.MentalSanity.ClampSelf(0, Data.MaxMentalSanity);
 

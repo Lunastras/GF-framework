@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class GfgNotifyPanelGeneric : GfxNotifyPanelInteractable
+public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelInteractable
 {
-    [SerializeField] protected GfgDoubleTextWriter m_mainTextWriter;
+    [SerializeField] protected GfxDoubleTextWriter m_mainTextWriter;
 
-    [SerializeField] protected GfgDoubleTextWriter m_nameTextWriter;
+    [SerializeField] protected GfxDoubleTextWriter m_nameTextWriter;
 
     void Awake()
     {
