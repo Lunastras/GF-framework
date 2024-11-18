@@ -13,10 +13,24 @@ MonoBehaviour:
   m_Name: Localization-Assets-Shared
   m_EditorClassIdentifier: 
   m_GroupName: Localization-Assets-Shared
-  m_Data:
-    m_SerializedData: []
   m_GUID: 81fe19dbd4f48744c9e577d3d4efaf6b
   m_SerializeEntries:
+  - m_GUID: 005a87060ca90304eb9115e78430a1cc
+    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier9Table Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 043d4a45aa3af5044ad737cfeb36a12a
+    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier4Table Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2269ada9747143142b9b04e65e0de4d0
+    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier10Table Shared
+      Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3974ccc8eb59e75428824bb418530c63
     m_Address: Assets/Extra assets/Localization/Tables/Charms Descriptions Shared
       Data.asset
@@ -28,18 +42,8 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e58b9e32c0a3012478365eadca332464
-    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier2Table Shared Data.asset
-    m_ReadOnly: 1
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ee6fc0d93fd8ca243869bcd9d27d18df
-    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier3Table Shared Data.asset
-    m_ReadOnly: 1
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 043d4a45aa3af5044ad737cfeb36a12a
-    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier4Table Shared Data.asset
+  - m_GUID: bb7fc0e1271249f42b798a633a0db3bb
+    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier7Table Shared Data.asset
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -48,29 +52,23 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: e97adb84da4b6094b9cd64e02cec1391
-    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier6Table Shared Data.asset
-    m_ReadOnly: 1
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: bb7fc0e1271249f42b798a633a0db3bb
-    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier7Table Shared Data.asset
-    m_ReadOnly: 1
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c239dd876cbe2f24f8abc8d696a50d44
     m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier8Table Shared Data.asset
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 005a87060ca90304eb9115e78430a1cc
-    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier9Table Shared Data.asset
+  - m_GUID: e58b9e32c0a3012478365eadca332464
+    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier2Table Shared Data.asset
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2269ada9747143142b9b04e65e0de4d0
-    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier10Table Shared
-      Data.asset
+  - m_GUID: e97adb84da4b6094b9cd64e02cec1391
+    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier6Table Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee6fc0d93fd8ca243869bcd9d27d18df
+    m_Address: Assets/Extra assets/Localization/Tables/WeaponsTier3Table Shared Data.asset
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

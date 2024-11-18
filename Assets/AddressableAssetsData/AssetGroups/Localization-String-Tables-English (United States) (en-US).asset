@@ -13,19 +13,10 @@ MonoBehaviour:
   m_Name: Localization-String-Tables-English (United States) (en-US)
   m_EditorClassIdentifier: 
   m_GroupName: Localization-String-Tables-English (United States) (en-US)
-  m_Data:
-    m_SerializedData: []
   m_GUID: 1f5bdb168ad7c244da8a5dc2ae5b3687
   m_SerializeEntries:
-  - m_GUID: 59cc4635cc320d846b565526e2348abe
-    m_Address: Charms Descriptions_en-US
-    m_ReadOnly: 1
-    m_SerializedLabels:
-    - Locale-en-US
-    - Preload
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ff1d4e2018645364e9368a2d806e24e9
-    m_Address: WeaponsTier1Table_en-US
+  - m_GUID: 1f89a912d1ff1f04cb36c06df3ffa9fc
+    m_Address: WeaponsTier10Table_en-US
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-en-US
@@ -38,22 +29,8 @@ MonoBehaviour:
     - Locale-en-US
     - Preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b285d068b90719f4a899de75db7e00b6
-    m_Address: WeaponsTier3Table_en-US
-    m_ReadOnly: 1
-    m_SerializedLabels:
-    - Locale-en-US
-    - Preload
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 83e020d540ccd964ab30c47f95863f86
-    m_Address: WeaponsTier4Table_en-US
-    m_ReadOnly: 1
-    m_SerializedLabels:
-    - Locale-en-US
-    - Preload
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c192d9892c5436b4686577ef1374ac17
-    m_Address: WeaponsTier5Table_en-US
+  - m_GUID: 2ce52df6998db214b8015c34f4f78a00
+    m_Address: WeaponsTier8Table_en-US
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-en-US
@@ -66,15 +43,8 @@ MonoBehaviour:
     - Locale-en-US
     - Preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 81d886ec788f60a418614ef92d5ba58a
-    m_Address: WeaponsTier7Table_en-US
-    m_ReadOnly: 1
-    m_SerializedLabels:
-    - Locale-en-US
-    - Preload
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2ce52df6998db214b8015c34f4f78a00
-    m_Address: WeaponsTier8Table_en-US
+  - m_GUID: 59cc4635cc320d846b565526e2348abe
+    m_Address: Charms Descriptions_en-US
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-en-US
@@ -87,8 +57,36 @@ MonoBehaviour:
     - Locale-en-US
     - Preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1f89a912d1ff1f04cb36c06df3ffa9fc
-    m_Address: WeaponsTier10Table_en-US
+  - m_GUID: 81d886ec788f60a418614ef92d5ba58a
+    m_Address: WeaponsTier7Table_en-US
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en-US
+    - Preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 83e020d540ccd964ab30c47f95863f86
+    m_Address: WeaponsTier4Table_en-US
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en-US
+    - Preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b285d068b90719f4a899de75db7e00b6
+    m_Address: WeaponsTier3Table_en-US
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en-US
+    - Preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c192d9892c5436b4686577ef1374ac17
+    m_Address: WeaponsTier5Table_en-US
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-en-US
+    - Preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff1d4e2018645364e9368a2d806e24e9
+    m_Address: WeaponsTier1Table_en-US
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-en-US

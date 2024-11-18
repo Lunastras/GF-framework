@@ -13,10 +13,7 @@ public class GfgGameStateObject : MonoBehaviour
     private void Start()
     {
         GfgManagerGame.Instance.OnGameStateChanged += OnGameStateChanged;
-        GfcGameState currentGameState = GfgManagerGame.GetGameState();
-
-        if (currentGameState != GfcGameState.INVALID)
-            OnGameStateChanged(currentGameState, GfcGameState.INVALID);
+        OnGameStateChanged(GfgManagerGame.GetGameState(), GfgManagerGame.GetPreviousGameState());
 
         m_instantDisable = true;
     }

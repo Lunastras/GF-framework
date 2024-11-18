@@ -246,6 +246,25 @@ public static class GfcToolsStatic
 
     public static unsafe bool EqualsNoBox<T>(this T anEnum, T aSecondEnum) where T : unmanaged, Enum { return anEnum.Index() == aSecondEnum.Index(); }
 
+    public static Vector2 xy(this Vector3 aSelf) { return new(aSelf.x, aSelf.y); }
+    public static Vector2 yx(this Vector3 aSelf) { return new(aSelf.y, aSelf.x); }
+
+    public static Vector2 xz(this Vector3 aSelf) { return new(aSelf.x, aSelf.z); }
+    public static Vector2 zx(this Vector3 aSelf) { return new(aSelf.z, aSelf.x); }
+
+    public static Vector2 yz(this Vector3 aSelf) { return new(aSelf.y, aSelf.z); }
+    public static Vector2 zy(this Vector3 aSelf) { return new(aSelf.z, aSelf.y); }
+
+    public static Vector3 xzy(this Vector3 aSelf) { return new(aSelf.x, aSelf.z, aSelf.y); }
+
+    public static Vector3 zxy(this Vector3 aSelf) { return new(aSelf.z, aSelf.x, aSelf.y); }
+    public static Vector3 zyx(this Vector3 aSelf) { return new(aSelf.z, aSelf.y, aSelf.x); }
+
+    public static Vector3 yxz(this Vector3 aSelf) { return new(aSelf.y, aSelf.x, aSelf.z); }
+    public static Vector3 yzx(this Vector3 aSelf) { return new(aSelf.y, aSelf.z, aSelf.x); }
+
+    public static Vector2 yx(this Vector2 aSelf) { return new(aSelf.y, aSelf.x); }
+
     public static int Clamp(this int aNum, int aMin, int aMax) { return Math.Clamp(aNum, aMin, aMax); }
     public static long Clamp(this long aNum, long aMin, long aMax) { return Math.Clamp(aNum, aMin, aMax); }
     public static float Clamp(this float aNum, float aMin, float aMax) { return Math.Clamp(aNum, aMin, aMax); }

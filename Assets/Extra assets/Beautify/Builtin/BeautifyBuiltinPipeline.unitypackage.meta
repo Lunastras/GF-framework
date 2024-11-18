@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 7d9615768027a46c6be8471f9831fb64
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 233073
+  packageName: Beautify 3 - Advanced Post Processing
+  packageVersion: 22.4
+  assetPath: Assets/Beautify/Builtin/BeautifyBuiltinPipeline.unitypackage
+  uploadId: 707973

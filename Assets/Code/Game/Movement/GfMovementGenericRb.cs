@@ -62,20 +62,20 @@ public class GfMovementGenericRb : GfMovementGeneric
 
     public override Vector3 GetVelocity()
     {
-        return m_rigidbody.velocity;
+        return m_rigidbody.linearVelocity;
     }
 
     public override void SetVelocity(Vector3 velocity)
     {
-        m_rigidbody.velocity = velocity;
+        m_rigidbody.linearVelocity = velocity;
     }
 
     public override bool UsesRigidbody() { return true; }
 
     public override Vector3 AddVelocity(Vector3 force)
     {
-        m_rigidbody.velocity += force;
-        return m_rigidbody.velocity;
+        m_rigidbody.linearVelocity += force;
+        return m_rigidbody.linearVelocity;
     }
 
     public override Quaternion GetTransformRotation() { return m_rigidbody.rotation; }

@@ -16,6 +16,8 @@ public class GfcStringBuffer
 
     public int Capacity { get { return m_stringBufferCapacity; } }
 
+    public override string ToString() { return m_stringBuffer; }
+
     public GfcStringBuffer()
     {
         m_stringBufferCapacity = 0;
@@ -43,6 +45,22 @@ public class GfcStringBuffer
     }
 
     public static implicit operator string(GfcStringBuffer d) => d.m_stringBuffer;
+
+    public unsafe void StrUpr()
+    {
+        fixed (char* stringPtr = m_stringBuffer)
+            for (int i = 0; i < Length; ++i)
+                if (stringPtr[i] >= 'a' && stringPtr[i] <= 'b')
+                    stringPtr[i] = (char)(stringPtr[i] - 32);
+    }
+
+    public unsafe void StrLwr()
+    {
+        fixed (char* stringPtr = m_stringBuffer)
+            for (int i = 0; i < Length; ++i)
+                if (stringPtr[i] >= 'A' && stringPtr[i] <= 'Z')
+                    stringPtr[i] = (char)(stringPtr[i] + 32);
+    }
 
     public GfcStringBuffer Append(string aString)
     {
@@ -193,7 +211,7 @@ public class GfcStringBuffer
         }
     }
 
-    public static void SetMinimumLength(ref string aStringBuffer, ref int aStringBufferCapacity, int aMinimumLength) { if (aMinimumLength > aStringBuffer.Length) ResizeStringBufferLength(ref aStringBuffer, ref aStringBufferCapacity, aMinimumLength); }
+    public static void SetMinimumLength(ref string aStringBuffer, ref int aStringBufferCapacity, int aMinimumLength, bool aMultipleOfTwoIfExpand = false) { if (aMinimumLength > aStringBuffer.Length) ResizeStringBufferLength(ref aStringBuffer, ref aStringBufferCapacity, aMinimumLength, aMultipleOfTwoIfExpand); }
 
     public static unsafe void SetStringLength(string aString, int aLength)
     {
@@ -239,7 +257,7 @@ public class GfcStringBuffer
 
     public static unsafe void WriteInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, string aInsertString, bool aMultipleOfTwoIfExpand = false)
     {
-        SetMinimumLength(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer + aInsertString.Length);
+        SetMinimumLength(ref aStringBuffer, ref aStringBufferCapacity, aCurrentPositionInBuffer + aInsertString.Length, aMultipleOfTwoIfExpand);
         WriteInStringBuffer(aStringBuffer, ref aCurrentPositionInBuffer, aInsertString);
     }
 
@@ -252,6 +270,7 @@ public class GfcStringBuffer
 
     public static unsafe void WriteInStringBufferExpand(ref string aStringBuffer, ref int aStringBufferCapacity, ref int aCurrentPositionInBuffer, double aInsertDouble, int aPrecission, char aDecimalPointSymbol = '.', bool aMultipleOfTwoIfExpand = false)
     {
+        Debug.Assert(aPrecission <= 17, "The precission cannot be more than 17, double loses precission at the 16th digit.");
         aPrecission = min(aPrecission, 17); //doesn't work if [aPrecission] is more than 17. Double precission doesn't go over the 16th digit so this should be fine
         double absInsertDouble = abs(aInsertDouble);
         long wholeNumber = (long)absInsertDouble;
