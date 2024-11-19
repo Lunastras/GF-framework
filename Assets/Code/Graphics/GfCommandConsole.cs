@@ -11,8 +11,9 @@ using UnityEngine.Assertions;
 >Close every lingering tag after a log
 >fix log height issues caused by the '.' we add when calculating the height
 >Add callstack when hovering over log
->Add message previews
->Add log type filtering
+>Add commands previews
+>Fix caret movement
+>Make this code make more sens
 */
 
 public class GfCommandConsole : MonoBehaviour
@@ -37,7 +38,9 @@ public class GfCommandConsole : MonoBehaviour
     private TMP_InputField m_consoleTextCopyForHeight;
     private Image m_consoleImage = null;
     private RectTransform m_textViewport = null;
-    private int m_lastUpdatedIndexHeight = 0;
+    private int m_lastUpdatedIndexHeight = -1;
+    private int m_lastUpdatedIndexFullLogHeight = -1;
+
     private ScalableWindow m_scalableWindow;
     private GfcStringBuffer m_consoleStringBuffer = new(1024);
     private GfcStringBuffer m_auxStringBuffer = new(64);
@@ -54,7 +57,10 @@ public class GfCommandConsole : MonoBehaviour
     private bool m_focusOnCommandLine = false;
     private Dictionary<string, Action> m_commands = new(16);
     private Vector2 m_currentViewportSize = new();
-    private List<GfConsoleLog> m_logsList;
+
+    private List<GfConsoleLog> m_logsList = new(256);
+    private List<GfConsoleLog> m_usedLogsList = new(256);
+
     private int m_countError = 0;
     private int m_countWarn = 0;
     private int m_countLog = 0;
@@ -64,11 +70,12 @@ public class GfCommandConsole : MonoBehaviour
     private float m_desiredYScrollBottom = 0;
     private float GetVisibleHeight() { return m_visibleViewport.rect.height; }
     private float GetDesiredLogHeight() { return GetVisibleHeight() * 1.5f; } //the max height of the window used to display the section of the log, todo should me automated
+
     [SerializeField] private float m_currentYScrollBottom = 0;
     [SerializeField] private float m_fullHeight = 0;
     [SerializeField] private float m_shownLogStartY = 0; //the top y of the full log shown
     [SerializeField] private float m_shownLogEndY = 0; //the bottom y of the full log shown
-    private float m_shownLogsHeight = 0;
+    [SerializeField] private float m_shownLogsHeight = 0;
     [SerializeField] float m_consoleWindowStartY = 0;
     [SerializeField] private float m_lastScrollValue;
 
@@ -85,6 +92,8 @@ public class GfCommandConsole : MonoBehaviour
 
     private const string NO_PARSE_TAG = "<noparse>";
     private const string NO_PARSE_CLOSE_TAG = "</noparse>";
+
+    private bool m_initialised = false;
 
     public static void IgnoreCallStackForNextLog() { Instance.m_ignoreCallStackForNextLog = true; }
 
@@ -148,8 +157,7 @@ public class GfCommandConsole : MonoBehaviour
             if (m_mustRedoText)
             {
                 m_mustRedoText = false;
-                UpdateFullHeight();
-                UpdateScrollbar();
+                CreateUsedLogsList();
                 WriteFromBottom();
                 m_currentYScrollBottom = m_desiredYScrollBottom;
                 UpdateScrollbar();
@@ -252,6 +260,7 @@ public class GfCommandConsole : MonoBehaviour
     {
         RegisterCommand("Vera", VeraCommand);
 
+        m_initialised = true;
         m_countCommand = 0;
         m_countError = 0;
         m_countLog = 0;
@@ -271,7 +280,6 @@ public class GfCommandConsole : MonoBehaviour
         m_mustScrollDown = true;
         Application.logMessageReceived += Log;
 
-        m_logsList = new(256);
         string initLog = "\n\n" + Application.productName + " " + Application.version + " LOG CONSOLE BETA:\n";
         Log(initLog, null, LogType.Log);
 
@@ -359,6 +367,18 @@ public class GfCommandConsole : MonoBehaviour
         return aLog.Height;
     }
 
+    private void CreateUsedLogsList()
+    {
+        m_usedLogsList.Clear();
+        int length = m_logsList.Count;
+        for (int i = 0; i < length; ++i)
+            if (ShowLog(i))
+                m_usedLogsList.Add(m_logsList[i]);
+
+        m_lastUpdatedIndexFullLogHeight = -1;
+        UpdateLogHeights();
+    }
+
     private void UpdateLogHeights()
     {
         Profiler.BeginSample("GfCommandConsole.UpdateLogHeights()");
@@ -366,34 +386,34 @@ public class GfCommandConsole : MonoBehaviour
         int length = m_logsList.Count;
         for (int i = m_lastUpdatedIndexHeight + 1; i < length; ++i)
         {
+            GfConsoleLog log = m_logsList[i];
+            CalculateLogHeight(ref log);
+            m_logsList[i] = log;
             if (ShowLog(i))
-            {
-                GfConsoleLog log = m_logsList[i];
-                m_fullHeight += CalculateLogHeight(ref log);
-                m_logsList[i] = log;
-            }
+                m_usedLogsList.Add(log);
         }
 
         m_lastUpdatedIndexHeight = length - 1;
 
+        UpdateFullHeight();
         Profiler.EndSample();
-
-        UpdateScrollbar();
     }
 
     private void UpdateFullHeight()
     {
-        int length = m_logsList.Count;
-        m_fullHeight = 0;
+        int length = m_usedLogsList.Count;
+        if (m_lastUpdatedIndexFullLogHeight < 0)
+            m_fullHeight = 0;
 
-        for (int i = 0; i < length; ++i)
-            if (ShowLog(i))
-            {
-                var log = m_logsList[i];
-                log.StartPosY = m_fullHeight;
-                m_fullHeight += log.Height;
-                m_logsList[i] = log;
-            }
+        for (int i = m_lastUpdatedIndexFullLogHeight + 1; i < length; ++i)
+        {
+            var log = m_usedLogsList[i];
+            log.StartPosY = m_fullHeight;
+            m_fullHeight += log.Height;
+            m_usedLogsList[i] = log;
+        }
+
+        m_lastUpdatedIndexFullLogHeight = length - 1;
 
         UpdateScrollbar();
     }
@@ -440,7 +460,7 @@ public class GfCommandConsole : MonoBehaviour
                 break;
 
             case LogType.Assert:
-                return; //delme
+                return;
                 ++m_countError;
                 gfLogType = GfLogType.ERROR;
                 break;
@@ -486,7 +506,8 @@ public class GfCommandConsole : MonoBehaviour
 
         m_ignoreCallStackForNextLog = false;
 
-        m_logsList.Add(new(aLogString, aStackTrace, m_fullHeight, gfLogType));
+        GfConsoleLog log = new(aLogString, aStackTrace, m_fullHeight, gfLogType);
+        m_logsList.Add(log);
 
         m_mustScrollDown |= m_desiredYScrollBottom >= m_fullHeight - 20; //todo do not scroll down if the scrollbar is selected
         if (m_console && m_console.activeSelf)
@@ -506,7 +527,7 @@ public class GfCommandConsole : MonoBehaviour
     protected unsafe void WriteLog(int aLogIndex)
     {
         bool mustCloseColorTag = false;
-        GfConsoleLog log = m_logsList[aLogIndex];
+        GfConsoleLog log = m_usedLogsList[aLogIndex];
 
         switch (log.LogType)
         {
@@ -557,40 +578,39 @@ public class GfCommandConsole : MonoBehaviour
     void WriteFromBottom()
     {
         float shownLogsHeight = 0;
-        int logIndex = m_logsList.Count - 1;
+        int logIndex = m_usedLogsList.Count - 1;
         m_desiredYScrollBottom = MathF.Max(m_fullHeight, GetVisibleHeight());
 
         float logHeight = GetDesiredLogHeight();
         while (logIndex > -1 && shownLogsHeight < logHeight)
-        {
-            if (ShowLog(logIndex))
-                shownLogsHeight += m_logsList[logIndex].Height;
-            --logIndex;
-        }
+            shownLogsHeight += m_usedLogsList[logIndex--].Height;
 
         WriteDownFromIndex(logIndex.Max(0), true);
     }
 
     protected void OnRectTransformDimensionsChange()
     {
-        m_mustResize = true;
-        ResizeWindow();
+        if (m_initialised)
+        {
+            m_mustResize = true;
+            ResizeWindow();
+        }
     }
 
     public int lastCount = -1;
     public int lastIndex = -1;
 
-    int GetLogIndexAtY(float aPosY)
+    int GetLogIndexAtPosY(float aPosY)
     {
         aPosY.ClampSelf(0, m_fullHeight);
 
-        int low = 0, high = m_logsList.Count - 1;
+        int low = 0, high = m_usedLogsList.Count - 1;
         while (low <= high) //perform a binary seach to find log closest to desired height
         {
             int mid = (low + high) >> 1;
-            float startPointMid = m_logsList[mid].StartPosY;
+            float startPointMid = m_usedLogsList[mid].StartPosY;
 
-            if (startPointMid <= aPosY && aPosY <= startPointMid + m_logsList[mid].Height)
+            if (startPointMid <= aPosY && aPosY <= startPointMid + m_usedLogsList[mid].Height)
                 return mid;
 
             if (startPointMid < aPosY)
@@ -602,7 +622,7 @@ public class GfCommandConsole : MonoBehaviour
         return low;
     }
 
-    void WriteFromYPosition(float aShownLogStartY) { WriteDownFromIndex(GetLogIndexAtY(aShownLogStartY)); }
+    void WriteFromYPosition(float aShownLogStartY) { WriteDownFromIndex(GetLogIndexAtPosY(aShownLogStartY)); }
 
     void UpdateConsoleText()
     {
@@ -624,23 +644,20 @@ public class GfCommandConsole : MonoBehaviour
 
         m_consoleStringBuffer.Clear();
 
-        if (m_logsList.Count > aLogIndex && aLogIndex >= 0)
+        if (m_usedLogsList.Count > aLogIndex && aLogIndex >= 0)
         {
             int initialIndex = aLogIndex;
             m_shownLogsHeight = 0;
-            m_shownLogStartY = m_logsList[aLogIndex].StartPosY;
+            m_shownLogStartY = m_usedLogsList[aLogIndex].StartPosY;
 
             float desiredLogHeight = GetDesiredLogHeight();
-            while (aLogIndex < m_logsList.Count && (aDrawUntilLast || m_shownLogsHeight < desiredLogHeight))
+            while (aLogIndex < m_usedLogsList.Count && (aDrawUntilLast || m_shownLogsHeight < desiredLogHeight))
             {
-                if (ShowLog(aLogIndex))
-                {
-                    if (initialIndex != aLogIndex)
-                        m_consoleStringBuffer.Append('\n');
+                if (initialIndex != aLogIndex)
+                    m_consoleStringBuffer.Append('\n');
 
-                    m_shownLogsHeight += m_logsList[aLogIndex].Height;
-                    WriteLog(aLogIndex);
-                }
+                m_shownLogsHeight += m_usedLogsList[aLogIndex].Height;
+                WriteLog(aLogIndex);
 
                 aLogIndex++;
             }
@@ -652,7 +669,7 @@ public class GfCommandConsole : MonoBehaviour
         }
         else
         {
-            if (m_logsList.Count == 0)
+            if (m_usedLogsList.Count == 0)
             {
                 m_consoleStringBuffer.Clear();
                 UpdateConsoleText();
@@ -660,8 +677,8 @@ public class GfCommandConsole : MonoBehaviour
                 m_shownLogEndY = GetVisibleHeight();
             }
 
-            if (aLogIndex < 0 || m_logsList.Count >= m_logsList.Count)
-                Debug.LogError("Bad index, count of " + m_logsList.Count + ", index " + aLogIndex);
+            if ((aLogIndex < 0 || m_usedLogsList.Count >= m_usedLogsList.Count) && aLogIndex != 0)
+                Debug.LogError("Bad index, count of " + m_usedLogsList.Count + ", index " + aLogIndex);
         }
 
         Profiler.EndSample();
