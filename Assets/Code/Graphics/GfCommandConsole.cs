@@ -13,14 +13,14 @@ using UnityEngine.Assertions;
 >Add callstack when hovering over log
 >Add commands previews
 >Fix caret movement
->Make this code make more sens
+>Make this code make more sens (refactor)
 */
 
 public class GfCommandConsole : MonoBehaviour
 {
     public static GfCommandConsole Instance { get; private set; } = null;
-    [SerializeField] private GameObject m_console = null;
     [SerializeField] private KeyCode m_consoleKeycode = KeyCode.Backslash;
+    [SerializeField] private GameObject m_console = null;
     [SerializeField] private RectTransform m_visibleViewport = null;
     [SerializeField] private TMP_InputField m_consoleText = null;
     [SerializeField] private TMP_InputField m_commandText = null;
@@ -71,13 +71,13 @@ public class GfCommandConsole : MonoBehaviour
     private float GetVisibleHeight() { return m_visibleViewport.rect.height; }
     private float GetDesiredLogHeight() { return GetVisibleHeight() * 1.5f; } //the max height of the window used to display the section of the log, todo should me automated
 
-    [SerializeField] private float m_currentYScrollBottom = 0;
-    [SerializeField] private float m_fullHeight = 0;
-    [SerializeField] private float m_shownLogStartY = 0; //the top y of the full log shown
-    [SerializeField] private float m_shownLogEndY = 0; //the bottom y of the full log shown
-    [SerializeField] private float m_shownLogsHeight = 0;
-    [SerializeField] float m_consoleWindowStartY = 0;
-    [SerializeField] private float m_lastScrollValue;
+    private float m_currentYScrollBottom = 0;
+    private float m_fullHeight = 0;
+    private float m_shownLogStartY = 0; //the top y of the full log shown
+    private float m_shownLogEndY = 0; //the bottom y of the full log shown
+    private float m_shownLogsHeight = 0;
+    float m_consoleWindowStartY = 0;
+    private float m_lastScrollValue;
 
     private const string ERROR_OPEN_TAG = "<color=#FF534A>";
     private const string WARN_OPEN_TAG = "<color=#FFC107>";
@@ -168,7 +168,6 @@ public class GfCommandConsole : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.Return) && m_commandText.text.Length > 0)
             {
-                m_mustScrollDown |= m_scrollDownOnCommand;
                 CommandEntered(m_commandText.text);
                 m_commandText.text = "";
                 m_commandText.Select();
@@ -420,6 +419,8 @@ public class GfCommandConsole : MonoBehaviour
 
     public void CommandEntered(string aCommand)
     {
+        m_mustScrollDown |= m_scrollDownOnCommand && m_showCommands;
+
         var stringBufferCommand = GetAuxStringBuffer();
         stringBufferCommand.Append(aCommand);
         stringBufferCommand.StrLwr();
@@ -436,8 +437,6 @@ public class GfCommandConsole : MonoBehaviour
         }
 
         stringBufferCommand.Clear();
-        if (m_scrollDownOnCommand)
-            WriteFromBottom();
     }
 
     public void Log(string aLogString, string aStackTrace, LogType aType)
@@ -460,7 +459,6 @@ public class GfCommandConsole : MonoBehaviour
                 break;
 
             case LogType.Assert:
-                return;
                 ++m_countError;
                 gfLogType = GfLogType.ERROR;
                 break;
@@ -597,9 +595,6 @@ public class GfCommandConsole : MonoBehaviour
         }
     }
 
-    public int lastCount = -1;
-    public int lastIndex = -1;
-
     int GetLogIndexAtPosY(float aPosY)
     {
         aPosY.ClampSelf(0, m_fullHeight);
@@ -643,7 +638,6 @@ public class GfCommandConsole : MonoBehaviour
         Profiler.BeginSample("GfCommandConsole.WriteDownFromIndex()");
 
         m_consoleStringBuffer.Clear();
-
         if (m_usedLogsList.Count > aLogIndex && aLogIndex >= 0)
         {
             int initialIndex = aLogIndex;

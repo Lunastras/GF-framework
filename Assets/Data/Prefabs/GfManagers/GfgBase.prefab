@@ -4323,6 +4323,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: GfCommandConsoleWindow
       objectReference: {fileID: 0}
+    - target: {fileID: 1636695437406231792, guid: f92f1195920485743a1ec7676e911d3d,
+        type: 3}
+      propertyPath: m_TextViewport
+      value: 
+      objectReference: {fileID: 3206752065515350830}
     - target: {fileID: 1636695437831916821, guid: f92f1195920485743a1ec7676e911d3d,
         type: 3}
       propertyPath: m_AnchorMax.x
@@ -4340,6 +4345,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6131419570319181996, guid: f92f1195920485743a1ec7676e911d3d,
         type: 3}
+      propertyPath: m_showStackTrace
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6131419570319181996, guid: f92f1195920485743a1ec7676e911d3d,
+        type: 3}
       propertyPath: m_scrollSmoothTime
       value: 0.06
       objectReference: {fileID: 0}
@@ -4348,6 +4358,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f92f1195920485743a1ec7676e911d3d, type: 3}
+--- !u!224 &3206752065515350830 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7984481993244746243, guid: f92f1195920485743a1ec7676e911d3d,
+    type: 3}
+  m_PrefabInstance: {fileID: 4777817908020627757}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &6122799578979212287 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1636695437386076882, guid: f92f1195920485743a1ec7676e911d3d,
