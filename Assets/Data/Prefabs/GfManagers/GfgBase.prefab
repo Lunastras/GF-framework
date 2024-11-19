@@ -4338,6 +4338,11 @@ PrefabInstance:
       propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6131419570319181996, guid: f92f1195920485743a1ec7676e911d3d,
+        type: 3}
+      propertyPath: m_scrollSmoothTime
+      value: 0.06
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

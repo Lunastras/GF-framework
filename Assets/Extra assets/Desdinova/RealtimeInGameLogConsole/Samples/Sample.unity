@@ -523,6 +523,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1682399643361673601, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_showLogTime
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1682399643361673601, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_showStackTrace
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2080833477572206972, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_Name
