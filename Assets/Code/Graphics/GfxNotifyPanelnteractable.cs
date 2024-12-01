@@ -25,7 +25,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
     [SerializeField] protected GfcInputType m_inputSkip = GfcInputType.RUN;
 
-    [SerializeField] protected float m_messageWaitSecondsOnSkip = 0.2f;
+    [SerializeField] protected float m_messageWaitSecondsOnSkip = 0.05f;
 
     [SerializeField] protected bool m_forceWriteOnSubmit = false;
 
@@ -80,7 +80,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
             button.OnButtonEventCallback += OnOptionCallback;
             button.Index = optionIndex;
-            button.SetDisabled(aTextMessage.Options[optionIndex].IsDisabled, aTextMessage.Options[optionIndex].DisabledReason);
+            button.SetInteractable(aTextMessage.Options[optionIndex].Interactable, aTextMessage.Options[optionIndex].DisabledReason);
         }
     }
 
@@ -154,7 +154,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
         for (int transitionIndex = FADE_IN; transitionIndex < 2; ++transitionIndex)
         {
-            if (m_messageBufferIndex < m_messagesBuffer.Count)
+            if (m_messageBufferIndex < m_messagesBuffer.Count) //todo handle remaining messages
                 currentMessage = m_messagesBuffer[m_messageBufferIndex];
 
             if (transitionIndex == FADE_IN)

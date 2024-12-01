@@ -1,0 +1,2 @@
+Baked from the PixelManager OCIO config by Joe Genco
+https://github.com/Joegenco/PixelManager

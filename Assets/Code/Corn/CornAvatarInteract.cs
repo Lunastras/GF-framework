@@ -22,16 +22,20 @@ public class CornAvatarInteract : GfcInteractable
         m_storyCharacter = aCharacter;
     }
 
-    public override bool IsInteractable(GfcCursorRayhit aHit, ref string aNonInteractableReason) { return CornManagerPhone.GetCurrentlyShownAvatar() == null; }
-
-    public override void Interact(GfcCursorRayhit aHit)
+    public override bool Interactable(GfcCursorRayhit aHit, out string aNonInteractableReason)
     {
-        CornManagerPhone.PressedAvatar(PhoneEventIndex);
+        bool baseInteractable = base.Interactable(aHit, out aNonInteractableReason);
+        bool canShowAvatar = CornManagerPhone.GetCurrentlyShownAvatar() == null;
+        if (canShowAvatar)
+            aNonInteractableReason = null;
+        return baseInteractable && canShowAvatar;
     }
+
+    public override void Interact(GfcCursorRayhit aHit) { CornManagerPhone.PressedAvatar(PhoneEventIndex); }
 
     public void DestroySelf()
     {
-        Interactable = false;
+        SetInteractable(false);
         GfcPooling.Destroy(gameObject);
     }
 }

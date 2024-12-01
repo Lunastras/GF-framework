@@ -13,10 +13,7 @@ public class GfxCharacterPortraits : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        if (Instance != this)
-            Destroy(Instance);
-
-        Instance = this;
+        this.SetSingleton(ref Instance);
 
         for (int i = 0; i < m_characterPortraits.Length; ++i)
             Debug.Assert(i == (int)m_characterPortraits[i].Character);

@@ -442,7 +442,7 @@ public class TestDialoguePhone : GfgVnScene
         {
             Append(" Cool dick");
 
-            Option("Hell yeee", Yes, !canAffordEvent, "You don't have enough resources for this event");
+            Option("Hell yeee", Yes, canAffordEvent, "You don't have enough resources for this event");
             Option("Lmao Nope", No);
         }
     }

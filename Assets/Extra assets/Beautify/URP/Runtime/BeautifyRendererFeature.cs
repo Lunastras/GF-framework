@@ -1761,7 +1761,7 @@ namespace Beautify.Universal {
                         if (usesSeparateOutline) {
                             bool useOptimizedShader = beautify.outlineUsesOptimizedShader.value;
                             BeautifySettings.outlineUseObjectId = useOutlinePerObjectId;
-                            if (beautify.outlineLayerMask != -1 || useOutlinePerObjectId) {
+                            if (beautify.outlineLayerMask.value != -1 || useOutlinePerObjectId) {
                                 BeautifySettings.outlineDepthPrepass = true;
                                 BeautifySettings.outlineDepthPrepassUseOptimizedShader = useOptimizedShader;
                                 BeautifySettings.outlineLayerMask = beautify.outlineLayerMask.value;

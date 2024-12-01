@@ -41,10 +41,9 @@ public class GfxPanel : GfxButton2D
 
     //The length of the priority text relative to the text parent length
     protected float m_priorityTextLengthRatio = 1;
-
-    private void Start() { Initialize(); }
     private bool m_initializedPanel = false;
 
+    private void Start() { Initialize(); }
     public override void Initialize()
     {
         if (!m_initializedPanel)
@@ -261,13 +260,6 @@ public class GfxPanel : GfxButton2D
     {
         SetContentInPadding(aPadding);
         SetContentPadding(aPadding, aPadding, aUpdateIconSize);
-    }
-
-    //todo
-    public void SetButtonActive(bool aActive, string aInactiveReason = EMPTY)
-    {
-        m_isActive = aActive;
-        m_inactiveReason = aInactiveReason;
     }
 
     public void SetIconSize(float aLength, float aHeight, bool aActivateIcon = false)

@@ -19,7 +19,7 @@ public class TestDialogue : GfgVnScene
         {
             Append(" Cool dick");
 
-            Option("Bruh", Test1Num, true, "Neahh shit was too long");
+            Option("Bruh", Test1Num, false, "Neahh shit was too long");
             Option("Bruh", Test2Num);
             Option("Bruh", Test3Num);
             {

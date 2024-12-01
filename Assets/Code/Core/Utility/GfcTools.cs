@@ -77,11 +77,11 @@ public static class GfcToolsStatic
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void UnsetBit(this ref ulong aFlagMask, int aBitIndex) { GfcTools.UnsetBit(ref aFlagMask, aBitIndex); }
 
-    public static void SetSingleton<T>(this T anInstance, ref T aSingleton) where T : MonoBehaviour
+    public static void SetSingleton<T>(this T aGameObject, ref T anInstance) where T : MonoBehaviour
     {
-        if (aSingleton != anInstance)
-            MonoBehaviour.Destroy(aSingleton);
-        aSingleton = anInstance;
+        if (anInstance != aGameObject)
+            MonoBehaviour.Destroy(anInstance);
+        anInstance = aGameObject;
     }
 
     public static bool ActiveInHierarchyGf(this GameObject aGameObject)

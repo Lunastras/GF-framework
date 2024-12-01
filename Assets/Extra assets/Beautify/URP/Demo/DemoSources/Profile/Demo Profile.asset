@@ -40,8 +40,8 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0.25
   compareLineAngle:
-    m_OverrideState: 1
-    m_Value: -1.77
+    m_OverrideState: 0
+    m_Value: 1.4
   compareLineWidth:
     m_OverrideState: 0
     m_Value: 0.002
@@ -53,7 +53,7 @@ MonoBehaviour:
     m_Value: 0
   debugOutput:
     m_OverrideState: 0
-    m_Value: 21
+    m_Value: 0
   turboMode:
     m_OverrideState: 1
     m_Value: 0
@@ -204,8 +204,8 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0
   tonemap:
-    m_OverrideState: 1
-    m_Value: 3
+    m_OverrideState: 0
+    m_Value: 0
   tonemapAGXGamma:
     m_OverrideState: 0
     m_Value: 2.5
@@ -220,13 +220,13 @@ MonoBehaviour:
     m_Value: 1
   saturate:
     m_OverrideState: 1
-    m_Value: 1.943
+    m_Value: 0
   brightness:
-    m_OverrideState: 1
-    m_Value: 1
+    m_OverrideState: 0
+    m_Value: 1.05
   contrast:
     m_OverrideState: 1
-    m_Value: 1.198
+    m_Value: 1
   daltonize:
     m_OverrideState: 0
     m_Value: 0
@@ -244,28 +244,28 @@ MonoBehaviour:
     m_Value: 0
   lut:
     m_OverrideState: 0
-    m_Value: 1
+    m_Value: 0
   lutIntensity:
     m_OverrideState: 0
     m_Value: 1
   lutTexture:
     m_OverrideState: 0
-    m_Value: {fileID: 2800000, guid: 5771a38a082046b99a89d7acb3a2d4a5, type: 3}
+    m_Value: {fileID: 0}
     dimension: 1
   bloomIntensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.35
   bloomThreshold:
-    m_OverrideState: 1
-    m_Value: 1.3
+    m_OverrideState: 0
+    m_Value: 0.75
   bloomConservativeThreshold:
-    m_OverrideState: 1
-    m_Value: 1
+    m_OverrideState: 0
+    m_Value: 0
   bloomSpread:
-    m_OverrideState: 1
-    m_Value: 0.3
+    m_OverrideState: 0
+    m_Value: 0.5
   bloomMaxBrightness:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1000
   bloomTint:
     m_OverrideState: 0
@@ -289,7 +289,7 @@ MonoBehaviour:
       m_Bits: 0
   bloomAntiflicker:
     m_OverrideState: 0
-    m_Value: 1
+    m_Value: 0
   bloomResolution:
     m_OverrideState: 0
     m_Value: 1
@@ -355,28 +355,28 @@ MonoBehaviour:
     m_Value: {r: 1, g: 1, b: 1, a: 1}
   anamorphicFlaresIntensity:
     m_OverrideState: 1
-    m_Value: 2
-  anamorphicFlaresThreshold:
-    m_OverrideState: 1
-    m_Value: 2
-  anamorphicFlaresConservativeThreshold:
-    m_OverrideState: 1
     m_Value: 1
+  anamorphicFlaresThreshold:
+    m_OverrideState: 0
+    m_Value: 0.75
+  anamorphicFlaresConservativeThreshold:
+    m_OverrideState: 0
+    m_Value: 0
   anamorphicFlaresTint:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: {r: 0.5, g: 0.5, b: 1, a: 0}
   anamorphicFlaresVertical:
-    m_OverrideState: 1
-    m_Value: 1
+    m_OverrideState: 0
+    m_Value: 0
   anamorphicFlaresSpread:
-    m_OverrideState: 1
-    m_Value: 0.15
+    m_OverrideState: 0
+    m_Value: 1
   anamorphicFlaresMaxBrightness:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1000
   anamorphicFlaresDepthAtten:
-    m_OverrideState: 1
-    m_Value: 100
+    m_OverrideState: 0
+    m_Value: 0
   anamorphicFlaresNearAtten:
     m_OverrideState: 0
     m_Value: 0
@@ -392,8 +392,8 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 0
   anamorphicFlaresAntiflicker:
-    m_OverrideState: 1
-    m_Value: 1
+    m_OverrideState: 0
+    m_Value: 0
   anamorphicFlaresResolution:
     m_OverrideState: 0
     m_Value: 1
@@ -515,17 +515,17 @@ MonoBehaviour:
     m_Value: 0.01
   lensDirtIntensity:
     m_OverrideState: 1
-    m_Value: 0.5
+    m_Value: 2
   lensDirtThreshold:
-    m_OverrideState: 1
-    m_Value: 0.745
+    m_OverrideState: 0
+    m_Value: 0.5
   lensDirtTexture:
-    m_OverrideState: 1
-    m_Value: {fileID: 2800000, guid: 8279120499888f0459f22a619fc51ab6, type: 3}
+    m_OverrideState: 0
+    m_Value: {fileID: 0}
     dimension: 1
   lensDirtSpread:
-    m_OverrideState: 1
-    m_Value: 4
+    m_OverrideState: 0
+    m_Value: 3
   chromaticAberrationIntensity:
     m_OverrideState: 0
     m_Value: 0
@@ -693,10 +693,10 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0.15
   vignettingOuterRing:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0.454
   vignettingInnerRing:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0.925
   vignettingFade:
     m_OverrideState: 0
@@ -774,9 +774,6 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0
   outlineUsesOptimizedShader:
-    m_OverrideState: 0
-    m_Value: 0
-  outlineLayerCutOff:
     m_OverrideState: 0
     m_Value: 0
   nightVision:

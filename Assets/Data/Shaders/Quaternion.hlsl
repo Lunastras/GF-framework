@@ -21,9 +21,9 @@
             {  
                 return angleRadAxis(angleRad * 0.0174532924, axisNormalised);
             }
-
+            
             //Multiplies a quaternion with a vector3 
-            float3 quatVec3Mult(in float4 quat, in float3 inVec3) 
+            float3 quatVec3Mult_float(in float4 quat, in float3 inVec3, out float3 outVec) 
             { 
                 float num = quat.x * 2.0f;
 		        float num2 = quat.y * 2.0f;
@@ -38,13 +38,17 @@
 		        float num11 = quat.w * num2;
 		        float num12 = quat.w * num3;
 
-                return float3(
+                outVec = float3(
 		                    (1.0f - (num5 + num6)) * inVec3.x + (num7 - num12) * inVec3.y + (num8 + num11) * inVec3.z
 		                    ,(num7 + num12) * inVec3.x + (1.0f - (num4 + num6)) * inVec3.y + (num9 - num10) * inVec3.z
 		                    ,(num8 - num11) * inVec3.x + (num9 + num10) * inVec3.y + (1.0f - (num4 + num5)) * inVec3.z);
+
+                return outVec;
             }
 
-            float4 quatMult(in float4 lhs, in float4 rhs) 
+            float3 quatVec3Mult(in float4 quat, in float3 inVec3) { float3 outVec; return quatVec3Mult_float(quat, inVec3, outVec); }
+            
+            float4 quatMult_float(in float4 lhs, in float4 rhs) 
             {  
                 return float4(
                 lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
@@ -53,9 +57,11 @@
                 lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z);;
             }
 
-            float4 quatFromTo(in float3 initial, in float3 final) 
-            {  
-                float4 outQuat = float4(0,0,0,1);
+            float4 quatMult(in float4 lhs, in float4 rhs) { return quatMult_float(lhs, rhs); }
+            
+            float4 quatFromTo_float(in float3 initial, in float3 final, out float4 outQuat)
+            { 
+                outQuat = float4(0,0,0,1);
                 float dotf = dot(initial, final); 
                 if (dotf < -0.999999f) //opposite vectors
                 {
@@ -71,6 +77,12 @@
                 }
 
                 return outQuat;
+            }
+
+            float4 quatFromTo(in float3 initial, in float3 final)
+            {
+                 float4 outQuat; 
+                 return quatFromTo_float(initial,final, outQuat);
             }
 
             /*Props to allista from the kerbal space program forum for this incredible function*/

@@ -82,6 +82,12 @@ namespace Beautify.Demos {
                 BeautifySettings.settings.anamorphicFlaresIntensity.Override(intensity > 0 ? 0f: 1f);
             }
 
+            if (Input.GetKeyDown(KeyCode.Alpha9)) {
+                // toggles final blur
+                float intensity = BeautifySettings.settings.blurIntensity.value;
+                BeautifySettings.settings.blurIntensity.Override(intensity > 0 ? 0f: 1f);
+            }
+
         }
 
         void UpdateText() {

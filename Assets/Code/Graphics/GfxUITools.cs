@@ -38,13 +38,12 @@ public class GfxUiTools : MonoBehaviour
 
     private static GfxUiTools Instance;
 
-    private GfxButton m_displayedNotificationButton = null;
+    private GfcInteractable m_currentBottomNotificationInteractable = null;
 
     // Start is called before the first frame update
     void Awake()
     {
         this.SetSingleton(ref Instance);
-
 
         if (m_colourOverlay)
         {
@@ -100,36 +99,36 @@ public class GfxUiTools : MonoBehaviour
         Instance.m_colourOverlay.color = color;
     }
 
-    public static void WriteDisableReason(GfxButton aButton)
+    public static void WriteDisabledReason(GfcInteractable anInteractable)
     {
-        string reason = aButton.GetDisabledReason();
+        string reason = anInteractable.NotInteractableReason;
         if (!reason.IsEmpty())
         {
-            WriteBottomNotification(reason, BottomNotificationType.ERROR);
-            Instance.m_displayedNotificationButton = aButton;
+            WriteBottomNotification(reason, GfxBottomNotificationType.ERROR);
+            Instance.m_currentBottomNotificationInteractable = anInteractable;
         }
     }
 
-    public static void EraseDisableReason(GfxButton aButton)
+    public static void EraseDisableReason(GfcInteractable anInteractable)
     {
-        if (Instance.m_displayedNotificationButton == aButton)
-            WriteBottomNotification(null, BottomNotificationType.ERROR);
+        if (Instance.m_currentBottomNotificationInteractable == anInteractable)
+            WriteBottomNotification(null, GfxBottomNotificationType.ERROR);
     }
 
-    public static void WriteBottomNotification(string aText, BottomNotificationType aNotificationType = BottomNotificationType.NORMAL)
+    public static void WriteBottomNotification(string aText, GfxBottomNotificationType aNotificationType = GfxBottomNotificationType.NORMAL)
     {
         //todo make nice transition
-        Instance.m_displayedNotificationButton = null;
+        Instance.m_currentBottomNotificationInteractable = null;
         Instance.m_bottomNotificationText.text = aText;
 
         Color textColor;
         switch (aNotificationType)
         {
-            case (BottomNotificationType.ERROR):
+            case GfxBottomNotificationType.ERROR:
                 textColor = Instance.m_notificationColorError;
                 break;
 
-            case (BottomNotificationType.WARNING):
+            case GfxBottomNotificationType.WARNING:
                 textColor = Instance.m_notificationColorWarning;
                 break;
 
@@ -579,7 +578,7 @@ public enum ColorBlendMode
     SUBSTRACT
 }
 
-public enum BottomNotificationType
+public enum GfxBottomNotificationType
 {
     NORMAL,
     ERROR,

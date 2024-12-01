@@ -389,19 +389,19 @@ public abstract class GfgVnScene
         m_handler.NextLabel = aNextLabel.GetMethodInfo();
     }
 
-    protected void Option(string aText, Action aJumpLabel, bool anIsDisabled = false, string aDisabledReason = null)
+    protected void Option(string aText, Action aJumpLabel, bool anInteractable = true, string aNonInteractableReason = null)
     {
-        OptionUntranslated(GetTranslatedText(aText), aJumpLabel, anIsDisabled, GetTranslatedText(aDisabledReason));
+        OptionUntranslated(GetTranslatedText(aText), aJumpLabel, anInteractable, GetTranslatedText(aNonInteractableReason));
     }
 
-    protected void OptionUntranslated(string aText, Action aJumpLabel, bool anIsDisabled = false, string aDisabledReason = null)
+    protected void OptionUntranslated(string aText, Action aJumpLabel, bool anInteractable = true, string aNonInteractableReason = null)
     {
         CheckForNextLabel();
         CheckTypeOfLastAction(CornDialogueActionType.TEXT);
 
         m_handler.CallbackActionsBuffer.Add(aJumpLabel.GetMethodInfo());
 
-        GfxNotifyOption option = new(aText, anIsDisabled, aDisabledReason);
+        GfxNotifyOption option = new(aText, anInteractable, aNonInteractableReason);
         m_handler.OptionsBuffer.Add(option);
 
         CornDialogueAction dialogueAction = m_handler.DialogueActionsBuffer[^1];

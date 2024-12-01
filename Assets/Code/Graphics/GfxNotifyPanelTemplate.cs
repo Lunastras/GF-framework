@@ -86,15 +86,15 @@ public struct GfxTextMessage
 
 public struct GfxNotifyOption
 {
-    public GfxNotifyOption(string aOptionText, bool anIsDisabled = false, string aDisabledReason = null)
+    public GfxNotifyOption(string aOptionText, bool anInteractable = true, string aDisabledReason = null)
     {
         OptionText = aOptionText;
-        IsDisabled = anIsDisabled;
+        Interactable = anInteractable;
         DisabledReason = aDisabledReason;
     }
 
     public string OptionText;
     public string DisabledReason;
 
-    public bool IsDisabled;
+    public bool Interactable;
 }

@@ -112,7 +112,7 @@ public class CornMenuApartment : MonoBehaviour
         for (int i = 0; i < PlayerSaveData.COUNT_RESOURCES; ++i)
         {
             m_actionButtons[i].SliderText.SetSliderValue(playerResources[i]);
-            m_actionButtons[i].Button.SetDisabled(!CornManagerEvents.CanAfford(new CornEvent((CornEventType)i)), "You do not have the requirements needed for this action");
+            m_actionButtons[i].Button.SetInteractable(CornManagerEvents.CanAfford(new CornEvent((CornEventType)i)), "You do not have the requirements needed for this action");
         }
 
         for (int i = 0; i < PlayerSaveData.COUNT_0_TO_100_CONSUMABLES; ++i)
@@ -173,7 +173,7 @@ public class CornMenuApartment : MonoBehaviour
         switch (aType)
         {
             case GfxButtonCallbackType.SELECT:
-                if (aState && !aButton.IsDisabled())
+                if (aState && aButton.Interactable())
                 {
                     CornManagerBalancing.GetEventCostAndRewards(eventType).Preview();
                 }

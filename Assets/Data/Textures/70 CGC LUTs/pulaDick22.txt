@@ -1,0 +1,72 @@
+C:\Users\Lunastras\Downloads\70 CGC LUTs\False Color LUT.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Beginner to Hero tutorial LUT\Crash Course Orange Teal LUT.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Agfa Portrait XPS 160.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Fuji Astia 100F.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Fuji Eterna 3513.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Fuji Eterna 8563.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Fuji Provia 100F.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Fuji Sensia 100.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Fuji Superia Xtra 400.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Fuji Vivid 8543.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Kodak Ektachrome 64.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Kodak Professional Portra 400.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Kodak Vision 2383.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\LPP Tetrachrome 400.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Film Emulation\Polaroid 600.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Alexa LogC to Rec709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Blackmagic 4.6K Film to Rec709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Blackmagic 4K Film to Rec709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Blackmagic Cinema Camera Film to Rec709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Canon Log.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Canon Log2.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Canon Log3.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Cinelike D to Rec709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\CineStyle S Curve.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\DJI Inspire LOG to Rec709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\GoPro Protune to Rec709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Panasonic VLog to V709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\RedLogFilm to Rec709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\RedWideGamut_Log3G10 to Rec709.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Sony SLog2.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Sony SLog3 Cine.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Log to Rec709\Sony SLog3.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\3Strip.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\70s.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Amelie.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Aviator.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Blade Runner.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Bleach.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Brooklyn.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Celadon.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Chamoisee.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Cubanismo.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Drive.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Duotone.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Emulsion.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Enemy.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Enhance.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Fashion.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Glacier.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Godfather.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Grand Budapest.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Grime.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Grit.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Hannibal.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Her.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Mad Max.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Matrix V1.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Matrix V2.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Mint.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Moonrise Kingdom.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Ochre.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Punch.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Revenant.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Rhythm.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Seven.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Spy.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Stranger Things.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Summer.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Teal and Orange.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Thriller.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Vinteo.cube 
+C:\Users\Lunastras\Downloads\70 CGC LUTs\Look LUTs\Wonder Woman.cube 

@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: a018cc1c048759e4abd947d759865855
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 625f186215c104763be7675aa2d941aa, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 298582
+  packageName: Prototype Materials
+  packageVersion: 1.0.0
+  assetPath: Assets/Prototype Materials/Shaders/Prototype_Wires.shadergraph
+  uploadId: 698947

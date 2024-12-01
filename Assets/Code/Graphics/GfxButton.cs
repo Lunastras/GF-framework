@@ -35,17 +35,11 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     protected bool m_isPinned = false;
 
-    protected bool m_isDisabled = false;
-
     protected int m_frameOfEnable = -1;
-
-    protected bool m_isInteractable = true;
 
     protected bool m_deselectOnPointerExit = false;
 
     private float m_timeSinceTransitionStart = 0;
-
-    protected string m_disabledReason = null;
 
     protected GfcSound m_soundSelect;
 
@@ -61,8 +55,6 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     protected const string EMPTY = "";
 
-    protected string m_inactiveReason = EMPTY;
-
     protected bool m_isActive = false;
 
     public void OnSelect(BaseEventData aEventData) { SetSelected(true); }
@@ -73,7 +65,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     public void OnPointerExit(PointerEventData aEventData) { if (m_deselectOnPointerExit || true) SetSelected(false); }
 
-    public bool IsSelectable() { return m_isInteractable && (!m_isDisabled || !m_disabledReason.IsEmpty()); }
+    public bool IsSelectable() { return Interactable() || !NotInteractableReason.IsEmpty(); }
 
     public override void Interact(GfcCursorRayhit aHit) { Submit(); }
 
@@ -118,7 +110,6 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
         Index = 0;
         m_deselectOnPointerExit = false;
         SetInteractable(true);
-        SetDisabled(false);
         SetSelected(false);
         SetPinned(false);
         StartTransitionToNewState();
@@ -132,7 +123,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     public void Submit()
     {
-        if (!m_isDisabled && m_isInteractable)
+        if (Interactable())
         {
             OnSubmit.Invoke();
             OnEventCallbackInternal(GfxButtonCallbackType.SUBMIT, true);
@@ -152,11 +143,10 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     protected abstract void SetTransitionLerpState(float aTransitionPoint, GfxButtonHightlightState aDesiredState);
 
-    public void SetSelected(bool aSelect, bool aIgnoreInteractable = false)
+    public void SetSelected(bool aSelect)
     {
-        if (IsSelectable() && aSelect != m_isSelected && (aIgnoreInteractable || m_isInteractable))
+        if (IsSelectable() && aSelect != m_isSelected)
         {
-
             m_isSelected = aSelect;
             StartTransitionToNewState(aSelect);
             OnEventCallbackInternal(GfxButtonCallbackType.SELECT, aSelect);
@@ -164,62 +154,46 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
             if (aSelect)
             {
                 m_soundSelect?.PlaySingleInstance();
-                if (m_isDisabled) GfxUiTools.WriteDisableReason(this);
+                //if (!Interactable()) GfxUiTools.WriteDisabledReason(this);
             }
             else //deselected
             {
                 m_soundDeselect?.PlaySingleInstance();
-                if (m_isDisabled) GfxUiTools.EraseDisableReason(this);
+                //if (!Interactable()) GfxUiTools.EraseDisableReason(this);
             }
         }
     }
 
-    public void SetPinned(bool aIsPinned, bool aForceEnable = false, bool aIgnoreInteractable = false)
+    public void SetPinned(bool aIsPinned, bool aForceEnable = false)
     {
-        if (aIgnoreInteractable || m_isInteractable)
+        if (aForceEnable) SetInteractable(true);
+        aIsPinned &= Interactable();
+
+        if (aIsPinned != m_isPinned)
         {
-            if (aForceEnable) SetDisabled(false);
-            aIsPinned &= !m_isDisabled;
+            m_isPinned = aIsPinned;
+            StartTransitionToNewState(aIsPinned);
+            OnEventCallbackInternal(GfxButtonCallbackType.PINNED, aIsPinned);
 
-            if (aIsPinned != m_isPinned)
-            {
-                m_isPinned = aIsPinned;
-                StartTransitionToNewState(aIsPinned);
-                OnEventCallbackInternal(GfxButtonCallbackType.PINNED, aIsPinned);
-
-                if (aIsPinned)
-                    m_soundPinned?.PlaySingleInstance();
-                else
-                    m_soundUnpinned?.PlaySingleInstance();
-            }
+            if (aIsPinned)
+                m_soundPinned?.PlaySingleInstance();
+            else
+                m_soundUnpinned?.PlaySingleInstance();
         }
     }
 
-    public void SetDisabled(bool aIsDisabled, string aDisableReason = null, bool aIgnoreInteractable = false)
+    public override void SetInteractable(bool anInteractable, string aNotInteractableReason = null)
     {
-        if (aIgnoreInteractable || m_isInteractable)
+        bool oldState = m_interactable;
+        base.SetInteractable(anInteractable, aNotInteractableReason);
+
+        if (oldState != anInteractable)
         {
-            m_disabledReason = aDisableReason;
-            if (m_isDisabled != aIsDisabled)
-            {
-                m_isDisabled = aIsDisabled;
-                StartTransitionToNewState(true);
-                SetPinned(m_isPinned && !m_isDisabled);
-                OnEventCallbackInternal(GfxButtonCallbackType.DISABLED, aIsDisabled);
-            }
+            StartTransitionToNewState(true);
+            SetPinned(m_isPinned && anInteractable);
+            OnEventCallbackInternal(GfxButtonCallbackType.INTERACTABLE, anInteractable);
         }
     }
-
-    public void SetInteractable(bool aIsInteractable, bool aOverrideStates = true)
-    {
-        bool newState = aIsInteractable || !aOverrideStates;
-        m_isInteractable = aIsInteractable;
-        SetPinned(m_isPinned && newState, false, true);
-        SetSelected(m_isSelected && newState, true);
-        SetDisabled(m_isDisabled && newState, EMPTY, true);
-    }
-
-    public bool GetIsInteractable() { return m_isInteractable; }
 
     protected static GfxButtonHightlightState ComposeHighlightState(GfxButtonHightlightState aBase, GfxButtonHightlightState aHighlight)
     {
@@ -273,7 +247,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
         if (m_isSelected)
         {
             if (m_isPinned) return GetHighlightedDefaultState(m_highlightStatePinned);
-            if (m_isDisabled) return GetHighlightedDefaultState(m_highlightStateDisabled);
+            if (!m_interactable) return GetHighlightedDefaultState(m_highlightStateDisabled);
         }
 
         return m_highlightStateDefault;
@@ -282,14 +256,14 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     protected GfxButtonHightlightState GetDesiredHighlightState()
     {
         if (m_isSelected) return m_highlightStateSelected;
-        if (m_isDisabled) return m_highlightStateDisabled;
+        if (!m_interactable) return m_highlightStateDisabled;
         if (m_isPinned) return m_highlightStatePinned;
         return m_highlightStateDefault;
     }
 
     protected GfxButtonHightlightState GetFinalHighlightState()
     {
-        if (!m_isPinned && !m_isSelected && !m_isDisabled)
+        if (!m_isPinned && !m_isSelected && m_interactable)
             return m_highlightStateDefault;
 
         GfxButtonHightlightState defaultState = GetDefaultHighlightState();
@@ -330,17 +304,11 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
             m_transform.SetParent(aPanelData.Parent);
         }
 
-        SetInteractable(aPanelData.IsInteractable);
-
         if (aSnapToDesiredState)
             SnapToDesiredState();
     }
 
     public void SnapToDesiredState() { SetTransitionLerpState(1, GetFinalHighlightState()); }
-
-    public string GetInactiveReason() { return m_inactiveReason; }
-
-    public string GetDisabledReason() { return m_disabledReason; }
 
     public void SetHightlightStateDefault(GfxButtonHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStateDefault = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
     public void SetHightlightStateDisabled(GfxButtonHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStateDisabled = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
@@ -355,9 +323,6 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     public GfxButtonHightlightState GetHightlightStateSubmit() { return m_highlightStateSubmit; }
     public GfxButtonHightlightState GetHightlightStatePinned() { return m_highlightStatePinned; }
     public bool IsPinned() { return m_isPinned; }
-
-    public bool IsDisabled() { return m_isDisabled; }
-
     public bool IsSelectedPinned() { return m_isPinned && m_isSelected; }
 }
 
@@ -365,7 +330,7 @@ public enum GfxButtonCallbackType
 {
     SELECT,
     PINNED,
-    DISABLED,
+    INTERACTABLE,
     SUBMIT
 }
 
