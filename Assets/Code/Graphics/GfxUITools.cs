@@ -485,19 +485,24 @@ public class GfxUiTools : MonoBehaviour
 
     private static void CalculateAlignmentOffset(ref GfxPanelCreateData aPanelData, Vector2Int aPanelCount, AlignmentHorizontal aAlignmentHorizontal, AlignmentVertical aAlignmentVertical)
     {
+        RectTransform parent = aPanelData.ButtonCreateData.Parent as RectTransform;
+        Debug.Assert(parent);
+        Vector2 parentSize = parent.GetProperSize();
+        Debug.Assert(parentSize.x > 5 && parentSize.y > 5, "The size of the parent is very small, the button will not be visible.");
+
         for (int axis = 0; axis < 2; axis++)
         {
-            float listAxisLength = aPanelCount[axis] * (aPanelData.PanelSize[axis] + aPanelData.DistanceFromLastPanel[axis]) - aPanelData.DistanceFromLastPanel[axis];
+            float listAxisLength = aPanelCount[axis] * (parentSize[axis] + aPanelData.DistanceFromLastPanel[axis]) - aPanelData.DistanceFromLastPanel[axis];
 
             int spawnAxisCoefSign = Math.Sign(aPanelData.SpawnAxisCoef[axis]);
             int axisAlignment = axis == (int)Axis.HORIZONTAL ? (int)aAlignmentHorizontal : (int)aAlignmentVertical;
             if (axisAlignment == 0) //MIDDLE
             {
-                aPanelData.PositionOffset[axis] += 0.5f * spawnAxisCoefSign * (aPanelData.PanelSize[axis] - listAxisLength);
+                aPanelData.PositionOffset[axis] += 0.5f * spawnAxisCoefSign * (parentSize[axis] - listAxisLength);
             }
             else //TOP/BOTTOM, LEFT/RIGHT
             {
-                aPanelData.PositionOffset[axis] += 0.5f * spawnAxisCoefSign * aPanelData.PanelSize[axis];
+                aPanelData.PositionOffset[axis] += 0.5f * spawnAxisCoefSign * parentSize[axis];
 
                 int sign = axisAlignment == (int)AlignmentHorizontal.LEFT ? 1 : -1; // can be compared with (int)AlignmentVertical.BOTTOM, it is required for these two to have the same value
                 if (spawnAxisCoefSign == sign)

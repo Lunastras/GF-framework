@@ -22,8 +22,8 @@ public class GfcInput : MonoBehaviour
 
     private int m_fixedUpdateCountOfUpdate = 1;
 
-    private const int FIXED_DELTAS_UNTIL_REMOVE_DISPLAY = 2;
-    private const int FIXED_DELTAS_UNTIL_UPDATE_DISPLAY = 4;
+    private const int FIXED_DELTAS_UNTIL_REMOVE_DISPLAY = 3;
+    private const int FIXED_DELTAS_UNTIL_UPDATE_DISPLAY = 3;
 
 
     public static List<ActionElementMap> ActionsElementsBuffer

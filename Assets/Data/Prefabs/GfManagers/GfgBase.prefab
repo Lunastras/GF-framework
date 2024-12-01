@@ -603,7 +603,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_queryTriggerInteraction: 1
-  m_printObjectUnderCursor: 1
+  m_printObjectUnderCursor: 0
 --- !u!114 &6841134451231265333
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2046,12 +2046,12 @@ MonoBehaviour:
         ColorContent: {r: 1, g: 1, b: 1, a: 1}
         ColorPanelBlendMode: 0
         ColorContentBlendMode: 0
-        Opacity: 0.6
+        Opacity: 0.4
         PixelsPerUnit: 50
       SelectHighlightState:
-        Scale: {x: 1.1, y: 1.1, z: 1.1}
-        PositionOffset: {x: 100, y: 0, z: 0}
-        ColorPanel: {r: 1, g: 1, b: 1, a: 1}
+        Scale: {x: 1.2, y: 1.2, z: 1.2}
+        PositionOffset: {x: 0, y: 0, z: 0}
+        ColorPanel: {r: 0.4716981, g: 0.4716981, b: 0.4716981, a: 1}
         ColorContent: {r: 1, g: 1, b: 1, a: 1}
         ColorPanelBlendMode: 0
         ColorContentBlendMode: 0

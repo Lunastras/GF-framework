@@ -7,6 +7,7 @@ using TMPro;
 public class GfxSliderText : MonoBehaviour
 {
     [SerializeField] private Slider m_sliderMain;
+
     [SerializeField] private TextMeshProUGUI m_textValue;
 
     [SerializeField] private float m_previewFlashInterval = 2;
@@ -61,6 +62,7 @@ public class GfxSliderText : MonoBehaviour
             m_sliderBackgroundImage.color = m_sliderPositiveColor;
 
             m_sliderBackground.transform.SetAsFirstSibling();
+            m_sliderBackground.transform.localScale *= 0.9f;
 
             m_originalTextColor = m_textValue.color;
 

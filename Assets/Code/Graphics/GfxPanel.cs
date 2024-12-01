@@ -65,6 +65,7 @@ public class GfxPanel : GfxButton2D
                 Debug.LogError("The default pixelsPerUnit value set in " + gameObject.name + " was not 1, this will cause issues.");
         }
 
+        UpdatePriorityTextLength();
         IndecesColumnRow.x = IndecesColumnRow.y = 0;
         base.Initialize();
     }
@@ -111,25 +112,35 @@ public class GfxPanel : GfxButton2D
 
     public void SetLength(float aLength)
     {
-        m_mainRectTransform.SetSizeWithCurrentAnchorsX(aLength);
-        SetPanelLength(aLength);
+        if (aLength > 0)
+        {
+            m_mainRectTransform.SetSizeWithCurrentAnchorsX(aLength);
+            SetPanelLength(aLength);
+        }
     }
 
     public void SetHeight(float aHeight)
     {
-        m_mainRectTransform.SetSizeWithCurrentAnchorsY(aHeight);
-        SetPanelHeight(aHeight);
+        if (aHeight > 0)
+        {
+            m_mainRectTransform.SetSizeWithCurrentAnchorsY(aHeight);
+            SetPanelHeight(aHeight);
+        }
     }
 
     public void SetPanelLength(float aLength)
     {
-        m_panelRectTransform.SetSizeWithCurrentAnchorsX(aLength);
-        UpdatePriorityTextLength();
+        if (aLength > 0)
+        {
+            m_panelRectTransform.SetSizeWithCurrentAnchorsX(aLength);
+            UpdatePriorityTextLength();
+        }
     }
 
     public void SetPanelHeight(float aHeight)
     {
-        m_panelRectTransform.SetSizeWithCurrentAnchorsY(aHeight);
+        if (aHeight > 0)
+            m_panelRectTransform.SetSizeWithCurrentAnchorsY(aHeight);
     }
 
     public void UpdatePriorityTextLength()
@@ -295,9 +306,14 @@ public class GfxPanel : GfxButton2D
         SetCreateData(aPanelData.ButtonCreateData, false, aSetPositionAndIndex);
         TransitionCurve = aPanelData.TransitionCurve;
 
+        RectTransform parent = aPanelData.ButtonCreateData.Parent as RectTransform;
+        Debug.Assert(parent);
+        Vector2 parentSize = parent.GetProperSize();
+        Debug.Assert(parentSize.x > 5 && parentSize.y > 5, "The size of the parent is very small, the button will not be visible.");
+
         Initialize();
-        SetLength(aPanelData.PanelSize.x);
-        SetHeight(aPanelData.PanelSize.y);
+        SetLength(parentSize.x);
+        SetHeight(parentSize.y);
         SetContentPadding(aPanelData.Padding);
         SetContentInPadding(aPanelData.ContentInPadding);
 
@@ -307,8 +323,8 @@ public class GfxPanel : GfxButton2D
 
             Vector2 spawnPosition = new();
 
-            spawnPosition.x += IndecesColumnRow.x * (aPanelData.PanelSize.x + aPanelData.DistanceFromLastPanel.x);
-            spawnPosition.y += IndecesColumnRow.y * (aPanelData.PanelSize.y + aPanelData.DistanceFromLastPanel.y);
+            spawnPosition.x += IndecesColumnRow.x * (parentSize.x + aPanelData.DistanceFromLastPanel.x);
+            spawnPosition.y += IndecesColumnRow.y * (parentSize.y + aPanelData.DistanceFromLastPanel.y);
 
             GfcTools.Mult(ref spawnPosition, aPanelData.SpawnAxisCoef);
 
@@ -316,8 +332,8 @@ public class GfxPanel : GfxButton2D
 
             RectTransform panelRectTransform = GetMainRectTransform();
 
-            if (aPanelData.DistanceFromLastPanel.x <= -aPanelData.PanelSize.x
-            || aPanelData.DistanceFromLastPanel.y <= -aPanelData.PanelSize.y)
+            if (aPanelData.DistanceFromLastPanel.x <= -parentSize.x
+            || aPanelData.DistanceFromLastPanel.y <= -parentSize.y)
                 Debug.LogError("The distance from the panel is so low to the point where it goes against the spawn axis. If you wish to do this, please use the SpawnAxisCoef member of the panel create data.");
 
             panelRectTransform.localPosition = spawnPosition;
@@ -327,6 +343,8 @@ public class GfxPanel : GfxButton2D
 
         if (aSnapToDesiredState)
             SnapToDesiredState();
+
+        UpdatePriorityTextLength();
     }
 }
 
@@ -359,8 +377,6 @@ public struct GfxPanelCreateData
     public Vector2Int SpawnAxisCoef;
 
     public Vector2 Padding;
-
-    public Vector2 PanelSize;
 
     [HideInInspector] public Vector2 PositionOffset;
 
