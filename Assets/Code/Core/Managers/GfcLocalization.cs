@@ -207,7 +207,8 @@ public struct GfcLocalizedString
 {
     public GfcLocalizedString(string aRawStringForDefaultLocale, GfcLocalizationStringTable aTable = GfcLocalizationStringTable.MISC, string aLocalizedKey = null)
     {
-        aLocalizedKey ??= aRawStringForDefaultLocale.GetHashCode().ToString();
+        if (aLocalizedKey.IsEmpty())
+            aLocalizedKey = aRawStringForDefaultLocale.GetHashCode().ToString();
 
         m_rawString = aRawStringForDefaultLocale;
         m_table = aTable;

@@ -10,6 +10,7 @@ public class GfgManagerSaveData : MonoBehaviour
     private System.DateTime m_dateTimeOfProgramStart;
 
     [SerializeField] private bool m_printLogs = true;
+    [SerializeField] private bool m_forceNewSave = false;
 
     private const string SAVE_DATA_PATH = "SaveData/";
 
@@ -23,7 +24,7 @@ public class GfgManagerSaveData : MonoBehaviour
 
     private int m_usedSaveDataSlot = -1;
 
-    private PlayerSaveData m_playerSaveData = null;
+    private GfgPlayerSaveData m_playerSaveData = null;
 
     // Start is called before the first frame update
     void Awake()
@@ -51,14 +52,18 @@ public class GfgManagerSaveData : MonoBehaviour
         if (Instance.m_playerSaveData == null)
         {
             if (Instance.m_printLogs) Debug.Log("No save file loaded, automatically loading data...");
-            int currentSaveIndex;
-            bool foundSave = false;
 
-            for (currentSaveIndex = 0; currentSaveIndex < MAX_NUM_SAVE_FILES && !foundSave; ++currentSaveIndex)
-                foundSave = SaveExists(currentSaveIndex);
+            if (!Instance.m_forceNewSave)
+            {
+                int currentSaveIndex;
+                bool foundSave = false;
 
-            if (foundSave)
-                LoadAndSetActivePlayerSaveData(currentSaveIndex);
+                for (currentSaveIndex = 0; currentSaveIndex < MAX_NUM_SAVE_FILES && !foundSave; ++currentSaveIndex)
+                    foundSave = SaveExists(currentSaveIndex);
+
+                if (foundSave)
+                    LoadAndSetActivePlayerSaveData(currentSaveIndex);
+            }
 
             if (Instance.m_playerSaveData == null)
             {
@@ -68,12 +73,9 @@ public class GfgManagerSaveData : MonoBehaviour
         }
     }
 
-    public static PlayerSaveData CreatePlayerSaveData(string aName)
-    {
-        return new(aName, GetCurrentUnixTime());
-    }
+    public static GfgPlayerSaveData CreatePlayerSaveData(string aName) { return new(aName, GetCurrentUnixTime()); }
 
-    public static PlayerSaveData GetActivePlayerSaveData()
+    public static GfgPlayerSaveData GetActivePlayerSaveData()
     {
         MakeSureIHaveASaveData();
         return Instance.m_playerSaveData;
@@ -91,7 +93,7 @@ public class GfgManagerSaveData : MonoBehaviour
 
     }
 
-    public static void SetActivePlayerSaveData(PlayerSaveData aPlayerSaveData, int aSaveIndex = 0)
+    public static void SetActivePlayerSaveData(GfgPlayerSaveData aPlayerSaveData, int aSaveIndex = 0)
     {
         if (aPlayerSaveData != null)
         {
@@ -110,13 +112,17 @@ public class GfgManagerSaveData : MonoBehaviour
             Debug.LogError("The given PlayerSaveData is null!");
     }
 
-    public static PlayerSaveData GetPlayerSaveData(int aSaveIndex = 0)
+    public static GfgPlayerSaveData GetPlayerSaveData(int aSaveIndex = 0)
     {
         GfcStringBuffer savePath = GetSaveDataFilePath(aSaveIndex);
-        PlayerSaveData saveData = null;
+        GfgPlayerSaveData saveData = null;
 
         if (File.Exists(savePath))
-            saveData = JsonUtility.FromJson<PlayerSaveData>(File.ReadAllText(savePath));
+        {
+            saveData = JsonUtility.FromJson<GfgPlayerSaveData>(File.ReadAllText(savePath));
+            if (saveData != null && Instance.m_printLogs)
+                Debug.Log("Loaded save file " + savePath);
+        }
 
         savePath.Clear();
         return saveData;
@@ -148,7 +154,7 @@ public class GfgManagerSaveData : MonoBehaviour
             for (aSaveIndex = 0; aSaveIndex < MAX_NUM_SAVE_FILES && SaveExists(aSaveIndex); aSaveIndex++) ; //find an unused slot
         }
 
-        PlayerSaveData saveData = GetActivePlayerSaveData();
+        GfgPlayerSaveData saveData = GetActivePlayerSaveData();
         double currentTime = Time.unscaledTimeAsDouble;
         saveData.SecondsPlayed += currentTime - Instance.m_timeOfLastSave;
 

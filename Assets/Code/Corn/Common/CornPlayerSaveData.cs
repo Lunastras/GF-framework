@@ -7,7 +7,7 @@ using System.Data;
 using Unity.Collections;
 
 [Serializable]
-public class PlayerSaveData
+public class GfgPlayerSaveData
 {
     [SerializeField] private string m_name;
 
@@ -17,6 +17,8 @@ public class PlayerSaveData
 
     public class CornSaveData
     {
+        public HashSet<string> FinishedNonSpecificScenes = new(8);
+
         public int MentalSanity;
 
         public float[] Consumables;
@@ -26,6 +28,8 @@ public class PlayerSaveData
         public int CurrentStoryPhase;
 
         public int[] CurrentStoryPhaseProgress;
+
+        public int DayOfTheWeek;
 
         public int CurrentHour { get; private set; } = FIRST_WAKEUP_TIME;
 
@@ -37,11 +41,14 @@ public class PlayerSaveData
 
         public int CurrentSleepTime = 22;
 
-        public float GameProgress = 0;
+        public bool CurrentStoryPhaseGameLevelFinished;
 
-        public int MaxMentalSanity = CornManagerEvents.DICE_ROLL_NUM_FACES;
+        public int CurrentStoryPhaseGameTriviasFinished;
 
-        public HashSet<string> FinishedNonSpecificScenes = new(8);
+        public int WorkCountSinceLastTrivia;
+
+        public bool HadCornEventSinceWakeUp;
+        public int CornActionsInARow;
 
         public TimeSpan ProgressTime(int aHoursSpan)
         {
@@ -61,9 +68,12 @@ public class PlayerSaveData
                 CurrentMonth %= 12;
 
                 daysInMonth = GetDaysInMonth(CurrentMonth);
-            };
+            }
 
-            return new(daysPassed, monthsPassed);
+            int weeksPassed = (DayOfTheWeek + daysPassed) / 7;
+            DayOfTheWeek = (DayOfTheWeek + daysPassed) % 7;
+
+            return new(daysPassed, weeksPassed, monthsPassed);
         }
 
         //aYear = 1 because we do not want leap year by default
@@ -82,24 +92,24 @@ public class PlayerSaveData
             return numDays;
         }
 
-        public float GetValue(PlayerResources aType) { return Resources[(int)aType]; }
+        public float GetValue(CornPlayerResources aType) { return Resources[(int)aType]; }
 
-        public float GetValue(PlayerConsumables aType) { return Consumables[(int)aType]; }
+        public float GetValue(CornPlayerConsumables aType) { return Consumables[(int)aType]; }
 
-        public void ApplyModifier(PlayerResources aType, float aValue)
+        public void ApplyModifier(CornPlayerResources aType, float aValue)
         {
             Resources[(int)aType] += aValue;
             Resources[(int)aType].ClampSelf(0, 1);
         }
 
-        public void ApplyModifier(PlayerConsumables aType, float aValue)
+        public void ApplyModifier(CornPlayerConsumables aType, float aValue)
         {
             Consumables[(int)aType] += aValue;
-            if (aType < PlayerConsumables.MONEY)
+            if (aType < CornPlayerConsumables.MONEY)
                 Consumables[(int)aType].ClampSelf(0, 1);
         }
 
-        public bool CanAfford(PlayerConsumables aType, float aValue)
+        public bool CanAfford(CornPlayerConsumables aType, float aValue)
         {
             return -0.001 <= Consumables[(int)aType] + aValue; //-0.001 to account for errors
         }
@@ -136,32 +146,23 @@ public class PlayerSaveData
 
     private const float START_RESOURCE_VALUE = 0.5f;
 
-    public const int COUNT_RESOURCES = (int)PlayerResources.COUNT;
+    public const int COUNT_RESOURCES = (int)CornPlayerResources.COUNT;
 
-    public const int COUNT_CONSUMABLES = (int)PlayerConsumables.COUNT;
+    public const int COUNT_CONSUMABLES = (int)CornPlayerConsumables.COUNT;
 
-    public const int COUNT_0_TO_100_CONSUMABLES = (int)PlayerConsumables.MONEY; //Money is not between 0 to 100
+    public const int COUNT_0_TO_100_CONSUMABLES = (int)CornPlayerConsumables.MONEY; //Money is not between 0 to 100
 
     public const int COUNT_NON_0_TO_100_CONSUMABLES = COUNT_CONSUMABLES - COUNT_0_TO_100_CONSUMABLES; //Money is not between 0 to 100
 
-    public const int GAME_PROGRESS_MILESTONES = 20;
-
-    public const int GAME_PROGRESS_MAX = 100;
-
-    public int CurrentMilestone { get { return (int)Mathf.Floor(Data.GameProgress / ((float)GAME_PROGRESS_MAX / GAME_PROGRESS_MILESTONES)); } }
-
-
-    public PlayerSaveData(string aName, double aCurrentUnixTime)
+    public GfgPlayerSaveData(string aName, double aCurrentUnixTime)
     {
         m_name = aName;
         m_unixTimeOfCreation = aCurrentUnixTime;
 
         ValidateSaveFile();
 
-        Data.MentalSanity = Data.MaxMentalSanity;
-        Data.Consumables[(int)PlayerConsumables.MONEY] = INITIAL_SUM_OF_MONEY;
-        //for (int i = 0; i < (int)PlayerConsumables.MONEY; ++i)
-        //  Consumables[i] = START_RESOURCE_VALUE;
+        Data.MentalSanity = CornManagerBalancing.DICE_ROLL_NUM_FACES;
+        Data.Consumables[(int)CornPlayerConsumables.MONEY] = INITIAL_SUM_OF_MONEY;
     }
 
     public string GetName() { return m_name; }
@@ -219,21 +220,21 @@ public class PlayerSaveData
             createdNewSave = true;
         }
 
-        validData &= ValidateArrayValues(ref Data.Resources, (int)PlayerResources.COUNT, START_RESOURCE_VALUE);
-        validData &= ValidateArrayValues(ref Data.Consumables, (int)PlayerConsumables.COUNT, START_RESOURCE_VALUE);
+        validData &= ValidateArrayValues(ref Data.Resources, (int)CornPlayerResources.COUNT, START_RESOURCE_VALUE);
+        validData &= ValidateArrayValues(ref Data.Consumables, (int)CornPlayerConsumables.COUNT, START_RESOURCE_VALUE);
         validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
 
-        Data.MentalSanity.ClampSelf(0, Data.MaxMentalSanity);
+        Data.MentalSanity.ClampSelf(0, CornManagerBalancing.DICE_ROLL_NUM_FACES);
 
         //used to take into account any changes made to the initial sum of money
-        Data.Consumables[(int)PlayerConsumables.MONEY] = Mathf.Max(0, Data.Consumables[(int)PlayerConsumables.MONEY] + INITIAL_SUM_OF_MONEY - m_originalMaxSumMoney);
+        Data.Consumables[(int)CornPlayerConsumables.MONEY] = Mathf.Max(0, Data.Consumables[(int)CornPlayerConsumables.MONEY] + INITIAL_SUM_OF_MONEY - m_originalMaxSumMoney);
 
         return validData || createdNewSave;
     }
 }
 
 [Serializable]
-public enum PlayerConsumables
+public enum CornPlayerConsumables
 {
     ENERGY,
     WILLPOWER,
@@ -246,13 +247,13 @@ public enum PlayerConsumables
 [Serializable]
 public struct PlayerConsumablesModifier
 {
-    public PlayerConsumables Type;
+    public CornPlayerConsumables Type;
     public float Value;
     public float BonusPercent;
 }
 
 [Serializable]
-public enum PlayerResources
+public enum CornPlayerResources
 {
     WORK,
     CHORES,
@@ -264,19 +265,19 @@ public enum PlayerResources
 [Serializable]
 public struct PlayerResourcesModifier
 {
-    public PlayerResources Type;
+    public CornPlayerResources Type;
     public float Value;
     public float BonusPercent;
 }
 
 public struct TimeSpan
 {
-    public TimeSpan(int aDays, int aMonths)
+    public TimeSpan(int aDays, int aWeeks, int aMonths)
     {
         Days = aDays;
+        Weeks = aWeeks;
         Months = aMonths;
     }
 
-    public int Days;
-    public int Months;
+    public int Days, Weeks, Months;
 }

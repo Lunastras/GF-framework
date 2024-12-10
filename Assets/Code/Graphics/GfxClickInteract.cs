@@ -94,7 +94,7 @@ public class GfxClickInteract : MonoBehaviour
                 }
                 else //somehow let player they can interact
                 {
-                    GfcInput.UpdateDisplayInput(m_submitTracker.InputType, m_clickInteractText);
+                    GfcInput.UpdateDisplayInput(m_submitTracker.InputType, default, m_clickInteractText);
                 }
             }
             else

@@ -53,8 +53,8 @@ MonoBehaviour:
         - serializedVersion: 3
           time: 1
           value: 1
-          inSlope: 0.23648371
-          outSlope: 0.23648371
+          inSlope: 0.2002213
+          outSlope: 0.2002213
           tangentMode: 0
           weightedMode: 0
           inWeight: 0
@@ -273,49 +273,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06437c1ff663d574d9447842ba0a72e4, type: 3}
   m_Name: ScreenSpaceLensFlare
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0.2
+    m_Value: 0.1
   tintColor:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: {r: 1, g: 1, b: 1, a: 1}
   bloomMip:
     m_OverrideState: 0
     m_Value: 1
   firstFlareIntensity:
-    m_OverrideState: 1
-    m_Value: 1
+    m_OverrideState: 0
+    m_Value: 0
   secondaryFlareIntensity:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0.5
   warpedFlareIntensity:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0.2
   warpedFlareScale:
     m_OverrideState: 0
     m_Value: {x: 1, y: 1}
   samples:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1
   sampleDimmer:
     m_OverrideState: 0
     m_Value: 0.5
   vignetteEffect:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1
   startingPosition:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1
   scale:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1
   streaksIntensity:
     m_OverrideState: 1
-    m_Value: 5.07
+    m_Value: 2
   streaksLength:
     m_OverrideState: 1
-    m_Value: 0.113
+    m_Value: 0.15
   streaksOrientation:
     m_OverrideState: 1
     m_Value: 90
@@ -349,16 +349,16 @@ MonoBehaviour:
     m_Value: 1.1
   intensity:
     m_OverrideState: 1
-    m_Value: 3
+    m_Value: 2
   scatter:
     m_OverrideState: 1
     m_Value: 0.7
   clamp:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 65472
   tint:
-    m_OverrideState: 1
-    m_Value: {r: 1, g: 1, b: 1, a: 1}
+    m_OverrideState: 0
+    m_Value: {r: 0, g: 1, b: 0.2260654, a: 1}
   highQualityFiltering:
     m_OverrideState: 1
     m_Value: 0
@@ -447,7 +447,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81180773991d8724ab7f2d216912b564, type: 3}
   m_Name: ChromaticAberration
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   intensity:
     m_OverrideState: 1
     m_Value: 0.04
@@ -1296,13 +1296,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5485954d14dfb9a4c8ead8edb0ded5b1, type: 3}
   m_Name: LiftGammaGain
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   lift:
     m_OverrideState: 0
     m_Value: {x: 1, y: 1, z: 1, w: 0}
   gamma:
     m_OverrideState: 1
-    m_Value: {x: 1, y: 1, z: 1, w: -0.010015022}
+    m_Value: {x: 1, y: 0.9584551, z: 0.9418233, w: 0}
   gain:
     m_OverrideState: 0
     m_Value: {x: 1, y: 1, z: 1, w: 0}
@@ -1512,12 +1512,12 @@ MonoBehaviour:
     m_Value: 1
   saturate:
     m_OverrideState: 1
-    m_Value: 1.5
+    m_Value: 0
   brightness:
     m_OverrideState: 1
     m_Value: 1.85
   contrast:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 1
   daltonize:
     m_OverrideState: 0
@@ -1539,10 +1539,10 @@ MonoBehaviour:
     m_Value: 1
   lutIntensity:
     m_OverrideState: 1
-    m_Value: 0.3
+    m_Value: 0.4
   lutTexture:
     m_OverrideState: 1
-    m_Value: {fileID: 11700000, guid: 8c9d307f5c9ac0a41a842e91a842ea20, type: 2}
+    m_Value: {fileID: 11700000, guid: cf129f7c49c0bc349b94a7b10e028c86, type: 2}
     dimension: 1
   bloomIntensity:
     m_OverrideState: 0
@@ -1980,16 +1980,16 @@ MonoBehaviour:
     m_Value: 0
   purkinjeAmount:
     m_OverrideState: 1
-    m_Value: 1.16
+    m_Value: 4.76
   purkinjeLuminanceThreshold:
     m_OverrideState: 1
-    m_Value: 0.15
+    m_Value: 0.738
   vignettingOuterRing:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 0.37
   vignettingInnerRing:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 0.777
   vignettingFade:
     m_OverrideState: 0
     m_Value: 0
@@ -2097,10 +2097,10 @@ MonoBehaviour:
     m_Value: 0.00632
   frame:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 1
   frameStyle:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 1
   frameBandHorizontalSize:
     m_OverrideState: 0
     m_Value: 0
@@ -2122,10 +2122,10 @@ MonoBehaviour:
     dimension: 1
   blurIntensity:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 0.6
   blurMask:
     m_OverrideState: 0
-    m_Value: {fileID: 0}
+    m_Value: {fileID: 2800000, guid: 497391d2b220f4b588c8707828d383fc, type: 3}
     dimension: 1
   blurKeepSourceOnTop:
     m_OverrideState: 0

@@ -365,6 +365,9 @@ public class CornManagerStory : MonoBehaviour
         if (completedAll)
         {
             saveData.CurrentStoryPhase++;
+            saveData.CurrentStoryPhaseGameTriviasFinished = 0;
+            saveData.CurrentStoryPhaseGameLevelFinished = false;
+
             for (int i = 0; i < saveData.CurrentStoryPhaseProgress.Length; i++)
                 saveData.CurrentStoryPhaseProgress[i] = 0;
         }

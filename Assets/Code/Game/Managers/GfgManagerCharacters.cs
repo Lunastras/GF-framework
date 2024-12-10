@@ -292,13 +292,3 @@ public class GfgManagerCharacters : MonoBehaviour
 
     public static int GetNumTypes() { return NUM_CHARACTER_TYPES; }
 }
-
-//Used to visualise matrices in the editor
-[System.Serializable]
-public struct StructArray<T>
-{
-    [SerializeField]
-    public T[] array;
-}
-
-

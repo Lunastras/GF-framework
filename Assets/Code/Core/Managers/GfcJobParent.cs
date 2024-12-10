@@ -167,7 +167,6 @@ public class JobParent : MonoBehaviour
     }
 
     // Update is called once per frame
-
     protected void RunJobs(UpdateTypes updateType)
     {
         float deltaTime = Time.deltaTime;
@@ -195,7 +194,7 @@ public class JobParent : MonoBehaviour
                 }
 
                 if (jobCount > 0)
-                    JobHandle.CompleteAll(m_jobHandles);
+                    JobHandle.CompleteAll(m_jobHandles.AsArray());
 
                 for (i = 0; i < count; ++i)
                     list[i].OnJobFinished(deltaTime, updateType);

@@ -39,7 +39,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
     public override void ClearVisuals()
     {
-        Debug.Assert(m_currentNotifyCoroutine.CoroutineIsRunning, "Clear cannot be called while the routine is still running");
+        Debug.Assert(!m_currentNotifyCoroutine.CoroutineIsRunning, "Clear cannot be called while the routine is still running");
         TransitionBox(0, true, false);
     }
 

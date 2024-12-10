@@ -23,6 +23,11 @@ public class GfcInputDisplayPrompt : MonoBehaviour
         Debug.Assert(m_rectTransform);
     }
 
+    void Start()
+    {
+        GfcPooling.SetPoolPermanent(m_prefabIconSprites);
+    }
+
     private void OnDisable()
     {
         GfcPooling.DestroyChildren(m_spritesParent, false, true, false, false);

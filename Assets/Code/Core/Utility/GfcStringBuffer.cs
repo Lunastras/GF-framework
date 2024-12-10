@@ -46,6 +46,36 @@ public class GfcStringBuffer
 
     public static implicit operator string(GfcStringBuffer d) => d.m_stringBuffer;
 
+    public static GfcStringBuffer operator +(GfcStringBuffer aStringBuffer, char aChar)
+    {
+        aStringBuffer.Append(aChar);
+        return aStringBuffer;
+    }
+
+    public static GfcStringBuffer operator +(GfcStringBuffer aStringBuffer, string aString)
+    {
+        aStringBuffer.Append(aString);
+        return aStringBuffer;
+    }
+
+    public static GfcStringBuffer operator +(GfcStringBuffer aStringBuffer, long aLong)
+    {
+        aStringBuffer.Append(aLong);
+        return aStringBuffer;
+    }
+
+    public static GfcStringBuffer operator +(GfcStringBuffer aStringBuffer, ulong aLong)
+    {
+        aStringBuffer.Append(aLong);
+        return aStringBuffer;
+    }
+
+    public static GfcStringBuffer operator +(GfcStringBuffer aStringBuffer, double aDouble)
+    {
+        aStringBuffer.Append(aDouble, 4);
+        return aStringBuffer;
+    }
+
     public unsafe void StrUpr()
     {
         fixed (char* stringPtr = m_stringBuffer)

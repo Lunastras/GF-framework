@@ -11,6 +11,11 @@ public class GfcInputDisplayPromptParent : MonoBehaviour
 
     private GfcInputDisplayPrompt m_lengthTestDisplayPrompt;
 
+    void Start()
+    {
+        GfcPooling.SetPoolPermanent(m_promptPrefab);
+    }
+
     public void UpdatePrompts(List<GfcDisplayedInputData> someDisplayInputs, int aPlayerId = 0)
     {
         if (m_promptsParent == null) m_promptsParent = transform;

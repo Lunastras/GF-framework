@@ -26,7 +26,7 @@ public class GfxDoubleTextWriter : MonoBehaviour
         m_textEraser.transform.SetParent(m_textWriterMain.transform.parent, false);
     }
 
-    public void WriteString(string aString, float aWriteSpeedMultiplier = 1, float aEraseSpeedMultiplier = 1, bool aSkipEraseAnimation = false)
+    public void WriteStringAnimation(string aString, float aWriteSpeedMultiplier = 1, float aEraseSpeedMultiplier = 1, bool aSkipEraseAnimation = false)
     {
         WriteString(aString, out _, out _, aWriteSpeedMultiplier, aEraseSpeedMultiplier, aSkipEraseAnimation);
     }
@@ -34,8 +34,8 @@ public class GfxDoubleTextWriter : MonoBehaviour
     public void WriteString(string aString, out CoroutineHandle aWriterHandle, out CoroutineHandle aEraserHandle, float aWriteSpeedMultiplier = 1, float aEraseSpeedMultiplier = 1, bool aSkipEraseAnimation = false)
     {
         (m_textWriter, m_textEraser) = (m_textEraser, m_textWriter); //swap
-        aEraserHandle = m_textEraser.EraseText(aEraseSpeedMultiplier);
-        aWriterHandle = m_textWriter.WriteText(aString, aWriteSpeedMultiplier);
+        aEraserHandle = m_textEraser.EraseTextAnimation(aEraseSpeedMultiplier);
+        aWriterHandle = m_textWriter.WriteTextAnimation(aString, aWriteSpeedMultiplier);
 
         m_textWriter.TextMeshPro.transform.SetAsFirstSibling();
     }
@@ -67,6 +67,12 @@ public class GfxDoubleTextWriter : MonoBehaviour
         bool ret = writerWorking || eraserWorking;
         //if (ret) Debug.Log("DOUBLE WRITER: ERASER (" + eraserWorking + ") - WRITER(" + writerWorking + ")");
         return ret;
+    }
+
+    public void SetColor(Color aColor)
+    {
+        m_textWriter.TextMeshPro.color = aColor;
+        m_textEraser.TextMeshPro.color = aColor;
     }
 
     public CoroutineHandle WaitUntilTextFinishes(GfcInputType aSubmitInput = GfcInputType.NONE, GfcInputType aSkipInput = GfcInputType.RUN, float aFinishSpeedMultiplier = 1, bool aForceWriteOnSubmit = false)
@@ -115,11 +121,12 @@ public class GfxDoubleTextWriter : MonoBehaviour
         yield break;
     }
 
-    public CoroutineHandle EraseText(float aSpeedMultiplier = 1)
+    public CoroutineHandle EraseTextAnimation(float aSpeedMultiplier = 1)
     {
+        ForceWriteText();
         (m_textEraser, m_textWriter) = (m_textWriter, m_textEraser);
         m_textWriter.RemoveText();
 
-        return m_textEraser.EraseText(aSpeedMultiplier);
+        return m_textEraser.EraseTextAnimation(aSpeedMultiplier);
     }
 }

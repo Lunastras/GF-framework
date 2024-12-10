@@ -209,7 +209,7 @@ public class ParticleInterCollision : GfcJobChild
             ParticleSystemBoundsJob boundsJob = new()
             {
                 AllParticlesReadonly = AllWorkingParticles.AsReadOnly(),
-                AllParticleSystems = AllParticleSystems
+                AllParticleSystems = AllParticleSystems.AsArray()
             };
 
             var brotherSystems = JobParent.GetJobChildren(GetType(), updateType);

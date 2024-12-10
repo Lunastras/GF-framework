@@ -92,11 +92,11 @@ public class GfxRichTextWriter : MonoBehaviour
         return m_textAnimationHandle;
     }
 
-    public CoroutineHandle WriteText(string aString, float aSpeedMultiplier = 1) { SetString(aString, true); return WriteStringAnimation(true, aSpeedMultiplier); }
+    public CoroutineHandle WriteTextAnimation(string aString, float aSpeedMultiplier = 1) { SetString(aString, true); return WriteStringAnimation(true, aSpeedMultiplier); }
 
     public void RemoveText() { SetString(null); }
 
-    public CoroutineHandle EraseText(float aSpeedMultiplier = 1) { return m_textEraseHandle.RunCoroutineIfNotRunning(_EraseText(aSpeedMultiplier)); }
+    public CoroutineHandle EraseTextAnimation(float aSpeedMultiplier = 1) { return m_textEraseHandle.RunCoroutineIfNotRunning(_EraseText(aSpeedMultiplier)); }
 
     private IEnumerator<float> _EraseText(float aSpeedMultiplier = 1)
     {

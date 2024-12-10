@@ -19,6 +19,11 @@ public abstract class GfxNotifyPanelTemplate : MonoBehaviour
 
     public Action OnNotificationFadeOutEnd;
 
+    protected void Start()
+    {
+        ClearVisuals();
+    }
+
     public void QueueMessage(string aMessage) { m_messagesBuffer.Add(new(aMessage)); }
     public void QueueMessage(IEnumerable<string> someMessages) { foreach (string message in someMessages) m_messagesBuffer.Add(new(message)); }
     public void QueueMessage(GfxTextMessage aMessage) { m_messagesBuffer.Add(aMessage); }

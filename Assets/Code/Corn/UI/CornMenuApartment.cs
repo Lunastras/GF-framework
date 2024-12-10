@@ -49,7 +49,7 @@ public class CornMenuApartment : MonoBehaviour
         for (int i = 0; i < m_actionButtonsInfo.Length; ++i)
             if (i != (int)m_actionButtonsInfo[i].Type) Debug.LogError("The type " + m_actionButtonsInfo[i].Type + " is at index " + i + ", it should be at index " + (int)m_actionButtonsInfo[i].Type);
 
-        if (m_actionButtonsInfo.Length != (int)PlayerResources.COUNT) Debug.LogError("The list only has " + m_actionButtonsInfo.Length + " elements, it should have " + (int)PlayerResources.COUNT);
+        if (m_actionButtonsInfo.Length != (int)CornPlayerResources.COUNT) Debug.LogError("The list only has " + m_actionButtonsInfo.Length + " elements, it should have " + (int)CornPlayerResources.COUNT);
 
         /*
         for (int i = 0; i < m_slidersConsumables.Length; ++i)
@@ -66,10 +66,10 @@ public class CornMenuApartment : MonoBehaviour
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Confined;
 
-        m_actionButtons = new CornActionButton[PlayerSaveData.COUNT_RESOURCES];
-        m_consumablesSliders = new GfxSliderText[PlayerSaveData.COUNT_0_TO_100_CONSUMABLES];
+        m_actionButtons = new CornActionButton[GfgPlayerSaveData.COUNT_RESOURCES];
+        m_consumablesSliders = new GfxSliderText[GfgPlayerSaveData.COUNT_0_TO_100_CONSUMABLES];
 
-        for (int i = 0; i < PlayerSaveData.COUNT_RESOURCES; ++i)
+        for (int i = 0; i < GfgPlayerSaveData.COUNT_RESOURCES; ++i)
         {
             m_actionButtons[i] = Instantiate(m_prefabButtonAction, m_parentButtonAction, false).GetComponent<CornActionButton>();
             m_actionButtons[i].Initialize();
@@ -77,7 +77,7 @@ public class CornMenuApartment : MonoBehaviour
             m_actionButtons[i].WorldPointOfReference = m_actionButtonsInfo[i].WorldReferencePoint;
             m_actionButtons[i].SetPanelColor(m_actionButtonsInfo[i].ColorPanel, ColorBlendMode.MULTIPLY);
             m_actionButtons[i].SetContentColor(m_actionButtonsInfo[i].ColorContent, ColorBlendMode.MULTIPLY);
-            m_actionButtons[i].SliderText.SetName(((PlayerResources)i).ToString());
+            m_actionButtons[i].SliderText.SetName(((CornPlayerResources)i).ToString());
             m_actionButtons[i].Button.Index = i;
             m_actionButtons[i].Button.OnButtonEventCallback += OnButtonEvent;
         }
@@ -88,11 +88,11 @@ public class CornMenuApartment : MonoBehaviour
         m_buttonSleep.Button.Index = (int)CornEventType.SLEEP;
         m_buttonSleep.Button.OnButtonEventCallback += OnButtonEvent;
 
-        for (int i = 0; i < PlayerSaveData.COUNT_0_TO_100_CONSUMABLES; ++i)
+        for (int i = 0; i < GfgPlayerSaveData.COUNT_0_TO_100_CONSUMABLES; ++i)
         {
             m_consumablesSliders[i] = Instantiate(m_prefabConsumableSlider, m_parentConsumableSlider, false).GetComponent<GfxSliderText>();
             m_consumablesSliders[i].transform.localPosition = m_consumablesSlidersDistance * i;
-            m_consumablesSliders[i].SetName(((PlayerConsumables)i).ToString());
+            m_consumablesSliders[i].SetName(((CornPlayerConsumables)i).ToString());
         }
 
         if (!CornManagerEvents.ExecutingEvent)
@@ -101,57 +101,64 @@ public class CornMenuApartment : MonoBehaviour
         UpdateGraphicsInternal();
     }
 
-    public static void UpdateGraphics() { Instance.UpdateGraphicsInternal(); }
+    public static void UpdateGraphics(bool anInstanceCanBeNull = false)
+    {
+        Debug.Assert(Instance || anInstanceCanBeNull);
+        if (Instance) Instance.UpdateGraphicsInternal();
+    }
 
     private void UpdateGraphicsInternal()
     {
-        var saveData = GfgManagerSaveData.GetActivePlayerSaveData();
-        float[] playerResources = saveData.Data.Resources;
-        float[] playerConsumables = saveData.Data.Consumables;
+        var saveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
+        float[] playerResources = saveData.Resources;
+        float[] playerConsumables = saveData.Consumables;
 
-        for (int i = 0; i < PlayerSaveData.COUNT_RESOURCES; ++i)
+        for (int i = 0; i < GfgPlayerSaveData.COUNT_RESOURCES; ++i)
         {
             m_actionButtons[i].SliderText.SetSliderValue(playerResources[i]);
             m_actionButtons[i].Button.SetInteractable(CornManagerEvents.CanAfford(new CornEvent((CornEventType)i)), "You do not have the requirements needed for this action");
         }
 
-        for (int i = 0; i < PlayerSaveData.COUNT_0_TO_100_CONSUMABLES; ++i)
+        m_buttonSleep.Button.SetInteractable(saveData.CurrentHour >= CornManagerBalancing.EARLIEST_SLEEP_HOUR
+                                            || saveData.CurrentHour < CornManagerBalancing.LATEST_WAKE_UP_HOUR, "It's too early to go sleep");
+
+        for (int i = 0; i < GfgPlayerSaveData.COUNT_0_TO_100_CONSUMABLES; ++i)
         {
             m_consumablesSliders[i].SetSliderValue(playerConsumables[i]);
         }
 
         GfcStringBuffer stringBuffer = GfcPooling.GfcStringBuffer;
 
-        stringBuffer.Append(playerConsumables[(int)PlayerConsumables.MONEY], 0);
+        stringBuffer.Append(playerConsumables[(int)CornPlayerConsumables.MONEY], 0);
         stringBuffer.Append('$');
 
         m_textMoney.text = stringBuffer.GetStringCopy();
-        m_textSanity.text = saveData.Data.MentalSanity.ToString();
+        m_textSanity.text = saveData.MentalSanity.ToString();
         stringBuffer.Clear();
 
-        if (saveData.Data.CurrentHour < 10)
+        if (saveData.CurrentHour < 10)
             stringBuffer.Append('0');
 
-        stringBuffer.Append(saveData.Data.CurrentHour);
+        stringBuffer.Append(saveData.CurrentHour);
         stringBuffer.Append(":00   ");
-        stringBuffer.Append(GfcLocalization.GetDateString(saveData.Data.CurrentDay, saveData.Data.CurrentMonth));
+        stringBuffer.Append(GfcLocalization.GetDateString(saveData.CurrentDay, saveData.CurrentMonth));
 
         m_textDateAndTime.text = stringBuffer.GetStringCopy();
 
         stringBuffer.Clear();
 
 
-        m_light.rotation = Quaternion.AngleAxis(360.0f * (saveData.Data.CurrentHour / 24.0f) - 90, Vector3.right);
+        m_light.rotation = Quaternion.AngleAxis(360.0f * (saveData.CurrentHour / 24.0f) - 90, Vector3.right);
     }
 
     public static void EndStatsPreview() { Instance.EndStatsPreviewInternal(); }
 
     public void EndStatsPreviewInternal()
     {
-        for (int i = 0; i < PlayerSaveData.COUNT_RESOURCES; ++i)
+        for (int i = 0; i < GfgPlayerSaveData.COUNT_RESOURCES; ++i)
             m_actionButtons[i].SliderText.EndPreview();
 
-        for (int i = 0; i < PlayerSaveData.COUNT_0_TO_100_CONSUMABLES; ++i)
+        for (int i = 0; i < GfgPlayerSaveData.COUNT_0_TO_100_CONSUMABLES; ++i)
             m_consumablesSliders[i].EndPreview();
     }
 
@@ -226,7 +233,7 @@ public class CornMenuApartment : MonoBehaviour
 public struct ResourceButtonInfo
 {
     public Transform WorldReferencePoint;
-    public PlayerResources Type;
+    public CornPlayerResources Type;
 
     public Color ColorPanel;
 

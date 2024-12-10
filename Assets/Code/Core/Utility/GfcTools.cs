@@ -9,26 +9,36 @@ using System.Collections.Generic;
 using static Unity.Mathematics.math;
 using System.Reflection;
 using System.Linq;
+
+public enum Order
+{
+    ASCENDING = -1,
+    DESCENDING = 1,
+}
+
 public static class GfcToolsStatic
 {
-    //the list must be a class because this doesn't work with structs
-    public static int AddSorted<T>(this IList<T> aList, T aValue, bool anAscending = true) where T : IComparable<T>
+    public static int AddSorted<T>(this IList<T> aList, T aValue, Func<T, T, int> aCompareFunction, Order anOrder = Order.ASCENDING) where T : IComparable<T>
     {
-        Debug.Assert(aList.GetType().IsClass, "This function does not work for value types. Please use 'GetSortedIndex' instead and insert it at the respective index");
-        int sortedIndex = aList.GetSortedIndex(aValue, anAscending);
+        Debug.Assert(aList.GetType().IsClass, "This function does not work for value types. Please use 'GetSortedIndex' instead and insert it at the respective index, or use GfcToolsStatic.AddSorted<T>(ref IList<T> aList..)");
+        return AddSorted(ref aList, aValue, aCompareFunction, anOrder);
+    }
+
+    public static int AddSorted<T>(ref IList<T> aList, T aValue, Func<T, T, int> aCompareFunction, Order anOrder = Order.ASCENDING) where T : IComparable<T>
+    {
+        int sortedIndex = aList.GetSortedIndex(aValue, aCompareFunction, anOrder);
         aList.Insert(sortedIndex, aValue);
         return sortedIndex;
     }
 
-    public static int GetSortedIndex<T>(this IList<T> aList, T aValue, bool anAscending = true) where T : IComparable<T>
+    public static int GetSortedIndex<T>(this IList<T> aList, T aValue, Func<T, T, int> aCompareFunction, Order anOrder = Order.ASCENDING) where T : IComparable<T>
     {
         int low = 0, high = aList.Count, mid;
-        int sortSign = anAscending ? -1 : 1;
 
         while (low < high)
         {
             mid = (low + high) >> 1;
-            if (aList[mid].CompareTo(aValue) == sortSign)
+            if (aCompareFunction(aList[mid], aValue).Sign() == (int)anOrder)
                 low = mid + 1;
             else
                 high = mid;
@@ -36,6 +46,32 @@ public static class GfcToolsStatic
 
         return low;
     }
+
+    public static bool IsSorted<T>(this IList<T> aList) where T : IComparable<T> { return IsSortedInternal(aList, Compare, true); }
+    public static bool IsSorted<T>(this IList<T> aList, Order anOrder = Order.ASCENDING) where T : IComparable<T> { return IsSortedInternal(aList, Compare, false, anOrder); }
+    public static bool IsSorted<T>(this IList<T> aList, Func<T, T, int> aCompareFunction) where T : IComparable<T> { return IsSortedInternal(aList, aCompareFunction, true); }
+    public static bool IsSorted<T>(this IList<T> aList, Func<T, T, int> aCompareFunction, Order anOrder = Order.ASCENDING) where T : IComparable<T> { return IsSortedInternal(aList, aCompareFunction, false, anOrder); }
+
+    private static bool IsSortedInternal<T>(IList<T> aList, Func<T, T, int> aCompareFunction, bool anOrderIrrelevant, Order anOrder = Order.ASCENDING) where T : IComparable<T>
+    {
+        bool sorted = true;
+        int length = aList.Count;
+        int sortingSign = 0, currentSign;
+
+        for (int i = 1; i < length && sorted; ++i)
+        {
+            currentSign = aCompareFunction(aList[i - 1], aList[i]).Abs();
+            sorted = currentSign == sortingSign || sortingSign == 0;
+            if (currentSign != 0) sortingSign = currentSign; //todo could be optimsied with bitwise operators
+        }
+
+        return sorted;
+    }
+
+    public static int Compare<T>(T aLeft, T aRight) where T : IComparable<T> { return aLeft.CompareTo(aRight); }
+    public static int GetSortedIndex<T>(this IList<T> aList, T aValue, Order anOrder = Order.ASCENDING) where T : IComparable<T> { return aList.GetSortedIndex(aValue, Compare, anOrder); }
+    public static int AddSorted<T>(this IList<T> aList, T aValue, Order anOrder = Order.ASCENDING) where T : IComparable<T> { return aList.AddSorted(aValue, Compare, anOrder); }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool HasFlag(this uint aFlagMask, uint aFlag) { return GfcTools.HasFlag(aFlagMask, aFlag); }
@@ -240,7 +276,7 @@ public static class GfcToolsStatic
     public static unsafe int Index<T>(this T anEnum) where T : unmanaged, Enum
     {
         ulong index = Index64(anEnum);
-        Debug.Assert(index <= int.MaxValue);
+        Debug.Assert(index <= int.MaxValue, "The value of the index is too high for int, please use Index64<T>()");
         return (int)index;
     }
 
@@ -377,8 +413,8 @@ public static class GfcToolsStatic
     public static void PowSelf(this ref float aSelf, float aNum) { aSelf = MathF.Pow(aSelf, aNum); }
     public static void PowSelf(this ref double aSelf, double aNum) { aSelf = Math.Pow(aSelf, aNum); }
 
-    public static float Log(this float aSelf, float aNum) { return MathF.Log(aSelf, aNum); }
-    public static double Log(this double aSelf, double aNum) { return Math.Log(aSelf, aNum); }
+    public static float Log(this float aSelf, float aBase) { return MathF.Log(aSelf, aBase); }
+    public static double Log(this double aSelf, double aBase) { return Math.Log(aSelf, aBase); }
 
     public static void LogSelf(this ref float aSelf, float aNum) { aSelf = MathF.Log(aSelf, aNum); }
     public static void LogSelf(this ref double aSelf, double aNum) { aSelf = Math.Log(aSelf, aNum); }

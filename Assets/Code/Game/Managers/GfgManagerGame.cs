@@ -40,8 +40,9 @@ public class GfgManagerGame : MonoBehaviour
 
     private bool m_fadeOutGameStateTransition = false;
 
-    private object m_gameStateLockHandle = null;
-    private uint m_gameStateLockKey = 0;
+    private GfcLockHandleShared m_gameStateLock = new();
+
+    public static GfcLockHandleShared GameStateLockHandle { get { return Instance.m_gameStateLock; } }
 
     public static CoroutineHandle GetGameStateTransitionHandle() { return Instance.m_gameStateTransitionHandle; }
 
@@ -129,7 +130,7 @@ public class GfgManagerGame : MonoBehaviour
     {
         CoroutineHandle transitionHandle = default;
 
-        if (!GameStateIsLocked())
+        if (!GameStateLockHandle.Locked())
         {
             if (aState == GfcGameState.INVALID)
             {
@@ -169,14 +170,14 @@ public class GfgManagerGame : MonoBehaviour
         m_queuedGameStateTransitionPriority = 0;
         m_gameStateAfterTransition = aState;
 
-        GfcInput.InputEnabled = false;
+        var inputKey = GfcInput.InputLockHandle.Lock(Instance, (int)GfcInputLockPriority.GF_MASTER);
 
         m_fadeOutGameStateTransition = false;
         yield return Timing.WaitUntilDone(aTransition.StartFadeIn());
 
         SetGameStateInternal(aState);
 
-        GfcInput.InputEnabled = true;
+        GfcInput.InputLockHandle.Unlock(ref inputKey);
         m_fadeOutGameStateTransition = true;
         m_gameStateAfterTransition = GfcGameState.INVALID;
         m_gameStateTransitionHandle = Timing.RunCoroutine(_TransitionGameStateFadeOut(aTransition));
@@ -190,38 +191,6 @@ public class GfgManagerGame : MonoBehaviour
         m_fadeOutGameStateTransition = false;
         m_gameStateTransitionHandle = default;
     }
-
-    public static uint LockGameState(object aLockHandle)
-    {
-        uint key = 0;
-        if (Instance.m_gameStateLockHandle == null)
-        {
-            Instance.m_gameStateLockHandle = aLockHandle;
-            Instance.m_gameStateLockKey = key = (uint)((double)UnityEngine.Random.Range(0.0f, 1.0f) * uint.MaxValue);
-        }
-        else
-            Debug.LogError("Tried to lock the game state when its already locked by the object: (" + Instance.m_gameStateLockHandle + ").");
-
-        return key;
-    }
-
-    public static bool UnlockGameState(uint aLockKey)
-    {
-        bool success = false;
-        if (CanUnlockGameState(aLockKey))
-        {
-            Instance.m_gameStateLockHandle = null;
-            success = true;
-        }
-        else
-            Debug.LogError("The unlock key is invalid.");
-
-        return success;
-    }
-
-    public static bool GameStateIsLocked() { return Instance.m_gameStateLockHandle != null; }
-
-    public static bool CanUnlockGameState(uint aLockKey) { return Instance.m_gameStateLockHandle == null || aLockKey == Instance.m_gameStateLockKey; }
 
     protected void ConnectionApprovalCallbackFunc(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {

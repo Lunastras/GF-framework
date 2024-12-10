@@ -23,10 +23,10 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0, g: 0.3333335, b: 1, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 0.69
+  m_AmbientIntensity: 0.62
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 66feb0721de7fdd4ea1b16de53082c98, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -1083,6 +1083,7 @@ GameObject:
   - component: {fileID: 469811065}
   - component: {fileID: 469811067}
   - component: {fileID: 469811066}
+  - component: {fileID: 469811068}
   m_Layer: 5
   m_Name: TextTime
   m_TagString: Untagged
@@ -1209,6 +1210,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 469811064}
   m_CullTransparentMesh: 1
+--- !u!114 &469811068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469811064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9218de31742b8c84ca6ecc03c4dc9f3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_fontType: 2
+  m_fontFamily: 0
 --- !u!1001 &478753873
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1460,6 +1475,7 @@ GameObject:
   - component: {fileID: 650247147}
   - component: {fileID: 650247148}
   - component: {fileID: 650247149}
+  - component: {fileID: 650247150}
   m_Layer: 5
   m_Name: TextMoney
   m_TagString: Untagged
@@ -1586,6 +1602,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &650247150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650247146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9218de31742b8c84ca6ecc03c4dc9f3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_fontType: 2
+  m_fontFamily: 0
 --- !u!1 &731714249
 GameObject:
   m_ObjectHideFlags: 0
@@ -1700,13 +1730,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 731714249}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.43764517, y: 0.26232985, z: -0.278621, w: -0.81364626}
+  m_LocalRotation: {x: -0.38398653, y: 0.3966697, z: -0.34888148, w: -0.7572907}
   m_LocalPosition: {x: 0, y: -2.5586379, z: 11.289525}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1891361122}
-  m_LocalEulerAnglesHint: {x: 435, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 419.133, y: -40.45, z: 25.86}
 --- !u!1001 &797533156
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4080,6 +4110,7 @@ GameObject:
   - component: {fileID: 1767260354}
   - component: {fileID: 1767260356}
   - component: {fileID: 1767260355}
+  - component: {fileID: 1767260357}
   m_Layer: 5
   m_Name: TextSanity
   m_TagString: Untagged
@@ -4207,6 +4238,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1767260353}
   m_CullTransparentMesh: 1
+--- !u!114 &1767260357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1767260353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9218de31742b8c84ca6ecc03c4dc9f3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_fontType: 2
+  m_fontFamily: 0
 --- !u!1 &1798023335
 GameObject:
   m_ObjectHideFlags: 0
@@ -4218,6 +4263,7 @@ GameObject:
   - component: {fileID: 1798023336}
   - component: {fileID: 1798023338}
   - component: {fileID: 1798023337}
+  - component: {fileID: 1798023339}
   m_Layer: 5
   m_Name: TextDate
   m_TagString: Untagged
@@ -4344,6 +4390,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1798023335}
   m_CullTransparentMesh: 1
+--- !u!114 &1798023339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1798023335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9218de31742b8c84ca6ecc03c4dc9f3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_fontType: 2
+  m_fontFamily: 0
 --- !u!1 &1798559362
 GameObject:
   m_ObjectHideFlags: 0
@@ -6137,11 +6197,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7169949583044327086, guid: 5c79d99b95ac3a14d9f5de2e4016f9f9,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 7169949583044327086, guid: 5c79d99b95ac3a14d9f5de2e4016f9f9,
         type: 3}

@@ -12,7 +12,7 @@ public class GfxUiTools : MonoBehaviour
 {
     [SerializeField] protected GameObject m_panelPrefab;
 
-    [SerializeField] private TextMeshProUGUI m_bottomNotificationText = null;
+    [SerializeField] private GfxDoubleTextWriter m_bottomNotificationText = null;
 
     [SerializeField] private GfxNotifyPanelTemplate m_notifyPanel = null;
 
@@ -119,7 +119,6 @@ public class GfxUiTools : MonoBehaviour
     {
         //todo make nice transition
         Instance.m_currentBottomNotificationInteractable = null;
-        Instance.m_bottomNotificationText.text = aText;
 
         Color textColor;
         switch (aNotificationType)
@@ -137,7 +136,16 @@ public class GfxUiTools : MonoBehaviour
                 break;
         }
 
-        Instance.m_bottomNotificationText.color = textColor;
+        if (aText.IsEmpty())
+        {
+            Instance.m_bottomNotificationText.EraseTextAnimation();
+        }
+        else
+        {
+            Instance.m_bottomNotificationText.SetColor(textColor);
+            Instance.m_bottomNotificationText.RemoveText();
+            Instance.m_bottomNotificationText.WriteStringAnimation(aText);
+        }
     }
 
     public static Color BlendColors(Color aFirstColor, Color aSecondColor, ColorBlendMode aBlendMode)
@@ -457,10 +465,7 @@ public class GfxUiTools : MonoBehaviour
         return aPanel;
     }
 
-    public static GfxPanel CreatePanelUninitialized()
-    {
-        return GfcPooling.PoolInstantiate(Instance.m_panelPrefab).GetComponent<GfxPanel>();
-    }
+    public static GfxPanel CreatePanelUninitialized() { return GfcPooling.PoolInstantiate(Instance.m_panelPrefab).GetComponent<GfxPanel>(); }
 
     public static GfxPanel CreatePanel(GfxPanelCreateData aPanelData, AlignmentHorizontal aAlignmentHorizontal = AlignmentHorizontal.MIDDLE, AlignmentVertical aAlignmentVertical = AlignmentVertical.MIDDLE)
     {

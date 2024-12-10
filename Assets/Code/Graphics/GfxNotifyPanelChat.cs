@@ -18,7 +18,7 @@ public class GfxNotifyPanelChat : GfxNotifyPanelInteractable
 
     protected GfcTransitionActive m_currentMessageTransitionActive = null;
 
-    void Awake()
+    protected void Awake()
     {
         if (m_messagesParent == null) m_messagesParent = transform as RectTransform;
         m_canvasGroup = GetComponent<CanvasGroup>();

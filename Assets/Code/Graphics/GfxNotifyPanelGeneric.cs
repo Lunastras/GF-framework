@@ -24,9 +24,9 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelInteractable
     protected override void DrawCurrentMessage()
     {
         if (m_messageBufferIndex == 0 || m_messagesBuffer[m_messageBufferIndex - 1].Name != m_messagesBuffer[m_messageBufferIndex].Name)
-            m_nameTextWriter.WriteString(m_messagesBuffer[m_messageBufferIndex].Name, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
+            m_nameTextWriter.WriteStringAnimation(m_messagesBuffer[m_messageBufferIndex].Name, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
 
-        m_mainTextWriter.WriteString(m_messagesBuffer[m_messageBufferIndex].MainText, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
+        m_mainTextWriter.WriteStringAnimation(m_messagesBuffer[m_messageBufferIndex].MainText, m_speedMultiplierTextWrite, m_speedMultiplierTextErase);
     }
 
     protected override void FlushCurrentMessage()
@@ -37,8 +37,8 @@ public abstract class GfxNotifyPanelGeneric : GfxNotifyPanelInteractable
 
     protected override void EraseMessages()
     {
-        m_nameTextWriter.EraseText(m_speedMultiplierTextErase);
-        m_mainTextWriter.EraseText(m_speedMultiplierTextErase);
+        m_nameTextWriter.EraseTextAnimation(m_speedMultiplierTextErase);
+        m_mainTextWriter.EraseTextAnimation(m_speedMultiplierTextErase);
     }
 
     public override bool DrawingMessage() { return m_nameTextWriter.WritingText() || m_mainTextWriter.WritingText(); }
