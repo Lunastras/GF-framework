@@ -282,6 +282,9 @@ public static class GfcToolsStatic
 
     public static unsafe bool EqualsNoBox<T>(this T anEnum, T aSecondEnum) where T : unmanaged, Enum { return anEnum.Index() == aSecondEnum.Index(); }
 
+    public static float Dot(this Vector3 aSelf, Vector3 anOther) { return Vector3.Dot(aSelf, anOther); }
+    public static float Dot(this Vector2 aSelf, Vector2 anOther) { return Vector2.Dot(aSelf, anOther); }
+
     public static Vector2 xy(this Vector3 aSelf) { return new(aSelf.x, aSelf.y); }
     public static Vector2 yx(this Vector3 aSelf) { return new(aSelf.y, aSelf.x); }
 
@@ -663,6 +666,12 @@ public class GfcTools
 
     public static Vector3 Div(Vector3 leftHand, float rightHand) { float inv = 1.0f / rightHand; leftHand.x *= inv; leftHand.y *= inv; leftHand.z *= inv; return leftHand; }
 
+    public static Vector3 DivSafe(Vector3 leftHand, float rightHand)
+    {
+        DivSafe(ref leftHand, rightHand);
+        return leftHand;
+    }
+
     public static int Mod(int x, int m)
     {
         return (x % m + m) % m;
@@ -747,6 +756,8 @@ public class GfcTools
     public static void Mult(ref Vector2 aLeftHand, Vector2 aRightHand) { aLeftHand.x *= aRightHand.x; aLeftHand.y *= aRightHand.y; }
 
     public static void Div(ref Vector2 aLeftHand, float rightHand) { float inv = 1.0f / rightHand; aLeftHand.x *= inv; aLeftHand.y *= inv; }
+
+    public static float Magnitude(Vector3 aVector) { return MathF.Sqrt(aVector.sqrMagnitude); }
 
     public static void Normalize(ref Vector3 aVector)
     {

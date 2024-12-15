@@ -10,4 +10,5 @@ public enum GfcGameState
     APARTMENT,
     CORN_GAME,
     CUTSCENE,
+    IRISU,
 }

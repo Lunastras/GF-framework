@@ -12,6 +12,9 @@ public class GfgGameStateObject : MonoBehaviour
 
     private void Start()
     {
+        if (GetComponent<Camera>() != null && GetComponent<GfcCamera>() == null)
+            gameObject.AddComponent<GfcCamera>();
+
         GfgManagerGame.Instance.OnGameStateChanged += OnGameStateChanged;
         OnGameStateChanged(GfgManagerGame.GetGameState(), GfgManagerGame.GetPreviousGameState());
 

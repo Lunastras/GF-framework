@@ -15,7 +15,7 @@ public class GfcCursor : BaseInput
 
     [SerializeField] private RectTransform m_cursorTransform;
 
-    [SerializeField] private float m_sensitivity = 100;
+    //[SerializeField] private float m_sensitivity = 100;
 
     private static PointerEventData PointerEventData;
 
@@ -27,14 +27,14 @@ public class GfcCursor : BaseInput
     private CoroutineHandle m_selectingGameObjectCoroutine = default;
     private CoroutineHandle m_deselectingGameObjectCoroutine = default;
 
-    private HashSet<GameObject> m_objectsToDeselect = new(4);
+    private readonly HashSet<GameObject> m_objectsToDeselect = new(4);
 
     public override Vector2 mousePosition
     {
         get { return this.m_cursorPosition; }
     }
 
-    private static List<RaycastResult> RaycastResults = new(8);
+    private static readonly List<RaycastResult> RaycastResults = new(8);
 
     //placeholder for when we will have custom cursor that can be controlled by mouse and controller
     public static Vector2 MousePosition { get { return Input.mousePosition; } }
@@ -55,7 +55,6 @@ public class GfcCursor : BaseInput
         this.GetComponentIfNull(ref m_cursorTransform);
         Debug.Assert(m_cursorTransform);
     }
-
 
     /*
     void Update()

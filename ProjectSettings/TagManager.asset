@@ -25,10 +25,10 @@ TagManager:
   - BulletsEnemyWhite
   - BulletsPlayer
   - BulletsPlayerGrenades
-  - 
-  - 
-  - 
-  - 
+  - IrisuBlockSolid
+  - IrisuBlockPhantom
+  - IrisuFloor
+  - IrisuWall
   - 
   - 
   - 

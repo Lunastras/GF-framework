@@ -420,6 +420,15 @@ public class GfcPooling : MonoBehaviour
         }
     }
 
+    public static void ClearNonPersistentPools()
+    {
+        foreach (var pool in Instance.m_pools)
+        {
+            if (!pool.Value.PermanentObjects)
+                ClearPool(pool.Value.Prefab);
+        }
+    }
+
     public static void ClearPool(GameObject objectToClear, int numInstances = int.MaxValue, bool keepPoolIfEmpty = false)
     {
         ClearPool(objectToClear.name, numInstances, keepPoolIfEmpty);
