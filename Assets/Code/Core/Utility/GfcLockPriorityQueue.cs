@@ -172,6 +172,8 @@ public class GfcLockHandleShared : IGfcLockHandle
     public bool AuthorityTest(GfcTimeStamp aKey, int aPriority = 0) { return m_handle.AuthorityTest(aKey); }
     public bool KeyTest(GfcTimeStamp aKey) { return m_handle.KeyTest(aKey); }
     public bool Locked() { return m_handle.Locked(); }
+
+    public GfcLockHandle GetHandleCopy() { return m_handle; }
 }
 
 public interface IGfcLockHandle

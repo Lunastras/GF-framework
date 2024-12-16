@@ -20,10 +20,13 @@ public class GfgPlayerSaveData
         public HashSet<string> FinishedNonSpecificScenes = new(8);
 
         public int MentalSanity;
+        public int MaxMentalSanity;
+
 
         public float[] Consumables;
 
         public float[] Resources;
+        public float[] Stats;
 
         public int CurrentStoryPhase;
 
@@ -93,8 +96,13 @@ public class GfgPlayerSaveData
         }
 
         public float GetValue(CornPlayerResources aType) { return Resources[(int)aType]; }
-
         public float GetValue(CornPlayerConsumables aType) { return Consumables[(int)aType]; }
+        public float GetValue(CornPlayerSkillsStats aType) { return Stats[(int)aType]; }
+
+        public void ApplyModifier(CornPlayerSkillsStats aType, float aValue)
+        {
+            Stats[(int)aType] += aValue;
+        }
 
         public void ApplyModifier(CornPlayerResources aType, float aValue)
         {
@@ -161,7 +169,8 @@ public class GfgPlayerSaveData
 
         ValidateSaveFile();
 
-        Data.MentalSanity = CornManagerBalancing.DICE_ROLL_NUM_FACES;
+        Data.MaxMentalSanity = CornManagerBalancing.DICE_ROLL_NUM_FACES;
+        Data.MentalSanity = Data.MaxMentalSanity;
         Data.Consumables[(int)CornPlayerConsumables.MONEY] = INITIAL_SUM_OF_MONEY;
     }
 
@@ -220,9 +229,10 @@ public class GfgPlayerSaveData
             createdNewSave = true;
         }
 
+        validData &= ValidateArrayValues(ref Data.Stats, (int)CornPlayerSkillsStats.COUNT, 0);
+        validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
         validData &= ValidateArrayValues(ref Data.Resources, (int)CornPlayerResources.COUNT, START_RESOURCE_VALUE);
         validData &= ValidateArrayValues(ref Data.Consumables, (int)CornPlayerConsumables.COUNT, START_RESOURCE_VALUE);
-        validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
 
         Data.MentalSanity.ClampSelf(0, CornManagerBalancing.DICE_ROLL_NUM_FACES);
 
@@ -250,6 +260,17 @@ public struct PlayerConsumablesModifier
     public CornPlayerConsumables Type;
     public float Value;
     public float BonusPercent;
+}
+
+[Serializable]
+public enum CornPlayerSkillsStats
+{
+    HANDICRAFT,
+    PROGRAMMING,
+    COMFORT,
+    ART,
+    ASTRONOMY,
+    COUNT
 }
 
 [Serializable]

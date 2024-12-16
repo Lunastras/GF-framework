@@ -1,5 +1,5 @@
 {
-    "name": "Project.Corn",
+    "name": "Project.Irisu",
     "rootNamespace": "",
     "references": [
         "GUID:3b8ed52f1b5c64994af4c4e0aa4b6c4b",
@@ -14,8 +14,7 @@
         "GUID:d8b63aba1907145bea998dd612889d6b",
         "GUID:f2d49d9fa7e7eb3418e39723a7d3b92f",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
-        "GUID:15fc0a57446b3144c949da3e2b9737a9",
-        "GUID:4fdd603c2d0202149b25973ad7ff6724"
+        "GUID:15fc0a57446b3144c949da3e2b9737a9"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

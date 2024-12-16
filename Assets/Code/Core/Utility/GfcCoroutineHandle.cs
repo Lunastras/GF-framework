@@ -66,9 +66,9 @@ public struct GfcCoroutineHandle
         return CoroutineHandle;
     }
 
-    public void Finished()
+    public int Finished()
     {
-        CoroutineHandle = default;
+        return KillCoroutine();
     }
 
     public static implicit operator CoroutineHandle(GfcCoroutineHandle d) => d.CoroutineHandle;

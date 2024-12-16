@@ -6,6 +6,7 @@ public class CornManagerBalancing : MonoBehaviour
 {
     private static CornManagerBalancing Instance = null;
 
+    [SerializeField] private float m_baseChoresMiniGameExtraPoints = 0.5f;
     [SerializeField] private CornEventCostAndRewardsSetter[] m_cornEventCostAndRewards = null;
 
     public const int LATEST_WAKE_UP_HOUR = 11;
@@ -25,6 +26,8 @@ public class CornManagerBalancing : MonoBehaviour
             Destroy(Instance);
         Instance = this;
 
+        Debug.Assert(m_baseChoresMiniGameExtraPoints <= 1, "The value for m_baseChoresMiniGameExtraPoints should be between 0 and 1");
+
         for (int i = 0; i < m_cornEventCostAndRewards.Length; ++i)
         {
             m_cornEventCostAndRewards[i].CostAndRewards.ConsumablesMultiplier = 1;
@@ -41,6 +44,8 @@ public class CornManagerBalancing : MonoBehaviour
         if (m_sleepRewardsTemp.ResourcesModifier != null && m_sleepRewardsTemp.ResourcesModifier.Length > 0)
             m_sleepRewardsTemp.ResourcesModifier = new PlayerResourcesModifier[m_sleepRewardsTemp.ResourcesModifier.Length];
     }
+
+    public static float GetBaseChoresMiniGameExtraPoints() { return Instance.m_baseChoresMiniGameExtraPoints; }
 
     public static CornEventCostAndRewards GetEventCostAndRewards(CornEventType aType, uint aTypeSub = 0) { return GetEventCostAndRewards(aType, out _, aTypeSub); }
 

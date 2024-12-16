@@ -152,6 +152,8 @@ public class GfgManagerGame : MonoBehaviour
                 SetGameStateInternal(aState);
             }
         }
+        else
+            Debug.LogError("The gamestate is locked by " + Instance.m_gameStateLock.GetHandleCopy().ObjectHandle + ", cannot set the gamestate to " + aState);
 
         return transitionHandle;
     }

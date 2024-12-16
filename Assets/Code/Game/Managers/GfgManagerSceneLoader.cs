@@ -42,6 +42,8 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
     private GfcTimeStamp m_gameStateKey;
 
+    private bool m_softGameStateLock = false;
+
     public static bool FakeWait
     {
         get
@@ -80,6 +82,17 @@ public class GfgManagerSceneLoader : MonoBehaviour
         }
     }
 
+    public static void RequestGameStateAfterLoad(GfcGameState aNewGameState, bool aSmoothTransition = true, GfxTransitionType aTransition = GfxTransitionType.BLACK_FADE)
+    {
+        if (CurrentlyLoading)
+        {
+            if (Instance.m_softGameStateLock)
+                GameStateAfterLoad = aNewGameState;
+        }
+        else
+            GfgManagerGame.SetGameState(aNewGameState, aSmoothTransition, aTransition);
+    }
+
     public static CoroutineHandle LoadScene(GfcSceneId aScene, GfcGameState aNewGameState = GfcGameState.INVALID, bool aReloadIfLoaded = false, GfcGameMultiplayerType aGameType = GfcGameMultiplayerType.SINGLEPLAYER, ServerLoadingMode aLoadingMode = ServerLoadingMode.KEEP_SERVER)
     {
         return LoadScene((int)aScene, aNewGameState, aReloadIfLoaded, aGameType, aLoadingMode);
@@ -91,6 +104,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
         int originalSceneIndexLoading = SceneBuildIndexToLoad;
         SceneBuildIndexToLoad = aSceneBuildIndex;
         GameTypeToLoad = aGameType;
+        Instance.m_softGameStateLock = aNewGameState == GfcGameState.INVALID;
         GameStateAfterLoad = aNewGameState == GfcGameState.INVALID ? GfgManagerGame.GetGameState() : aNewGameState;
 
         if (!CurrentlyLoading)
@@ -198,6 +212,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
         Scene currentScene = SceneManager.GetSceneByBuildIndex(sceneToLoadIndex);
         SceneManager.SetActiveScene(currentScene);
+        Debug.Log("The active scene is " + (GfcSceneId)sceneToLoadIndex);
 
         if (mustHaveNetworkGame)
         {

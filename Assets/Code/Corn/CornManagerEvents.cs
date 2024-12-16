@@ -123,6 +123,10 @@ public class CornManagerEvents : MonoBehaviour
                     case CornEventType.SOCIAL:
                         eventHandle = CornManagerStory.StartStoryScene(aEvent.Scene);
                         break;
+
+                    case CornEventType.CHORES:
+                        eventHandle = Timing.RunCoroutine(_ExecuteChoresEvent(messagesBuffer));
+                        break;
                 }
 
                 message ??= "<i>Pretty</i> cool event <color=red>" + aEvent.EventType.ToString() + "</color> was finished.";
@@ -189,6 +193,23 @@ public class CornManagerEvents : MonoBehaviour
         yield return Timing.WaitForOneFrame;
     }
 
+    private static IEnumerator<float> _ExecuteChoresEvent(List<string> aMessageBuffer)
+    {
+        var playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
+        var cornSaveData = playerSaveData.Data;
+
+        yield return Timing.WaitUntilDone(GfgManagerSceneLoader.LoadScene(GfcSceneId.IRISU));
+        yield return Timing.WaitUntilDone(IrisuManagerGame.GetGameHandle());
+        float level = IrisuManagerGame.GetDifficulty();
+        float choresExtraPoints = IrisuManagerGame.GetDifficulty() * (CornManagerBalancing.GetBaseChoresMiniGameExtraPoints() + cornSaveData.GetValue(CornPlayerSkillsStats.HANDICRAFT));
+
+        aMessageBuffer.Add("You got " + choresExtraPoints * 100 + " extra Chores points!");
+        cornSaveData.ApplyModifier(CornPlayerResources.CHORES, choresExtraPoints);
+        playerSaveData.Data = cornSaveData;
+
+        yield return Timing.WaitForOneFrame;
+    }
+
     protected void OnDestroy()
     {
         GfgManagerLevel.OnLevelEndSubmit -= OnLevelEndSubmit;
@@ -210,7 +231,8 @@ public class CornManagerEvents : MonoBehaviour
         for (int i = 0; i < timePassed.Weeks; ++i)
         {
             CornManagerBalancing.GetEventCostAndRewards(CornEventType.NEW_WEEK).ApplyModifiersToPlayer();
-            playerSaveData.MentalSanity--;
+            playerSaveData.MaxMentalSanity--;
+            playerSaveData.MentalSanity = Mathf.Clamp(playerSaveData.MentalSanity, 0, playerSaveData.MaxMentalSanity);
             someMessages.Add("New week passed, take some money lmao, but -1 sanity.");
         }
 
@@ -241,7 +263,7 @@ public class CornManagerEvents : MonoBehaviour
             }
 
             someMessages.Add(message);
-            playerSaveData.MentalSanity = Mathf.Clamp(playerSaveData.MentalSanity, 0, DICE_ROLL_NUM_FACES);
+            playerSaveData.MentalSanity = Mathf.Clamp(playerSaveData.MentalSanity, 0, playerSaveData.MaxMentalSanity);
         }
 
         return Timing.RunCoroutine(_FlushMessagesAndDrawHud(anFadeToBlack));

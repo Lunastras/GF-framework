@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using static Unity.Mathematics.math;
 using System.Reflection;
 using System.Linq;
+using Unity.Mathematics;
 
 public enum Order
 {
@@ -303,6 +304,100 @@ public static class GfcToolsStatic
     public static Vector3 yzx(this Vector3 aSelf) { return new(aSelf.y, aSelf.z, aSelf.x); }
 
     public static Vector2 yx(this Vector2 aSelf) { return new(aSelf.y, aSelf.x); }
+
+    public static float2 yx(this float2 aSelf) { return new(aSelf.y, aSelf.x); }
+    public static float2 xx(this float2 aSelf) { return new(aSelf.x, aSelf.x); }
+    public static float2 yy(this float2 aSelf) { return new(aSelf.y, aSelf.y); }
+
+    public static float2 xy(this float3 aSelf) { return new(aSelf.x, aSelf.y); }
+    public static float2 yx(this float3 aSelf) { return new(aSelf.y, aSelf.x); }
+
+    public static float2 yy(this float3 aSelf) { return new(aSelf.y, aSelf.y); }
+    public static float2 xx(this float3 aSelf) { return new(aSelf.x, aSelf.x); }
+    public static float2 zz(this float3 aSelf) { return new(aSelf.z, aSelf.z); }
+
+    public static float2 xz(this float3 aSelf) { return new(aSelf.x, aSelf.z); }
+    public static float2 zx(this float3 aSelf) { return new(aSelf.z, aSelf.x); }
+    public static float2 yz(this float3 aSelf) { return new(aSelf.y, aSelf.z); }
+    public static float2 zy(this float3 aSelf) { return new(aSelf.z, aSelf.y); }
+
+    public static float3 xzy(this float3 aSelf) { return new(aSelf.x, aSelf.z, aSelf.y); }
+    public static float3 zxy(this float3 aSelf) { return new(aSelf.z, aSelf.x, aSelf.y); }
+    public static float3 zyx(this float3 aSelf) { return new(aSelf.z, aSelf.y, aSelf.x); }
+    public static float3 yxz(this float3 aSelf) { return new(aSelf.y, aSelf.x, aSelf.z); }
+    public static float3 yzx(this float3 aSelf) { return new(aSelf.y, aSelf.z, aSelf.x); }
+    public static float3 xxy(this float3 aSelf) { return new(aSelf.x, aSelf.x, aSelf.y); }
+    public static float3 xxz(this float3 aSelf) { return new(aSelf.x, aSelf.x, aSelf.z); }
+    public static float3 yxx(this float3 aSelf) { return new(aSelf.y, aSelf.x, aSelf.x); }
+    public static float3 zxx(this float3 aSelf) { return new(aSelf.z, aSelf.x, aSelf.x); }
+    public static float3 xxx(this float3 aSelf) { return new(aSelf.x, aSelf.x, aSelf.x); }
+    public static float3 yyx(this float3 aSelf) { return new(aSelf.y, aSelf.y, aSelf.x); }
+    public static float3 yyz(this float3 aSelf) { return new(aSelf.y, aSelf.y, aSelf.z); }
+    public static float3 yyy(this float3 aSelf) { return new(aSelf.y, aSelf.y, aSelf.y); }
+    public static float3 xyy(this float3 aSelf) { return new(aSelf.x, aSelf.y, aSelf.y); }
+    public static float3 zyy(this float3 aSelf) { return new(aSelf.x, aSelf.y, aSelf.y); }
+    public static float3 zzz(this float3 aSelf) { return new(aSelf.z, aSelf.z, aSelf.z); }
+    public static float3 zzx(this float3 aSelf) { return new(aSelf.z, aSelf.z, aSelf.x); }
+    public static float3 zzy(this float3 aSelf) { return new(aSelf.z, aSelf.z, aSelf.y); }
+    public static float3 xzz(this float3 aSelf) { return new(aSelf.x, aSelf.z, aSelf.z); }
+    public static float3 yzz(this float3 aSelf) { return new(aSelf.y, aSelf.z, aSelf.z); }
+
+
+
+    public static float2 xy(this float4 aSelf) { return new(aSelf.x, aSelf.y); }
+    public static float2 yx(this float4 aSelf) { return new(aSelf.y, aSelf.x); }
+
+    public static float2 yy(this float4 aSelf) { return new(aSelf.y, aSelf.y); }
+    public static float2 xx(this float4 aSelf) { return new(aSelf.x, aSelf.x); }
+    public static float2 zz(this float4 aSelf) { return new(aSelf.z, aSelf.z); }
+    public static float2 ww(this float4 aSelf) { return new(aSelf.w, aSelf.w); }
+
+    public static float2 xz(this float4 aSelf) { return new(aSelf.x, aSelf.z); }
+    public static float2 zx(this float4 aSelf) { return new(aSelf.z, aSelf.x); }
+    public static float2 yz(this float4 aSelf) { return new(aSelf.y, aSelf.z); }
+    public static float2 zy(this float4 aSelf) { return new(aSelf.z, aSelf.y); }
+
+    public static float2 wx(this float4 aSelf) { return new(aSelf.w, aSelf.x); }
+    public static float2 wy(this float4 aSelf) { return new(aSelf.w, aSelf.y); }
+    public static float2 wz(this float4 aSelf) { return new(aSelf.w, aSelf.z); }
+    public static float2 xw(this float4 aSelf) { return new(aSelf.x, aSelf.w); }
+    public static float2 yw(this float4 aSelf) { return new(aSelf.y, aSelf.w); }
+    public static float2 zw(this float4 aSelf) { return new(aSelf.z, aSelf.w); }
+
+
+    public static float3 xzy(this float4 aSelf) { return new(aSelf.x, aSelf.z, aSelf.y); }
+    public static float3 zxy(this float4 aSelf) { return new(aSelf.z, aSelf.x, aSelf.y); }
+    public static float3 zyx(this float4 aSelf) { return new(aSelf.z, aSelf.y, aSelf.x); }
+    public static float3 yxz(this float4 aSelf) { return new(aSelf.y, aSelf.x, aSelf.z); }
+    public static float3 yzx(this float4 aSelf) { return new(aSelf.y, aSelf.z, aSelf.x); }
+    public static float3 xxy(this float4 aSelf) { return new(aSelf.x, aSelf.x, aSelf.y); }
+    public static float3 xxz(this float4 aSelf) { return new(aSelf.x, aSelf.x, aSelf.z); }
+    public static float3 yxx(this float4 aSelf) { return new(aSelf.y, aSelf.x, aSelf.x); }
+    public static float3 zxx(this float4 aSelf) { return new(aSelf.z, aSelf.x, aSelf.x); }
+    public static float3 xxx(this float4 aSelf) { return new(aSelf.x, aSelf.x, aSelf.x); }
+    public static float3 yyx(this float4 aSelf) { return new(aSelf.y, aSelf.y, aSelf.x); }
+    public static float3 yyz(this float4 aSelf) { return new(aSelf.y, aSelf.y, aSelf.z); }
+    public static float3 yyy(this float4 aSelf) { return new(aSelf.y, aSelf.y, aSelf.y); }
+    public static float3 xyy(this float4 aSelf) { return new(aSelf.x, aSelf.y, aSelf.y); }
+    public static float3 zyy(this float4 aSelf) { return new(aSelf.x, aSelf.y, aSelf.y); }
+    public static float3 zzz(this float4 aSelf) { return new(aSelf.z, aSelf.z, aSelf.z); }
+    public static float3 zzx(this float4 aSelf) { return new(aSelf.z, aSelf.z, aSelf.x); }
+    public static float3 zzy(this float4 aSelf) { return new(aSelf.z, aSelf.z, aSelf.y); }
+    public static float3 xzz(this float4 aSelf) { return new(aSelf.x, aSelf.z, aSelf.z); }
+    public static float3 yzz(this float4 aSelf) { return new(aSelf.y, aSelf.z, aSelf.z); }
+
+    public static float3 wxx(this float4 aSelf) { return new(aSelf.w, aSelf.x, aSelf.x); }
+    public static float3 wxy(this float4 aSelf) { return new(aSelf.w, aSelf.x, aSelf.y); }
+    public static float3 wxz(this float4 aSelf) { return new(aSelf.w, aSelf.x, aSelf.z); }
+    public static float3 wxw(this float4 aSelf) { return new(aSelf.w, aSelf.x, aSelf.w); }
+
+    public static float3 wyx(this float4 aSelf) { return new(aSelf.w, aSelf.y, aSelf.x); }
+    public static float3 wyy(this float4 aSelf) { return new(aSelf.w, aSelf.y, aSelf.y); }
+    public static float3 wyz(this float4 aSelf) { return new(aSelf.w, aSelf.y, aSelf.z); }
+    public static float3 wzx(this float4 aSelf) { return new(aSelf.w, aSelf.z, aSelf.x); }
+    public static float3 wzy(this float4 aSelf) { return new(aSelf.w, aSelf.z, aSelf.y); }
+    public static float3 wzz(this float4 aSelf) { return new(aSelf.w, aSelf.z, aSelf.z); }
+    //the rest will be implemented when needed
 
     public static int Clamp(this int aNum, int aMin, int aMax) { return Math.Clamp(aNum, aMin, aMax); }
     public static long Clamp(this long aNum, long aMin, long aMax) { return Math.Clamp(aNum, aMin, aMax); }

@@ -127,6 +127,91 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_baseChoresMiniGameExtraPoints
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[0].CostAndRewards.HoursDuration
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[0].CostAndRewards.ConsumablesModifier.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[3].CostAndRewards.ConsumablesModifier.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ResourcesModifier.Array.data[0].Value
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[8].CostAndRewards.ResourcesModifier.Array.data[1].Value
+      value: -0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.data[0].Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.data[1].Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.data[2].Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[3].CostAndRewards.ConsumablesModifier.Array.data[0].Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[3].CostAndRewards.ConsumablesModifier.Array.data[1].Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[3].CostAndRewards.ConsumablesModifier.Array.data[2].Type
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.data[0].Value
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.data[2].Value
+      value: -0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[3].CostAndRewards.ConsumablesModifier.Array.data[0].Value
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[3].CostAndRewards.ConsumablesModifier.Array.data[2].Value
+      value: -0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 2080833477572206972, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_Name

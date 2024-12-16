@@ -36,5 +36,5 @@ public enum GfxFontType
 
 public enum GfxFontFamily
 {
-    MAIN, COUNT
+    MAIN, IRISU, COUNT
 }

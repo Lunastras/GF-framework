@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
 public class GfgScene : MonoBehaviour
 {
@@ -38,6 +39,23 @@ public class GfgScene : MonoBehaviour
     {
         this.SetSingleton(ref Instance);
         m_scenesData = new SceneData[(int)GfcSceneId.COUNT];
+
+        for (int i = 0; i < m_gameStateScenes.Length; i++)
+            if (i != (int)m_gameStateScenes[i].GameState) Debug.LogError("Scene at index " + i + " should be at index " + (int)m_gameStateScenes[i].GameState);
+
+        int diffLength = (int)GfcGameState.COUNT - m_gameStateScenes.Length;
+        if (m_gameStateScenes.Length != (int)GfcGameState.COUNT)
+            Array.Resize(ref m_gameStateScenes, (int)GfcGameState.COUNT);
+
+        for (int i = 0; i < diffLength; i++)
+        {
+            int index = m_gameStateScenes.Length - 1 - i;
+            m_gameStateScenes[m_gameStateScenes.Length - 1 - i] = new()
+            {
+                GameState = (GfcGameState)index,
+                Scene = GfcSceneId.INVALID
+            };
+        }
 
         for (int i = 0; i < m_persistentScenesOnStart.Length; i++)
         {

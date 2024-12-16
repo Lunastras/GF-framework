@@ -8,12 +8,14 @@ public class GfgGameStateSetter : MonoBehaviour
 
     [SerializeField] private bool m_smoothTransition;
 
+    [SerializeField] private GfxTransitionType Transition;
+
     void SetGameState(bool anSkipIfInstanceIsNull)
     {
-        if (!GfgManagerSceneLoader.CurrentlyLoading && (GfgManagerGame.Instance || !anSkipIfInstanceIsNull))
+        if (GfgManagerGame.Instance || !anSkipIfInstanceIsNull)
         {
             Debug.Assert(GfgManagerGame.Instance);
-            GfgManagerGame.SetGameState(m_gameState, m_smoothTransition);
+            GfgManagerSceneLoader.RequestGameStateAfterLoad(m_gameState, m_smoothTransition, Transition);
             Destroy(this);
         }
     }
