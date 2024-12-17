@@ -127,10 +127,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 393359811952624783, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1451871657912011994, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_inputLockPriority
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2080833477572206972, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_Name
       value: GfgBase
+      objectReference: {fileID: 0}
+    - target: {fileID: 2444741013223426632, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4139284560793968150, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
@@ -181,6 +196,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8281961437123804887, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_inputLockPriority
+      value: 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

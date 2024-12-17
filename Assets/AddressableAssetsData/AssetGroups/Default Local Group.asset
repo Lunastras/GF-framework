@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Default Local Group
   m_GUID: f34873d88acd3ab4c8432c208866ec3a
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: b6eb9af63ef46404f89ca6d3efae9dc5
+    m_Address: Assets/Data/Materials/Placeholders/mt_white.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: bfc6f2931b750064288daea97787800b, type: 2}
   m_SchemaSet:

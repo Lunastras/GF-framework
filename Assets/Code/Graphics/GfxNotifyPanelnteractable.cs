@@ -7,35 +7,24 @@ using UnityEngine;
 
 public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 {
+    [SerializeField] protected GfcInputLockPriority m_inputLockPriority = GfcInputLockPriority.Base;
     [SerializeField] protected GameObject m_optionsButtonPrefab;
-
     [SerializeField] protected Transform m_optionsButtonsParent;
-
     [SerializeField] protected float m_transitionTime = 0.3f;
-
     [SerializeField] protected float m_transitionTimeNoName = 0.3f;
-
     [SerializeField] protected float m_speedMultiplierTextWrite = 1;
-
     [SerializeField] protected float m_speedMultiplierTextErase = 1;
-
     [SerializeField] protected float m_speedMultiplierFinish = 2;
-
     [SerializeField] protected GfcInputType m_inputSubmit = GfcInputType.SUBMIT;
-
     [SerializeField] protected GfcInputType m_inputSkip = GfcInputType.RUN;
-
     [SerializeField] protected float m_messageWaitSecondsOnSkip = 0.05f;
-
     [SerializeField] protected bool m_forceWriteOnSubmit = false;
-
     [SerializeField] protected BoxTextTransitionMode m_transitionMixMode = BoxTextTransitionMode.MIX_NONE;
 
     protected int m_lastWrittenMessageIndex = -1;
-
     protected int m_messageBufferIndex = 0;
-
     private bool m_waitingForOptionSelect = true;
+    protected GfcTimeStamp m_inputLockKey;
 
     public override void ClearVisuals()
     {
@@ -134,10 +123,27 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
     public abstract bool DrawingMessage();
 
+    private void OnDisable()
+    {
+        if (m_inputLockKey.Valid())
+            GfcInput.InputLockHandle.Unlock(ref m_inputLockKey);
+    }
+
+    private void OnEnable()
+    {
+        if (m_currentNotifyCoroutine.CoroutineHandle.IsValid)
+        {
+            Debug.Assert(!m_inputLockKey.Valid());
+            m_inputLockKey = GfcInput.InputLockHandle.Lock(gameObject, (int)m_inputLockPriority);
+        }
+    }
+
     protected override IEnumerator<float> _DrawMessages()
     {
         if (m_messagesBuffer.Count == 0)
             yield break;
+
+        m_inputLockKey = GfcInput.InputLockHandle.Lock(gameObject, (int)m_inputLockPriority);
 
         const int FADE_IN = 0;
 
@@ -151,6 +157,8 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
         GfcInputTracker trackerSubmit = new(m_inputSubmit, gameObject);
         GfcInputTracker trackerSkip = new(m_inputSkip, gameObject);
+        trackerSubmit.Key = m_inputLockKey;
+        trackerSkip.Key = m_inputLockKey;
 
         for (int transitionIndex = FADE_IN; transitionIndex < 2; ++transitionIndex)
         {
@@ -241,6 +249,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
         }
 
         //messageAudioSource?.Stop();
+        GfcInput.InputLockHandle.Unlock(ref m_inputLockKey);
         m_messageBufferIndex = 0;
         m_messagesBuffer.Clear();
         OnDrawMessagesEnd();

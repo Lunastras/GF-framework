@@ -196,6 +196,8 @@ public class GfgManagerSceneLoader : MonoBehaviour
         while (Instance.m_scenesToUnload.Count != 0 || (NetworkManager.Singleton && NetworkManager.Singleton.ShutdownInProgress))
             yield return Timing.WaitForSeconds(0.1f);//wait for scenes to be unloaded and for the server to shutdown
 
+        GfcPooling.ClearNonPersistentPools();
+
         //UNLOAD SCENES SECTION END
         Scene loadingScreenScene = SceneManager.GetSceneByBuildIndex((int)GfcSceneId.GF_BASE);
         loadingScreenScene.GetRootGameObjects(m_rootGameObjectsOnStart);

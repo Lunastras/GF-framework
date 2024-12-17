@@ -51,10 +51,10 @@ MonoBehaviour:
           inWeight: 0
           outWeight: 0
         - serializedVersion: 3
-          time: 1
-          value: 1
-          inSlope: 0.2002213
-          outSlope: 0.2002213
+          time: 0.99088836
+          value: 0.9952153
+          inSlope: 0.8196991
+          outSlope: 0.8196991
           tangentMode: 0
           weightedMode: 0
           inWeight: 0
@@ -349,7 +349,7 @@ MonoBehaviour:
     m_Value: 1.1
   intensity:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 5
   scatter:
     m_OverrideState: 1
     m_Value: 0.7
@@ -425,7 +425,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7fd9488000d3734a9e00ee676215985, type: 3}
-  m_Name: UrpPostProcessing Profile
+  m_Name: UrpPostProcessing ProfileFujiProvia
   m_EditorClassIdentifier: 
   components:
   - {fileID: -4636703192308744111}
@@ -1301,11 +1301,11 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: {x: 1, y: 1, z: 1, w: 0}
   gamma:
-    m_OverrideState: 0
-    m_Value: {x: 1, y: 1, z: 1, w: 0}
+    m_OverrideState: 1
+    m_Value: {x: 1, y: 0.9584551, z: 0.9418233, w: 0}
   gain:
     m_OverrideState: 0
-    m_Value: {x: 1, y: 1, z: 1, w: -0.04765686}
+    m_Value: {x: 1, y: 1, z: 1, w: 0}
 --- !u!114 &8809113402480368170
 MonoBehaviour:
   m_ObjectHideFlags: 3

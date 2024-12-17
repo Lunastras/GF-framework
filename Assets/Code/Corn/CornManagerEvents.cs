@@ -89,6 +89,9 @@ public class CornManagerEvents : MonoBehaviour
 
     private static IEnumerator<float> _ExecuteEvent(CornEvent aEvent)
     {
+        if (aEvent.EventType == CornEventType.SLEEP)
+            aEvent.EventTypeSub = (int)CornSleepType.INTERRUPTED;
+
         CornEventCostAndRewards eventRewardsAndCost = CornManagerBalancing.GetEventCostAndRewards(aEvent.EventType, out string message, aEvent.EventTypeSub);
         CoroutineHandle eventHandle = default;
 
@@ -96,13 +99,12 @@ public class CornManagerEvents : MonoBehaviour
 
         List<string> messagesBuffer = GetMessagesBuffer();
 
-        if (CanAfford(aEvent))
+        if (CanAffordMoney(aEvent))
         {
             bool wasteTime = eventRewardsAndCost.EventHasCornRoll
             && !GuaranteedCornRollSuccess()
             && GetEffectiveSanity() < UnityEngine.Random.Range(1, DICE_ROLL_NUM_FACES + 1);
 
-            //delme false
             if (wasteTime)
             {
                 cornSaveData.CornActionsInARow++;
@@ -134,11 +136,18 @@ public class CornManagerEvents : MonoBehaviour
         }
         else
         {
+            message = "You do not have enough money for this action.";
             eventRewardsAndCost = default;
-            message = "You cannot perform this action with your current consumables...";
         }
 
-        if (message != null) messagesBuffer.Add(message);
+        if (!eventRewardsAndCost.CanAfford())
+        {
+            messagesBuffer.Add("Your fatigue mists your judgement and affects your sanity. You should go to sleep soon.");
+            cornSaveData.MentalSanity--;
+            CheckGameOver();
+        }
+
+        if (!message.IsEmpty()) messagesBuffer.Add(message);
 
         eventRewardsAndCost.ApplyModifiersToPlayer(0);
 
@@ -264,6 +273,7 @@ public class CornManagerEvents : MonoBehaviour
 
             someMessages.Add(message);
             playerSaveData.MentalSanity = Mathf.Clamp(playerSaveData.MentalSanity, 0, playerSaveData.MaxMentalSanity);
+            CheckGameOver();
         }
 
         return Timing.RunCoroutine(_FlushMessagesAndDrawHud(anFadeToBlack));
@@ -298,20 +308,33 @@ public class CornManagerEvents : MonoBehaviour
         }
     }
 
-    public static bool CanAfford(CornEvent aEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(aEvent).CanAfford(aBonusMultiplier); }
-    public static bool CanAfford(CornPlayerConsumables aType, float aValue) { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(aType, aValue); }
-    public static bool CanAfford(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(aModifier, aMultiplier, aBonusMultiplier); }
-    public static bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(someModifiers, aMultiplier, aBonusMultiplier); }
+    public static IEnumerator<float> CheckGameOver()
+    {
+        var playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
+        playerSaveData.Data.MentalSanity.MaxSelf(0);
 
+        if (playerSaveData.Data.MentalSanity == 0)
+            Debug.LogError("Game over, but not implemented yet");
+
+        yield return Timing.WaitForOneFrame;
+    }
+
+    public static bool CanAfford(CornEvent aEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(aEvent).CanAfford(aBonusMultiplier); }
+    public static bool CanAffordMoney(CornEvent aEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(aEvent).CanAffordMoney(aBonusMultiplier); }
+
+    public static bool CanAfford(CornPlayerConsumables aType, float aValue) { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(aType, aValue); }
+    public static bool CanAfford(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(aModifier, aMultiplier, aBonusMultiplier); }
+    public static bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier> { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(someModifiers, aMultiplier, aBonusMultiplier); }
+    public static bool CanAffordMoney<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier> { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAffordMoney(someModifiers, aMultiplier, aBonusMultiplier); }
 
     public static void ApplyModifier(CornPlayerResources aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aType, aValue); }
     public static void ApplyModifier(CornPlayerConsumables aType, float aValue) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aType, aValue); }
 
-    public static void ApplyModifier(PlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
-    public static void ApplyModifier(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifier(CornPlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifier(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifier(aModifier, aMultiplier, aBonusMultiplier); }
 
-    public static void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerResourcesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifierResourceList(someModifiers, aMultiplier, aBonusMultiplier); }
-    public static void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifierConsumablesList(someModifiers, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerResourcesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifierResourceList(someModifiers, aMultiplier, aBonusMultiplier); }
+    public static void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier> { GfgManagerSaveData.GetActivePlayerSaveData().Data.ApplyModifierConsumablesList(someModifiers, aMultiplier, aBonusMultiplier); }
     public static int MentalSanity { get { return GfgManagerSaveData.GetActivePlayerSaveData().Data.MentalSanity; } }
 }
 

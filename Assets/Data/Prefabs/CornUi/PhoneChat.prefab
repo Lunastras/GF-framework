@@ -647,6 +647,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27cf720eac0a91b488278e8e6aa9f6da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_inputLockPriority: 1
   m_optionsButtonPrefab: {fileID: 3766172959617507501, guid: 607c3df8608350a4b8ca0a9ccb0502b8,
     type: 3}
   m_optionsButtonsParent: {fileID: 5598067658118474501}

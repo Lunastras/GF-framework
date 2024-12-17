@@ -804,7 +804,7 @@ public class GfCommandConsole : MonoBehaviour
         return Instance.m_auxStringBuffer;
     }
 
-    public static void RegisterCommand(string aCommand, Action anAction)
+    public static bool RegisterCommand(string aCommand, Action anAction)
     {
         Debug.Assert(!aCommand.IsEmpty());
         Debug.Assert(anAction != null);
@@ -813,8 +813,9 @@ public class GfCommandConsole : MonoBehaviour
         stringBufferCommand.Append(aCommand);
         stringBufferCommand.StrLwr();
 
-        Instance.m_commands.Add(stringBufferCommand.GetStringCopy(), anAction);
+        bool success = Instance.m_commands.TryAdd(stringBufferCommand.GetStringCopy(), anAction);
         stringBufferCommand.Clear();
+        return success;
     }
 
     private static void VeraCommand()

@@ -34,7 +34,7 @@ public class IrisuManagerGame : MonoBehaviour
     [SerializeField] private Vector2 m_countColorsEasyHard = new(3, (int)IrisuColorType.COUNT);
     [SerializeField] private Vector2 m_hpLostPerSecondEasyHard = new(0.01f, 0.03f);
 
-    [SerializeField] private float m_maxDifficultyScore = 60000;
+    [SerializeField] private int m_maxDifficultyScore = 60000;
     [SerializeField] private float m_hpLostOnStaticBlock = 0.1f;
     [SerializeField] private float m_pointsHpCoefGain = 0.001f;
 
@@ -64,6 +64,12 @@ public class IrisuManagerGame : MonoBehaviour
             GfcPooling.Pool(m_blocks[i], 8);
 
         GfcPooling.Pool(m_rainbowClearPrefab, 1);
+
+        GfCommandConsole.RegisterCommand("IrisuWin", () =>
+        {
+            m_hp = 0;
+            m_points = m_maxDifficultyScore;
+        });
 
         UpdateHud();
         m_gameHandle = Timing.RunCoroutine(_ExecuteGame().CancelWith(gameObject));

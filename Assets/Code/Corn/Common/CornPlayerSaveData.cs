@@ -122,26 +122,40 @@ public class GfgPlayerSaveData
             return -0.001 <= Consumables[(int)aType] + aValue; //-0.001 to account for errors
         }
 
-        public bool CanAfford(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0)
+        public bool CanAfford(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0)
         {
             return CanAfford(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value));
         }
 
-        public bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier>
+        public bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier>
         {
             bool canAfford = true;
             if (someModifiers != null)
-                foreach (PlayerConsumablesModifier modifier in someModifiers)
+                foreach (CornPlayerConsumablesModifier modifier in someModifiers)
                     canAfford &= CanAfford(modifier, aMultiplier, aBonusMultiplier);
 
             return canAfford;
         }
 
-        public void ApplyModifier(PlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
-        public void ApplyModifier(PlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
+        public bool CanAffordMoney<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier>
+        {
+            bool canAfford = true;
+            if (someModifiers != null)
+                foreach (CornPlayerConsumablesModifier modifier in someModifiers)
+                    if (modifier.Type == CornPlayerConsumables.MONEY)
+                    {
+                        canAfford &= CanAfford(modifier, aMultiplier, aBonusMultiplier);
+                        break;
+                    }
 
-        public void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerResourcesModifier> { if (someModifiers != null) foreach (PlayerResourcesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
-        public void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<PlayerConsumablesModifier> { if (someModifiers != null) foreach (PlayerConsumablesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
+            return canAfford;
+        }
+
+        public void ApplyModifier(CornPlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
+        public void ApplyModifier(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
+
+        public void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerResourcesModifier> { if (someModifiers != null) foreach (CornPlayerResourcesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
+        public void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier> { if (someModifiers != null) foreach (CornPlayerConsumablesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
     };
 
     public CornSaveData Data = new();
@@ -255,7 +269,7 @@ public enum CornPlayerConsumables
 }
 
 [Serializable]
-public struct PlayerConsumablesModifier
+public struct CornPlayerConsumablesModifier
 {
     public CornPlayerConsumables Type;
     public float Value;
@@ -284,7 +298,7 @@ public enum CornPlayerResources
 }
 
 [Serializable]
-public struct PlayerResourcesModifier
+public struct CornPlayerResourcesModifier
 {
     public CornPlayerResources Type;
     public float Value;
