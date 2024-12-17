@@ -28,6 +28,7 @@ public class GfxClickInteract : MonoBehaviour
         this.SetSingleton(ref Instance);
         m_submitTracker = new(GfcInputType.SUBMIT);
         m_submitTracker.DisplayPrompt = false;
+        m_submitTracker.Key = new((int)GfcInputLockPriority.GF_MASTER);
         m_clickInteractText = new("Interact");
     }
 
@@ -86,15 +87,16 @@ public class GfxClickInteract : MonoBehaviour
         if (component)
         {
             string notInteractableReason = null;
+            GfcLockKey inputKey = new((int)component.InputKeyPriority);
             if (component.Interactable(hitInfo, out notInteractableReason))
             {
-                if (anInteract)
+                if (anInteract && GfcInput.InputLockHandle.AuthorityTest(inputKey))
                 {
                     component.Interact(hitInfo);
                 }
                 else //somehow let player they can interact
                 {
-                    GfcInput.UpdateDisplayInput(m_submitTracker.InputType, default, m_clickInteractText);
+                    GfcInput.UpdateDisplayInput(m_submitTracker.InputType, inputKey, m_clickInteractText);
                 }
             }
             else

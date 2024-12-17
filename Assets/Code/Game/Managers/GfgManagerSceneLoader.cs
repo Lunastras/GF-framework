@@ -40,7 +40,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
     private bool m_fakeWait = false;
 
-    private GfcTimeStamp m_gameStateKey;
+    private GfcLockKey m_gameStateKey;
 
     private bool m_softGameStateLock = false;
 

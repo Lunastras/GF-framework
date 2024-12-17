@@ -4,8 +4,8 @@ using UnityEngine;
 
 public abstract class GfcInteractable : MonoBehaviour
 {
+    public GfcInputLockPriority InputKeyPriority = GfcInputLockPriority.UI1;
     [SerializeField] protected bool m_interactable { get; private set; } = true;
-
     [HideInInspector]
     public string NotInteractableReason
     {

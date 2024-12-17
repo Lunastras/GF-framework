@@ -67,7 +67,7 @@ public class GfCommandConsole : MonoBehaviour
     private int m_countWarn = 0;
     private int m_countLog = 0;
     private int m_countCommand = 0;
-    public GfcTimeStamp m_inputLockKey = default;
+    public GfcLockKey m_inputLockKey = default;
 
     private float m_yScrollBottomSmoothRef = 0;
     private float m_desiredYScrollBottom = 0;
@@ -139,7 +139,7 @@ public class GfCommandConsole : MonoBehaviour
             Color color = m_caretColor;
             color.a = 0;
             m_commandText.caretColor = color;
-            if (m_inputLockKey.Valid()) GfcInput.InputLockHandle.Unlock(ref m_inputLockKey, (int)GfcInputLockPriority.GF_MASTER);
+            if (m_inputLockKey.Valid()) GfcInput.InputLockHandle.Unlock(ref m_inputLockKey);
         });
     }
 
@@ -156,7 +156,7 @@ public class GfCommandConsole : MonoBehaviour
             m_scalableWindow.enabled = m_console.activeSelf;
             if (!m_console.activeSelf)//console just closed
             {
-                if (m_inputLockKey.Valid()) GfcInput.InputLockHandle.Unlock(ref m_inputLockKey, (int)GfcInputLockPriority.GF_MASTER);
+                if (m_inputLockKey.Valid()) GfcInput.InputLockHandle.Unlock(ref m_inputLockKey);
                 m_mustScrollDown |= m_currentYScrollBottom >= m_fullHeight;
             }
             else //console just opened

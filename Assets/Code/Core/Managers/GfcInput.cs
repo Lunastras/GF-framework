@@ -53,6 +53,9 @@ public class GfcInput : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (InputLockHandle.Locked())
+            Debug.Log("I AM LOCKED BY " + InputLockHandle.GetHeadCopy().ObjectHandle);
+
         int fixedUpdateCount = GfcPhysics.FixedUpdateCount;
         for (int i = 0; i < m_displayedInputs.Count; i++)
         {
@@ -130,9 +133,9 @@ public class GfcInput : MonoBehaviour
         return InputGlyphs.GetGlyph(aControllerType, anActionId, Pole.Positive, out _, aPlayerId).GetSprite(AxisRange.Full);
     }
 
-    public static void UpdateDisplayInput(GfcInputCategory aCategoryType, GfcTimeStamp aKey = default, string aLabel = null) { UpdateDisplayInput(GfcInputType.NONE, aCategoryType, aKey, aLabel); }
-    public static void UpdateDisplayInput(GfcInputType anInputType, GfcTimeStamp aKey = default, string aLabel = null) { UpdateDisplayInput(anInputType, GfcInputCategory.NONE, aKey, aLabel); }
-    public static void UpdateDisplayInput(GfcInputType aType, GfcInputCategory aCategoryType, GfcTimeStamp aKey = default, string aLabel = null)
+    public static void UpdateDisplayInput(GfcInputCategory aCategoryType, GfcLockKey aKey = default, string aLabel = null) { UpdateDisplayInput(GfcInputType.NONE, aCategoryType, aKey, aLabel); }
+    public static void UpdateDisplayInput(GfcInputType anInputType, GfcLockKey aKey = default, string aLabel = null) { UpdateDisplayInput(anInputType, GfcInputCategory.NONE, aKey, aLabel); }
+    public static void UpdateDisplayInput(GfcInputType aType, GfcInputCategory aCategoryType, GfcLockKey aKey = default, string aLabel = null)
     {
         if (!InputLockHandle.AuthorityTest(aKey))
             return;
@@ -179,9 +182,9 @@ public class GfcInput : MonoBehaviour
 
     public static Player GetPlayer(int aPlayerId = 0) { return ReInput.players.GetPlayer(aPlayerId); }
     //ignore input during transitions
-    public static float GetAxis(GfcInputType aInputType, int aPlayerId = 0, GfcTimeStamp aKey = default) { return aInputType == GfcInputType.NONE || !InputLockHandle.AuthorityTest(aKey) ? 0 : GetPlayer(aPlayerId).GetAxis((int)aInputType); }
-    public static float GetAxisRaw(GfcInputType aInputType, int aPlayerId = 0, GfcTimeStamp aKey = default) { return aInputType == GfcInputType.NONE || !InputLockHandle.AuthorityTest(aKey) ? 0 : GetPlayer(aPlayerId).GetAxisRaw((int)aInputType); }
-    public static bool GetInput(GfcInputType aInputType, int aPlayerId = 0, GfcTimeStamp aKey = default, float aError = AXIS_DEAD_ZONE) { return GetAxisRaw(aInputType, aPlayerId, aKey).Abs() > aError; }
+    public static float GetAxis(GfcInputType aInputType, int aPlayerId = 0, GfcLockKey aKey = default) { return aInputType == GfcInputType.NONE || !InputLockHandle.AuthorityTest(aKey) ? 0 : GetPlayer(aPlayerId).GetAxis((int)aInputType); }
+    public static float GetAxisRaw(GfcInputType aInputType, int aPlayerId = 0, GfcLockKey aKey = default) { return aInputType == GfcInputType.NONE || !InputLockHandle.AuthorityTest(aKey) ? 0 : GetPlayer(aPlayerId).GetAxisRaw((int)aInputType); }
+    public static bool GetInput(GfcInputType aInputType, int aPlayerId = 0, GfcLockKey aKey = default, float aError = AXIS_DEAD_ZONE) { return GetAxisRaw(aInputType, aPlayerId, aKey).Abs() > aError; }
 }
 
 //used for generic inputs that should be compatible with a keyboard and a controller
@@ -231,7 +234,7 @@ public enum GfcInputCategory
 
 public enum GfcInputLockPriority
 {
-    Base = 0,
+    BASE = 0,
     UI1,
     UI2,
     UI3,
@@ -252,7 +255,7 @@ public struct GfcInputTracker : IGfcInputTracker
 
     public int PlayerId;
 
-    public GfcTimeStamp Key;
+    public GfcLockKey Key;
 
     public bool AllowFrameSkipping;
 
@@ -318,7 +321,7 @@ public struct GfcInputTracker : IGfcInputTracker
         int currentFrame = Time.frameCount;
         if (currentFrame != m_lastFrameOfCheck)
         {
-            if (ParentValid())
+            if (GfcInput.InputLockHandle.AuthorityTest(Key) && ParentValid()) //skip the frame in case the authority test fails
             {
                 m_previousPressedState = m_currentPressedState;
                 m_currentPressedState = GfcInput.GetInput(m_inputType, PlayerId, Key, AxisError);
@@ -339,7 +342,7 @@ public struct GfcInputTracker : IGfcInputTracker
         }
     }
 
-    private readonly bool IgnoreInput() { return m_waitingForReleaseAfterFrameSkip || !GfcInput.InputLockHandle.AuthorityTest(Key); }
+    private readonly bool IgnoreInput() { return m_waitingForReleaseAfterFrameSkip; }
     private readonly bool ParentValid() { return ParentGameObject == null || ParentGameObject.ActiveInHierarchyGf(); }
 }
 

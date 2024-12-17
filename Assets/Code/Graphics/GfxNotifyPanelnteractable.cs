@@ -7,7 +7,7 @@ using UnityEngine;
 
 public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 {
-    [SerializeField] protected GfcInputLockPriority m_inputLockPriority = GfcInputLockPriority.Base;
+    [SerializeField] protected GfcInputLockPriority m_inputLockPriority = GfcInputLockPriority.BASE;
     [SerializeField] protected GameObject m_optionsButtonPrefab;
     [SerializeField] protected Transform m_optionsButtonsParent;
     [SerializeField] protected float m_transitionTime = 0.3f;
@@ -24,7 +24,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
     protected int m_lastWrittenMessageIndex = -1;
     protected int m_messageBufferIndex = 0;
     private bool m_waitingForOptionSelect = true;
-    protected GfcTimeStamp m_inputLockKey;
+    protected GfcLockKey m_inputLockKey;
 
     public override void ClearVisuals()
     {

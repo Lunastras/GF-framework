@@ -12,9 +12,9 @@ public class GfcLockPriorityQueue : IGfcLockHandle
     }
 
     //returns the key
-    public GfcTimeStamp Lock(object anObjectHandle, int aPriority = 0, bool anInclusivePriority = true, bool aPrintErrors = true)
+    public GfcLockKey Lock(object anObjectHandle, int aPriority = 0, bool anInclusivePriority = true, bool aPrintErrors = true)
     {
-        GfcTimeStamp key = default;
+        GfcLockKey key = default;
         if (!ObjectHasLock(anObjectHandle))
         {
             GfcLockHandle lockHandle = new();
@@ -27,13 +27,13 @@ public class GfcLockPriorityQueue : IGfcLockHandle
         return key;
     }
 
-    public bool Unlock(ref GfcTimeStamp aKey, int aPriority = 0, bool aPrintErrors = true)
+    public bool Unlock(ref GfcLockKey aKey, bool aPrintErrors = true)
     {
         int anIndex = FindKey(aKey);
         if (anIndex >= 0)
         {
             GfcLockHandle handle = m_handles[anIndex];
-            handle.Unlock(ref aKey, aPriority);
+            handle.Unlock(ref aKey);
             m_handles[anIndex] = handle;
         }
         else if (aPrintErrors)
@@ -43,19 +43,19 @@ public class GfcLockPriorityQueue : IGfcLockHandle
         return m_handles.Count == 0;
     }
 
-    public bool UnlockAll(ref GfcTimeStamp aKey, int aPriority = 0, bool aPrintErrors = true)
+    public bool UnlockAll(ref GfcLockKey aKey, bool aPrintErrors = true)
     {
         int count = m_handles.Count;
         for (int i = 0; i < count; i++)
-            m_handles[i].Unlock(ref aKey, aPriority, false);
+            m_handles[i].Unlock(ref aKey, aPrintErrors);
 
         FlushInvalidHandles();
         return m_handles.Count == 0;
     }
 
-    public bool AuthorityTest(GfcTimeStamp aKey, int aPriority = 0) { return GetHeadCopy().AuthorityTest(aKey, aPriority); }
+    public bool AuthorityTest(GfcLockKey aKey) { return GetHeadCopy().AuthorityTest(aKey); }
 
-    public bool KeyTest(GfcTimeStamp aKey) { return FindKey(aKey) >= 0; }
+    public bool KeyTest(GfcLockKey aKey) { return FindKey(aKey) >= 0; }
 
     public bool Locked()
     {
@@ -75,7 +75,7 @@ public class GfcLockPriorityQueue : IGfcLockHandle
 
     public bool ObjectHasLock(object anObjectHandle) { return GetLockIndexWithObjectHandle(anObjectHandle) >= 0; }
 
-    private int FindKey(GfcTimeStamp aKey)
+    private int FindKey(GfcLockKey aKey)
     {
         int count = m_handles.Count;
         for (int i = 0; i < count; i++)
@@ -109,21 +109,20 @@ public class GfcLockPriorityQueue : IGfcLockHandle
 
 public struct GfcLockHandle : IGfcLockHandle, IEquatable<GfcLockHandle>, IComparable<GfcLockHandle>
 {
-    public GfcTimeStamp m_key;
+    public GfcLockKey m_key;
     public object ObjectHandle { get; private set; }
-    public int Priority { get; private set; }
     public bool InclusivePriority { get; private set; }
+    public readonly int Priority { get { return m_key.Priority; } }
 
-    public GfcTimeStamp Lock(object anObjectHandle, int aPriority = 0, bool anInclusivePriority = false, bool aPrintErrors = true)
+    public GfcLockKey Lock(object anObjectHandle, int aPriority = 0, bool anInclusivePriority = false, bool aPrintErrors = true)
     {
         Debug.Assert(anObjectHandle != null, "The object passed is null.");
 
-        GfcTimeStamp key = default;
-        if (!Locked() || Priority < aPriority)
+        GfcLockKey key = default;
+        if (!Locked() || m_key.Priority < aPriority)
         {
-            Priority = aPriority;
+            key = m_key = new(aPriority);
             ObjectHandle = anObjectHandle;
-            key = m_key = new(0);
             Debug.Assert(m_key.Valid());
             InclusivePriority = anInclusivePriority;
         }
@@ -133,13 +132,12 @@ public struct GfcLockHandle : IGfcLockHandle, IEquatable<GfcLockHandle>, ICompar
         return key;
     }
 
-    public bool Unlock(ref GfcTimeStamp aKey, int aPriority = 0, bool aPrintErrors = true)
+    public bool Unlock(ref GfcLockKey aKey, bool aPrintErrors = true)
     {
-        if (AuthorityTest(aKey, aPriority))
+        if (AuthorityTest(aKey))
         {
             ObjectHandle = null;
             m_key = default;
-            Priority = 0;
             InclusivePriority = false;
             aKey = default;
         }
@@ -149,16 +147,16 @@ public struct GfcLockHandle : IGfcLockHandle, IEquatable<GfcLockHandle>, ICompar
         return ObjectHandle == null;
     }
 
-    public readonly bool AuthorityTest(GfcTimeStamp aKey, int aPriority = 0) { return KeyTest(aKey) || ObjectHandle == null || aPriority > Priority || (InclusivePriority && aPriority == Priority); }
-    public readonly bool KeyTest(GfcTimeStamp aKey) { return m_key.Equals(aKey); }
+    public readonly bool AuthorityTest(GfcLockKey aKey) { return KeyTest(aKey) || ObjectHandle == null || aKey.Priority > Priority || (InclusivePriority && aKey.Priority == Priority); }
+    public readonly bool KeyTest(GfcLockKey aKey) { return m_key.Key.Equals(aKey.Key); }
     public readonly bool Locked() { return ObjectHandle != null && m_key.Valid(); }
 
-    public readonly bool Equals(GfcLockHandle anOther) { return Priority == anOther.Priority && m_key.Equals(anOther.m_key) && ObjectHandle == anOther.ObjectHandle; }
+    public readonly bool Equals(GfcLockHandle anOther) { return Priority == anOther.Priority && KeyTest(anOther.m_key) && ObjectHandle == anOther.ObjectHandle; }
     public readonly int CompareTo(GfcLockHandle aData)
     {
         int priorityDiff = Priority - aData.Priority;
         if (priorityDiff == 0)
-            return m_key.CompareTo(aData.m_key);
+            return m_key.Key.CompareTo(aData.m_key.Key);
         return priorityDiff.Sign();
     }
 }
@@ -167,10 +165,10 @@ public class GfcLockHandleShared : IGfcLockHandle
 {
     private GfcLockHandle m_handle = default;
 
-    public GfcTimeStamp Lock(object anObjectHandle, int aPriority = 0, bool anInclusivePriority = false, bool aPrintErrors = true) { return m_handle.Lock(anObjectHandle, aPriority, anInclusivePriority, aPrintErrors); }
-    public bool Unlock(ref GfcTimeStamp aKey, int aPriority = 0, bool aPrintErrors = true) { return m_handle.Unlock(ref aKey, aPriority, aPrintErrors); }
-    public bool AuthorityTest(GfcTimeStamp aKey, int aPriority = 0) { return m_handle.AuthorityTest(aKey); }
-    public bool KeyTest(GfcTimeStamp aKey) { return m_handle.KeyTest(aKey); }
+    public GfcLockKey Lock(object anObjectHandle, int aPriority = 0, bool anInclusivePriority = false, bool aPrintErrors = true) { return m_handle.Lock(anObjectHandle, aPriority, anInclusivePriority, aPrintErrors); }
+    public bool Unlock(ref GfcLockKey aKey, bool aPrintErrors = true) { return m_handle.Unlock(ref aKey, aPrintErrors); }
+    public bool AuthorityTest(GfcLockKey aKey) { return m_handle.AuthorityTest(aKey); }
+    public bool KeyTest(GfcLockKey aKey) { return m_handle.KeyTest(aKey); }
     public bool Locked() { return m_handle.Locked(); }
 
     public GfcLockHandle GetHandleCopy() { return m_handle; }
@@ -178,9 +176,31 @@ public class GfcLockHandleShared : IGfcLockHandle
 
 public interface IGfcLockHandle
 {
-    public GfcTimeStamp Lock(object anObjectHandle, int aPriority = 0, bool anInclusivePriority = false, bool aPrintErrors = true);
-    public bool Unlock(ref GfcTimeStamp aKey, int aPriority = 0, bool aPrintErrors = true);
-    public bool AuthorityTest(GfcTimeStamp aKey, int aPriority = 0);
-    public bool KeyTest(GfcTimeStamp aKey);
+    public GfcLockKey Lock(object anObjectHandle, int aPriority = 0, bool anInclusivePriority = false, bool aPrintErrors = true);
+    public bool Unlock(ref GfcLockKey aKey, bool aPrintErrors = true);
+    public bool AuthorityTest(GfcLockKey aKey);
+    public bool KeyTest(GfcLockKey aKey);
     public bool Locked();
+}
+
+public struct GfcLockKey : IEquatable<GfcLockKey>
+{
+    public GfcTimeStamp Key { get; private set; }
+    public int Priority { get; private set; }
+
+    public GfcLockKey(GfcTimeStamp aKey, int aPriority = 0)
+    {
+        Key = aKey;
+        Priority = aPriority;
+    }
+
+    public GfcLockKey(int aPriority)
+    {
+        Key = new(0);
+        Priority = aPriority;
+    }
+
+    public readonly bool Valid() { return Key.Valid(); }
+
+    public readonly bool Equals(GfcLockKey anOther) { return Priority == anOther.Priority && Key.Equals(anOther.Key); }
 }
