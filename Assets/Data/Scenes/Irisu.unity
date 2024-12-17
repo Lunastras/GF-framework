@@ -1466,6 +1466,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e569f5996a370b94085ddb7d1a6d8af8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_timescale: 0.8
   m_rainbowClearPrefab: {fileID: 2955467663152884264, guid: 52e59ee695e8b1b49b8b509dd7bdc612,
     type: 3}
   m_rainbowClearPrefabSpawnRate: 0.2
@@ -1544,12 +1545,12 @@ MonoBehaviour:
     m_RotationOrder: 4
   m_spawnDelayEasyHard: {x: 4, y: 3}
   m_spawnCountEasyHard: {x: 4, y: 6}
-  m_fallSpeedEasyHard: {x: 0.3, y: 2}
+  m_fallSpeedEasyHard: {x: 0.3, y: 1.5}
   m_countColorsEasyHard: {x: 3, y: 6}
-  m_hpLostPerSecondEasyHard: {x: 0.01, y: 0.015}
-  m_maxDifficultyScore: 100000
-  m_hpLostOnStaticBlock: 0.13
-  m_pointsHpCoefGain: 0.00015
+  m_hpLostPerSecondEasyHard: {x: 0.015, y: 0.015}
+  m_maxDifficultyScore: 60000
+  m_hpLostOnStaticBlock: 0.15
+  m_pointsHpCoefGain: 0.0002
 --- !u!114 &1444925204
 MonoBehaviour:
   m_ObjectHideFlags: 0

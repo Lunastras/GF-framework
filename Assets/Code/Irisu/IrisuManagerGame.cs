@@ -8,6 +8,8 @@ public class IrisuManagerGame : MonoBehaviour
 {
     private static IrisuManagerGame Instance;
 
+    [SerializeField] private float m_timescale = 0.8f;
+
     [SerializeField] private GameObject m_rainbowClearPrefab;
     [SerializeField] private float m_rainbowClearPrefabSpawnRate = 0.1f;
 
@@ -42,6 +44,7 @@ public class IrisuManagerGame : MonoBehaviour
     private float m_hp = 1;
 
     CoroutineHandle m_gameHandle;
+    float m_initialTimeScale;
 
     public static CoroutineHandle GetGameHandle() { return Instance.m_gameHandle; }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -53,6 +56,9 @@ public class IrisuManagerGame : MonoBehaviour
 
     void Start()
     {
+        m_initialTimeScale = Time.timeScale;
+        Time.timeScale = m_timescale;
+
         m_blocks.Validate(IrisuShapeType.COUNT);
         for (int i = 0; i < m_blocks.Length; i++)
             GfcPooling.Pool(m_blocks[i], 8);

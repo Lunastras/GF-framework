@@ -1512,7 +1512,7 @@ MonoBehaviour:
     m_Value: 1
   saturate:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 2
   brightness:
     m_OverrideState: 1
     m_Value: 1.85
@@ -1542,7 +1542,7 @@ MonoBehaviour:
     m_Value: 0.6
   lutTexture:
     m_OverrideState: 1
-    m_Value: {fileID: 11700000, guid: 787cd7d50ef1d514aaffa3fcdb2f7c90, type: 2}
+    m_Value: {fileID: 11700000, guid: 8c9d307f5c9ac0a41a842e91a842ea20, type: 2}
     dimension: 1
   bloomIntensity:
     m_OverrideState: 0

@@ -36,7 +36,7 @@ public class IrisuBlock : MonoBehaviour
     const int LAYER_CEIL = 22;
 
     const float DEATH_Y = -10;
-    const float SCALE_MAX = 2.5f;
+    const float SCALE_MAX = 2.0f;
     const float SCALE_MIN = 0.75f;
 
     const float FALL_SPEED_VARIANCE = 0.2f;

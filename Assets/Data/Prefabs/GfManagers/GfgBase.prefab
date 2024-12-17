@@ -3610,7 +3610,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_cursorTransform: {fileID: 8279208471888182998}
-  m_sensitivity: 1
 --- !u!114 &3469101699653638977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4343,6 +4342,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
+      propertyPath: m_baseChoresMiniGameExtraPoints
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
+        type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.size
       value: 10
       objectReference: {fileID: 0}
@@ -4399,7 +4403,7 @@ PrefabInstance:
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[0].CostAndRewards.HoursDuration
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
@@ -4479,17 +4483,17 @@ PrefabInstance:
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[0].CostAndRewards.ConsumablesModifier.Array.size
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.size
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[3].CostAndRewards.ConsumablesModifier.Array.size
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
@@ -4539,7 +4543,7 @@ PrefabInstance:
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ResourcesModifier.Array.data[0].Value
-      value: 0.2
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
@@ -4559,7 +4563,7 @@ PrefabInstance:
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[8].CostAndRewards.ResourcesModifier.Array.data[1].Value
-      value: -0.3
+      value: -0.2
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
@@ -4578,12 +4582,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.data[0].Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
+        type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.data[1].Type
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.data[2].Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
+        type: 3}
+      propertyPath: m_cornEventCostAndRewards.Array.data[3].CostAndRewards.ConsumablesModifier.Array.data[0].Type
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
@@ -4624,7 +4638,7 @@ PrefabInstance:
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[1].CostAndRewards.ConsumablesModifier.Array.data[0].Value
-      value: -0.2
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
@@ -4639,7 +4653,7 @@ PrefabInstance:
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_cornEventCostAndRewards.Array.data[3].CostAndRewards.ConsumablesModifier.Array.data[0].Value
-      value: -0.2
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
