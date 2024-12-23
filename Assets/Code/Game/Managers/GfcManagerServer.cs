@@ -35,7 +35,7 @@ public class GfcManagerServer : NetworkBehaviour
         }
     }
 
-    public static bool HasAuthority
+    public new static bool HasAuthority
     {
         get
         {

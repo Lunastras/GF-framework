@@ -83,8 +83,6 @@ public class GfxSliderText : MonoBehaviour
 
     public void EndPreview()
     {
-        m_isPreviewing = false;
-
         if (m_sliderMain)
         {
             m_sliderMain.value = m_lastValue;
@@ -130,7 +128,6 @@ public class GfxSliderText : MonoBehaviour
             m_textValuePreview.text = aNum.ToString();
             m_textValuePreview.color = m_sliderBackgroundImage.color;
             m_textValue.color = TRANSPARENT;
-            m_isPreviewing = true;
         }
         //do nothing if they are equal
     }
