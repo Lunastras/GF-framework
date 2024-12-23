@@ -7,29 +7,26 @@ public struct GfcCoroutineHandle
     public CoroutineHandle CoroutineHandle
     {
         readonly get { return m_coroutineHandle; }
-        set { m_coroutineHandle = value; CoroutineIsRunning = value.IsValid; }
+        set { m_coroutineHandle = value; }
     }
 
     private CoroutineHandle m_coroutineHandle;
 
-    public bool CoroutineIsRunning { get; private set; }
+    public bool CoroutineIsRunning { get { return m_coroutineHandle.IsValid; } }
 
     public GfcCoroutineHandle(CoroutineHandle aCoroutineHandle = default)
     {
         m_coroutineHandle = aCoroutineHandle;
-        CoroutineIsRunning = aCoroutineHandle.IsValid;
     }
 
     public GfcCoroutineHandle(IEnumerator<float> aEnumerator, string aTag)
     {
         m_coroutineHandle = Timing.RunCoroutine(aEnumerator, aTag);
-        CoroutineIsRunning = m_coroutineHandle.IsValid;
     }
 
     public GfcCoroutineHandle(IEnumerator<float> aEnumerator, Segment aSegment = Segment.Update, string aTag = null)
     {
         m_coroutineHandle = Timing.RunCoroutine(aEnumerator, aSegment, aTag);
-        CoroutineIsRunning = m_coroutineHandle.IsValid;
     }
 
     //done like this to avoid issues when the coroutine ends up calling this function
@@ -48,6 +45,7 @@ public struct GfcCoroutineHandle
         if (!CoroutineIsRunning)
             CoroutineHandle = Timing.RunCoroutine(aEnumerator, aTag);
 
+        Debug.Assert(CoroutineHandle.IsValid);
         return CoroutineHandle;
     }
 
@@ -63,6 +61,7 @@ public struct GfcCoroutineHandle
     public CoroutineHandle RunCoroutine(IEnumerator<float> aEnumerator, Segment aSegment = Segment.Update, string aTag = null)
     {
         CoroutineHandle = Timing.RunCoroutine(aEnumerator, aSegment, aTag);
+        Debug.Assert(CoroutineHandle.IsValid);
         return CoroutineHandle;
     }
 

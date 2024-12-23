@@ -61,8 +61,6 @@ public class GfCommandConsole : MonoBehaviour
     private List<GfConsoleLog> m_logsList = new(256);
     private List<GfConsoleLog> m_usedLogsList = new(256);
 
-    private string m_lastFrameCommandString;
-
     private int m_countError = 0;
     private int m_countWarn = 0;
     private int m_countLog = 0;

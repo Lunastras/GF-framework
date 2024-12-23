@@ -76,6 +76,7 @@ Shader "DistanceDither/Simple Lit"
             // Dithering keywords
             #pragma shader_feature _LAMBERT_DISABLED
             #pragma shader_feature _FOG_DISABLED
+            #pragma shader_feature _VERTEX_LIGHT
 
             // -------------------------------------
             // Material Keywords

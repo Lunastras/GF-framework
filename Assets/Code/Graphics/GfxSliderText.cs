@@ -10,9 +10,9 @@ public class GfxSliderText : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI m_textValue;
 
-    [SerializeField] private float m_previewFlashInterval = 2;
+    //[SerializeField] private float m_previewFlashInterval = 2;
 
-    [SerializeField] private float m_previewHold = 1;
+    //[SerializeField] private float m_previewHold = 1;
 
     [SerializeField] private float m_valueTextMultiplier = 100; //used to not write a value between 0 and 1 on the text
 
@@ -39,7 +39,7 @@ public class GfxSliderText : MonoBehaviour
 
     private float m_lastValue = 0;
 
-    private bool m_isPreviewing = false;
+    // private bool m_isPreviewing = false;
 
     // Start is called before the first frame update
     void Awake()

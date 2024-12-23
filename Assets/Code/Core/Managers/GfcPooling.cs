@@ -21,6 +21,8 @@ public class GfcPooling : MonoBehaviour
 
     private List<Component> m_sharedSomponentsBuffer = new(16);
 
+    private List<string> m_stringKeysBuffer = new(8);
+
     public static bool ExitingPlaymode = false;
 
     private struct PoolStruct
@@ -422,11 +424,13 @@ public class GfcPooling : MonoBehaviour
 
     public static void ClearNonPersistentPools()
     {
+        Instance.m_stringKeysBuffer.Clear();
         foreach (var pool in Instance.m_pools)
-        {
             if (!pool.Value.PermanentObjects)
-                ClearPool(pool.Value.Prefab);
-        }
+                Instance.m_stringKeysBuffer.Add(pool.Key);
+
+        foreach (var pool in Instance.m_stringKeysBuffer)
+            ClearPool(pool);
     }
 
     public static void ClearPool(GameObject objectToClear, int numInstances = int.MaxValue, bool keepPoolIfEmpty = false)

@@ -3,6 +3,7 @@ using MEC;
 using TMPro;
 using UnityEngine;
 
+[ExecuteInEditMode]
 [System.Serializable]
 [RequireComponent(typeof(TextMeshProUGUI))]
 public class GfxRichTextWriter : MonoBehaviour
@@ -17,6 +18,9 @@ public class GfxRichTextWriter : MonoBehaviour
             m_textMeshPro.OnPreRenderText += OnPreRenderText;
         }
     }
+
+    [SerializeField] private bool m_circleText = false;
+    [SerializeField] private float m_circleCircumference = 3000;
 
     public FloatAndInv LetterDelaySeconds;
 
@@ -58,7 +62,20 @@ public class GfxRichTextWriter : MonoBehaviour
         SpeedMultiplier.Refresh();
         m_writeAllSpeedMultiplier.Refresh();
         TextMeshPro = GetComponent<TextMeshProUGUI>();
+        m_textMeshPro.ForceMeshUpdate();
+        ApplyStaticEffects(m_textMeshPro.textInfo, true);
     }
+
+#if UNITY_EDITOR
+    private void Update()
+    {
+        if (!Application.isPlaying)
+        {
+            m_textMeshPro.ForceMeshUpdate();
+            ApplyStaticEffects(m_textMeshPro.textInfo, true);
+        }
+    }
+#endif //UNITY_EDITOR, used to preview the values in the editor
 
     public void SetString(string aString, bool aWriteTextInstant = true)
     {
@@ -121,9 +138,59 @@ public class GfxRichTextWriter : MonoBehaviour
 
     private CoroutineHandle WriteStringAnimation(bool aFadeIn, float aSpeedMultiplier = 1) { return m_textAnimationHandle.RunCoroutineIfNotRunning(_ExecuteCharacterTransition(aFadeIn, aSpeedMultiplier)); }
 
-    public virtual void ApplyStaticEffects(TMP_TextInfo aTextInfo)
+    public virtual void ApplyStaticEffects(TMP_TextInfo aTextInfo, bool anUpdateVertexData = false)
     {
+        if (!m_circleText) return;
+
         TMP_CharacterInfo[] charsInfo = aTextInfo.characterInfo;
+        int length = TextLength;
+        Vector3 circleTopPosition = default;
+        Vector3 circleCenter = default;
+        float radius = 0;
+
+        float circleCircumferenceInv = m_circleCircumference.SafeInverse();
+
+        for (int i = 0; i < length; i++)
+        {
+            if (ValidCharacter(charsInfo[i].character))
+            {
+                int vertexIndexStart = charsInfo[i].vertexIndex;
+                int materialIndex = charsInfo[i].materialReferenceIndex;
+                Vector3[] vertPositions = aTextInfo.meshInfo[materialIndex].vertices;
+
+                Vector3 center = default;
+                for (int j = 0; j < VERT_COUNT; ++j)
+                    GfcTools.Add(ref center, vertPositions[vertexIndexStart + j]);
+                GfcTools.Mult(ref center, 0.25f); //average of the positions, same as dividing by 4
+
+                if (i != 0)
+                {
+                    Vector2 center2Top = center - circleTopPosition;
+                    float angle = -center2Top.x * circleCircumferenceInv * 360;
+                    //Debug.Log("Angle for Character " + i + " is " + angle);
+                    Quaternion roation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+                    float angleRad = (90 + angle) * Mathf.Deg2Rad;
+                    float distanceFromCenter = radius + center2Top.y;
+                    Vector3 newCenter = circleCenter + new Vector3(angleRad.Cos() * distanceFromCenter, angleRad.Sin() * distanceFromCenter, 0);
+
+                    for (int j = 0; j < VERT_COUNT; ++j)
+                    {
+                        int vertexIndex = vertexIndexStart + j;
+                        vertPositions[vertexIndex] = newCenter + roation * (vertPositions[vertexIndex] - center);
+                    }
+                }
+                else
+                {
+                    circleTopPosition = center;
+                    radius = m_circleCircumference / (2 * Mathf.PI);
+                    circleCenter = circleTopPosition - new Vector3(0, radius, 0);
+                }
+            }
+        }
+
+        if (anUpdateVertexData)
+            m_textMeshPro.UpdateVertexData();
     }
 
     private void ApplyTransitionEffectToText(bool anInitializeStep, bool anAllowEarlyBreak = false)
@@ -133,7 +200,7 @@ public class GfxRichTextWriter : MonoBehaviour
         var charactersInfo = aTextInfo.characterInfo;
         int characterCount = aTextInfo.characterCount;
 
-        TMP_VertexDataUpdateFlags vertexUpdateFlag = TMP_VertexDataUpdateFlags.None;
+        TMP_VertexDataUpdateFlags vertexUpdateFlag = TMP_VertexDataUpdateFlags.All; //should be none, maybe we can optimise it at some point
 
         if (anInitializeStep)
         {
@@ -222,13 +289,24 @@ public class GfxRichTextWriter : MonoBehaviour
         return TMP_VertexDataUpdateFlags.Colors32 | TMP_VertexDataUpdateFlags.Vertices;
     }
 
+    private bool m_initialPreRenderCall = false;
+
     private void OnPreRenderText(TMP_TextInfo aTmpInfo)
     {
-        if (m_textAnimationHandle.CoroutineIsRunning)
+        if (m_textAnimationHandle.CoroutineIsRunning || m_initialPreRenderCall)
         {
             ApplyTransitionEffectToText(true);
             m_lastFramePreRender = Time.frameCount;
         }
+        /*
+        else
+#if UNITY_EDITOR 
+        if (Application.isPlaying)
+#endif
+        {
+            Debug.Log("DUMNEZEU SA ITI DEA NIMIC");
+            //ApplyStaticEffects(m_textMeshPro.textInfo, true);
+        }*/
     }
 
     private IEnumerator<float> _ExecuteCharacterTransition(bool aFadeIn, float aSpeedMultiplier = 1)

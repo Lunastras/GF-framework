@@ -41,6 +41,26 @@ MonoBehaviour:
       surfaceData: 0
     screenSpaceSettings:
       normalBlend: 0
+--- !u!114 &-5443388882888532194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
+  m_Name: ColorDither
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  injectionPoint: 600
+  fetchColorBuffer: 1
+  requirements: 0
+  passMaterial: {fileID: 2100000, guid: 939525be99e4ece499f09a5d6e462469, type: 2}
+  passIndex: 0
+  bindDepthStencilAttachment: 0
+  m_Version: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70,7 +90,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: -6032616270611592538}
   - {fileID: -8497438768350394120}
-  m_RendererFeatureMap: a64af4cb76d747acf888d7277608138a
+  - {fileID: -5443388882888532194}
+  m_RendererFeatureMap: a64af4cb76d747acf888d7277608138a1e5f1ebda63275b4
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -89,7 +110,7 @@ MonoBehaviour:
     failOperation: 0
     zFailOperation: 0
   m_ShadowTransparentReceive: 0
-  m_RenderingMode: 1
+  m_RenderingMode: 2
   m_DepthPrimingMode: 0
   m_CopyDepthMode: 0
   m_DepthAttachmentFormat: 0

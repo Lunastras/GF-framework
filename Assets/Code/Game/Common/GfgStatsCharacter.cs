@@ -47,8 +47,6 @@ public abstract class GfgStatsCharacter : NetworkBehaviour
     //only valid for this specific entity (e.g. its own weapons)
     public Action<GfgStatsCharacter, DamageData> OnKilledUnique = null;
 
-    protected bool HasAuthority { get { return GfcManagerServer.HasAuthority; } }
-
     protected void Awake()
     {
         m_networkTransform = GetComponent<NetworkTransform>();

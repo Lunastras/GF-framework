@@ -53,8 +53,8 @@ public class GfcInput : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (InputLockHandle.Locked())
-            Debug.Log("I AM LOCKED BY " + InputLockHandle.GetHeadCopy().ObjectHandle);
+        //if (InputLockHandle.Locked())
+        //Debug.Log("I AM LOCKED BY " + InputLockHandle.GetHeadCopy().ObjectHandle);
 
         int fixedUpdateCount = GfcPhysics.FixedUpdateCount;
         for (int i = 0; i < m_displayedInputs.Count; i++)

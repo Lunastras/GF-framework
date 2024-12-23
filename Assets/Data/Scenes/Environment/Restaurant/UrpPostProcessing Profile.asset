@@ -276,7 +276,7 @@ MonoBehaviour:
   active: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0.1
+    m_Value: 0.01
   tintColor:
     m_OverrideState: 0
     m_Value: {r: 1, g: 1, b: 1, a: 1}
@@ -312,7 +312,7 @@ MonoBehaviour:
     m_Value: 1
   streaksIntensity:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 20
   streaksLength:
     m_OverrideState: 1
     m_Value: 0.2
@@ -346,10 +346,10 @@ MonoBehaviour:
     m_Value: 1
   threshold:
     m_OverrideState: 1
-    m_Value: 1.1
+    m_Value: 1.4
   intensity:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 1
   scatter:
     m_OverrideState: 1
     m_Value: 0.7
@@ -1530,19 +1530,19 @@ MonoBehaviour:
     m_Value: {r: 1, g: 1, b: 1, a: 0}
   colorTemp:
     m_OverrideState: 0
-    m_Value: 6550
+    m_Value: 2242
   colorTempBlend:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 1
   lut:
     m_OverrideState: 1
     m_Value: 1
   lutIntensity:
     m_OverrideState: 1
-    m_Value: 0.6
+    m_Value: 0
   lutTexture:
     m_OverrideState: 1
-    m_Value: {fileID: 11700000, guid: 787cd7d50ef1d514aaffa3fcdb2f7c90, type: 2}
+    m_Value: {fileID: 11700000, guid: aef6ac961bab6f041be618f9f6ea614a, type: 2}
     dimension: 1
   bloomIntensity:
     m_OverrideState: 0
@@ -1985,7 +1985,7 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 0.738
   vignettingOuterRing:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0.37
   vignettingInnerRing:
     m_OverrideState: 1
