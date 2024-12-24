@@ -11,12 +11,6 @@ public class GfxRichTextWriter : MonoBehaviour
     public TextMeshProUGUI TextMeshPro
     {
         get { return m_textMeshPro; }
-        set
-        {
-            if (m_textMeshPro) m_textMeshPro.OnPreRenderText -= OnPreRenderText;
-            m_textMeshPro = value;
-            m_textMeshPro.OnPreRenderText += OnPreRenderText;
-        }
     }
 
     [SerializeField] private bool m_circleText = false;
@@ -61,7 +55,8 @@ public class GfxRichTextWriter : MonoBehaviour
         LetterTranslateSeconds.Refresh();
         SpeedMultiplier.Refresh();
         m_writeAllSpeedMultiplier.Refresh();
-        TextMeshPro = GetComponent<TextMeshProUGUI>();
+        m_textMeshPro = GetComponent<TextMeshProUGUI>();
+        m_textMeshPro.OnPreRenderText += OnPreRenderText;
         m_textMeshPro.ForceMeshUpdate();
         ApplyStaticEffects(m_textMeshPro.textInfo, true);
     }
@@ -298,15 +293,13 @@ public class GfxRichTextWriter : MonoBehaviour
             ApplyTransitionEffectToText(true);
             m_lastFramePreRender = Time.frameCount;
         }
-        /*
         else
 #if UNITY_EDITOR 
-        if (Application.isPlaying)
+        if (Application.isPlaying && !WritingText())
 #endif
         {
-            Debug.Log("DUMNEZEU SA ITI DEA NIMIC");
-            //ApplyStaticEffects(m_textMeshPro.textInfo, true);
-        }*/
+            ApplyStaticEffects(m_textMeshPro.textInfo, true);
+        }
     }
 
     private IEnumerator<float> _ExecuteCharacterTransition(bool aFadeIn, float aSpeedMultiplier = 1)
@@ -325,6 +318,10 @@ public class GfxRichTextWriter : MonoBehaviour
 
         m_animData.FadeIn = aFadeIn;
         m_animData.SecondsSinceStart = 0;
+
+        m_initialPreRenderCall = true;
+        m_textMeshPro.ForceMeshUpdate();
+        m_initialPreRenderCall = false;
 
         bool firstIteration = true;
 

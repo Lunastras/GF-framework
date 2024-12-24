@@ -167,7 +167,7 @@ public class GfRunnerSimple : GfRunnerTemplate
         if (movDirMagnitude > 0.000001f) GfcTools.Div(ref movDir, movDirMagnitude); //normalise
 
         float verticalFallSpeed = Vector3.Dot(slope, velocity);
-        float fallMagn = 0, fallMaxDiff = -verticalFallSpeed - m_maxFallSpeed; //todo
+        float fallMagn = 0, fallMaxDiff = -verticalFallSpeed - m_maxFallSpeed;
         //remove vertical factor from the velocity to calculate the horizontal plane velocity easier
         Vector3 effectiveVelocity = velocity;
 
@@ -198,8 +198,6 @@ public class GfRunnerSimple : GfRunnerTemplate
 
         float minAux = Min(speedInDesiredDir, desiredSpeed);
         Vector3 deacceleration = effectiveVelocity;
-
-        deacceleration = effectiveVelocity;
         deacceleration.x -= movDir.x * minAux;
         deacceleration.y -= movDir.y * minAux;
         deacceleration.z -= movDir.z * minAux;
@@ -207,16 +205,15 @@ public class GfRunnerSimple : GfRunnerTemplate
         if (desiredSpeed > speedInDesiredDir) GfcTools.RemoveAxis(ref deacceleration, movDir);
 
         float unwantedSpeed = deacceleration.magnitude;
-        if (unwantedSpeed > 0.000001F) GfcTools.Div(ref deacceleration, unwantedSpeed);
+        if (unwantedSpeed > 0.000001F) GfcTools.Div(ref deacceleration, unwantedSpeed); //normalize deacceleration
 
         float accMagn = Min(Max(0, desiredSpeed - speedInDesiredDir), deltaTime * m_effectiveAcceleration);
         float deaccMagn = Min(unwantedSpeed, m_effectiveDeacceleration * deltaTime);
 
         //GfTools.Mult3(ref movDir, accMagn);
         GfcTools.Mult(ref deacceleration, deaccMagn);
-        GfcTools.Mult(ref slope, fallMagn);
-
         GfcTools.Mult(ref movDir, accMagn); //acceleration
+        GfcTools.Mult(ref slope, fallMagn);
 
         GfcTools.Add(ref velocity, movDir); //add acceleration
         GfcTools.Minus(ref velocity, deacceleration);//add deacceleration
