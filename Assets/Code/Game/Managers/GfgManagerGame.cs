@@ -204,15 +204,6 @@ public class GfgManagerGame : MonoBehaviour
         }
     }
 
-    public static void InitializeGfBase()
-    {
-        int sceneBuildIndex = (int)GfcSceneId.GF_BASE;
-        if (!SceneManager.GetSceneByBuildIndex(sceneBuildIndex).isLoaded)
-        {
-            SceneManager.LoadScene(sceneBuildIndex, LoadSceneMode.Additive);
-        }
-    }
-
     public static void SetServerIp(string ip, ushort port = 7779)
     {
         UnityTransport transport = NetworkManager.Singleton?.GetComponent<UnityTransport>();

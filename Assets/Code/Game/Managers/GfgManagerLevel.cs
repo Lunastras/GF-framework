@@ -130,7 +130,7 @@ public class GfgManagerLevel : MonoBehaviour
         if (Instance != this) Destroy(Instance);
         Instance = this;
 
-        GfgManagerGame.InitializeGfBase();
+        GfcBase.InitializeGfBase();
 
         for (int i = 0; i < m_requiredSceneNames.Length; ++i)
         {

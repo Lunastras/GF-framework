@@ -114,10 +114,24 @@ public static class GfcToolsStatic
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void UnsetBit(this ref ulong aFlagMask, int aBitIndex) { GfcTools.UnsetBit(ref aFlagMask, aBitIndex); }
 
+    public static void SetLayerRecursive(this GameObject aGameObject, int aLayer)
+    {
+        aGameObject.layer = aLayer;
+        foreach (Transform child in aGameObject.transform)
+            child.gameObject.SetLayerRecursive(aLayer);
+    }
+
+    public static void SetHideFlagsRecursive(this GameObject aGameObject, HideFlags someHideFlags)
+    {
+        aGameObject.hideFlags |= someHideFlags;
+        foreach (Transform child in aGameObject.transform)
+            child.gameObject.SetHideFlagsRecursive(someHideFlags);
+    }
+
     public static void SetSingleton<T>(this T aGameObject, ref T anInstance) where T : MonoBehaviour
     {
         if (anInstance != aGameObject)
-            MonoBehaviour.Destroy(anInstance);
+            MonoBehaviour.DestroyImmediate(anInstance);
         anInstance = aGameObject;
     }
 
@@ -1001,6 +1015,11 @@ public class GfcTools
         return valuesEqual || (leftEmpty && rightEmpty);
     }
 
+    public static Quaternion QuatSmoothDamp(Quaternion rot, Quaternion target, ref Quaternion deriv, float time)
+    {
+        return QuatSmoothDamp(rot, target, ref deriv, time, Time.deltaTime);
+    }
+
     //https://gist.github.com/maxattack/4c7b4de00f5c1b95a33b
     public static Quaternion QuatSmoothDamp(Quaternion rot, Quaternion target, ref Quaternion deriv, float time, float deltaTime)
     {
@@ -1066,7 +1085,8 @@ public class GfcTools
 
         } while (particlesAreLive);
 
-        aGameObject?.SetActive(false);
+        if (aGameObject)
+            aGameObject.SetActive(false);
     }
 
     /*
@@ -1549,6 +1569,7 @@ public class GfcTools
     #endregion BOILERPLATE SERIALIZATION CODE
 }
 
+[System.Serializable]
 public struct TransformData
 {
     public TransformData(bool aLocalTransform = true)
@@ -1580,11 +1601,11 @@ public struct TransformData
         IsLocal = aLocalTransform;
     }
 
-    public Transform Parent;
+    [HideInInspector] public Transform Parent;
     public Vector3 Position;
     public Quaternion Rotation;
     public Vector3 Scale;
-    public bool IsLocal;
+    [HideInInspector] public bool IsLocal;
 }
 
 public struct RectTransformData

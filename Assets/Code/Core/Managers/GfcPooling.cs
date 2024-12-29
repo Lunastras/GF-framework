@@ -74,11 +74,9 @@ public class GfcPooling : MonoBehaviour
 
     void ModeChanged(PlayModeStateChange aStateChange)
     {
-        if (aStateChange == PlayModeStateChange.ExitingPlayMode)
-        {
-            ExitingPlaymode = true;
+        ExitingPlaymode = aStateChange == PlayModeStateChange.ExitingPlayMode;
+        if (aStateChange == PlayModeStateChange.EnteredEditMode)
             EditorApplication.playModeStateChanged -= ModeChanged;
-        }
     }
 
     public static GfcStringBuffer GfcStringBuffer
@@ -112,48 +110,42 @@ public class GfcPooling : MonoBehaviour
     {
         GameObject spawnedObject = null;
 
-        if (!ExitingPlaymode)
+        //Debug.Log("called to instantiate: " + objectToSpawn.name);
+        GetNameWithoutNumberParenthesis(ref objectName);
+        if (Instance && Instance.m_pools.TryGetValue(objectName, out PoolStruct pool))
         {
-            //Debug.Log("called to instantiate: " + objectToSpawn.name);
-            GetNameWithoutNumberParenthesis(ref objectName);
-            if (Instance.m_pools.TryGetValue(objectName, out PoolStruct pool))
+            var currentPool = pool.List;
+            if (null != currentPool && currentPool.Count > 0)
             {
-                var currentPool = pool.List;
-                if (null != currentPool && currentPool.Count > 0)
+                int lastIndex = currentPool.Count - 1;
+
+                int i = lastIndex;
+                if (mustBeInactive)
+                    while (currentPool[i] && (!currentPool[i].activeSelf ^ !ObjectQueuedForPool(currentPool[i])) && --i >= 0) ; //go through the list until an inactive element is found //changes don't work
+
+                if (i >= 0)
                 {
-                    int lastIndex = currentPool.Count - 1;
-
-                    int i = lastIndex;
-                    if (mustBeInactive)
-                        while (currentPool[i] && (!currentPool[i].activeSelf ^ !ObjectQueuedForPool(currentPool[i])) && --i >= 0) ; //go through the list until an inactive element is found //changes don't work
-
-                    if (i >= 0)
-                    {
-                        spawnedObject = currentPool[i];
-                        currentPool.RemoveAtSwapBack(i);
-                    }
+                    spawnedObject = currentPool[i];
+                    currentPool.RemoveAtSwapBack(i);
                 }
             }
 
-            if (null == spawnedObject && objectToSpawn)
-            {
-                spawnedObject = GameObject.Instantiate(objectToSpawn);
-                spawnedObject.name = objectName;
-            }
-
-            spawnedObject.SetActiveGf(true);
-
-            if (spawnedObject)
-            {
-                spawnedObject.transform.SetParent(parent);
-                locSetObjectPositionAndRotation(spawnedObject.transform, position, rotation, !instantiateInWorldSpace, transformReference);
-            }
-            else
-            {
-                Debug.LogError("GfPooling: Couldn't spawn an object of name '" + objectName + "', no pool exists of the object.");
-            }
+            if (spawnedObject) spawnedObject.SetActiveGf(true);
         }
 
+        if (null == spawnedObject && objectToSpawn)
+        {
+            spawnedObject = GameObject.Instantiate(objectToSpawn);
+            spawnedObject.name = objectName;
+        }
+
+        if (spawnedObject)
+        {
+            spawnedObject.transform.SetParent(parent);
+            locSetObjectPositionAndRotation(spawnedObject.transform, position, rotation, !instantiateInWorldSpace, transformReference);
+        }
+
+        Debug.Assert(spawnedObject);
         return spawnedObject;
     }
 

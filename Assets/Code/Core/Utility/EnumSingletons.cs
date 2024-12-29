@@ -57,8 +57,9 @@ public class EnumSingletons<T, ENUM> where ENUM : unmanaged, Enum
 
     public T GetValue(int aType)
     {
+        Debug.Assert(Elements != null);
         ValidateIndex(aType);
-        return Elements.Length > aType ? Elements[aType] : (FirstElementIsFallback && Elements.Length > 0 ? Elements[0] : default);
+        return Elements != null && Elements.Length > aType ? Elements[aType] : (Elements != null && FirstElementIsFallback && Elements.Length > 0 ? Elements[0] : default);
     }
 
     public T this[int anIndex]
