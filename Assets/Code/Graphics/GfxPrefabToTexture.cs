@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 [ExecuteInEditMode]
 public class GfxPrefabToTexture : MonoBehaviour
@@ -29,6 +30,8 @@ public class GfxPrefabToTexture : MonoBehaviour
 
     [SerializeField] GfxPrefabToTextureInstanceData m_instanceData; //should not be serialized, debug reasons only, DELME [SerializeField]
 
+    public Action OnTextureUpdated;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -45,7 +48,7 @@ public class GfxPrefabToTexture : MonoBehaviour
 
     void ModeChanged(PlayModeStateChange aStateChange)
     {
-        if (aStateChange == PlayModeStateChange.ExitingEditMode)
+        if (aStateChange == PlayModeStateChange.ExitingEditMode || aStateChange == PlayModeStateChange.ExitingPlayMode)
             m_instanceData.Destroy();
     }
 
@@ -68,6 +71,7 @@ public class GfxPrefabToTexture : MonoBehaviour
                 m_instanceData.Destroy();
                 m_instanceData = GfxManagerPrefabToTexture.GetInitializedPrefab(m_prefab, m_prefabTransform, m_objectLengthX, m_cameraSizeOrFov, m_orthographicProjection, m_textureResolution, m_textureFilterMode, anIgnoreIfInstanceNull);
                 m_generateTexture = false;
+                OnTextureUpdated?.Invoke();
             }
 
             if (TryGetComponent(out RawImage image)) image.texture = m_instanceData.RenderTexture;

@@ -21,35 +21,46 @@ public class GfxPrefabToTextureCopy : MonoBehaviour
 
 
 #if UNITY_EDITOR
-    void FixedUpdate() { if (!Application.isPlaying && m_cachedPrefabType != m_prefabType) Initialize(false); UpdateTexture(); }
+    void Update()
+    {
+        if (m_cachedPrefabType != m_prefabType)
+            Initialize(false);
+    }
 #endif //UNITY_EDITOR
 
-    void OnDisable()
+    void ReleaseTemplate(GfxPrefabToTextureInstanceTemplateType aType, bool aSkipIfManagerIsNull)
     {
         if (!m_released)
-            GfxManagerPrefabToTexture.ReleaseTemplate(m_prefabType, true);
+        {
+            Debug.Assert(aType != GfxPrefabToTextureInstanceTemplateType.NONE);
+            GfxManagerPrefabToTexture.ReleaseTemplate(aType, aSkipIfManagerIsNull);
+            m_originalPrefabToTexture.OnTextureUpdated -= UpdateTexture;
+            m_originalPrefabToTexture = null;
+        }
         m_released = true;
     }
 
+    void OnDisable() { ReleaseTemplate(m_prefabType, true); }
+
     void Initialize(bool aSkipIfManagerIsNull)
     {
-        if (!m_released && m_cachedPrefabType != GfxPrefabToTextureInstanceTemplateType.NONE)
-            GfxManagerPrefabToTexture.ReleaseTemplate(m_cachedPrefabType, aSkipIfManagerIsNull);
+        ReleaseTemplate(m_cachedPrefabType, aSkipIfManagerIsNull);
 
+        m_released = true;
         if (m_prefabType != GfxPrefabToTextureInstanceTemplateType.NONE)
         {
-            Debug.Log("tried aquire");
             m_originalPrefabToTexture = GfxManagerPrefabToTexture.GetTemplate(m_prefabType, aSkipIfManagerIsNull);
-            m_released = false;
 
-            if (m_rawImage.texture)
+            if (m_originalPrefabToTexture)
+            {
+                m_originalPrefabToTexture.OnTextureUpdated += UpdateTexture;
                 m_cachedPrefabType = m_prefabType;
-            else
-                m_cachedPrefabType = GfxPrefabToTextureInstanceTemplateType.NONE;
+                m_released = false;
+            }
+            else m_cachedPrefabType = GfxPrefabToTextureInstanceTemplateType.NONE;
         }
         else
         {
-            m_released = true;
             m_cachedPrefabType = GfxPrefabToTextureInstanceTemplateType.NONE;
             m_originalPrefabToTexture = null;
         }

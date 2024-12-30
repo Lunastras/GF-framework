@@ -58,11 +58,14 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
         if (aType == GfxPrefabToTextureInstanceTemplateType.NONE)
             return;
 
-        if (!aSkipIfInstanceIsNull || Instance)
+        Debug.Assert(aSkipIfInstanceIsNull || Instance);
+        if (Instance)
         {
             if (Instance.m_templates.Length > (int)aType)
             {
                 var template = Instance.m_templates[aType];
+                Debug.Assert(template.TemplateInstance.GetInstanceData().RenderTexture, "The texture is null, something is really wrong");
+
                 if (anAccessType == GfxPrefabToTextureInstanceTemplateAccessType.AQUIRE)
                     template.Aquire();
                 else
@@ -154,8 +157,6 @@ public struct GfxPrefabToTextureInstanceTemplate
 
     public int Release()
     {
-        Debug.Log("RELEASE");
-
         m_refCounter--;
         if (m_refCounter < 0)
             Debug.LogError("The reference count is " + m_refCounter + ". Object is released more often than it should.");
@@ -167,7 +168,6 @@ public struct GfxPrefabToTextureInstanceTemplate
 
     public int Aquire()
     {
-        Debug.Log("AQUIRE");
         m_refCounter++;
         if (m_refCounter == 1)
             TemplateInstance.gameObject.SetActive(true);
