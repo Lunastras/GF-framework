@@ -20,10 +20,8 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
         this.SetSingleton(ref Instance);
         m_templates.Validate(GfxPrefabToTextureInstanceTemplateType.COUNT);
         m_currentXPosition = INITIAL_X_POSITION;
-        Debug.Log("Called, my length is: " + m_templates.Length);
         for (int i = 0; i < m_templates.Length; i++)
         {
-            Debug.Log("INITIALIZED THE TEMPLATE FOR " + (GfxPrefabToTextureInstanceTemplateType)i);
             if (m_templates[i].TemplateInstance != null)
                 m_templates[i].Initialize();
             else
@@ -95,7 +93,7 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
             prefab.SetParent(prefabParent, false);
 
             prefabParent.gameObject.SetLayerRecursive(camera.gameObject.layer);
-            cameraObj.SetHideFlagsRecursive(HideFlags.HideAndDontSave);
+            cameraObj.SetHideFlagsRecursive(HideFlags.DontSave);
 
             RenderTexture renderTexture = new((int)aTextureResolution.x, (int)aTextureResolution.y, 1);
             renderTexture.filterMode = aFilterMode;

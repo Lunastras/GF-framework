@@ -122,8 +122,11 @@ public struct GfxPrefabToTextureInstanceData
         if (Camera)
         {
             Camera.targetTexture = null;
-            GameObject.DestroyImmediate(Camera.gameObject);
+            GfcTools.Destroy(Camera.gameObject);
         }
+
+        if (InstantiatedPrefab) GfcTools.Destroy(InstantiatedPrefab);
+        if (InstantiatedPrefabParent) GfcTools.Destroy(InstantiatedPrefabParent.gameObject);
 
         Camera = null;
         RenderTexture = null;

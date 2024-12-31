@@ -46,7 +46,7 @@ public class IrisuManagerGame : MonoBehaviour
     CoroutineHandle m_gameHandle;
     float m_initialTimeScale;
 
-    public static CoroutineHandle GetGameHandle() { return Instance.m_gameHandle; }
+    public static CoroutineHandle GetCoroutineHandle() { return Instance.m_gameHandle; }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {

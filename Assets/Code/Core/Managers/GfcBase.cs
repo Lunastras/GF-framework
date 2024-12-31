@@ -8,11 +8,13 @@ public class GfcBase
 {
     public static string GFC_BASE_SCENE_PATH { get { return Application.dataPath + "/Data/Scenes/GfBaseScene.unity"; } } //hardcoded because Scene.path returns the wrong value if the scene isn't loaded
 
+    private static bool WaitingForSceneToLoad = false;
+
     public static void InitializeGfBase()
     {
         int sceneBuildIndex = (int)GfcSceneId.GF_BASE;
         Scene gfBaseScene = SceneManager.GetSceneByBuildIndex(sceneBuildIndex);
-        if (!gfBaseScene.isLoaded)
+        if (!gfBaseScene.isLoaded && !WaitingForSceneToLoad)
         {
 #if UNITY_EDITOR
             if (!Application.isPlaying)
@@ -22,7 +24,17 @@ public class GfcBase
             }
             else
 #endif
+            {
                 SceneManager.LoadScene(sceneBuildIndex, LoadSceneMode.Additive);
+                SceneManager.sceneLoaded += OnSceneLoaded;
+                WaitingForSceneToLoad = true;
+            }
         }
+    }
+
+    public static void OnSceneLoaded(Scene aScene, LoadSceneMode aMode)
+    {
+        WaitingForSceneToLoad = false;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 }

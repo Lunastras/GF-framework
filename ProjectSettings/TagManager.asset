@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Targetable
   - Stairs
+  - 3DUiCamera
   layers:
   - Default
   - TransparentFX

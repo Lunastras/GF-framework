@@ -128,6 +128,12 @@ public class CornManagerEvents : MonoBehaviour
 
                     case CornEventType.CHORES:
                         eventHandle = Timing.RunCoroutine(_ExecuteChoresEvent(messagesBuffer));
+                        eventRewardsAndCost = default;
+                        break;
+
+                    case CornEventType.SLEEP:
+                        eventHandle = Timing.RunCoroutine(_ExecuteChoresEvent(messagesBuffer));
+                        eventRewardsAndCost = default;
                         break;
                 }
 
@@ -208,12 +214,43 @@ public class CornManagerEvents : MonoBehaviour
         var cornSaveData = playerSaveData.Data;
 
         yield return Timing.WaitUntilDone(GfgManagerSceneLoader.LoadScene(GfcSceneId.IRISU));
-        yield return Timing.WaitUntilDone(IrisuManagerGame.GetGameHandle());
+        yield return Timing.WaitUntilDone(IrisuManagerGame.GetCoroutineHandle());
         float level = IrisuManagerGame.GetDifficulty();
         float choresExtraPoints = IrisuManagerGame.GetDifficulty() * (CornManagerBalancing.GetBaseChoresMiniGameExtraPoints() + cornSaveData.GetValue(CornPlayerSkillsStats.HANDICRAFT));
 
         aMessageBuffer.Add("You got " + choresExtraPoints * 100 + " extra Chores points!");
         cornSaveData.ApplyModifier(CornPlayerResources.CHORES, choresExtraPoints);
+        playerSaveData.Data = cornSaveData;
+
+        yield return Timing.WaitForOneFrame;
+    }
+
+    private static int HoursSleptDuringMinigame = 0;
+
+    private static void OnWhackAWolfGameEnd(CornWhackAWolfGameResult aResult)
+    {
+        if (aResult == CornWhackAWolfGameResult.WIN)
+        {
+            HoursSleptDuringMinigame++;
+            CornWhackAWolf.RequestOneMoreGame();
+        }
+    }
+
+    private static IEnumerator<float> _ExecuteSleepEvent(List<string> aMessageBuffer)
+    {
+        var playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
+        var cornSaveData = playerSaveData.Data;
+
+        HoursSleptDuringMinigame = 0;
+        yield return Timing.WaitUntilDone(GfgManagerSceneLoader.LoadScene(GfcSceneId.WHACK_A_WOLF));
+        CornWhackAWolf.Instance.OnGameEnd += OnWhackAWolfGameEnd;
+        yield return Timing.WaitUntilDone(CornWhackAWolf.GetCoroutineHandle());
+
+        /*
+        aMessageBuffer.Add("You got " + choresExtraPoints * 100 + " extra Chores points!");
+        cornSaveData.ApplyModifier(CornPlayerResources.CHORES, choresExtraPoints);
+        */
+
         playerSaveData.Data = cornSaveData;
 
         yield return Timing.WaitForOneFrame;

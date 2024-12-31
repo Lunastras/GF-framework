@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 127064160790498430}
   - component: {fileID: 6058591868690151363}
   - component: {fileID: 8565851417309596900}
+  - component: {fileID: 7342095721065157064}
   m_Layer: 25
   m_Name: Camera3DUi
-  m_TagString: Untagged
+  m_TagString: 3DUiCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -128,3 +129,15 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &7342095721065157064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1315677265999352013}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c440217d607fd44096c1c322cd0187d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

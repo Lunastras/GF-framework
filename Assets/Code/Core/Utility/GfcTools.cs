@@ -732,6 +732,14 @@ public class GfcTools
         return RotationTo(initial, final, Vector3.forward);
     }
 
+    public static void Destroy(UnityEngine.Object anObject)
+    {
+        if (Application.isPlaying)  //Destroy() doesn't work in the editor, we need to use DestroyImmediate() for that
+            GameObject.Destroy(anObject);
+        else
+            GameObject.DestroyImmediate(anObject);
+    }
+
     /*
 
     public static int Compare(string aLeft, string aRight, StringComparison aStringComparison)

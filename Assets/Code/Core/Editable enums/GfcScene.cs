@@ -12,6 +12,7 @@ public enum GfcSceneId
     ENV_RESTAURANT,
     ENV_MUSUEM,
     IRISU,
+    WHACK_A_WOLF,
     CORN_LEVEL_0,
     COUNT,
 }

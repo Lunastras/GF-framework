@@ -27,6 +27,9 @@ EditorBuildSettings:
     path: Assets/Data/Scenes/Irisu.unity
     guid: f36edab71f59aac40a6a4e4b974967eb
   - enabled: 1
+    path: Assets/Data/Scenes/WhackAWolf.unity
+    guid: 7e28f81d0f16a3c4788e8d91079abd87
+  - enabled: 1
     path: Assets/Data/Scenes/Game Levels/CornLevel0.unity
     guid: 1219f9e73be7bcf49bbc511116db3b59
   m_configObjects:

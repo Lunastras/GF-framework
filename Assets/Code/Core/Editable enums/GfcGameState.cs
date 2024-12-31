@@ -11,5 +11,6 @@ public enum GfcGameState
     CORN_GAME,
     CUTSCENE,
     IRISU,
+    WHACK_A_WOLF,
     COUNT
 }
