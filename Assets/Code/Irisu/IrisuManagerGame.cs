@@ -34,6 +34,7 @@ public class IrisuManagerGame : MonoBehaviour
     [SerializeField] private Vector2 m_countColorsEasyHard = new(3, (int)IrisuColorType.COUNT);
     [SerializeField] private Vector2 m_hpLostPerSecondEasyHard = new(0.01f, 0.03f);
 
+    [SerializeField] private int m_maxDifficultyLevel = 20;
     [SerializeField] private int m_maxDifficultyScore = 60000;
     [SerializeField] private float m_hpLostOnStaticBlock = 0.1f;
     [SerializeField] private float m_pointsHpCoefGain = 0.001f;
@@ -65,11 +66,7 @@ public class IrisuManagerGame : MonoBehaviour
 
         GfcPooling.Pool(m_rainbowClearPrefab, 1);
 
-        GfCommandConsole.RegisterCommand("IrisuWin", () =>
-        {
-            m_hp = 0;
-            m_points = m_maxDifficultyScore;
-        });
+        GfCommandConsole.RegisterCommand("IrisuWin", WinGame);
 
         UpdateHud();
         m_gameHandle = Timing.RunCoroutine(_ExecuteGame().CancelWith(gameObject));
@@ -80,6 +77,16 @@ public class IrisuManagerGame : MonoBehaviour
         m_hp -= Time.deltaTime * GetValueForDifficulty(m_hpLostPerSecondEasyHard);
         m_hp.ClampSelf(0, 1);
         UpdateHpBar();
+    }
+
+    public static void WinGame()
+    {
+        if (Instance)
+        {
+            Instance.m_hp = 0;
+            Instance.m_points = Instance.m_maxDifficultyScore;
+        }
+        else Debug.LogError("The irisu game is not running right now.");
     }
 
     private void InitializeBlock(Transform aBlock, bool aSpawnAsStatic = false, float aYOffset = 0)
@@ -172,7 +179,7 @@ public class IrisuManagerGame : MonoBehaviour
         m_textDifficultyLevel.text = GetDifficultyLevel().Max(1).ToString();
     }
 
-    public int GetDifficultyLevel() { return (int)(GetDifficulty() * 100.0f); }
+    public int GetDifficultyLevel() { return (int)(GetDifficulty() * m_maxDifficultyLevel); }
 
     private void UpdateHpBar()
     {
@@ -182,10 +189,10 @@ public class IrisuManagerGame : MonoBehaviour
     public static Transform GetBlocksParent() { return Instance.m_blocksParent; }
     public static float GetFallingSpeed() { return Instance.GetValueForDifficulty(Instance.m_fallSpeedEasyHard); }
     public static int GetColorsCount() { return (int)Instance.GetValueForDifficulty(Instance.m_countColorsEasyHard, Instance.GetColorDifficulty()).Round(); }
-    public static float GetDifficulty() { return Instance.m_difficultyCurve.Evaluate((Instance.m_points / Instance.m_maxDifficultyScore).Min(1)); }
+    public static float GetDifficulty() { return Instance.m_difficultyCurve.Evaluate(((float)Instance.m_points / Instance.m_maxDifficultyScore).Min(1)); }
     private float GetValueForDifficulty(Vector2 aValuesRangeEasyHard) { return GetValueForDifficulty(aValuesRangeEasyHard, GetDifficulty()); }
     private float GetValueForDifficulty(Vector2 aValuesRangeEasyHard, float aDifficulty) { return aValuesRangeEasyHard.x.Lerp(aValuesRangeEasyHard.y, aDifficulty); }
-    private float GetColorDifficulty() { return m_colorsDifficultyCurve.Evaluate((m_points / m_maxDifficultyScore).Min(1)); }
+    private float GetColorDifficulty() { return m_colorsDifficultyCurve.Evaluate(((float)m_points / m_maxDifficultyScore).Min(1)); }
 }
 
 public enum IrisuShapeType

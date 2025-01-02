@@ -128,11 +128,10 @@ public class CornManagerEvents : MonoBehaviour
 
                     case CornEventType.CHORES:
                         eventHandle = Timing.RunCoroutine(_ExecuteChoresEvent(messagesBuffer));
-                        eventRewardsAndCost = default;
                         break;
 
                     case CornEventType.SLEEP:
-                        eventHandle = Timing.RunCoroutine(_ExecuteChoresEvent(messagesBuffer));
+                        eventHandle = Timing.RunCoroutine(_ExecuteSleepEvent(messagesBuffer));
                         eventRewardsAndCost = default;
                         break;
                 }
@@ -155,14 +154,16 @@ public class CornManagerEvents : MonoBehaviour
 
         if (!message.IsEmpty()) messagesBuffer.Add(message);
 
-        eventRewardsAndCost.ApplyModifiersToPlayer(0);
-
         GfcCursor.RemoveSelectedGameObject();
 
-        if (eventHandle.IsValid) yield return Timing.WaitUntilDone(eventHandle);
+        if (eventHandle.IsValid)
+            yield return Timing.WaitUntilDone(eventHandle);
+
+        if (aEvent.EventType == CornEventType.SLEEP)
+            eventRewardsAndCost = SleepingMinigameData.GetFinalRewards();
+        eventRewardsAndCost.ApplyModifiersToPlayer(0);
 
         CornManagerPhone.CanTogglePhone = false;
-
         CoroutineHandle apartmentLoadRoutine = GfgManagerSceneLoader.LoadScene(GfcSceneId.APARTMENT, GfcGameState.APARTMENT);
         if (apartmentLoadRoutine.IsValid)
         {
@@ -202,7 +203,7 @@ public class CornManagerEvents : MonoBehaviour
             GfgManagerLevel.OnLevelEndSubmit -= OnLevelEndSubmit;
 
             cornSaveData.CurrentStoryPhaseGameLevelFinished = true;
-            playerSaveData.Data = cornSaveData;
+            CornManagerStory.CheckIfCurrentPhaseDone();
         }
 
         yield return Timing.WaitForOneFrame;
@@ -220,40 +221,33 @@ public class CornManagerEvents : MonoBehaviour
 
         aMessageBuffer.Add("You got " + choresExtraPoints * 100 + " extra Chores points!");
         cornSaveData.ApplyModifier(CornPlayerResources.CHORES, choresExtraPoints);
-        playerSaveData.Data = cornSaveData;
 
         yield return Timing.WaitForOneFrame;
     }
 
-    private static int HoursSleptDuringMinigame = 0;
+    private static CornHoursSleepData SleepingMinigameData;
+    private static IEnumerator<float> _ExecuteSleepEvent(List<string> aMessageBuffer)
+    {
+        var playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
+        SleepingMinigameData.Initialize();
+
+        if (SleepingMinigameData.Sleep() == CornHourSleepResult.DAY_TIME)
+        {
+            yield return Timing.WaitUntilDone(GfgManagerSceneLoader.LoadScene(GfcSceneId.WHACK_A_WOLF));
+            CornWhackAWolf.Instance.OnGameEnd += OnWhackAWolfGameEnd;
+            yield return Timing.WaitUntilDone(CornWhackAWolf.GetCoroutineHandle());
+        }
+
+        aMessageBuffer.Add(SleepingMinigameData.GetSleepMessage());
+
+        yield return Timing.WaitForOneFrame;
+    }
 
     private static void OnWhackAWolfGameEnd(CornWhackAWolfGameResult aResult)
     {
         if (aResult == CornWhackAWolfGameResult.WIN)
-        {
-            HoursSleptDuringMinigame++;
-            CornWhackAWolf.RequestOneMoreGame();
-        }
-    }
-
-    private static IEnumerator<float> _ExecuteSleepEvent(List<string> aMessageBuffer)
-    {
-        var playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
-        var cornSaveData = playerSaveData.Data;
-
-        HoursSleptDuringMinigame = 0;
-        yield return Timing.WaitUntilDone(GfgManagerSceneLoader.LoadScene(GfcSceneId.WHACK_A_WOLF));
-        CornWhackAWolf.Instance.OnGameEnd += OnWhackAWolfGameEnd;
-        yield return Timing.WaitUntilDone(CornWhackAWolf.GetCoroutineHandle());
-
-        /*
-        aMessageBuffer.Add("You got " + choresExtraPoints * 100 + " extra Chores points!");
-        cornSaveData.ApplyModifier(CornPlayerResources.CHORES, choresExtraPoints);
-        */
-
-        playerSaveData.Data = cornSaveData;
-
-        yield return Timing.WaitForOneFrame;
+            if (SleepingMinigameData.Sleep() == CornHourSleepResult.DAY_TIME)
+                CornWhackAWolf.RequestOneMoreGame();
     }
 
     protected void OnDestroy()
@@ -390,34 +384,78 @@ public struct CornEvent
     public Type Scene;
 }
 
-public enum CornEventType
+public struct CornHoursSleepData
 {
-    WORK,
-    CHORES,
-    PERSONAL_TIME,
-    SOCIAL,
+    public int HourseSlept;
+    public int DesiredHoursSleep;
+    public float EnergyPerHour;
+    public bool CaughtNight;
+    public int CurrentHour;
 
-    SLEEP,
-    CORN,
-    RANDOM,
-    PERSONAL_GIFT,
-    NEW_DAY,
-    NEW_WEEK,
-    COUNT
+    public void Initialize()
+    {
+        var cornSaveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
+
+        HourseSlept = 0;
+        var eventRewardsAndCost = CornManagerBalancing.GetEventCostAndRewardsRaw(CornEventType.SLEEP);
+        Debug.Assert(eventRewardsAndCost.ConsumablesModifier.Length == 1 && eventRewardsAndCost.ConsumablesModifier[0].Type == CornPlayerConsumables.ENERGY, " Because of the new design, the only consumable sleep should replenish is energy.");
+        DesiredHoursSleep = eventRewardsAndCost.HoursDuration - 1; //-1 because one hour has no benefits to the stats
+        Debug.Assert(DesiredHoursSleep > 0);
+
+        EnergyPerHour = eventRewardsAndCost.ConsumablesModifier[0].Value / DesiredHoursSleep;
+        CurrentHour = cornSaveData.CurrentHour;
+        CaughtNight = false;
+        DesiredHoursSleep.MinSelf((int)(1.001f + ((1.0f - cornSaveData.GetValue(CornPlayerConsumables.ENERGY)) / EnergyPerHour)));
+    }
+
+    public CornHourSleepResult Sleep()
+    {
+        while (HourseSlept < DesiredHoursSleep)
+        {
+            ++HourseSlept;
+            CurrentHour = ++CurrentHour % 24;
+            bool nightTime = IsSleepHour();
+            CaughtNight |= nightTime;
+            if (!nightTime) return CornHourSleepResult.DAY_TIME;
+        }
+
+        return CornHourSleepResult.FINISHED_SLEEP;
+    }
+
+    public void IncrementHour()
+    {
+        HourseSlept++;
+        CurrentHour = ++CurrentHour % 24;
+        CaughtNight |= IsSleepHour();
+    }
+
+    public CornEventCostAndRewards GetFinalRewards()
+    {
+        var rewards = CornManagerBalancing.Instance.SleepRewardsTemp;
+        rewards.ConsumablesModifier[0].Value = HourseSlept * EnergyPerHour;
+        rewards.HoursDuration = HourseSlept + 1;
+        return rewards;
+    }
+
+    public readonly string GetSleepMessage()
+    {
+        string message;
+        var cornSaveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
+        if (HourseSlept == DesiredHoursSleep || 1 <= cornSaveData.GetValue(CornPlayerConsumables.ENERGY) + HourseSlept * EnergyPerHour)
+            message = "You woke up feeling well rested!";
+        else if (CaughtNight)
+            message = "You woke up early because of the sunlight, might as well start your day early, right?";
+        else
+            message = "You couldn't sleep that well because of the sunlight. Go to sleep at night for a good night's rest.";
+
+        return message;
+    }
+
+    public bool IsSleepHour() { return CornManagerBalancing.IsSleepHour(CurrentHour); }
 }
 
-public enum CornEventTypeWork
+public enum CornHourSleepResult
 {
-    WORK_ON_GAME,
-    STREAM_WORK,
-    CONTRACT_WORK,
-    COUNT
-}
-
-public enum CornEventTypeSocial
-{
-    COOL_FRIEND,
-    SHADY_FRIEND,
-    NO_IDEA_FRIEND,
-    COUNT
+    FINISHED_SLEEP,
+    DAY_TIME,
 }

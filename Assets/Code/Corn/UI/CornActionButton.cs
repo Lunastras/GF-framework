@@ -20,7 +20,7 @@ public class CornActionButton : MonoBehaviour
         if (!m_initialized)
         {
             Button = GetComponent<GfxButton2D>();
-            Button?.Initialize();
+            if (Button) Button.Initialize();
 
             if (SliderText == null) SliderText = GetComponent<GfxSliderText>();
             if (m_softHover == null) m_softHover = GetComponent<GfxSoftHover>();

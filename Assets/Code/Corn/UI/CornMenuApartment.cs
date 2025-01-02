@@ -9,9 +9,12 @@ public class CornMenuApartment : MonoBehaviour
 {
     public static CornMenuApartment Instance { get; protected set; } = null;
 
-    [SerializeField] protected bool m_showWillPowerAndSocialBatteries = false;
+    [SerializeField] protected bool m_showConsumableSliders = false;
     public Transform CameraTarget;
-    [SerializeField] protected Transform m_light;
+    [SerializeField] protected Transform m_lightParent;
+    [SerializeField] protected Light m_lightSun;
+    [SerializeField] protected Light m_lightMoon;
+
     [SerializeField] protected RectTransform m_optionsParent;
     [SerializeField] protected TextMeshProUGUI m_textMoney;
     [SerializeField] protected TextMeshProUGUI m_textDateAndTime;
@@ -21,11 +24,16 @@ public class CornMenuApartment : MonoBehaviour
     [SerializeField] protected GameObject m_prefabConsumableSlider;
     [SerializeField] protected GameObject m_prefabButtonAction;
     [SerializeField] protected ResourceButtonInfo[] m_actionButtonsInfo;
-    [SerializeField] protected CornActionButton m_buttonSleep;
     [SerializeField] protected Vector2 m_consumablesSlidersDistance;
 
     private CornActionButton[] m_actionButtons;
-    private GfxSliderText[] m_consumablesSliders;
+    private GfxSliderText[] m_consumablesSliders = null;
+
+    private Color m_sunColor;
+    private Color m_moonColor;
+
+    private LightShadows m_sunShadowMode;
+    private LightShadows m_moonShadowMode;
 
     // Start is called before the first frame update
 
@@ -37,7 +45,13 @@ public class CornMenuApartment : MonoBehaviour
         for (int i = 0; i < m_actionButtonsInfo.Length; ++i)
             if (i != (int)m_actionButtonsInfo[i].Type) Debug.LogError("The type " + m_actionButtonsInfo[i].Type + " is at index " + i + ", it should be at index " + (int)m_actionButtonsInfo[i].Type);
 
-        if (m_actionButtonsInfo.Length != (int)CornPlayerResources.COUNT) Debug.LogError("The list only has " + m_actionButtonsInfo.Length + " elements, it should have " + (int)CornPlayerResources.COUNT);
+        if (m_actionButtonsInfo.Length != (int)CornPlayerAction.COUNT) Debug.LogError("The list has " + m_actionButtonsInfo.Length + " elements, it should have " + (int)CornPlayerAction.COUNT);
+
+        m_sunColor = m_lightSun.color;
+        m_moonColor = m_lightMoon.color;
+
+        m_sunShadowMode = m_lightSun.shadows;
+        m_moonShadowMode = m_lightMoon.shadows;
 
         /*
         for (int i = 0; i < m_slidersConsumables.Length; ++i)
@@ -54,10 +68,11 @@ public class CornMenuApartment : MonoBehaviour
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Confined;
 
-        m_actionButtons = new CornActionButton[GfgPlayerSaveData.COUNT_RESOURCES];
-        m_consumablesSliders = new GfxSliderText[m_showWillPowerAndSocialBatteries ? GfgPlayerSaveData.COUNT_0_TO_100_CONSUMABLES : 1];
+        m_actionButtons = new CornActionButton[m_actionButtonsInfo.Length];
+        if (m_showConsumableSliders)
+            m_consumablesSliders = new GfxSliderText[GfgPlayerSaveData.COUNT_0_TO_100_CONSUMABLES];
 
-        for (int i = 0; i < GfgPlayerSaveData.COUNT_RESOURCES; ++i)
+        for (int i = 0; i < m_actionButtonsInfo.Length; ++i)
         {
             m_actionButtons[i] = Instantiate(m_prefabButtonAction, m_parentButtonAction, false).GetComponent<CornActionButton>();
             m_actionButtons[i].Initialize();
@@ -65,18 +80,12 @@ public class CornMenuApartment : MonoBehaviour
             m_actionButtons[i].WorldPointOfReference = m_actionButtonsInfo[i].WorldReferencePoint;
             m_actionButtons[i].SetPanelColor(m_actionButtonsInfo[i].ColorPanel, ColorBlendMode.MULTIPLY);
             m_actionButtons[i].SetContentColor(m_actionButtonsInfo[i].ColorContent, ColorBlendMode.MULTIPLY);
-            m_actionButtons[i].SliderText.SetName(((CornPlayerResources)i).ToString());
+            m_actionButtons[i].SliderText.SetName(((CornPlayerAction)i).ToString());
             m_actionButtons[i].Button.Index = i;
             m_actionButtons[i].Button.OnButtonEventCallback += OnButtonEvent;
         }
 
-        m_buttonSleep.Initialize();
-
-        m_buttonSleep.SliderText.SetName(CornEventType.SLEEP.ToString());
-        m_buttonSleep.Button.Index = (int)CornEventType.SLEEP;
-        m_buttonSleep.Button.OnButtonEventCallback += OnButtonEvent;
-
-        for (int i = 0; i < m_consumablesSliders.Length; ++i)
+        for (int i = 0; i < m_consumablesSliders.LengthSafe(); ++i)
         {
             m_consumablesSliders[i] = Instantiate(m_prefabConsumableSlider, m_parentConsumableSlider, false).GetComponent<GfxSliderText>();
             m_consumablesSliders[i].transform.localPosition = m_consumablesSlidersDistance * i;
@@ -101,16 +110,22 @@ public class CornMenuApartment : MonoBehaviour
         float[] playerResources = saveData.Resources;
         float[] playerConsumables = saveData.Consumables;
 
-        for (int i = 0; i < GfgPlayerSaveData.COUNT_RESOURCES; ++i)
+        for (int i = 0; i < m_actionButtons.Length; ++i)
         {
-            m_actionButtons[i].SliderText.SetSliderValue(playerResources[i]);
+            float value;
+            if (i < (int)CornPlayerAction.SLEEP)
+                value = playerResources[i];
+            else
+                value = playerConsumables[(int)CornPlayerConsumables.ENERGY];//HACK but who cares what is in the Corn project assembly, this will be thrown out after the game release.
+
+            m_actionButtons[i].SliderText.SetSliderValue(value);
             m_actionButtons[i].Button.SetInteractable(CornManagerEvents.CanAffordMoney(new CornEvent((CornEventType)i)), "You do not have enough money for this action");
         }
 
         /*m_buttonSleep.Button.SetInteractable(saveData.CurrentHour >= CornManagerBalancing.EARLIEST_SLEEP_HOUR
                                              || saveData.CurrentHour < CornManagerBalancing.LATEST_WAKE_UP_HOUR, "It's too early to go sleep");*/ //should probably remove
 
-        for (int i = 0; i < m_consumablesSliders.Length; ++i)
+        for (int i = 0; i < m_consumablesSliders.LengthSafe(); ++i)
             m_consumablesSliders[i].SetSliderValue(playerConsumables[i]);
 
         GfcStringBuffer stringBuffer = GfcPooling.GfcStringBuffer;
@@ -133,18 +148,36 @@ public class CornMenuApartment : MonoBehaviour
 
         stringBuffer.Clear();
 
+        m_lightParent.rotation = Quaternion.AngleAxis(360.0f * (saveData.CurrentHour / 24.0f) - 90, Vector3.right);
 
-        m_light.rotation = Quaternion.AngleAxis(360.0f * (saveData.CurrentHour / 24.0f) - 90, Vector3.right);
+        bool nightLight = saveData.CurrentHour >= 20 || saveData.CurrentHour < 6;
+
+        if (nightLight)
+        {
+            m_lightSun.color = Color.black;
+            m_lightSun.shadows = LightShadows.None;
+
+            m_lightMoon.color = m_moonColor;
+            m_lightMoon.shadows = m_moonShadowMode;
+        }
+        else
+        {
+            m_lightSun.color = m_sunColor;
+            m_lightSun.shadows = m_sunShadowMode;
+
+            m_lightMoon.color = Color.black;
+            m_lightMoon.shadows = LightShadows.None;
+        }
     }
 
     public static void EndStatsPreview() { Instance.EndStatsPreviewInternal(); }
 
     public void EndStatsPreviewInternal()
     {
-        for (int i = 0; i < GfgPlayerSaveData.COUNT_RESOURCES; ++i)
+        for (int i = 0; i < m_actionButtons.Length; ++i)
             m_actionButtons[i].SliderText.EndPreview();
 
-        for (int i = 0; i < m_consumablesSliders.Length; ++i)
+        for (int i = 0; i < m_consumablesSliders.LengthSafe(); ++i)
             m_consumablesSliders[i].EndPreview();
     }
 
@@ -155,8 +188,16 @@ public class CornMenuApartment : MonoBehaviour
 
     public void PreviewChange(CornPlayerConsumablesModifier aModifier, float aChange)
     {
-        if ((int)aModifier.Type < m_consumablesSliders.Length)
-            m_consumablesSliders[(int)aModifier.Type].PreviewChange(aChange);
+        if (aModifier.Type == CornPlayerConsumables.MONEY)
+        {
+            if ((int)aModifier.Type < m_consumablesSliders.LengthSafe())
+                m_consumablesSliders[(int)aModifier.Type].PreviewChange(aChange);
+        }
+        else if (aModifier.Type == CornPlayerConsumables.ENERGY)
+        {
+            m_actionButtons[(int)CornPlayerAction.SLEEP].SliderText.PreviewChange(aChange); //hack, but I will probably never change it and this is game specific code so idgaf
+        }
+        else Debug.LogError("Attempting to preview consumable modifier of type " + aModifier.Type + ", but the current design only supports " + CornPlayerConsumables.MONEY + " and " + CornPlayerConsumables.ENERGY);
     }
 
     private void OnButtonEvent(GfxButtonCallbackType aType, GfxButton aButton, bool aState)
@@ -168,7 +209,7 @@ public class CornMenuApartment : MonoBehaviour
             case GfxButtonCallbackType.SELECT:
                 if (aState && aButton.Interactable())
                 {
-                    CornManagerBalancing.GetEventCostAndRewards(eventType).Preview();
+                    CornManagerBalancing.GetEventCostAndRewardsRaw(eventType).Preview();
                 }
                 else
                     EndStatsPreviewInternal();
@@ -188,48 +229,15 @@ public class CornMenuApartment : MonoBehaviour
                 break;
         }
     }
-
-    public void PressedWork()
-    {
-        CornManagerEvents.ExecuteEvent(new(CornEventType.WORK));
-    }
-
-    public void PressedSleep()
-    {
-        CornManagerEvents.ExecuteEvent(new(CornEventType.SLEEP));
-    }
-
-    public void PressedSocial()
-    {
-        CornManagerEvents.ExecuteEvent(new(CornEventType.SOCIAL));
-    }
-
-    public void PressedChores()
-    {
-        CornManagerEvents.ExecuteEvent(new(CornEventType.CHORES));
-    }
-
-    public void PressedPersonal()
-    {
-        CornManagerEvents.ExecuteEvent(new(CornEventType.PERSONAL_TIME));
-    }
 }
 
 [System.Serializable]
 public struct ResourceButtonInfo
 {
     public Transform WorldReferencePoint;
-    public CornPlayerResources Type;
+    public CornPlayerAction Type;
 
     public Color ColorPanel;
 
     public Color ColorContent;
 }
-
-/*
-[System.Serializable]
-public struct ConsumablesSlidersLink
-{
-    public GfxSliderText SliderText;
-    public PlayerConsumables Type;
-}*/

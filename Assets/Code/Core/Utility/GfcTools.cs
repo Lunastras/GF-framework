@@ -73,6 +73,7 @@ public static class GfcToolsStatic
     public static int GetSortedIndex<T>(this IList<T> aList, T aValue, Order anOrder = Order.ASCENDING) where T : IComparable<T> { return aList.GetSortedIndex(aValue, Compare, anOrder); }
     public static int AddSorted<T>(this IList<T> aList, T aValue, Order anOrder = Order.ASCENDING) where T : IComparable<T> { return aList.AddSorted(aValue, Compare, anOrder); }
 
+    public static int LengthSafe<T>(this T[] anArray) { return anArray != null ? anArray.Length : 0; }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool HasFlag(this uint aFlagMask, uint aFlag) { return GfcTools.HasFlag(aFlagMask, aFlag); }

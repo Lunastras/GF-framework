@@ -257,6 +257,39 @@ public class GfgPlayerSaveData
     }
 }
 
+//ORDER MUST RESPECT CornPlayerAction
+public enum CornEventType
+{
+    WORK,
+    CHORES,
+    PERSONAL_TIME,
+    SOCIAL,
+    SLEEP,
+
+    CORN,
+    RANDOM,
+    PERSONAL_GIFT,
+    NEW_DAY,
+    NEW_WEEK,
+    COUNT
+}
+
+public enum CornEventTypeWork
+{
+    WORK_ON_GAME,
+    STREAM_WORK,
+    CONTRACT_WORK,
+    COUNT
+}
+
+public enum CornEventTypeSocial
+{
+    COOL_FRIEND,
+    SHADY_FRIEND,
+    NO_IDEA_FRIEND,
+    COUNT
+}
+
 [Serializable]
 public enum CornPlayerConsumables
 {
@@ -290,10 +323,23 @@ public enum CornPlayerSkillsStats
 [Serializable]
 public enum CornPlayerResources
 {
+    //THE ORDER MUST BE THE SAME AS CornPlayerAction
     WORK,
     CHORES,
     PERSONAL_NEEDS,
     SOCIAL_LIFE,
+    COUNT
+}
+
+[Serializable]
+public enum CornPlayerAction
+{
+    //THE ORDER MUST BE THE SAME AS CornPlayerResources
+    WORK,
+    CHORES,
+    PERSONAL_NEEDS,
+    SOCIAL_LIFE,
+    SLEEP,
     COUNT
 }
 
