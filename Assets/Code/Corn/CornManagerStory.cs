@@ -351,7 +351,7 @@ public class CornManagerStory : MonoBehaviour
         int currentPhaseIndex = saveData.CurrentStoryPhase;
         CornStoryEventInPhase[] currentPhase = Instance.m_storyPhases[currentPhaseIndex].Events;
 
-        bool completedAll = true;
+        bool completedAll = saveData.CurrentStoryPhaseGameLevelFinished;
         for (int i = 0; i < currentPhase.Length && completedAll; i++)
         {
             int progressForCurrentCharacter = saveData.CurrentStoryPhaseProgress[(int)currentPhase[i].Character];

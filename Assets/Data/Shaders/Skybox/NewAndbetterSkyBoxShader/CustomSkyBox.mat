@@ -28,7 +28,7 @@ Material:
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 1
+  m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -79,26 +79,28 @@ Material:
     - _DistanceFadeIntensity: 0.81
     - _Edge1: 0.99
     - _Edge2: 1.01
-    - _HorizonBlendPower: 0.9
+    - _HorizonBlendPower: 0.8
     - _HorizonOffset: 0.2
     - _Intensity: 0.27
     - _LightingThreshold: -0.25
     - _LightingThreshold_1: 0.25
-    - _Max: 0.85
-    - _MaxDay_Night_Threshold: 0.25
-    - _Min: 1.52
+    - _Max: 1
+    - _MaxDay_Night_Threshold: 0.6
+    - _Min: 1.3
     - _MinDay_Night_Threshold: -0.25
     - _MoonSize: 748.91
     - _NadirBlendPower: 0.3
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Scale: 250
+    - _Scale: 500
     - _StarDensity: 150
     - _StarDensity_1: 0.76
     - _StarDensity_2: 2.3
     - _StarIntensity: 61.7
     - _StarMaskDensity: 15
     - _StarScale: 50
+    - _SunBloomSharpness: 12271
+    - _SunBloomSize: -4998.4
     - _SunSharpness: 6250
     - _SunSize: 6241
     - _SunSizeConvergence: 249.9
@@ -112,25 +114,28 @@ Material:
     - _BottomNightColor: {r: 0, g: 0, b: 0, a: 0}
     - _CloudColor: {r: 1, g: 1, b: 1, a: 1}
     - _CloudDayColor: {r: 1, g: 1, b: 1, a: 0}
-    - _CloudScale: {r: 2, g: 3, b: 0, a: 0}
+    - _CloudScale: {r: 4, g: 2, b: 0, a: 0}
     - _MidColor: {r: 0.2581829, g: 0.3662527, b: 0.83879924, a: 0}
     - _MidNightColor: {r: 0, g: 0, b: 0, a: 0}
     - _MoonColor: {r: 6.264151, g: 2.785716, b: 0, a: 1}
-    - _NadirDayColor: {r: 0, g: 1.1737489, b: 2.582247, a: 1}
-    - _NadirNightColor: {r: 0.011764705, g: 0.1382112, b: 0.9490196, a: 1}
+    - _NadirDayColor: {r: 0, g: 1.17034, b: 2.569365, a: 1}
+    - _NadirNightColor: {r: 0, g: 0.15380049, b: 1.1486983, a: 1}
+    - _NadirTwilightColor: {r: 2.670157, g: 0.8690605, b: 1.1426519, a: 0}
     - _NightDayColor: {r: 0.12842648, g: 0.43213776, b: 0.735849, a: 0}
     - _Speed: {r: 0.025, g: -0.025, b: 0, a: 0}
     - _StarColor: {r: 32, g: 32, b: 32, a: 0}
     - _StarDirection: {r: 0.125, g: -0.125, b: 0, a: 0}
     - _StarsSpeed: {r: 0.125, g: 0.125, b: 0, a: 0}
-    - _SunColor: {r: 25.794722, g: 17.58178, b: 4.988601, a: 1}
+    - _SunBloomColor: {r: 0, g: 0.65979385, b: 1, a: 1}
+    - _SunColor: {r: 34.437977, g: 29.564678, b: 21.929842, a: 1}
     - _SunDir: {r: 155, g: 5, b: 0, a: 0}
     - _TopColor: {r: 0.19461787, g: 0.43965724, b: 0.6795426, a: 0}
     - _TopNightColor: {r: 0.043137256, g: 0.05096434, b: 0.08627451, a: 0}
-    - _WindDirection: {r: -1, g: -1, b: 0, a: 0}
+    - _WindDirection: {r: -0.1, g: -0.1, b: 0, a: 0}
     - _WorldSpaceLight: {r: 0, g: 0, b: 0, a: 0}
     - _WorldSpaceLightPos: {r: 0, g: 0, b: 0, a: 0}
-    - _ZenithDayColor: {r: 0, g: 0.18711843, b: 0.58431375, a: 1}
-    - _ZenithNightColor: {r: 0, g: 0.0077843484, b: 0.27450982, a: 1}
+    - _ZenithDayColor: {r: 0, g: 0.26408637, b: 0.6901961, a: 1}
+    - _ZenithNightColor: {r: 0, g: 0.0070081293, b: 0.24528301, a: 1}
+    - _ZenithTwilightColor: {r: 0.83137256, g: 0, b: 0.1638934, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
