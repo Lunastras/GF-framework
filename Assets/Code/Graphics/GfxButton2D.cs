@@ -9,13 +9,13 @@ public class GfxButton2D : GfxButton
 
     public Graphic[] GraphicsContent;
 
-    public AnimationCurve TransitionCurve;
+    public AnimationCurve TransitionCurve = new(new Keyframe(0, 0), new Keyframe(1, 1));
 
     public bool LocalTransformRelativeToOriginal = true;
 
-    public Color[] m_colorAtBeginningOfTransition = null;
+    private Color[] m_colorAtBeginningOfTransition = null;
 
-    public Color[] m_originalColors;
+    private Color[] m_originalColors;
 
     private Vector3 m_scaleAtStartOfTransition = default;
 
@@ -31,7 +31,11 @@ public class GfxButton2D : GfxButton
     {
         if (!m_initialized2DButton)
         {
-            if (VisualsParent == null) VisualsParent = m_transform;
+            if (VisualsParent == null)
+            {
+                Debug.Assert(transform.childCount == 1, "The VisualsParent is not assigned in the editor, but the transform of the button doesn't have a single child for its default parent. Please assign the VisualParent in the editor.");
+                VisualsParent = transform.GetChild(0);
+            }
 
             m_originalLocalPosition = VisualsParent.localPosition;
             m_originalLocalScale = VisualsParent.localScale;

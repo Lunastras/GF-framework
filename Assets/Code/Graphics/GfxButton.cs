@@ -13,11 +13,13 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     [SerializeField] protected GfxButtonHightlightState m_highlightStateDisabled = new() { Scale = new(1, 1, 1), Opacity = 0.6f, ColorContent = Color.white, ColorPanel = Color.white, PixelsPerUnit = 1 };
 
-    [SerializeField] protected GfxButtonHightlightState m_highlightStateSelected = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.75f, 0.75f, 0.75f, 1), PixelsPerUnit = 1 };
+    [SerializeField] protected GfxButtonHightlightState m_highlightStateSelected = new() { Scale = new(1.15f, 1.15f, 1.15f), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.75f, 0.75f, 0.75f, 1), PixelsPerUnit = 1 };
 
     [SerializeField] protected GfxButtonHightlightState m_highlightStateSubmit = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.75f, 0.75f, 0.75f, 1), PixelsPerUnit = 1 };
 
     [SerializeField] protected GfxButtonHightlightState m_highlightStatePinned = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.5f, 0.5f, 0.5f, 1), PixelsPerUnit = 1 };
+
+    [HideInInspector] public bool Submitable = true;
 
     public int Index = 0;
 
@@ -123,7 +125,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     public void Submit()
     {
-        if (Interactable())
+        if (Interactable() && Submitable)
         {
             OnSubmit.Invoke();
             OnEventCallbackInternal(GfxButtonCallbackType.SUBMIT, true);

@@ -95,7 +95,7 @@ public class ScalableWindow : MonoBehaviour
         if (Screen.width != m_screenResolution.x || Screen.height != m_screenResolution.y)
             OnResolutionChanged();
 
-        if (Cursor.visible && (GfcCursor.IsMouseOverUI() || m_isDragging) && (m_canMove || m_canChangeSize))
+        if (Cursor.visible && (GfcCursor.IsMouseOverCurrentUI() || m_isDragging) && (m_canMove || m_canChangeSize))
         {
             bool mouseIsPressed = Input.GetMouseButton(0);
 

@@ -147,10 +147,7 @@ public class GfcCursor : BaseInput
         return raycastResult;
     }
 
-    public static bool IsMouseOverUI()
-    {
-        return EventSystem.current.IsPointerOverGameObject();
-    }
+    public static bool IsMouseOverCurrentUI() { return EventSystem.current.IsPointerOverGameObject(); }
 
     private IEnumerator<float> _SetSelectedGameObject()
     {

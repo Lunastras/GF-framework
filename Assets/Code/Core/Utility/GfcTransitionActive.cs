@@ -7,7 +7,7 @@ using MEC;
 public class GfcTransitionActive : MonoBehaviour
 {
     [HideInInspector] public GfcTransitionParent Transition { get; protected set; }
-
+    public GfcTransitionActiveType TransitionActiveType = GfcTransitionActiveType.BOTH;
     public GfcCoroutineHandle CoroutineHandle { get; protected set; }
 
     protected void Awake()
@@ -18,6 +18,7 @@ public class GfcTransitionActive : MonoBehaviour
 
     public CoroutineHandle SetActive(bool anActive, bool aTransitionOnlyNoActiveSet = false)
     {
+        Debug.Assert(TransitionActiveType == GfcTransitionActiveType.BOTH, "Selected transition mode is not supported. Only 'BOTH' is implemented"); //TODO
         if (anActive) gameObject.SetActive(true);
 
         Transition.SetProgress(anActive ? 0 : 1, true);
@@ -49,4 +50,11 @@ public class GfcTransitionActive : MonoBehaviour
     }
 
     public bool FadingOut() { return Transition.Transitioning() && !Transition.FadingIn(); }
+}
+
+public enum GfcTransitionActiveType
+{
+    BOTH,
+    ENABLE,
+    DISABLE,
 }
