@@ -12,5 +12,6 @@ public enum GfcGameState
     CUTSCENE,
     IRISU,
     WHACK_A_WOLF,
+    SHOP,
     COUNT
 }

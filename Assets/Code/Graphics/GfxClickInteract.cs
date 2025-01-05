@@ -94,7 +94,7 @@ public class GfxClickInteract : MonoBehaviour
                 {
                     component.Interact(hitInfo);
                 }
-                else //somehow let player they can interact
+                else if (!component.HideInteractablePrompt)//somehow let player they can interact
                 {
                     GfcInput.UpdateDisplayInput(m_submitTracker.InputType, inputKey, m_clickInteractText);
                 }

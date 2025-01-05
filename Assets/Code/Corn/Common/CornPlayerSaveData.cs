@@ -26,7 +26,7 @@ public class GfgPlayerSaveData
         public float[] Consumables;
 
         public float[] Resources;
-        public float[] Stats;
+        public float[] SkillStats;
 
         public int CurrentStoryPhase;
 
@@ -97,29 +97,28 @@ public class GfgPlayerSaveData
 
         public float GetValue(CornPlayerResources aType) { return Resources[(int)aType]; }
         public float GetValue(CornPlayerConsumables aType) { return Consumables[(int)aType]; }
-        public float GetValue(CornPlayerSkillsStats aType) { return Stats[(int)aType]; }
+        public float GetValue(CornPlayerSkillsStats aType) { return SkillStats[(int)aType]; }
 
         public void ApplyModifier(CornPlayerSkillsStats aType, float aValue)
         {
-            Stats[(int)aType] += aValue;
+            SkillStats[(int)aType] = (SkillStats[(int)aType] + aValue).Clamp(0, 1);
         }
 
         public void ApplyModifier(CornPlayerResources aType, float aValue)
         {
-            Resources[(int)aType] += aValue;
-            Resources[(int)aType].ClampSelf(0, 1);
+            Resources[(int)aType] = (Resources[(int)aType] + aValue).Clamp(0, 1);
         }
 
         public void ApplyModifier(CornPlayerConsumables aType, float aValue)
         {
             Consumables[(int)aType] += aValue;
             if (aType < CornPlayerConsumables.MONEY)
-                Consumables[(int)aType].ClampSelf(0, 1);
+                Consumables[(int)aType] = Consumables[(int)aType].Clamp(0, 1);
         }
 
         public bool CanAfford(CornPlayerConsumables aType, float aValue)
         {
-            return -0.001 <= Consumables[(int)aType] + aValue; //-0.001 to account for errors
+            return -0.0001 <= Consumables[(int)aType] + aValue; //-0.001 to account for errors
         }
 
         public bool CanAfford(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0)
@@ -243,7 +242,7 @@ public class GfgPlayerSaveData
             createdNewSave = true;
         }
 
-        validData &= ValidateArrayValues(ref Data.Stats, (int)CornPlayerSkillsStats.COUNT, 0);
+        validData &= ValidateArrayValues(ref Data.SkillStats, (int)CornPlayerSkillsStats.COUNT, 0);
         validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
         validData &= ValidateArrayValues(ref Data.Resources, (int)CornPlayerResources.COUNT, START_RESOURCE_VALUE);
         validData &= ValidateArrayValues(ref Data.Consumables, (int)CornPlayerConsumables.COUNT, START_RESOURCE_VALUE);
@@ -271,6 +270,7 @@ public enum CornEventType
     PERSONAL_GIFT,
     NEW_DAY,
     NEW_WEEK,
+    STUDY,
     COUNT
 }
 
@@ -314,9 +314,9 @@ public enum CornPlayerSkillsStats
 {
     HANDICRAFT,
     PROGRAMMING,
-    COMFORT,
     ART,
     ASTRONOMY,
+    COMFORT,
     COUNT
 }
 

@@ -26,8 +26,8 @@ public class CornMenuApartment : MonoBehaviour
     [SerializeField] protected ResourceButtonInfo[] m_actionButtonsInfo;
     [SerializeField] protected Vector2 m_consumablesSlidersDistance;
 
-    [SerializeField] protected GameObject m_personalNeedsOptions;
-    [SerializeField] protected GameObject m_personalNeedsStudyOptions;
+    [SerializeField] protected Transform m_personalNeedsOptions;
+    [SerializeField] protected Transform m_personalNeedsStudyOptions;
 
     private CornActionButton[] m_actionButtons;
     private GfxSliderText[] m_consumablesSliders = null;
@@ -96,30 +96,20 @@ public class CornMenuApartment : MonoBehaviour
         if (!CornManagerEvents.ExecutingEvent)
             CornManagerPhone.LoadAvailableStoryScenes();
 
-        m_actionButtons[(int)CornPlayerAction.PERSONAL_NEEDS].Button.Submitable = false;
-        m_personalNeedsOptions.transform.SetParent(m_actionButtons[(int)CornPlayerAction.PERSONAL_NEEDS].Button.VisualsParent);
-        m_personalNeedsOptions.transform.localPosition = Vector3.zero;
-        m_personalNeedsOptions.transform.localScale = new(0.833333f, 0.833333f, 0.833333f); //hack, buttons have a scale of 1.2 when selected, 0.8333 offsets that and resets it to 1
+        GfxButton personalNeeds = m_actionButtons[(int)CornPlayerAction.PERSONAL_NEEDS].Button;
+        personalNeeds.Submitable = false;
+        personalNeeds.HideInteractablePrompt = true;
+
+        m_personalNeedsOptions.SetParent(m_actionButtons[(int)CornPlayerAction.PERSONAL_NEEDS].Button.VisualsParent);
+        m_personalNeedsOptions.localPosition = Vector3.zero;
+        m_personalNeedsOptions.localScale = new(0.833333f, 0.833333f, 0.833333f); //hack, buttons have a scale of 1.2 when selected, 0.8333 offsets that and resets it to 1
         m_personalNeedsOptions.gameObject.SetActive(false);
 
-        int countChildren = 0;
+        m_personalNeedsOptions.InitChildrenGfxButtons(OnPersonalNeedsEvent, (int)CornPersonalNeedsAction.COUNT);
+        m_personalNeedsOptions.GetChild((int)CornPersonalNeedsAction.STUDY).GetComponent<GfxButton>().Submitable = false;
 
-        foreach (Transform child in m_personalNeedsOptions.transform)
-        {
-            GfxButton button = child.GetComponent<GfxButton>();
-            if (button)
-            {
-                button.OnButtonEventCallback += OnPersonalNeedsEvent;
-                button.Index = countChildren;
-            }
-            else
-                Debug.LogError("The child of " + m_personalNeedsOptions + " at index " + countChildren + " doesn't have a GfxButton component.");
-
-            countChildren++;
-        }
-
-        if (countChildren != (int)CornPersonalNeedsAction.COUNT)
-            Debug.LogError("The count of children for " + m_personalNeedsOptions + " is " + countChildren + ", it should be " + (int)CornPersonalNeedsAction.COUNT);
+        m_personalNeedsStudyOptions.InitChildrenGfxButtons(OnStudyEvent, (int)CornPlayerSkillsStats.COMFORT);//comfort is the first skill stat that is not on the study list. which is why its used as the count
+        m_personalNeedsStudyOptions.gameObject.SetActive(false);
 
         UpdateGraphicsInternal();
     }
@@ -226,6 +216,12 @@ public class CornMenuApartment : MonoBehaviour
         else Debug.LogError("Attempting to preview consumable modifier of type " + aModifier.Type + ", but the current design only supports " + CornPlayerConsumables.MONEY + " and " + CornPlayerConsumables.ENERGY);
     }
 
+    private void OnStudyEvent(GfxButtonCallbackType aType, GfxButton aButton, bool aState)
+    {
+        if (aType == GfxButtonCallbackType.SUBMIT)
+            CornManagerEvents.ExecuteEvent(new(CornEventType.STUDY, (uint)aButton.Index));
+    }
+
     private void OnPersonalNeedsEvent(GfxButtonCallbackType aType, GfxButton aButton, bool aState)
     {
         CornPersonalNeedsAction personalNeedsAction = (CornPersonalNeedsAction)aButton.Index;
@@ -234,34 +230,39 @@ public class CornMenuApartment : MonoBehaviour
         {
             case GfxButtonCallbackType.SELECT:
 
-                if (personalNeedsAction == CornPersonalNeedsAction.REST)
+                if (personalNeedsAction != CornPersonalNeedsAction.SHOP)
                 {
+                    CornEventType eventType = CornEventType.PERSONAL_TIME;
+                    if (personalNeedsAction == CornPersonalNeedsAction.STUDY)
+                    {
+                        eventType = CornEventType.STUDY;
+                        m_personalNeedsStudyOptions.SetActiveGf(aState);
+                    }
+
                     if (aState && aButton.Interactable())
-                        CornManagerBalancing.GetEventCostAndRewardsRaw(CornEventType.PERSONAL_TIME).Preview();
+                        CornManagerBalancing.GetEventCostAndRewardsRaw(eventType).Preview();
 
                     if (!aState)
                         EndStatsPreviewInternal();
-                }
-                else if (personalNeedsAction == CornPersonalNeedsAction.STUDY)
-                {
-                    m_personalNeedsStudyOptions.SetActiveGf(aState);
                 }
 
                 break;
 
             case GfxButtonCallbackType.SUBMIT:
+
                 switch (personalNeedsAction)
                 {
                     case CornPersonalNeedsAction.REST:
                         CornManagerEvents.ExecuteEvent(new(CornEventType.PERSONAL_TIME));
                         break;
 
-                    case CornPersonalNeedsAction.STUDY:
-                        break;
-
                     case CornPersonalNeedsAction.SHOP:
+                        GfgManagerGame.SetGameState(GfcGameState.SHOP);
                         break;
                 }
+
+                aButton.SetSelected(false);
+                aButton.SnapToDesiredState();
                 break;
         }
     }
@@ -274,7 +275,13 @@ public class CornMenuApartment : MonoBehaviour
         {
             case GfxButtonCallbackType.SELECT:
                 if (eventType == CornEventType.PERSONAL_TIME)
+                {
                     m_personalNeedsOptions.SetActiveGf(aState);
+                    if (!aState)
+                        m_personalNeedsStudyOptions.gameObject.SetActive(false);
+
+                    m_actionButtons[(int)CornPlayerAction.PERSONAL_NEEDS].Button.DeselectOnEvenSystemDeselect = !aState;
+                }
                 else if (aState && aButton.Interactable())
                     CornManagerBalancing.GetEventCostAndRewardsRaw(eventType).Preview();
 

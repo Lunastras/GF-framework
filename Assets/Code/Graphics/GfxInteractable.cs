@@ -6,6 +6,8 @@ public abstract class GfcInteractable : MonoBehaviour
 {
     public GfcInputLockPriority InputKeyPriority = GfcInputLockPriority.UI1;
     [SerializeField] protected bool m_interactable { get; private set; } = true;
+    public bool HideInteractablePrompt = false;
+
     [HideInInspector]
     public string NotInteractableReason
     {

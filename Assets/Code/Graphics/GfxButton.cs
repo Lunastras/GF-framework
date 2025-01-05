@@ -40,6 +40,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     protected int m_frameOfEnable = -1;
 
     protected bool m_deselectOnPointerExit = false;
+    public bool DeselectOnEvenSystemDeselect = true;
 
     private float m_timeSinceTransitionStart = 0;
 
@@ -63,7 +64,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     public void OnPointerEnter(PointerEventData aEventData) { SetSelected(true); }
 
-    public void OnDeselect(BaseEventData aEventData) { SetSelected(false); }
+    public void OnDeselect(BaseEventData aEventData) { if (DeselectOnEvenSystemDeselect) SetSelected(false); }
 
     public void OnPointerExit(PointerEventData aEventData) { if (m_deselectOnPointerExit || true) SetSelected(false); }
 
@@ -109,7 +110,6 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
         m_transitionTimeEffective = TransitionTime;
         m_timeSinceTransitionStart = TransitionTime;
 
-        Index = 0;
         m_deselectOnPointerExit = false;
         SetInteractable(true);
         SetSelected(false);
@@ -147,7 +147,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     public void SetSelected(bool aSelect)
     {
-        if (IsSelectable() && aSelect != m_isSelected)
+        if ((IsSelectable() || !aSelect) && aSelect != m_isSelected)
         {
             m_isSelected = aSelect;
             StartTransitionToNewState(aSelect);
@@ -156,12 +156,10 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
             if (aSelect)
             {
                 m_soundSelect?.PlaySingleInstance();
-                //if (!Interactable()) GfxUiTools.WriteDisabledReason(this);
             }
             else //deselected
             {
                 m_soundDeselect?.PlaySingleInstance();
-                //if (!Interactable()) GfxUiTools.EraseDisableReason(this);
             }
         }
     }

@@ -64,15 +64,16 @@ public class CornManagerEvents : MonoBehaviour
 
     public static bool ExecutingEvent { get { return !Instance.m_canPlayEvent; } }
 
-    public static void ExecuteEvent(CornEvent aEvent)
+    public static void ExecuteEvent(CornEvent anEvent)
     {
         if (Instance.m_canPlayEvent)
         {
+            Debug.Log("Executing event " + anEvent.EventType + " with subtype " + anEvent.EventTypeSub);
             Instance.m_canPlayEvent = false;
-            Timing.RunCoroutine(_ExecuteEvent(aEvent));
+            Timing.RunCoroutine(_ExecuteEvent(anEvent));
         }
         else
-            Debug.LogWarning("Already in the process of executing an event, could not exeucte event " + aEvent.EventType + " " + aEvent.EventTypeSub);
+            Debug.LogWarning("Already in the process of executing an event, could not exeucte event " + anEvent.EventType + " " + anEvent.EventTypeSub);
     }
 
     public static int GetEffectiveSanity()
@@ -87,19 +88,19 @@ public class CornManagerEvents : MonoBehaviour
     //returns true if the action will executed. False if the corn event can play.
     public static bool GuaranteedCornRollSuccess() { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CornActionsInARow < CornManagerBalancing.MAX_CORN_ACTION_IN_ROW; }
 
-    private static IEnumerator<float> _ExecuteEvent(CornEvent aEvent)
+    private static IEnumerator<float> _ExecuteEvent(CornEvent anEvent)
     {
-        if (aEvent.EventType == CornEventType.SLEEP)
-            aEvent.EventTypeSub = (int)CornSleepType.INTERRUPTED;
+        if (anEvent.EventType == CornEventType.SLEEP)
+            anEvent.EventTypeSub = (int)CornSleepType.INTERRUPTED;
 
-        CornEventCostAndRewards eventRewardsAndCost = CornManagerBalancing.GetEventCostAndRewards(aEvent.EventType, out string message, aEvent.EventTypeSub);
+        CornEventCostAndRewards eventRewardsAndCost = CornManagerBalancing.GetEventCostAndRewards(anEvent.EventType, out string message, anEvent.EventTypeSub);
         CoroutineHandle eventHandle = default;
 
         var cornSaveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
 
         List<string> messagesBuffer = GetMessagesBuffer();
 
-        if (CanAffordMoney(aEvent))
+        if (CanAffordMoney(anEvent))
         {
             bool wasteTime = eventRewardsAndCost.EventHasCornRoll
             && !GuaranteedCornRollSuccess()
@@ -116,14 +117,14 @@ public class CornManagerEvents : MonoBehaviour
             {
                 cornSaveData.CornActionsInARow = 0;
                 //event stuff
-                switch (aEvent.EventType)
+                switch (anEvent.EventType)
                 {
                     case CornEventType.WORK:
                         eventHandle = Timing.RunCoroutine(_ExecuteWorkEvent(messagesBuffer));
                         break;
 
                     case CornEventType.SOCIAL:
-                        eventHandle = CornManagerStory.StartStoryScene(aEvent.Scene);
+                        eventHandle = CornManagerStory.StartStoryScene(anEvent.Scene);
                         break;
 
                     case CornEventType.CHORES:
@@ -134,9 +135,12 @@ public class CornManagerEvents : MonoBehaviour
                         eventHandle = Timing.RunCoroutine(_ExecuteSleepEvent(messagesBuffer));
                         eventRewardsAndCost = default;
                         break;
+                    case CornEventType.STUDY:
+                        cornSaveData.ApplyModifier((CornPlayerSkillsStats)anEvent.EventTypeSub, 0.01f);
+                        break;
                 }
 
-                message ??= "<i>Pretty</i> cool event <color=red>" + aEvent.EventType.ToString() + "</color> was finished.";
+                message ??= "<i>Pretty</i> cool event <color=red>" + anEvent.EventType.ToString() + "</color> was finished.";
             }
         }
         else
@@ -159,7 +163,7 @@ public class CornManagerEvents : MonoBehaviour
         if (eventHandle.IsValid)
             yield return Timing.WaitUntilDone(eventHandle);
 
-        if (aEvent.EventType == CornEventType.SLEEP)
+        if (anEvent.EventType == CornEventType.SLEEP)
             eventRewardsAndCost = SleepingMinigameData.GetFinalRewards();
         eventRewardsAndCost.ApplyModifiersToPlayer(0);
 
@@ -350,8 +354,8 @@ public class CornManagerEvents : MonoBehaviour
         yield return Timing.WaitForOneFrame;
     }
 
-    public static bool CanAfford(CornEvent aEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(aEvent).CanAfford(aBonusMultiplier); }
-    public static bool CanAffordMoney(CornEvent aEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(aEvent).CanAffordMoney(aBonusMultiplier); }
+    public static bool CanAfford(CornEvent anEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(anEvent).CanAfford(aBonusMultiplier); }
+    public static bool CanAffordMoney(CornEvent anEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(anEvent).CanAffordMoney(aBonusMultiplier); }
 
     public static bool CanAfford(CornPlayerConsumables aType, float aValue) { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(aType, aValue); }
     public static bool CanAfford(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(aModifier, aMultiplier, aBonusMultiplier); }
@@ -372,10 +376,10 @@ public class CornManagerEvents : MonoBehaviour
 [Serializable]
 public struct CornEvent
 {
-    public CornEvent(CornEventType aEventType, uint aEventTypeSub = 0, Type aScene = null)
+    public CornEvent(CornEventType anEventType, uint anEventTypeSub = 0, Type aScene = null)
     {
-        EventType = aEventType;
-        EventTypeSub = aEventTypeSub;
+        EventType = anEventType;
+        EventTypeSub = anEventTypeSub;
         Scene = aScene;
     }
 

@@ -155,12 +155,15 @@ public static class GfcToolsStatic
         return activeInHierarchy;
     }
 
-    public static void SetActiveGf(this GameObject aGameObject, bool anActive)
+    public static CoroutineHandle SetActiveGf(this Transform aGameObject, bool anActive) { return aGameObject.gameObject.SetActiveGf(anActive); }
+    public static CoroutineHandle SetActiveGf(this GameObject aGameObject, bool anActive)
     {
+        CoroutineHandle handle = default;
         if (aGameObject.TryGetComponent(out GfcTransitionActive customActive))
-            customActive.SetActive(anActive);
+            handle = customActive.SetActive(anActive);
         else
             aGameObject.SetActive(anActive);
+        return handle;
     }
 
     public static void SetAlpha(this Image anImage, float anAlpha)

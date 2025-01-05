@@ -137,56 +137,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Texture
       value: 
-      objectReference: {fileID: 1252235165}
-    - target: {fileID: 393359811952624783, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 766559117}
     - target: {fileID: 658737043036766423, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_instanceData.RenderTexture
       value: 
       objectReference: {fileID: 841984504}
-    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
-      propertyPath: m_cornEventCostAndRewards.Array.data[8].CostAndRewards.ResourcesModifier.Array.data[0].Value
-      value: -0.25
-      objectReference: {fileID: 0}
-    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
-      propertyPath: m_cornEventCostAndRewards.Array.data[8].CostAndRewards.ResourcesModifier.Array.data[1].Value
-      value: -0.25
-      objectReference: {fileID: 0}
-    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
-      propertyPath: m_cornEventCostAndRewards.Array.data[8].CostAndRewards.ResourcesModifier.Array.data[2].Value
-      value: -0.25
-      objectReference: {fileID: 0}
-    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
-      propertyPath: m_cornEventCostAndRewards.Array.data[8].CostAndRewards.ResourcesModifier.Array.data[3].Value
-      value: -0.25
-      objectReference: {fileID: 0}
-    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
-      propertyPath: m_cornEventCostAndRewards.Array.data[5].CostAndRewards.ConsumablesModifier.Array.data[0].Value
-      value: -0.05
-      objectReference: {fileID: 0}
     - target: {fileID: 2080833477572206972, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_Name
       value: GfgBase
-      objectReference: {fileID: 0}
-    - target: {fileID: 2080833477572206972, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2115226464010177267, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4139284560793968150, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
@@ -252,7 +212,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_instanceData.RenderTexture
       value: 
-      objectReference: {fileID: 1252235165}
+      objectReference: {fileID: 766559117}
     - target: {fileID: 5356880119201574730, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_instanceData.InstantiatedPrefab
@@ -272,7 +232,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_instanceData.RenderTexture
       value: 
-      objectReference: {fileID: 487171749}
+      objectReference: {fileID: 1762457589}
     - target: {fileID: 6697997725284469679, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_instanceData.InstantiatedPrefab
@@ -292,7 +252,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Texture
       value: 
-      objectReference: {fileID: 487171749}
+      objectReference: {fileID: 1762457589}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -335,7 +295,7 @@ RenderTexture:
   m_Dimension: 2
   m_VolumeDepth: 1
   m_ShadowSamplingMode: 2
---- !u!84 &487171749
+--- !u!84 &766559117
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -347,7 +307,7 @@ RenderTexture:
     Hash: 00000000000000000000000000000000
   m_IsAlphaChannelOptional: 0
   serializedVersion: 6
-  m_Width: 512
+  m_Width: 1024
   m_Height: 512
   m_AntiAliasing: 1
   m_MipCount: -1
@@ -409,7 +369,7 @@ RenderTexture:
   m_Dimension: 2
   m_VolumeDepth: 1
   m_ShadowSamplingMode: 2
---- !u!84 &1252235165
+--- !u!84 &1170749700
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -438,7 +398,7 @@ RenderTexture:
   m_TextureSettings:
     serializedVersion: 2
     m_FilterMode: 1
-    m_Aniso: 0
+    m_Aniso: 1
     m_MipBias: 0
     m_WrapU: 1
     m_WrapV: 1
@@ -446,7 +406,7 @@ RenderTexture:
   m_Dimension: 2
   m_VolumeDepth: 1
   m_ShadowSamplingMode: 2
---- !u!84 &1254008714
+--- !u!84 &1319133362
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -458,7 +418,7 @@ RenderTexture:
     Hash: 00000000000000000000000000000000
   m_IsAlphaChannelOptional: 0
   serializedVersion: 6
-  m_Width: 1024
+  m_Width: 512
   m_Height: 512
   m_AntiAliasing: 1
   m_MipCount: -1
@@ -544,7 +504,7 @@ LightingSettings:
   m_PVRFilteringAtrousPositionSigmaIndirect: 2
   m_PVRFilteringAtrousPositionSigmaAO: 1
   m_RespectSceneVisibilityWhenBakingGI: 0
---- !u!84 &1699888909
+--- !u!84 &1762457589
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -573,7 +533,7 @@ RenderTexture:
   m_TextureSettings:
     serializedVersion: 2
     m_FilterMode: 1
-    m_Aniso: 1
+    m_Aniso: 0
     m_MipBias: 0
     m_WrapU: 1
     m_WrapV: 1

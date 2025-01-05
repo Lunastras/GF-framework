@@ -554,6 +554,38 @@ public class GfxUiTools : MonoBehaviour
 
 public static class GfxUiToolsStatic
 {
+    public static void InitChildrenGfxButtons(this Transform aParent, Action<GfxButtonCallbackType, GfxButton, bool> anOnButtonEventCallback, int aDesiredChildrenCount = -1)
+    {
+        if (aParent)
+        {
+            GfxButton button;
+            int countChildren = 0;
+            foreach (Transform child in aParent)
+            {
+                button = child.GetComponent<GfxButton>();
+                if (button)
+                {
+                    button.OnButtonEventCallback += anOnButtonEventCallback;
+                    button.Index = countChildren;
+                }
+                else
+                    Debug.LogError("The child of " + aParent.name + " at index " + countChildren + " doesn't have a GfxButton component.");
+
+                countChildren++;
+            }
+
+            if (aDesiredChildrenCount >= 0 && countChildren != aDesiredChildrenCount)
+                Debug.LogError("The count of children for " + aParent + " is " + countChildren + ", it should be " + aDesiredChildrenCount);
+        }
+        else
+            Debug.LogError("The passed parent is null");
+    }
+
+    public static void InitChildrenGfxButtons(this GameObject aParent, Action<GfxButtonCallbackType, GfxButton, bool> anOnButtonEventCallback, int aDesiredChildrenCount = -1)
+    {
+        InitChildrenGfxButtons(aParent ? aParent.transform : null, anOnButtonEventCallback, aDesiredChildrenCount);
+    }
+
     public static CoroutineHandle CrossFadeAlphaGf(this CanvasGroup aGroup, float aTargetAlpha, float aDurationSeconds, bool anIgnoreTimeScale = false, AnimationCurve anAnimationCurve = null)
     {
         return GfxUiTools.CrossFadeAlpha(aGroup, aTargetAlpha, aDurationSeconds, anIgnoreTimeScale, anAnimationCurve);
