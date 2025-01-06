@@ -119,11 +119,28 @@ public class GfcPooling : MonoBehaviour
             {
                 int lastIndex = currentPool.Count - 1;
 
-                int i = lastIndex;
-                if (mustBeInactive)
-                    while (currentPool[i] && (!currentPool[i].activeSelf ^ !ObjectQueuedForPool(currentPool[i])) && --i >= 0) ; //go through the list until an inactive element is found //changes don't work
+                int i = 0;
+                GameObject obj;
 
-                if (i >= 0)
+                for (; i <= lastIndex; i++)
+                {
+                    obj = currentPool[i];
+                    if (obj)
+                    {
+                        if ((!obj.activeSelf || !mustBeInactive) && ObjectIsInPool(obj))
+                            break;
+                    }
+                    else
+                    {
+                        currentPool.RemoveAtSwapBack(i);
+                        i--; //check index again;
+                    }
+                }
+
+                //if (mustBeInactive)
+                //while (currentPool[i] && (!currentPool[i].activeSelf ^ !ObjectQueuedForPool(currentPool[i])) && --i >= 0) ; //go through the list until an inactive element is found //changes don't work
+
+                if (i <= lastIndex)
                 {
                     spawnedObject = currentPool[i];
                     currentPool.RemoveAtSwapBack(i);
@@ -149,7 +166,8 @@ public class GfcPooling : MonoBehaviour
         return spawnedObject;
     }
 
-    public static bool ObjectIsInPool(GameObject aGameObject) { return aGameObject.transform.position.Equals(DESTROY_POSITION) || aGameObject.transform.position.Equals(DEACTIVATE_NEXT_FRAME_POSITION); }
+    public static bool ObjectIsInPool(GameObject aGameObject) { return aGameObject.transform.position.Equals(DESTROY_POSITION) || (aGameObject.activeSelf && aGameObject.transform.position.Equals(DEACTIVATE_NEXT_FRAME_POSITION)); }
+    public static bool ObjectIsInPoolOrQueued(GameObject aGameObject) { return aGameObject.transform.position.Equals(DESTROY_POSITION) || aGameObject.transform.position.Equals(DEACTIVATE_NEXT_FRAME_POSITION); }
     public static bool ObjectQueuedForPool(GameObject aGameObject) { return aGameObject.transform.position.Equals(DEACTIVATE_NEXT_FRAME_POSITION); }
 
     public static GameObject Instantiate(string prefabName, Transform parent = null, bool instantiateInWorldSpace = false, bool mustBeInactive = true)
@@ -344,7 +362,7 @@ public class GfcPooling : MonoBehaviour
             if (Instance && Instance.isActiveAndEnabled && Instance.m_pools.TryGetValue(anObjectToDestroy.name, out PoolStruct pool) && null != pool.List)
             {
                 var poolList = pool.List;
-                bool alreadyInPool = ObjectIsInPool(anObjectToDestroy);
+                bool alreadyInPool = ObjectIsInPoolOrQueued(anObjectToDestroy);
                 destroyObject = !alreadyInPool;
                 aGoOverCapacity |= aKeepActive;
 
