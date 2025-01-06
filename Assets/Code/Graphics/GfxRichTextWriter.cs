@@ -45,8 +45,6 @@ public class GfxRichTextWriter : MonoBehaviour
 
     private List<VertexData> m_vertexData = new(32);
 
-    private int m_lastFramePreRender = 0;
-
     public GfxRichTextWriter() { }
 
     private void Awake()
@@ -182,7 +180,7 @@ public class GfxRichTextWriter : MonoBehaviour
             m_textMeshPro.UpdateVertexData();
     }
 
-    private void ApplyTransitionEffectToText(bool anInitializeStep, bool anAllowEarlyBreak = false)
+    private void ApplyTransitionEffectToText(bool anAllowEarlyBreak = false)
     {
         int validCharactersCount = 0;
         TMP_TextInfo aTextInfo = m_textMeshPro.textInfo;
@@ -190,14 +188,6 @@ public class GfxRichTextWriter : MonoBehaviour
         int characterCount = aTextInfo.characterCount;
 
         TMP_VertexDataUpdateFlags vertexUpdateFlag = TMP_VertexDataUpdateFlags.All; //should be none, maybe we can optimise it at some point
-
-        if (anInitializeStep)
-        {
-            m_animData.LastFinishedIndex = -1;
-            m_animData.ValidIndexOfLastFinishedChar = -1;
-
-            UpdateOriginalVertexDataBuffer();
-        }
 
         for (int i = m_animData.LastFinishedIndex + 1; i < characterCount; i++)
         {
@@ -209,7 +199,7 @@ public class GfxRichTextWriter : MonoBehaviour
                 float auxSecondsSinceStart = m_animData.SecondsSinceStart - validCharacterIndex * LetterDelaySeconds * SpeedMultiplier.Inverse * m_writeAllSpeedMultiplier.Inverse;
                 auxSecondsSinceStart.MaxSelf(m_secondsSinceWriteAll);
 
-                if (!anInitializeStep && anAllowEarlyBreak && auxSecondsSinceStart <= 0)
+                if (anAllowEarlyBreak && auxSecondsSinceStart <= 0)
                     break;
 
                 float timeCoef = (SpeedMultiplier * auxSecondsSinceStart * LetterTranslateSeconds.Inverse * m_writeAllSpeedMultiplier).Min(1);
@@ -278,17 +268,14 @@ public class GfxRichTextWriter : MonoBehaviour
         return TMP_VertexDataUpdateFlags.Colors32 | TMP_VertexDataUpdateFlags.Vertices;
     }
 
-    private bool m_initialPreRenderCall = false;
-
     private void OnPreRenderText(TMP_TextInfo aTmpInfo)
     {
-        ApplyStaticEffects(m_textMeshPro.textInfo, true);
+        m_animData.LastFinishedIndex = -1;
+        m_animData.ValidIndexOfLastFinishedChar = -1;
+        UpdateOriginalVertexDataBuffer();
 
-        if (m_textAnimationHandle.CoroutineIsRunning || m_initialPreRenderCall)
-        {
-            ApplyTransitionEffectToText(true);
-            m_lastFramePreRender = Time.frameCount;
-        }
+        if (m_textAnimationHandle.CoroutineIsRunning)
+            ApplyTransitionEffectToText();
     }
 
     private IEnumerator<float> _ExecuteCharacterTransition(bool aFadeIn, float aSpeedMultiplier = 1)
@@ -308,9 +295,9 @@ public class GfxRichTextWriter : MonoBehaviour
         m_animData.FadeIn = aFadeIn;
         m_animData.SecondsSinceStart = 0;
 
-        m_initialPreRenderCall = true;
-        m_textMeshPro.ForceMeshUpdate();
-        m_initialPreRenderCall = false;
+        //m_initialPreRenderCall = true;
+        //m_textMeshPro.ForceMeshUpdate();
+        //m_initialPreRenderCall = false;
 
         bool firstIteration = true;
 
@@ -319,8 +306,7 @@ public class GfxRichTextWriter : MonoBehaviour
 
         while (m_animData.LastFinishedIndex < lastIndex)
         {
-            if (m_lastFramePreRender != Time.frameCount)
-                ApplyTransitionEffectToText(firstIteration, !firstIteration);
+            ApplyTransitionEffectToText(!firstIteration);
 
             float timeOfWaitStart = Time.time;
             yield return Timing.WaitForOneFrame;
@@ -341,7 +327,7 @@ public class GfxRichTextWriter : MonoBehaviour
         TMP_CharacterInfo[] charsInfo = aTextInfo.characterInfo;
         int length = TextLength;
 
-        //ApplyStaticEffects(aTextInfo);
+        ApplyStaticEffects(aTextInfo);
 
         m_vertexData.Clear();
 
