@@ -407,7 +407,7 @@ public class TestDialoguePhone : GfgVnScene
 {
     protected override void Begin()
     {
-        bool canAffordEvent = CornManagerEvents.CanAfford(new CornEvent(CornEventType.SOCIAL));
+        bool canAffordEvent = CornManagerEvents.CanAffordMoney(new CornEvent(CornEventType.SOCIAL));
 
         Say("Hello loser...", new(GfcStoryCharacter.PROTAG));
         Say("Let's see, do you wish to see my cock?");
@@ -422,19 +422,19 @@ public class TestDialoguePhone : GfgVnScene
         Say("Let's see, do you wish to see my cock?7");
 
 
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("..Bad.", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...Sponge", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
-        Say("...", new CornDialogueSetting(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("..Bad.", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("...Sponge", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
+        Say("...", new(GfcStoryCharacter.GF));
 
 
         Say("............Well... this is awkward...", new CornDialogueSetting(GfcStoryCharacter.PROTAG));
@@ -445,7 +445,7 @@ public class TestDialoguePhone : GfgVnScene
         {
             Append(" Cool dick");
 
-            Option("Hell yeee", Yes, canAffordEvent, "You don't have enough resources for this event");
+            Option("Hell yeee", Yes, canAffordEvent, "You don't have enough money for this event");
             Option("Lmao Nope", No);
         }
     }

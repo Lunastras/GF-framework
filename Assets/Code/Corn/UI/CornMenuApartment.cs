@@ -108,7 +108,7 @@ public class CornMenuApartment : MonoBehaviour
         m_personalNeedsOptions.InitChildrenGfxButtons(OnPersonalNeedsEvent, (int)CornPersonalNeedsAction.COUNT);
         m_personalNeedsOptions.GetChild((int)CornPersonalNeedsAction.STUDY).GetComponent<GfxButton>().Submitable = false;
 
-        m_personalNeedsStudyOptions.InitChildrenGfxButtons(OnStudyEvent, (int)CornPlayerSkillsStats.COMFORT);//comfort is the first skill stat that is not on the study list. which is why its used as the count
+        m_personalNeedsStudyOptions.InitChildrenGfxButtons(OnStudyEvent, (int)CornSkillsStats.COMFORT);//comfort is the first skill stat that is not on the study list. which is why its used as the count
         m_personalNeedsStudyOptions.gameObject.SetActive(false);
 
         UpdateGraphicsInternal();

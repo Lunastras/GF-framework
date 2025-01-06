@@ -44,7 +44,7 @@ public class CornManagerPhone : MonoBehaviour
     {
         if (CanTogglePhone)
         {
-            bool validState = false;
+            bool validState = m_statesWhereToggleEnabled.Length == 0;
             GfcGameState gameState = GfgManagerGame.GetGameState();
 
             for (int i = 0; !validState && i < m_statesWhereToggleEnabled.Length; i++)

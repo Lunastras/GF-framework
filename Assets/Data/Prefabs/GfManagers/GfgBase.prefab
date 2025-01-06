@@ -11,9 +11,6 @@ GameObject:
   - component: {fileID: 4655651345050461226}
   - component: {fileID: 6501464310357284098}
   - component: {fileID: 3889638237230604349}
-  - component: {fileID: 3168928831951118075}
-  - component: {fileID: 4512653097021318762}
-  - component: {fileID: 160684715680759135}
   - component: {fileID: 814392663434897468}
   m_Layer: 5
   m_Name: BottomTextNotification
@@ -80,69 +77,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!225 &3168928831951118075
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 380333239434154403}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 0
-  m_IgnoreParentGroups: 0
---- !u!114 &4512653097021318762
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 380333239434154403}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_duration: 0.3
-  ParentIndexDelaySeconds: 0
---- !u!114 &160684715680759135
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 380333239434154403}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64b1a4cefbaf8cb47a10cdf53ac9ea3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AnimationCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_canvasGroup: {fileID: 0}
 --- !u!114 &814392663434897468
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -706,7 +640,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -732,7 +666,7 @@ CanvasGroup:
   m_Enabled: 1
   m_Alpha: 0
   m_Interactable: 1
-  m_BlocksRaycasts: 1
+  m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
 --- !u!114 &6775483014583268648
 MonoBehaviour:
@@ -770,7 +704,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  m_canvasGroup: {fileID: 0}
+  m_canvasGroup: {fileID: 8848156890575561535}
 --- !u!114 &7483016690780175324
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3364,8 +3298,8 @@ MonoBehaviour:
   SpeedMultiplier:
     m_value: 1
   TranslationFadeIn:
-    GlobalPosition: {x: 0, y: 0, z: 0}
-    LocalPosition: {x: 0, y: 50, z: 0}
+    GlobalPosition: {x: 50, y: 0, z: 0}
+    LocalPosition: {x: 0, y: 0, z: 0}
     GlobalScale: {x: 1, y: 1, z: 1}
     LocalScale: {x: 1, y: 1, z: 1}
     TransitionCurve:
@@ -3398,8 +3332,8 @@ MonoBehaviour:
     ColorBlendMode: 0
     LocalRotationZ: 0
   TranslationFadeOut:
-    GlobalPosition: {x: 0, y: 0, z: 0}
-    LocalPosition: {x: 0, y: -50, z: 0}
+    GlobalPosition: {x: 0, y: -50, z: 0}
+    LocalPosition: {x: 0, y: 0, z: 0}
     GlobalScale: {x: 1, y: 1, z: 1}
     LocalScale: {x: 1, y: 1, z: 1}
     TransitionCurve:

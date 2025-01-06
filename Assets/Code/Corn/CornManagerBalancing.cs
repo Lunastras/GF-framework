@@ -10,6 +10,7 @@ public class CornManagerBalancing : MonoBehaviour
 
     [SerializeField] private float m_baseChoresMiniGameExtraPoints = 0.5f;
     [SerializeField] private CornEventCostAndRewardsSetter[] m_cornEventCostAndRewards = null;
+    [SerializeField] private CornShopItemsData[] m_cornShopItems;
 
     public const int MORNING_START_HOUR = 6;
     public const int EARLIEST_SLEEP_HOUR = 23;
@@ -119,7 +120,7 @@ public struct CornEventCostAndRewards
     }
 }
 
-[System.Serializable]
+[Serializable]
 internal struct CornEventCostAndRewardsSetter
 {
     public CornEventType EventType;
@@ -130,4 +131,29 @@ public enum CornSleepType
 {
     UNINTERRUPTED,
     INTERRUPTED
+}
+
+[Serializable]
+public struct CornShopItemsData
+{
+    public CornShopItem ItemType;
+    public string Name;
+    public int Price;
+    public CornSkillStatsModifier[] Modifiers;
+}
+
+public enum CornShopItem
+{
+    COUCH,
+    BED,
+    PC,
+    FLOWERS,
+    POSTER,
+}
+
+[Serializable]
+public struct CornSkillStatsModifier
+{
+    public CornSkillsStats Type;
+    public float Value;
 }

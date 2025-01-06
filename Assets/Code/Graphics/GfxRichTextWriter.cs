@@ -62,15 +62,9 @@ public class GfxRichTextWriter : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    private void Update()
-    {
-        if (!Application.isPlaying)
-        {
-            m_textMeshPro.ForceMeshUpdate();
-            ApplyStaticEffects(m_textMeshPro.textInfo, true);
-        }
-    }
+    private void Update() { if (!Application.isPlaying) m_textMeshPro.ForceMeshUpdate(); }
 #endif //UNITY_EDITOR, used to preview the values in the editor
+
 
     public void SetString(string aString, bool aWriteTextInstant = true)
     {
@@ -288,17 +282,12 @@ public class GfxRichTextWriter : MonoBehaviour
 
     private void OnPreRenderText(TMP_TextInfo aTmpInfo)
     {
+        ApplyStaticEffects(m_textMeshPro.textInfo, true);
+
         if (m_textAnimationHandle.CoroutineIsRunning || m_initialPreRenderCall)
         {
             ApplyTransitionEffectToText(true);
             m_lastFramePreRender = Time.frameCount;
-        }
-        else
-#if UNITY_EDITOR 
-        if (Application.isPlaying && !WritingText())
-#endif
-        {
-            ApplyStaticEffects(m_textMeshPro.textInfo, true);
         }
     }
 
@@ -352,7 +341,7 @@ public class GfxRichTextWriter : MonoBehaviour
         TMP_CharacterInfo[] charsInfo = aTextInfo.characterInfo;
         int length = TextLength;
 
-        ApplyStaticEffects(aTextInfo);
+        //ApplyStaticEffects(aTextInfo);
 
         m_vertexData.Clear();
 

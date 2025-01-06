@@ -136,7 +136,7 @@ public class CornManagerEvents : MonoBehaviour
                         eventRewardsAndCost = default;
                         break;
                     case CornEventType.STUDY:
-                        cornSaveData.ApplyModifier((CornPlayerSkillsStats)anEvent.EventTypeSub, 0.01f);
+                        cornSaveData.ApplyModifier((CornSkillsStats)anEvent.EventTypeSub, 0.01f);
                         break;
                 }
 
@@ -221,7 +221,7 @@ public class CornManagerEvents : MonoBehaviour
         yield return Timing.WaitUntilDone(GfgManagerSceneLoader.LoadScene(GfcSceneId.IRISU));
         yield return Timing.WaitUntilDone(IrisuManagerGame.GetCoroutineHandle());
         float level = IrisuManagerGame.GetDifficulty();
-        float choresExtraPoints = IrisuManagerGame.GetDifficulty() * (CornManagerBalancing.GetBaseChoresMiniGameExtraPoints() + cornSaveData.GetValue(CornPlayerSkillsStats.HANDICRAFT));
+        float choresExtraPoints = IrisuManagerGame.GetDifficulty() * (CornManagerBalancing.GetBaseChoresMiniGameExtraPoints() + cornSaveData.GetValue(CornSkillsStats.HANDICRAFT));
 
         aMessageBuffer.Add("You got " + choresExtraPoints * 100 + " extra Chores points!");
         cornSaveData.ApplyModifier(CornPlayerResources.CHORES, choresExtraPoints);

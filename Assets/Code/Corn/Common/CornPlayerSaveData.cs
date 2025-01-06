@@ -97,9 +97,9 @@ public class GfgPlayerSaveData
 
         public float GetValue(CornPlayerResources aType) { return Resources[(int)aType]; }
         public float GetValue(CornPlayerConsumables aType) { return Consumables[(int)aType]; }
-        public float GetValue(CornPlayerSkillsStats aType) { return SkillStats[(int)aType]; }
+        public float GetValue(CornSkillsStats aType) { return SkillStats[(int)aType]; }
 
-        public void ApplyModifier(CornPlayerSkillsStats aType, float aValue)
+        public void ApplyModifier(CornSkillsStats aType, float aValue)
         {
             SkillStats[(int)aType] = (SkillStats[(int)aType] + aValue).Clamp(0, 1);
         }
@@ -242,7 +242,7 @@ public class GfgPlayerSaveData
             createdNewSave = true;
         }
 
-        validData &= ValidateArrayValues(ref Data.SkillStats, (int)CornPlayerSkillsStats.COUNT, 0);
+        validData &= ValidateArrayValues(ref Data.SkillStats, (int)CornSkillsStats.COUNT, 0);
         validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
         validData &= ValidateArrayValues(ref Data.Resources, (int)CornPlayerResources.COUNT, START_RESOURCE_VALUE);
         validData &= ValidateArrayValues(ref Data.Consumables, (int)CornPlayerConsumables.COUNT, START_RESOURCE_VALUE);
@@ -310,7 +310,7 @@ public struct CornPlayerConsumablesModifier
 }
 
 [Serializable]
-public enum CornPlayerSkillsStats
+public enum CornSkillsStats
 {
     HANDICRAFT,
     PROGRAMMING,

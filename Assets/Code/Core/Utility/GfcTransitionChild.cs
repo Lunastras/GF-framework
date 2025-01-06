@@ -12,6 +12,7 @@ public abstract class GfcTransitionChild : MonoBehaviour
     {
         m_parent = GetComponent<GfcTransitionParent>();
         m_parent.AddChild(this);
+        SetProgress(0);
     }
 
     public abstract void SetProgress(float aProgress);

@@ -118,6 +118,7 @@ public class GfxUiTools : MonoBehaviour
     public static void WriteBottomNotification(string aText, GfxBottomNotificationType aNotificationType = GfxBottomNotificationType.NORMAL)
     {
         //todo make nice transition
+        Debug.Log("WILL WRITE " + aText);
         Instance.m_currentBottomNotificationInteractable = null;
 
         Color textColor;

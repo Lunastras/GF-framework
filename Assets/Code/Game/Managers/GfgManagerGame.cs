@@ -126,6 +126,11 @@ public class GfgManagerGame : MonoBehaviour
         Instance.OnGameStateChanged?.Invoke(aState, Instance.m_previousGameState);
     }
 
+    public static CoroutineHandle SetGameState(GfgGameStateSetDescriptor aGameStateDescriptor, int aPriorityInQueue = 0)
+    {
+        return SetGameState(aGameStateDescriptor.State, aGameStateDescriptor.SmoothTransition, aGameStateDescriptor.Transition, aPriorityInQueue);
+    }
+
     public static CoroutineHandle SetGameState(GfcGameState aState, bool aSmoothTransition = true, GfxTransitionType aTransition = GfxTransitionType.BLACK_FADE, int aPriorityInQueue = 0)
     {
         CoroutineHandle transitionHandle = default;
@@ -339,4 +344,12 @@ public class GfgManagerGame : MonoBehaviour
         Instance.m_currentTimeScale = timeScale;
         if (!GfgManagerLevel.IsPaused() || IsMultiplayer) Time.timeScale = timeScale;
     }
+}
+
+[Serializable]
+public struct GfgGameStateSetDescriptor
+{
+    public GfcGameState State;
+    public bool SmoothTransition;
+    public GfxTransitionType Transition;
 }
