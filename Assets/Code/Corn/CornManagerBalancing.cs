@@ -10,7 +10,7 @@ public class CornManagerBalancing : MonoBehaviour
 
     [SerializeField] private float m_baseChoresMiniGameExtraPoints = 0.5f;
     [SerializeField] private CornEventCostAndRewardsSetter[] m_cornEventCostAndRewards = null;
-    [SerializeField] private CornShopItemsData[] m_cornShopItems;
+    [SerializeField] private EnumSingletons<CornShopItemsData, CornShopItem> m_cornShopItems;
 
     public const int MORNING_START_HOUR = 6;
     public const int EARLIEST_SLEEP_HOUR = 23;
@@ -27,6 +27,7 @@ public class CornManagerBalancing : MonoBehaviour
             Destroy(InstanceInternal);
         InstanceInternal = this;
 
+        m_cornShopItems.Initialize(CornShopItem.COUNT);
         Debug.Assert(m_baseChoresMiniGameExtraPoints <= 1, "The value for m_baseChoresMiniGameExtraPoints should be between 0 and 1");
 
         for (int i = 0; i < m_cornEventCostAndRewards.Length; ++i)
@@ -45,6 +46,9 @@ public class CornManagerBalancing : MonoBehaviour
         if (SleepRewardsTemp.ResourcesModifier != null && SleepRewardsTemp.ResourcesModifier.Length > 0)
             SleepRewardsTemp.ResourcesModifier = new CornPlayerResourcesModifier[SleepRewardsTemp.ResourcesModifier.Length];
     }
+
+    public static CornShopItemsData GetShopItemData(CornShopItem anItem) { return GetShopItemData((int)anItem); }
+    public static CornShopItemsData GetShopItemData(int anItemIndex) { return Instance.m_cornShopItems[anItemIndex]; }
 
     public static bool IsSleepHour(int anHour) { return anHour >= EARLIEST_SLEEP_HOUR || anHour < MORNING_START_HOUR; }
     public static float GetBaseChoresMiniGameExtraPoints() { return InstanceInternal.m_baseChoresMiniGameExtraPoints; }
@@ -80,10 +84,30 @@ public class CornManagerBalancing : MonoBehaviour
         return eventRewardsAndCost;
     }
 
+    public static int GetShopItemsNotOwnedCount() { return (int)CornShopItem.COUNT - GfgManagerSaveData.GetActivePlayerSaveData().Data.PurchasedItems.Count; }
+
+    public static void GetShopItemsNotOwned(ref Span<CornShopItem> someItems)
+    {
+        Span<bool> itemPurchased = stackalloc bool[(int)CornShopItem.COUNT];
+        var purchasedItems = GfgManagerSaveData.GetActivePlayerSaveData().Data.PurchasedItems;
+        foreach (var purchaseData in purchasedItems)
+            itemPurchased[(int)purchaseData.Item] = true;
+
+        int itemIndex = 0;
+        for (int i = 0; i < (int)CornShopItem.COUNT; i++)
+        {
+            CornShopItem item = (CornShopItem)i;
+            if (!itemPurchased[(int)item])
+                someItems[itemIndex++] = item;
+        }
+
+        Debug.Assert(itemIndex == someItems.Length, "The length of the items list is incorrect.");
+    }
+
     public static CornEventCostAndRewards GetEventCostAndRewards(CornEvent aEvent) { return GetEventCostAndRewards(aEvent.EventType, aEvent.EventTypeSub); }
 }
 
-[System.Serializable]
+[Serializable]
 public struct CornEventCostAndRewards
 {
     public CornPlayerConsumablesModifier[] ConsumablesModifier;
@@ -113,10 +137,10 @@ public struct CornEventCostAndRewards
     public readonly void Preview(float aBonusMultiplier = 0)
     {
         foreach (CornPlayerConsumablesModifier modifier in ConsumablesModifier)
-            CornMenuApartment.Instance.PreviewChange(modifier, ConsumablesMultiplier * (aBonusMultiplier * modifier.BonusPercent * modifier.Value + modifier.Value));
+            CornMenuApartment.Instance.PreviewChange(modifier.Type, ConsumablesMultiplier * (aBonusMultiplier * modifier.BonusPercent * modifier.Value + modifier.Value));
 
         foreach (CornPlayerResourcesModifier modifier in ResourcesModifier)
-            CornMenuApartment.Instance.PreviewChange(modifier, ConsumablesMultiplier * (aBonusMultiplier * modifier.BonusPercent * modifier.Value + modifier.Value));
+            CornMenuApartment.Instance.PreviewChange(modifier.Type, ConsumablesMultiplier * (aBonusMultiplier * modifier.BonusPercent * modifier.Value + modifier.Value));
     }
 }
 
@@ -136,10 +160,14 @@ public enum CornSleepType
 [Serializable]
 public struct CornShopItemsData
 {
-    public CornShopItem ItemType;
     public string Name;
+    public string Description;
     public int Price;
-    public CornSkillStatsModifier[] Modifiers;
+    public int DeliveryDays;
+    public float PersonalNeedsPoints;
+    public Sprite Icon;
+    public GameObject Prefab;
+    public CornPlayerSkillStatsModifier[] Modifiers;
 }
 
 public enum CornShopItem
@@ -149,11 +177,5 @@ public enum CornShopItem
     PC,
     FLOWERS,
     POSTER,
-}
-
-[Serializable]
-public struct CornSkillStatsModifier
-{
-    public CornSkillsStats Type;
-    public float Value;
+    COUNT
 }

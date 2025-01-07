@@ -1,9 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using UnityEditor;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class CornMenuApartment : MonoBehaviour
 {
@@ -108,7 +109,7 @@ public class CornMenuApartment : MonoBehaviour
         m_personalNeedsOptions.InitChildrenGfxButtons(OnPersonalNeedsEvent, (int)CornPersonalNeedsAction.COUNT);
         m_personalNeedsOptions.GetChild((int)CornPersonalNeedsAction.STUDY).GetComponent<GfxButton>().Submitable = false;
 
-        m_personalNeedsStudyOptions.InitChildrenGfxButtons(OnStudyEvent, (int)CornSkillsStats.COMFORT);//comfort is the first skill stat that is not on the study list. which is why its used as the count
+        m_personalNeedsStudyOptions.InitChildrenGfxButtons(OnStudyEvent, (int)CornPlayerSkillsStats.COMFORT);//comfort is the first skill stat that is not on the study list. which is why its used as the count
         m_personalNeedsStudyOptions.gameObject.SetActive(false);
 
         UpdateGraphicsInternal();
@@ -184,6 +185,18 @@ public class CornMenuApartment : MonoBehaviour
             m_lightMoon.color = Color.black;
             m_lightMoon.shadows = LightShadows.None;
         }
+
+        foreach (CornShopItemPurchased purchasedData in saveData.PurchasedItems)
+        {
+            if (purchasedData.Arrived)
+            {
+                CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(purchasedData.Item);
+                if (itemData.Prefab)
+                    Instantiate(itemData.Prefab);
+                else
+                    Debug.LogError("The prefab for shop item " + purchasedData.Item + " is null.");
+            }
+        }
     }
 
     public static void EndStatsPreview() { Instance.EndStatsPreviewInternal(); }
@@ -197,23 +210,23 @@ public class CornMenuApartment : MonoBehaviour
             m_consumablesSliders[i].EndPreview();
     }
 
-    public void PreviewChange(CornPlayerResourcesModifier aModifier, float aChange)
+    public void PreviewChange(CornPlayerResources aModifier, float aChange)
     {
-        m_actionButtons[(int)aModifier.Type].SliderText.PreviewChange(aChange);
+        m_actionButtons[(int)aModifier].SliderText.PreviewChange(aChange);
     }
 
-    public void PreviewChange(CornPlayerConsumablesModifier aModifier, float aChange)
+    public void PreviewChange(CornPlayerConsumables aModifier, float aChange)
     {
-        if (aModifier.Type == CornPlayerConsumables.MONEY)
+        if (aModifier == CornPlayerConsumables.MONEY)
         {
-            if ((int)aModifier.Type < m_consumablesSliders.LengthSafe())
-                m_consumablesSliders[(int)aModifier.Type].PreviewChange(aChange);
+            if ((int)aModifier < m_consumablesSliders.LengthSafe())
+                m_consumablesSliders[(int)aModifier].PreviewChange(aChange);
         }
-        else if (aModifier.Type == CornPlayerConsumables.ENERGY)
+        else if (aModifier == CornPlayerConsumables.ENERGY)
         {
             m_actionButtons[(int)CornPlayerAction.SLEEP].SliderText.PreviewChange(aChange); //hack, but I will probably never change it and this is game specific code so idgaf
         }
-        else Debug.LogError("Attempting to preview consumable modifier of type " + aModifier.Type + ", but the current design only supports " + CornPlayerConsumables.MONEY + " and " + CornPlayerConsumables.ENERGY);
+        else Debug.LogError("Attempting to preview consumable modifier of type " + aModifier + ", but the current design only supports " + CornPlayerConsumables.MONEY + " and " + CornPlayerConsumables.ENERGY);
     }
 
     private void OnStudyEvent(GfxButtonCallbackType aType, GfxButton aButton, bool aState)

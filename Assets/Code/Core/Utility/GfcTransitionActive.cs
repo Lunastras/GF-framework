@@ -49,7 +49,7 @@ public class GfcTransitionActive : MonoBehaviour
         gameObject.SetActive(Transition.FadingIn());
     }
 
-    public bool FadingOut() { return Transition.Transitioning() && !Transition.FadingIn(); }
+    public bool FadingOut() { return Transition && Transition.Transitioning() && !Transition.FadingIn(); }
 }
 
 public enum GfcTransitionActiveType

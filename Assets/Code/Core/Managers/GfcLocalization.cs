@@ -228,7 +228,7 @@ public struct GfcLocalizedString
 
     private readonly bool Valid { get { return m_rawString != null; } }
 
-    private string String
+    public string String
     {
         get
         {

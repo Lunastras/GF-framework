@@ -14,10 +14,10 @@ public class GfxFont : MonoBehaviour
         if (m_fonts.Elements[0].Singleton.Elements[0].Singleton == null)
             Debug.LogError("The default paragraph font cannot be null. Please assign it in the editor for the gameobject " + gameObject.name);
 
-        m_fonts.Validate(GfxFontFamily.COUNT);
+        m_fonts.Initialize(GfxFontFamily.COUNT);
         int countElements = m_fonts.Length;
         for (int i = 0; i < countElements; i++)
-            m_fonts[i].Validate(GfxFontType.COUNT);
+            m_fonts[i].Initialize(GfxFontType.COUNT);
     }
 
     public static TMP_FontAsset GetFont(GfxFontType aType = GfxFontType.PARAGRAPH, GfxFontFamily aFamily = GfxFontFamily.MAIN)

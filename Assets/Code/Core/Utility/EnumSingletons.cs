@@ -11,8 +11,8 @@ public class EnumSingletons<T, ENUM> where ENUM : unmanaged, Enum
 
     private int EnumCount = 0;
 
-    public bool Validate(ENUM aCountEnum) { return Validate(aCountEnum.Index()); }
-    public bool Validate(int anEnumCount)
+    public bool Initialize(ENUM aCountEnum) { return Initialize(aCountEnum.Index()); }
+    public bool Initialize(int anEnumCount)
     {
         bool valid = Elements != null;
 

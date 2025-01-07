@@ -205,7 +205,10 @@ public class GfxRichTextWriter : MonoBehaviour
                 float timeCoef = (SpeedMultiplier * auxSecondsSinceStart * LetterTranslateSeconds.Inverse * m_writeAllSpeedMultiplier).Min(1);
                 float timeCoefAux = m_animData.FadeIn ? timeCoef : 1.0f - timeCoef;
 
-                vertexUpdateFlag |= ApplyTransitionEffectToChar(m_animData.FadeIn, timeCoefAux, validCharacterIndex, aTextInfo, charInfo, m_vertexData[validCharacterIndex]);
+                if (validCharacterIndex >= 0 && validCharacterIndex <= m_vertexData.Count)
+                    vertexUpdateFlag |= ApplyTransitionEffectToChar(m_animData.FadeIn, timeCoefAux, validCharacterIndex, aTextInfo, charInfo, m_vertexData[validCharacterIndex]);
+                else
+                    Debug.LogError("Vertex Data has a count of " + m_vertexData.Count + ", the index is " + validCharacterIndex);
 
                 if (timeCoef >= 1)
                 {
@@ -295,9 +298,7 @@ public class GfxRichTextWriter : MonoBehaviour
         m_animData.FadeIn = aFadeIn;
         m_animData.SecondsSinceStart = 0;
 
-        //m_initialPreRenderCall = true;
-        //m_textMeshPro.ForceMeshUpdate();
-        //m_initialPreRenderCall = false;
+        m_textMeshPro.ForceMeshUpdate(true, true);
 
         bool firstIteration = true;
 

@@ -74,7 +74,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     private bool m_initialisedButton = false;
 
-    private void Start() { Initialize(); }
+    protected void Start() { Initialize(); }
 
     const string EVENT_FUNCTION_NAME = "OnButtonEvent";
 

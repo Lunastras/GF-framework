@@ -180,6 +180,191 @@ PrefabInstance:
       propertyPath: m_instanceData.RenderTexture
       value: 
       objectReference: {fileID: 841984504}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[1].Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[2].Type
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[3].Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[4].Type
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[5].Type
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[0].Singleton.Icon
+      value: 
+      objectReference: {fileID: 21300000, guid: 6b98e570348a12f47ab9b7f450792b35,
+        type: 3}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[0].Singleton.Name
+      value: Comfy Couch
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[1].Singleton.Icon
+      value: 
+      objectReference: {fileID: 21300000, guid: 09b4bcfa7d3649a45bc7c94b46439ad4,
+        type: 3}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[1].Singleton.Name
+      value: Lighting McQueen Beddo
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[2].Singleton.Icon
+      value: 
+      objectReference: {fileID: 5469719733586568908, guid: 9d1579ce34ab785439447338cd4b95a5,
+        type: 3}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[2].Singleton.Name
+      value: PISHII
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[3].Singleton.Icon
+      value: 
+      objectReference: {fileID: 21300000, guid: 3b12b3813cfdb584fb2f9329de4afe45,
+        type: 3}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[3].Singleton.Name
+      value: Flowers
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[4].Singleton.Icon
+      value: 
+      objectReference: {fileID: 21300000, guid: 20df1a443bb7dd445abf482e23f98d01,
+        type: 3}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[4].Singleton.Name
+      value: Poster
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[0].Singleton.Price
+      value: 420
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[1].Singleton.Price
+      value: 69
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[2].Singleton.Price
+      value: 10999
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[3].Singleton.Price
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[4].Singleton.Price
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[0].Singleton.Description
+      value: Stupid ahh thingy
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[1].Singleton.Description
+      value: KACHOW BBY
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[2].Singleton.Description
+      value: cool ahh pc
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[3].Singleton.Description
+      value: sum flowers or sum shi
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[4].Singleton.Description
+      value: neahh
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[0].Singleton.DeliveryDays
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[1].Singleton.DeliveryDays
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[2].Singleton.DeliveryDays
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[3].Singleton.DeliveryDays
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[4].Singleton.DeliveryDays
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[0].Singleton.PersonalNeedsPoints
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[1].Singleton.PersonalNeedsPoints
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[2].Singleton.PersonalNeedsPoints
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[3].Singleton.PersonalNeedsPoints
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1536073203340282933, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[4].Singleton.PersonalNeedsPoints
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 2080833477572206972, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_Name
@@ -295,43 +480,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 991079a6e37a01e408719e7581e20fe7, type: 3}
---- !u!84 &382939466
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 512
-  m_Height: 512
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 90
-  m_ColorFormat: 4
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 1
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 0
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!84 &444713250
 RenderTexture:
   m_ObjectHideFlags: 0
@@ -399,6 +547,43 @@ RenderTexture:
     serializedVersion: 2
     m_FilterMode: 1
     m_Aniso: 0
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
+--- !u!84 &978586255
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 6
+  m_Width: 512
+  m_Height: 512
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 90
+  m_ColorFormat: 4
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 1
+  m_UseDynamicScale: 0
+  m_UseDynamicScaleExplicit: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_EnableRandomWrite: 0
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
     m_MipBias: 0
     m_WrapU: 1
     m_WrapV: 1
@@ -504,7 +689,7 @@ LightingSettings:
   m_PVRFilteringAtrousPositionSigmaIndirect: 2
   m_PVRFilteringAtrousPositionSigmaAO: 1
   m_RespectSceneVisibilityWhenBakingGI: 0
---- !u!84 &2002454292
+--- !u!84 &1636545675
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

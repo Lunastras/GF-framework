@@ -19,7 +19,7 @@ public class GfcPooling : MonoBehaviour
 
     private GfcStringBuffer m_sharedGfStringBuffer = new(15);
 
-    private List<Component> m_sharedSomponentsBuffer = new(16);
+    private List<Component> m_sharedSomecomponentsBuffer = new(16);
 
     private List<string> m_stringKeysBuffer = new(8);
 
@@ -100,9 +100,9 @@ public class GfcPooling : MonoBehaviour
         get
         {
             Debug.Assert(Instance);
-            Debug.Assert(Instance.m_sharedSomponentsBuffer.Count == 0, "The components buffer was not empty when queried, it had a count of " + Instance.m_sharedSomponentsBuffer.Count);
-            Instance.m_sharedSomponentsBuffer.Clear();
-            return Instance.m_sharedSomponentsBuffer;
+            Debug.Assert(Instance.m_sharedSomecomponentsBuffer.Count == 0, "The components buffer was not empty when queried, it had a count of " + Instance.m_sharedSomecomponentsBuffer.Count);
+            Instance.m_sharedSomecomponentsBuffer.Clear();
+            return Instance.m_sharedSomecomponentsBuffer;
         }
     }
 

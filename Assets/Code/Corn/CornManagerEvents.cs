@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using MEC;
 using System;
+using Unity.Collections;
 
 public class CornManagerEvents : MonoBehaviour
 {
@@ -136,7 +137,7 @@ public class CornManagerEvents : MonoBehaviour
                         eventRewardsAndCost = default;
                         break;
                     case CornEventType.STUDY:
-                        cornSaveData.ApplyModifier((CornSkillsStats)anEvent.EventTypeSub, 0.01f);
+                        cornSaveData.ApplyModifier((CornPlayerSkillsStats)anEvent.EventTypeSub, 0.01f);
                         break;
                 }
 
@@ -186,6 +187,27 @@ public class CornManagerEvents : MonoBehaviour
         Instance.m_canPlayEvent = true;
     }
 
+    public static CoroutineHandle _FlushDeliveredShopItems(List<string> aMessageBuffer)
+    {
+        CoroutineHandle handle = default; //should play an animation
+        var cornSaveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
+        List<CornShopItemPurchased> deliveryItems = cornSaveData.PurchasedItems;
+        for (int j = 0; j < deliveryItems.Count; j++)
+        {
+            if (!deliveryItems[j].Arrived && deliveryItems[j].DaysLeft == 0)
+            {
+                CornShopItemPurchased purchaseData = deliveryItems[j];
+                CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(deliveryItems[j].Item);
+                aMessageBuffer.Add(itemData.Name + " arrived!");
+                cornSaveData.ApplyModifierSkillStatsList(itemData.Modifiers);
+                cornSaveData.ApplyModifier(CornPlayerResources.PERSONAL_NEEDS, itemData.PersonalNeedsPoints);
+                purchaseData.Arrived = true;
+                deliveryItems[j] = purchaseData;
+            }
+        }
+        return handle;
+    }
+
     private static bool WaitingForEndOfLevel = false;
 
     private static void OnLevelEndSubmit() { WaitingForEndOfLevel = false; }
@@ -221,7 +243,7 @@ public class CornManagerEvents : MonoBehaviour
         yield return Timing.WaitUntilDone(GfgManagerSceneLoader.LoadScene(GfcSceneId.IRISU));
         yield return Timing.WaitUntilDone(IrisuManagerGame.GetCoroutineHandle());
         float level = IrisuManagerGame.GetDifficulty();
-        float choresExtraPoints = IrisuManagerGame.GetDifficulty() * (CornManagerBalancing.GetBaseChoresMiniGameExtraPoints() + cornSaveData.GetValue(CornSkillsStats.HANDICRAFT));
+        float choresExtraPoints = IrisuManagerGame.GetDifficulty() * (CornManagerBalancing.GetBaseChoresMiniGameExtraPoints() + cornSaveData.GetValue(CornPlayerSkillsStats.HANDICRAFT));
 
         aMessageBuffer.Add("You got " + choresExtraPoints * 100 + " extra Chores points!");
         cornSaveData.ApplyModifier(CornPlayerResources.CHORES, choresExtraPoints);
@@ -280,6 +302,18 @@ public class CornManagerEvents : MonoBehaviour
             someMessages.Add("New week passed, take some money lmao, but -1 sanity.");
         }
 
+        List<CornShopItemPurchased> deliveryItems = playerSaveData.PurchasedItems;
+        for (int j = 0; j < deliveryItems.Count; j++)
+        {
+            var deliveryData = deliveryItems[j];
+            if (!deliveryData.Arrived)
+            {
+                deliveryData.DaysLeft = (deliveryData.DaysLeft - timePassed.Days).Max(0);
+                deliveryItems[j] = deliveryData;
+            }
+
+        }
+
         for (int i = 0; i < timePassed.Days; ++i)
         {
             string message = "Day " + playerSaveData.CurrentDay;
@@ -314,11 +348,11 @@ public class CornManagerEvents : MonoBehaviour
         return Timing.RunCoroutine(_FlushMessagesAndDrawHud(anFadeToBlack));
     }
 
-    private static IEnumerator<float> _FlushMessagesAndDrawHud(bool anFadeToBlack = true)
+    private static IEnumerator<float> _FlushMessagesAndDrawHud(bool aFadeToBlack = true)
     {
         float fadeTime = Instance.m_screenFadeTime;
 
-        if (anFadeToBlack)
+        if (aFadeToBlack)
         {
             GfxUiTools.FadeOverlayAlpha(1, fadeTime);
             GfcCursor.RemoveSelectedGameObject();
@@ -328,6 +362,9 @@ public class CornManagerEvents : MonoBehaviour
 
         GfgManagerSceneLoader.FakeWait = false;
 
+        CoroutineHandle deliveryCoroutine = _FlushDeliveredShopItems(Instance.m_messagesBuffer);
+        if (deliveryCoroutine.IsValid) Timing.WaitUntilDone(deliveryCoroutine);
+
         UpdateVisuals();
 
         CoroutineHandle handle = GfxUiTools.GetNotifyPanel().DrawMessage(Instance.m_messagesBuffer);
@@ -336,7 +373,7 @@ public class CornManagerEvents : MonoBehaviour
 
         Instance.m_messagesBuffer.Clear();
 
-        if (anFadeToBlack)
+        if (aFadeToBlack)
         {
             GfxUiTools.FadeOverlayAlpha(0, fadeTime);
             yield return Timing.WaitForSeconds(fadeTime);
@@ -353,6 +390,8 @@ public class CornManagerEvents : MonoBehaviour
 
         yield return Timing.WaitForOneFrame;
     }
+
+    public static void PurchaseShopItem(CornShopItem anItem) { GfgManagerSaveData.GetActivePlayerSaveData().Data.PurchaseShopItem(anItem); }
 
     public static bool CanAfford(CornEvent anEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(anEvent).CanAfford(aBonusMultiplier); }
     public static bool CanAffordMoney(CornEvent anEvent, float aBonusMultiplier = 0) { return CornManagerBalancing.GetEventCostAndRewards(anEvent).CanAffordMoney(aBonusMultiplier); }

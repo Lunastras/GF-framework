@@ -18,7 +18,7 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
     void Awake()
     {
         this.SetSingleton(ref Instance);
-        m_templates.Validate(GfxPrefabToTextureInstanceTemplateType.COUNT);
+        m_templates.Initialize(GfxPrefabToTextureInstanceTemplateType.COUNT);
         m_currentXPosition = INITIAL_X_POSITION;
         for (int i = 0; i < m_templates.Length; i++)
         {

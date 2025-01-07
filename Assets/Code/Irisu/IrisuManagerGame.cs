@@ -60,7 +60,7 @@ public class IrisuManagerGame : MonoBehaviour
         m_initialTimeScale = Time.timeScale;
         Time.timeScale = m_timescale;
 
-        m_blocks.Validate(IrisuShapeType.COUNT);
+        m_blocks.Initialize(IrisuShapeType.COUNT);
         for (int i = 0; i < m_blocks.Length; i++)
             GfcPooling.Pool(m_blocks[i], 8);
 

@@ -94,6 +94,7 @@ public class GfxButton2D : GfxButton
 
     protected override void OnStartTransition()
     {
+        Debug.Assert(m_colorAtBeginningOfTransition != null);
         int colourIndex = 0;
         foreach (Graphic graphic in GraphicsPanel)
             m_colorAtBeginningOfTransition[colourIndex++] = graphic.color;

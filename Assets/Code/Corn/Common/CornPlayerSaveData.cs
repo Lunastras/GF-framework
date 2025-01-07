@@ -22,7 +22,6 @@ public class GfgPlayerSaveData
         public int MentalSanity;
         public int MaxMentalSanity;
 
-
         public float[] Consumables;
 
         public float[] Resources;
@@ -31,6 +30,8 @@ public class GfgPlayerSaveData
         public int CurrentStoryPhase;
 
         public int[] CurrentStoryPhaseProgress;
+
+        public List<CornShopItemPurchased> PurchasedItems;
 
         public int DayOfTheWeek;
 
@@ -97,9 +98,9 @@ public class GfgPlayerSaveData
 
         public float GetValue(CornPlayerResources aType) { return Resources[(int)aType]; }
         public float GetValue(CornPlayerConsumables aType) { return Consumables[(int)aType]; }
-        public float GetValue(CornSkillsStats aType) { return SkillStats[(int)aType]; }
+        public float GetValue(CornPlayerSkillsStats aType) { return SkillStats[(int)aType]; }
 
-        public void ApplyModifier(CornSkillsStats aType, float aValue)
+        public void ApplyModifier(CornPlayerSkillsStats aType, float aValue)
         {
             SkillStats[(int)aType] = (SkillStats[(int)aType] + aValue).Clamp(0, 1);
         }
@@ -152,9 +153,20 @@ public class GfgPlayerSaveData
 
         public void ApplyModifier(CornPlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
         public void ApplyModifier(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
+        public void ApplyModifier(CornPlayerSkillStatsModifier aModifier) { ApplyModifier(aModifier.Type, aModifier.Value); }
 
         public void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerResourcesModifier> { if (someModifiers != null) foreach (CornPlayerResourcesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
         public void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier> { if (someModifiers != null) foreach (CornPlayerConsumablesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
+        public void ApplyModifierSkillStatsList<T>(T someModifiers) where T : IEnumerable<CornPlayerSkillStatsModifier> { if (someModifiers != null) foreach (CornPlayerSkillStatsModifier modifier in someModifiers) ApplyModifier(modifier); }
+
+        public void PurchaseShopItem(CornShopItem anItem)
+        {
+            Debug.Assert(GfgManagerGame.GetGameState() == GfcGameState.APARTMENT || GfgManagerGame.GetGameState() == GfcGameState.SHOP, "Unexpected game state in which to purchase a shop item.");
+            CornShopItemsData item = CornManagerBalancing.GetShopItemData(anItem);
+            ApplyModifier(CornPlayerConsumables.MONEY, -item.Price);
+            PurchasedItems.Add(new() { Item = anItem, DaysLeft = item.DeliveryDays, Arrived = false });
+            CornMenuApartment.UpdateGraphics();
+        }
     };
 
     public CornSaveData Data = new();
@@ -242,7 +254,10 @@ public class GfgPlayerSaveData
             createdNewSave = true;
         }
 
-        validData &= ValidateArrayValues(ref Data.SkillStats, (int)CornSkillsStats.COUNT, 0);
+        validData &= Data.PurchasedItems != null;
+        Data.PurchasedItems ??= new(8);
+
+        validData &= ValidateArrayValues(ref Data.SkillStats, (int)CornPlayerSkillsStats.COUNT, 0);
         validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
         validData &= ValidateArrayValues(ref Data.Resources, (int)CornPlayerResources.COUNT, START_RESOURCE_VALUE);
         validData &= ValidateArrayValues(ref Data.Consumables, (int)CornPlayerConsumables.COUNT, START_RESOURCE_VALUE);
@@ -254,6 +269,13 @@ public class GfgPlayerSaveData
 
         return validData || createdNewSave;
     }
+}
+
+public struct CornShopItemPurchased
+{
+    public CornShopItem Item;
+    public int DaysLeft;
+    public bool Arrived;
 }
 
 //ORDER MUST RESPECT CornPlayerAction
@@ -302,15 +324,7 @@ public enum CornPlayerConsumables
 }
 
 [Serializable]
-public struct CornPlayerConsumablesModifier
-{
-    public CornPlayerConsumables Type;
-    public float Value;
-    public float BonusPercent;
-}
-
-[Serializable]
-public enum CornSkillsStats
+public enum CornPlayerSkillsStats
 {
     HANDICRAFT,
     PROGRAMMING,
@@ -341,6 +355,21 @@ public enum CornPlayerAction
     SOCIAL_LIFE,
     SLEEP,
     COUNT
+}
+
+[Serializable]
+public struct CornPlayerConsumablesModifier
+{
+    public CornPlayerConsumables Type;
+    public float Value;
+    public float BonusPercent;
+}
+
+[Serializable]
+public struct CornPlayerSkillStatsModifier
+{
+    public CornPlayerSkillsStats Type;
+    public float Value;
 }
 
 [Serializable]

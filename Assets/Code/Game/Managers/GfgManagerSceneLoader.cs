@@ -245,7 +245,8 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
         Application.backgroundLoadingPriority = originalThreadPriority;
 
-        yield return Timing.WaitUntilDone(GfgManagerGame.GetGameStateTransitionHandle()); //make sure the fade out of the first transition is done
+        CoroutineHandle transitionHandle = GfgManagerGame.GetGameStateTransitionHandle();
+        if (transitionHandle.IsValid) yield return Timing.WaitUntilDone(transitionHandle); //make sure the fade out of the first transition is done
 
         if (!Instance.m_fakeWait)
         {
@@ -258,7 +259,10 @@ public class GfgManagerSceneLoader : MonoBehaviour
         if (Instance.m_fakeWait)
             Timing.RunCoroutine(_FakeLoadWait());
         else
-            yield return Timing.WaitUntilDone(GfgManagerGame.GetGameStateTransitionHandle());
+        {
+            transitionHandle = GfgManagerGame.GetGameStateTransitionHandle();
+            if (transitionHandle.IsValid) yield return Timing.WaitUntilDone(transitionHandle); //make sure the fade out of the first transition is done
+        }
 
         Instance.m_loadingRoutine.Finished();
     }
