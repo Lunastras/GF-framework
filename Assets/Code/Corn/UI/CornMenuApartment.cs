@@ -29,6 +29,7 @@ public class CornMenuApartment : MonoBehaviour
 
     [SerializeField] protected Transform m_personalNeedsOptions;
     [SerializeField] protected Transform m_personalNeedsStudyOptions;
+    [SerializeField] protected Transform m_shopItemsParent;
 
     private CornActionButton[] m_actionButtons;
     private GfxSliderText[] m_consumablesSliders = null;
@@ -192,7 +193,7 @@ public class CornMenuApartment : MonoBehaviour
             {
                 CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(purchasedData.Item);
                 if (itemData.Prefab)
-                    Instantiate(itemData.Prefab);
+                    Instantiate(itemData.Prefab).transform.SetParent(m_shopItemsParent);
                 else
                     Debug.LogError("The prefab for shop item " + purchasedData.Item + " is null.");
             }
