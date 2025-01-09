@@ -16,7 +16,6 @@ public class CornMenuApartment : MonoBehaviour
     [SerializeField] protected Light m_lightSun;
     [SerializeField] protected Light m_lightMoon;
 
-    [SerializeField] protected RectTransform m_optionsParent;
     [SerializeField] protected TextMeshProUGUI m_textMoney;
     [SerializeField] protected TextMeshProUGUI m_textDateAndTime;
     [SerializeField] protected TextMeshProUGUI m_textSanity;
