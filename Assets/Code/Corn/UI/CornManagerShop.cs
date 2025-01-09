@@ -50,19 +50,21 @@ public class CornManagerShop : MonoBehaviour
 
     private void OnButtonEvent(GfxButtonCallbackType aCallbackType, GfxButton aButton, bool aState)
     {
-        CornShopItem item = (aButton as CornShopItemButton).GetShopItem();
+        CornShopItemButton shopButton = aButton as CornShopItemButton;
+        CornShopItem item = shopButton.GetShopItem();
 
         switch (aCallbackType)
         {
             case GfxButtonCallbackType.SELECT:
                 if (aState)
                 {
+                    shopButton.SetPreview(true);
                     int price = CornManagerBalancing.GetShopItemData(item).Price;
                     CornMenuApartment.Instance.PreviewChange(CornPlayerConsumables.MONEY, price);
-                    //spawn prefab
                 }
                 else
                 {
+                    shopButton.SetPreview(false);
                     CornMenuApartment.EndStatsPreview();
                 }
 

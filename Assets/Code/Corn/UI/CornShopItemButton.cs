@@ -28,25 +28,28 @@ public class CornShopItemButton : GfxButton2D
         m_textBonuses.text = null; //todo
     }
 
-    public void ShowPreview()
+    public void SetPreview(bool anActive)
     {
-        if (m_instantiatedPreviewPrefab == null)
+        if (anActive)
         {
-            CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(m_item);
-            if (itemData.Prefab)
+            if (m_instantiatedPreviewPrefab == null)
             {
-                m_instantiatedPreviewPrefab = Instantiate(itemData.Prefab);
-                m_instantiatedPreviewPrefab.transform.SetParent(CornManagerShop.GetPrefabPreviewParent(), false);
-                m_instantiatedPreviewPrefab.transform.SetLocalPositionAndRotation(new(), Quaternion.identity);
+                CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(m_item);
+                if (itemData.Prefab)
+                {
+                    m_instantiatedPreviewPrefab = Instantiate(itemData.Prefab);
+                    m_instantiatedPreviewPrefab.transform.SetParent(CornManagerShop.GetPrefabPreviewParent(), false);
+                    m_instantiatedPreviewPrefab.transform.SetLocalPositionAndRotation(new(), Quaternion.identity);
+                }
+                else
+                    Debug.LogError("Tried to instantiate the prefab for item shop " + m_item + ", but it's null.");
             }
             else
-                Debug.LogError("Tried to instantiate the prefab for item shop " + m_item + ", but it's null.");
+            {
+                m_instantiatedPreviewPrefab.SetActive(true);
+            }
         }
-        else
-        {
-            m_instantiatedPreviewPrefab.SetActive(true);
-        }
+        else if (m_instantiatedPreviewPrefab)
+            m_instantiatedPreviewPrefab.SetActive(false);
     }
-
-    public void HidePreview() { if (m_instantiatedPreviewPrefab) m_instantiatedPreviewPrefab.SetActive(false); }
 }

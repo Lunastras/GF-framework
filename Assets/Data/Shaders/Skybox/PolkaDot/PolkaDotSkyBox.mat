@@ -1,0 +1,150 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8315523120082965768
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 9
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: PolkaDotSkyBox
+  m_Shader: {fileID: -6465566751694194690, guid: fe566822a83af5b4a8693709dc1507c0,
+    type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses:
+  - MOTIONVECTORS
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseSkybox:
+        m_Texture: {fileID: 8900000, guid: 8acbf1c188095b44d8c979cb34200fb8, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CloudTexture:
+        m_Texture: {fileID: 2800000, guid: f84bbc63755771a49b76e39b47349034, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CouldTexture:
+        m_Texture: {fileID: 2800000, guid: 880d4f6786f63d049ad44fc1e5e8d180, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AtmosphereThickness: 0.85
+    - _BottomBlend: 0.0000001
+    - _CloudFalloff: 1.04
+    - _CloudHeightFalloff: 0.13
+    - _CloudHeightSharpness: 0.83
+    - _CloudIntensity: 1
+    - _CloudSharpness: 1
+    - _Day_NightThreshold: 44.8
+    - _DistanceFade: 0.25
+    - _DistanceFadeBottom: 0.01
+    - _DistanceFadeFalloff: -0.11
+    - _DistanceFadeFalloff_1: 0.42
+    - _DistanceFadeIntensity: 0.81
+    - _DotsMaskRadius: 0.223
+    - _DotsMaskSmoothness: 0.04
+    - _Edge1: 0.99
+    - _Edge2: 1.01
+    - _Float: 0
+    - _Float_1: 0
+    - _HorizonBlendPower: 0.8
+    - _HorizonOffset: 0.2
+    - _Intensity: 0.27
+    - _LightingThreshold: -0.25
+    - _LightingThreshold_1: 0.25
+    - _Max: 1
+    - _MaxDay_Night_Threshold: 0.6
+    - _Min: 1.3
+    - _MinDay_Night_Threshold: -0.25
+    - _MoonSize: 748.91
+    - _NadirBlendPower: 0.3
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ResolutionScale: 0.01
+    - _Rotation: 45
+    - _Scale: 500
+    - _StarDensity: 150
+    - _StarDensity_1: 0.76
+    - _StarDensity_2: 2.3
+    - _StarIntensity: 61.7
+    - _StarMaskDensity: 15
+    - _StarScale: 50
+    - _SunBloomSharpness: 12271
+    - _SunBloomSize: -4998.4
+    - _SunSharpness: 6250
+    - _SunSize: 6241
+    - _SunSizeConvergence: 249.9
+    - _TopBlend: 0.36
+    - _ZenithBlendPower: 0.4
+    - _test: -0.25
+    - _test1: -0.23
+    - _test_1: 0.25
+    m_Colors:
+    - _BackgroundColor: {r: 0.1715023, g: 0.18857573, b: 0.7735849, a: 1}
+    - _BottomColor: {r: 0, g: 0, b: 0, a: 0}
+    - _BottomNightColor: {r: 0, g: 0, b: 0, a: 0}
+    - _CloudColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CloudDayColor: {r: 1, g: 1, b: 1, a: 0}
+    - _CloudScale: {r: 4, g: 2, b: 0, a: 0}
+    - _DotsColor: {r: 0.8679245, g: 0.61161125, b: 0.30704877, a: 1}
+    - _MidColor: {r: 0.2581829, g: 0.3662527, b: 0.83879924, a: 0}
+    - _MidNightColor: {r: 0, g: 0, b: 0, a: 0}
+    - _MoonColor: {r: 6.264151, g: 2.785716, b: 0, a: 1}
+    - _Movement: {r: 0.1, g: 0, b: 0, a: 0}
+    - _NadirDayColor: {r: 0, g: 1.17034, b: 2.569365, a: 1}
+    - _NadirNightColor: {r: 0, g: 0.15380049, b: 1.1486983, a: 1}
+    - _NadirTwilightColor: {r: 2.670157, g: 0.8690605, b: 1.1426519, a: 0}
+    - _NightDayColor: {r: 0.12842648, g: 0.43213776, b: 0.735849, a: 0}
+    - _Speed: {r: 0.025, g: -0.025, b: 0, a: 0}
+    - _StarColor: {r: 32, g: 32, b: 32, a: 0}
+    - _StarDirection: {r: 0.125, g: -0.125, b: 0, a: 0}
+    - _StarsSpeed: {r: 0.125, g: 0.125, b: 0, a: 0}
+    - _SunBloomColor: {r: 0, g: 0.65979385, b: 1, a: 1}
+    - _SunColor: {r: 34.437977, g: 29.564678, b: 21.929842, a: 1}
+    - _SunDir: {r: 155, g: 5, b: 0, a: 0}
+    - _TopColor: {r: 0.19461787, g: 0.43965724, b: 0.6795426, a: 0}
+    - _TopNightColor: {r: 0.043137256, g: 0.05096434, b: 0.08627451, a: 0}
+    - _WindDirection: {r: -0.1, g: -0.1, b: 0, a: 0}
+    - _WorldSpaceLight: {r: 0, g: 0, b: 0, a: 0}
+    - _WorldSpaceLightPos: {r: 0, g: 0, b: 0, a: 0}
+    - _ZenithDayColor: {r: 0, g: 0.26408637, b: 0.6901961, a: 1}
+    - _ZenithNightColor: {r: 0, g: 0.0070081293, b: 0.24528301, a: 1}
+    - _ZenithTwilightColor: {r: 0.83137256, g: 0, b: 0.1638934, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

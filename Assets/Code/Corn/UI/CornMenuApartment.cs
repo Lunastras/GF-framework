@@ -39,6 +39,8 @@ public class CornMenuApartment : MonoBehaviour
     private LightShadows m_sunShadowMode;
     private LightShadows m_moonShadowMode;
 
+    bool[] m_instantiatedShopItems;
+
     // Start is called before the first frame update
 
     void Awake()
@@ -46,6 +48,7 @@ public class CornMenuApartment : MonoBehaviour
         if (Instance != this) Destroy(Instance);
         Instance = this;
 
+        m_instantiatedShopItems = new bool[(int)CornShopItem.COUNT];
         for (int i = 0; i < m_actionButtonsInfo.Length; ++i)
             if (i != (int)m_actionButtonsInfo[i].Type) Debug.LogError("The type " + m_actionButtonsInfo[i].Type + " is at index " + i + ", it should be at index " + (int)m_actionButtonsInfo[i].Type);
 
@@ -188,11 +191,12 @@ public class CornMenuApartment : MonoBehaviour
 
         foreach (CornShopItemPurchased purchasedData in saveData.PurchasedItems)
         {
-            if (purchasedData.Arrived)
+            if (purchasedData.Arrived && false == m_instantiatedShopItems[(int)purchasedData.Item])
             {
                 CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(purchasedData.Item);
                 if (itemData.Prefab)
                 {
+                    m_instantiatedShopItems[(int)purchasedData.Item] = true;
                     Instantiate(itemData.Prefab).transform.SetParent(m_shopItemsParent);
                     string prefabName = itemData.Prefab.name;
                     foreach (Transform child in m_shopItemsParent)

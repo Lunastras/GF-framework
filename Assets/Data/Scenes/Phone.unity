@@ -360,7 +360,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 200
+  m_SortingOrder: 50
   m_TargetDisplay: 0
 --- !u!224 &280884134
 RectTransform:
@@ -1378,6 +1378,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6e0472c0b8a12445afd06c8dd831ba9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  InputKeyPriority: 1
+  HideInteractablePrompt: 0
   OnSubmit:
     m_PersistentCalls:
       m_Calls:
@@ -1438,8 +1440,10 @@ MonoBehaviour:
     ColorContentBlendMode: 0
     Opacity: 1
     PixelsPerUnit: 1
+  Submitable: 1
   Index: 0
   TransitionTime: 0.07
+  DeselectOnEvenSystemDeselect: 1
   VisualsParent: {fileID: 4104428866097306112}
   GraphicsPanel:
   - {fileID: 4380806840311299705}
@@ -1470,8 +1474,6 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   LocalTransformRelativeToOriginal: 1
-  m_colorAtBeginningOfTransition: []
-  m_originalColors: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
