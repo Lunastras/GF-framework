@@ -193,7 +193,18 @@ public class CornMenuApartment : MonoBehaviour
             {
                 CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(purchasedData.Item);
                 if (itemData.Prefab)
+                {
                     Instantiate(itemData.Prefab).transform.SetParent(m_shopItemsParent);
+                    string prefabName = itemData.Prefab.name;
+                    foreach (Transform child in m_shopItemsParent)
+                    {
+                        if (child.name == prefabName)
+                        {
+                            Destroy(child.gameObject);
+                            break;
+                        }
+                    }
+                }
                 else
                     Debug.LogError("The prefab for shop item " + purchasedData.Item + " is null.");
             }

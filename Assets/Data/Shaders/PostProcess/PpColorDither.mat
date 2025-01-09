@@ -105,10 +105,10 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DitherAngle: 22.5
-    - _DitherSpread: 0.015
+    - _DitherSpread: 0.01
     - _DitherTextureAngle: 0
     - _DitherTextureScale: 1.58
-    - _DotsMaskRadius: 0.4
+    - _DotsMaskRadius: 0.544
     - _DotsMaskSmoothness: 0.3
     - _DotsRadius: 0.348
     - _DotsSmoothness: 0.087
@@ -124,7 +124,7 @@ Material:
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _ResolutionScale: 0.08
+    - _ResolutionScale: 0.15
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1

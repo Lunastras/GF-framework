@@ -60,9 +60,18 @@ public class GfxRichTextWriter : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    private void Update() { if (!Application.isPlaying) m_textMeshPro.ForceMeshUpdate(); }
+    private void Update()
+    {
+        if (!Application.isPlaying)
+        {
+            //OnPreRenderText has a stupid bug where it is cleared when the domain is reloaded, so we lose the callback in the editor, and Awake isn't called again when entering playmode so it is completely broken
+            //This is why this hack is done in edit mode
+            m_textMeshPro.OnPreRenderText -= OnPreRenderText;
+            m_textMeshPro.OnPreRenderText += OnPreRenderText;
+            m_textMeshPro.ForceMeshUpdate();
+        }
+    }
 #endif //UNITY_EDITOR, used to preview the values in the editor
-
 
     public void SetString(string aString, bool aWriteTextInstant = true)
     {
@@ -72,13 +81,12 @@ public class GfxRichTextWriter : MonoBehaviour
     }
 
     public string GetString() { return m_textMeshPro.text; }
-
     public int TextLength { get { return m_textMeshPro.textInfo.characterCount; } }
 
     public bool WritingText()
     {
         bool ret = m_textEraseHandle.CoroutineIsRunning || m_textAnimationHandle.CoroutineIsRunning;
-        //if (ret) Debug.Log("RICH WRITER: ERASER (" + m_textEraseHandle.CoroutineIsRunning + ") - ANIMATION(" + m_textAnimationHandle.CoroutineIsRunning + ")");
+        //if (ret) Debug.Log(GetInstanceID() + " id RICH WRITER: ERASER (" + m_textEraseHandle.CoroutineIsRunning + ") - ANIMATION(" + m_textAnimationHandle.CoroutineIsRunning + ")");
         return ret;
     }
 
@@ -121,6 +129,16 @@ public class GfxRichTextWriter : MonoBehaviour
         m_textEraseHandle.KillCoroutine();
         m_textAnimationHandle.KillCoroutine();
         m_textMeshPro.ForceMeshUpdate(aIgnoreActiveState, aForceTextReparsing);
+    }
+
+    private void OnPreRenderText(TMP_TextInfo aTmpInfo)
+    {
+        m_animData.LastFinishedIndex = -1;
+        m_animData.ValidIndexOfLastFinishedChar = -1;
+        UpdateOriginalVertexDataBuffer();
+
+        if (m_textAnimationHandle.CoroutineIsRunning)
+            ApplyTransitionEffectToText();
     }
 
     private CoroutineHandle WriteStringAnimation(bool aFadeIn, float aSpeedMultiplier = 1) { return m_textAnimationHandle.RunCoroutineIfNotRunning(_ExecuteCharacterTransition(aFadeIn, aSpeedMultiplier)); }
@@ -271,54 +289,46 @@ public class GfxRichTextWriter : MonoBehaviour
         return TMP_VertexDataUpdateFlags.Colors32 | TMP_VertexDataUpdateFlags.Vertices;
     }
 
-    private void OnPreRenderText(TMP_TextInfo aTmpInfo)
-    {
-        m_animData.LastFinishedIndex = -1;
-        m_animData.ValidIndexOfLastFinishedChar = -1;
-        UpdateOriginalVertexDataBuffer();
-
-        if (m_textAnimationHandle.CoroutineIsRunning)
-            ApplyTransitionEffectToText();
-    }
-
     private IEnumerator<float> _ExecuteCharacterTransition(bool aFadeIn, float aSpeedMultiplier = 1)
     {
-        SpeedMultiplier.Value = aSpeedMultiplier;
-
-        if (TextLength == 0)
-            yield break;
-
-        m_writeAllOnce = false;
-        m_secondsSinceWriteAll = 0;
-        m_writeAllSpeedMultiplier.Value = 1;
-
-        m_animData.LastFinishedIndex = -1;
-        m_animData.ValidIndexOfLastFinishedChar = -1;
-
-        m_animData.FadeIn = aFadeIn;
-        m_animData.SecondsSinceStart = 0;
-
         m_textMeshPro.ForceMeshUpdate(true, true);
+        yield return Timing.WaitForOneFrame;
 
-        bool firstIteration = true;
-
-        int characterCount = TextLength;
-        int lastIndex = characterCount - 1;
-
-        while (m_animData.LastFinishedIndex < lastIndex)
+        if (TextLength > 0)
         {
-            ApplyTransitionEffectToText(!firstIteration);
+            SpeedMultiplier.Value = aSpeedMultiplier;
+            m_writeAllOnce = false;
+            m_secondsSinceWriteAll = 0;
+            m_writeAllSpeedMultiplier.Value = 1;
 
-            float timeOfWaitStart = Time.time;
-            yield return Timing.WaitForOneFrame;
+            m_animData.LastFinishedIndex = -1;
+            m_animData.ValidIndexOfLastFinishedChar = -1;
 
-            float elapsedSeconds = Time.time - timeOfWaitStart;
-            if (m_writeAllOnce) m_secondsSinceWriteAll += elapsedSeconds;
-            m_animData.SecondsSinceStart += elapsedSeconds;
-            firstIteration = false;
+            m_animData.FadeIn = aFadeIn;
+            m_animData.SecondsSinceStart = 0;
+
+
+            bool firstIteration = true;
+
+            int characterCount = TextLength;
+            int lastIndex = characterCount - 1;
+
+            while (m_animData.LastFinishedIndex < lastIndex)
+            {
+                ApplyTransitionEffectToText(!firstIteration);
+
+                float timeOfWaitStart = Time.time;
+                yield return Timing.WaitForOneFrame;
+
+                float elapsedSeconds = Time.time - timeOfWaitStart;
+                if (m_writeAllOnce) m_secondsSinceWriteAll += elapsedSeconds;
+                m_animData.SecondsSinceStart += elapsedSeconds;
+                firstIteration = false;
+            }
         }
 
         m_textAnimationHandle.Finished();
+        Debug.Assert(!m_textAnimationHandle.CoroutineIsRunning);
     }
 
     //update the the buffer data with the new original vertex data used for the transition lerping
