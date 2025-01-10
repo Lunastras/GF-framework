@@ -18,7 +18,7 @@ public class GfgManagerGame : MonoBehaviour
 
     public static GfgManagerGame Instance { get { return m_instance; } protected set { m_instance = value; } }
 
-    public Action<GfcGameState, GfcGameState> OnGameStateChanged;
+    public Action<GfcGameState, GfcGameState, bool> OnGameStateChanged;
 
     [SerializeField] private GameObject m_serverManagerPrefab = null;
 
@@ -37,6 +37,7 @@ public class GfgManagerGame : MonoBehaviour
     private GfcGameState m_gameStateAfterTransition = GfcGameState.INVALID;
 
     private int m_queuedGameStateTransitionPriority;
+    private int m_gameStateChangeWaitForTaskCounters = 0;
 
     private bool m_fadeOutGameStateTransition = false;
 
@@ -117,13 +118,13 @@ public class GfgManagerGame : MonoBehaviour
         QuitToMenu();
     }
 
-    private static void SetGameStateInternal(GfcGameState aState)
+    private static void SetGameStateInternal(GfcGameState aState, bool anInstant)
     {
         if (aState != Instance.m_gameState)
             Instance.m_previousGameState = Instance.m_gameState;
 
         Instance.m_gameState = aState;
-        Instance.OnGameStateChanged?.Invoke(aState, Instance.m_previousGameState);
+        Instance.OnGameStateChanged?.Invoke(aState, Instance.m_previousGameState, anInstant);
     }
 
     public static CoroutineHandle SetGameState(GfgGameStateSetDescriptor aGameStateDescriptor, int aPriorityInQueue = 0)
@@ -154,13 +155,28 @@ public class GfgManagerGame : MonoBehaviour
             }
             else
             {
-                SetGameStateInternal(aState);
+                SetGameStateInternal(aState, true);
             }
         }
         else
             Debug.LogError("The gamestate is locked by " + Instance.m_gameStateLock.GetHandleCopy().ObjectHandle + ", cannot set the gamestate to " + aState);
 
         return transitionHandle;
+    }
+
+    private bool m_gameStateChangeWaitForTask;
+
+    public static void RegisterGameStateTask()
+    {
+        Debug.Assert(Instance.m_gameStateChangeWaitForTask, "Not waiting for any tasks, this should only be called with the OnGameStateChanged callback");
+        Instance.m_gameStateChangeWaitForTaskCounters++;
+    }
+
+    public static void UnregisterGameStateTask()
+    {
+        Debug.Assert(Instance.m_gameStateChangeWaitForTask, "Not waiting for any tasks, this should only be called with the OnGameStateChanged callback");
+        Instance.m_gameStateChangeWaitForTaskCounters--;
+        Debug.Assert(Instance.m_gameStateChangeWaitForTaskCounters >= 0, "A task was unregistered multiple times or wasn't registered to begin with.");
     }
 
     private IEnumerator<float> _TransitionGameState(GfcGameState aState, GfcTransitionParent aTransition)
@@ -182,7 +198,17 @@ public class GfgManagerGame : MonoBehaviour
         m_fadeOutGameStateTransition = false;
         yield return Timing.WaitUntilDone(aTransition.StartFadeIn());
 
-        SetGameStateInternal(aState);
+        float timeOutLeft = 10; //wait for 10 seconds to let any task finish
+        m_gameStateChangeWaitForTaskCounters = 0;
+        m_gameStateChangeWaitForTask = true;
+        SetGameStateInternal(aState, false);
+        while (timeOutLeft > 0 && m_gameStateChangeWaitForTaskCounters > 0)
+        {
+            yield return Timing.WaitForOneFrame;
+            timeOutLeft -= Time.deltaTime;
+        }
+        m_gameStateChangeWaitForTask = false;
+        Debug.Assert(m_gameStateChangeWaitForTaskCounters == 0, "TIME OUT ON GAME STATE CHANGE TASKS. Tasks could not be finished in a timely manner.");
 
         GfcInput.InputLockHandle.Unlock(ref inputKey);
         m_fadeOutGameStateTransition = true;

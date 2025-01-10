@@ -14,7 +14,9 @@ public class CornShopItemButton : GfxButton2D
     private CornShopItem m_item;
     private GameObject m_instantiatedPreviewPrefab;
 
+    private bool m_printedNullError = false;
     public CornShopItem GetShopItem() { return m_item; }
+
     public void SetShopItem(CornShopItem anItem)
     {
         m_item = anItem;
@@ -26,6 +28,9 @@ public class CornShopItemButton : GfxButton2D
         m_textPersonalNeeds.text = (itemData.PersonalNeedsPoints * 100).Round().ToString();
         m_textPrice.text = itemData.Price.ToString();
         m_textBonuses.text = null; //todo
+
+        bool canAfford = GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(CornPlayerConsumables.MONEY, -itemData.Price);
+        SetInteractable(canAfford, "Not enough money");
     }
 
     public void SetPreview(bool anActive)
@@ -41,8 +46,11 @@ public class CornShopItemButton : GfxButton2D
                     m_instantiatedPreviewPrefab.transform.SetParent(CornManagerShop.GetPrefabPreviewParent(), false);
                     m_instantiatedPreviewPrefab.transform.SetLocalPositionAndRotation(new(), Quaternion.identity);
                 }
-                else
+                else if (!m_printedNullError)
+                {
+                    m_printedNullError = true;
                     Debug.LogError("Tried to instantiate the prefab for item shop " + m_item + ", but it's null.");
+                }
             }
             else
             {
@@ -51,5 +59,10 @@ public class CornShopItemButton : GfxButton2D
         }
         else if (m_instantiatedPreviewPrefab)
             m_instantiatedPreviewPrefab.SetActive(false);
+    }
+
+    void OnDestroy()
+    {
+        Destroy(m_instantiatedPreviewPrefab);
     }
 }

@@ -13,6 +13,7 @@ public enum GfcSceneId
     ENV_MUSUEM,
     IRISU,
     WHACK_A_WOLF,
+    SHOP,
     CORN_LEVEL_0,
     COUNT,
 }

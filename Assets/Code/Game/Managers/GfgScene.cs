@@ -7,12 +7,12 @@ using System;
 public class GfgScene : MonoBehaviour
 {
 
-    [System.Serializable]
+    [Serializable]
     protected struct GfcGameStateScene
     {
         public GfcGameState GameState;
         public GfcSceneId Scene;
-        public bool Static;
+        [HideInInspector][NonSerialized] public bool Static;
     }
 
     protected struct SceneData
@@ -32,7 +32,11 @@ public class GfgScene : MonoBehaviour
 
     protected GfcSceneId m_lastActiveScene;
 
-    protected GfcSceneId m_sceneToActivate = GfcSceneId.INVALID;
+    protected GfcSceneId m_queuedSceneToActivate = GfcSceneId.INVALID;
+    protected bool m_registeredGameStateTask = false;
+
+    public static GfcSceneId QueuedSceneToActivate { get { return Instance.m_queuedSceneToActivate; } }
+    public static bool WaitingForSceneToActivate { get { return Instance.m_queuedSceneToActivate != GfcSceneId.INVALID; } }
 
     // Start is called before the first frame update
     void Awake()
@@ -41,7 +45,14 @@ public class GfgScene : MonoBehaviour
         m_scenesData = new SceneData[(int)GfcSceneId.COUNT];
 
         for (int i = 0; i < m_gameStateScenes.Length; i++)
-            if (i != (int)m_gameStateScenes[i].GameState) Debug.LogError("Scene at index " + i + " should be at index " + (int)m_gameStateScenes[i].GameState);
+        {
+            var sceneData = m_gameStateScenes[i];
+            sceneData.Static = sceneData.Scene != GfcSceneId.INVALID;
+            m_gameStateScenes[i] = sceneData;
+
+            if (i != (int)m_gameStateScenes[i].GameState)
+                Debug.LogError("Scene at index " + i + " should be at index " + (int)m_gameStateScenes[i].GameState);
+        }
 
         int diffLength = (int)GfcGameState.COUNT - m_gameStateScenes.Length;
         if (m_gameStateScenes.Length != (int)GfcGameState.COUNT)
@@ -71,7 +82,7 @@ public class GfgScene : MonoBehaviour
     void Start()
     {
         GfgManagerGame.Instance.OnGameStateChanged += OnGameStateChanged;
-        OnGameStateChanged(GfgManagerGame.GetGameState(), GfcGameState.INVALID);
+        OnGameStateChangedInternal(GfgManagerGame.GetGameState(), GfcGameState.INVALID, true, true);
     }
 
     void OnDestroy()
@@ -90,21 +101,28 @@ public class GfgScene : MonoBehaviour
         GfcSceneId activeScene = GetActiveScene();
         if (activeScene != aScene)
         {
-            if (SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex((int)aScene)))
+            Scene sceneToActivate = SceneManager.GetSceneByBuildIndex((int)aScene);
+            if (sceneToActivate.isLoaded && SceneManager.SetActiveScene(sceneToActivate))
             {
                 Instance.m_lastActiveScene = activeScene;
-                Instance.m_sceneToActivate = GfcSceneId.INVALID;
+                Instance.m_queuedSceneToActivate = GfcSceneId.INVALID;
                 result = GfcSceneActiveSetResult.SUCCESS;
             }
             else
             {
-                Instance.m_sceneToActivate = aScene;
+                Instance.m_queuedSceneToActivate = aScene;
                 result = GfcSceneActiveSetResult.ACTIVATE_QUEUED;
             }
         }
         else
         {
             result = GfcSceneActiveSetResult.SUCCESS;
+        }
+
+        if (result == GfcSceneActiveSetResult.SUCCESS && Instance.m_registeredGameStateTask)
+        {
+            Instance.m_registeredGameStateTask = false;
+            GfgManagerGame.UnregisterGameStateTask();
         }
 
         return result;
@@ -166,7 +184,12 @@ public class GfgScene : MonoBehaviour
         return operation;
     }
 
-    public static void OnGameStateChanged(GfcGameState aNewGameState, GfcGameState anOldGameState)
+    protected static void OnGameStateChanged(GfcGameState aNewGameState, GfcGameState anOldGameState, bool anInstant)
+    {
+        OnGameStateChangedInternal(aNewGameState, anOldGameState, anInstant, false);
+    }
+
+    protected static void OnGameStateChangedInternal(GfcGameState aNewGameState, GfcGameState anOldGameState, bool anInstant, bool aStartCall)
     {
         if (aNewGameState == GfcGameState.INVALID)
             return;
@@ -181,7 +204,13 @@ public class GfgScene : MonoBehaviour
             GfcSceneId sceneId = Instance.m_gameStateScenes[(int)aNewGameState].Scene;
 
             if (sceneId != GfcSceneId.INVALID)
+            {
+                Debug.Assert(!Instance.m_registeredGameStateTask, "Trying to register task, but it was already registered and unfinished.");
+                Instance.m_registeredGameStateTask = true;
+                GfgManagerGame.RegisterGameStateTask();
+
                 LoadScene(sceneId, true);
+            }
         }
     }
 
@@ -191,13 +220,13 @@ public class GfgScene : MonoBehaviour
 
         GfcGameStateScene[] gameStateScenes = Instance.m_gameStateScenes;
         for (int i = 0; i < gameStateScenes.Length; i++)
-            if (!gameStateScenes[i].Static && (int)gameStateScenes[i].Scene == aScene.buildIndex && !aScene.isLoaded)
+            if ((int)gameStateScenes[i].Scene == aScene.buildIndex && !gameStateScenes[i].Static)
                 gameStateScenes[i].Scene = GfcSceneId.INVALID;
     }
 
     private void OnSceneLoaded(Scene aScene, LoadSceneMode aLoadSceneMode)
     {
-        if (aScene.buildIndex == (int)m_sceneToActivate)
+        if (aScene.buildIndex == (int)m_queuedSceneToActivate)
             Debug.Assert(SetActiveScene((GfcSceneId)aScene.buildIndex) == GfcSceneActiveSetResult.SUCCESS);
 
         SceneData sceneData = m_scenesData[aScene.buildIndex];

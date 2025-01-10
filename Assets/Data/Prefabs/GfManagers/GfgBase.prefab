@@ -1016,25 +1016,24 @@ MonoBehaviour:
   m_gameStateScenes:
   - GameState: 0
     Scene: -1
-    Static: 0
   - GameState: 1
     Scene: -1
-    Static: 0
   - GameState: 2
     Scene: -1
-    Static: 0
   - GameState: 3
     Scene: 1
-    Static: 0
   - GameState: 4
     Scene: -1
-    Static: 0
   - GameState: 5
     Scene: -1
-    Static: 0
   - GameState: 6
     Scene: -1
-    Static: 0
+  - GameState: 7
+    Scene: -1
+  - GameState: 8
+    Scene: -1
+  - GameState: 9
+    Scene: 8
 --- !u!114 &7967908496624919936
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4715,9 +4714,32 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[0].Singleton.Prefab
+      value: 
+      objectReference: {fileID: 1228088659953116, guid: 80c5916b9606ce646be16611d9a06d13,
+        type: 3}
+    - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
+        type: 3}
       propertyPath: m_cornShopItems.Elements.Array.data[1].Singleton.Prefab
       value: 
       objectReference: {fileID: 8822345033331031145, guid: a88f819f4ea4a7a4aa4d4c0821cc7006,
+        type: 3}
+    - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[2].Singleton.Prefab
+      value: 
+      objectReference: {fileID: 919132149155446097, guid: dcd5f933e3efbcc46a27d6b80bd23078,
+        type: 3}
+    - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[3].Singleton.Prefab
+      value: 
+      objectReference: {fileID: 100000, guid: 288cbbc70a1470347b02ccc64730de4c, type: 3}
+    - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
+        type: 3}
+      propertyPath: m_cornShopItems.Elements.Array.data[4].Singleton.Prefab
+      value: 
+      objectReference: {fileID: 919132149155446097, guid: ca9bc06c2d31f4047ac4ad0185980925,
         type: 3}
     - target: {fileID: 4024946227707361548, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}

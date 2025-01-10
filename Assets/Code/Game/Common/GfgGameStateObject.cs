@@ -16,7 +16,7 @@ public class GfgGameStateObject : MonoBehaviour
             gameObject.AddComponent<GfcCamera>();
 
         GfgManagerGame.Instance.OnGameStateChanged += OnGameStateChanged;
-        OnGameStateChanged(GfgManagerGame.GetGameState(), GfgManagerGame.GetPreviousGameState());
+        OnGameStateChanged(GfgManagerGame.GetGameState(), GfgManagerGame.GetPreviousGameState(), true);
 
         m_instantDisable = true;
     }
@@ -25,7 +25,7 @@ public class GfgGameStateObject : MonoBehaviour
 
     private CoroutineHandle m_disableCoroutine;
 
-    private void OnGameStateChanged(GfcGameState aNewGameState, GfcGameState aOldGameState)
+    private void OnGameStateChanged(GfcGameState aNewGameState, GfcGameState aOldGameState, bool anInstant)
     {
         if (GameStates.Length == 0)
             return;

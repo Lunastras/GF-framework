@@ -114,7 +114,10 @@ public class GfxRichTextWriter : MonoBehaviour
     {
         m_textAnimationHandle.KillCoroutine();
 
-        yield return Timing.WaitUntilDone(WriteStringAnimation(false, aSpeedMultiplier));
+        CoroutineHandle animationHandle = WriteStringAnimation(false, aSpeedMultiplier);
+        if (animationHandle.IsValid)
+            yield return Timing.WaitUntilDone(animationHandle);
+
         m_textMeshPro.text = "";
 
         m_textEraseHandle.Finished();
@@ -292,7 +295,6 @@ public class GfxRichTextWriter : MonoBehaviour
     private IEnumerator<float> _ExecuteCharacterTransition(bool aFadeIn, float aSpeedMultiplier = 1)
     {
         m_textMeshPro.ForceMeshUpdate(true, true);
-        yield return Timing.WaitForOneFrame;
 
         if (TextLength > 0)
         {

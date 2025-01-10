@@ -37,6 +37,7 @@ public class CornManagerShop : MonoBehaviour
         for (int i = 0; i < shopItemsNotOwnedLength; i++)
         {
             CornShopItemButton button = Instantiate(m_shopItemPrefab).GetComponent<CornShopItemButton>();
+            button.Initialize();
             button.SetShopItem(shopItemsNotOwned[i]);
             button.transform.SetParent(m_shopItemsParent);
             button.transform.localPosition = new();
