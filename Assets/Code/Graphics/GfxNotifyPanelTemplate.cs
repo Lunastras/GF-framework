@@ -91,15 +91,17 @@ public struct GfxTextMessage
 
 public struct GfxNotifyOption
 {
-    public GfxNotifyOption(string aOptionText, bool anInteractable = true, string aDisabledReason = null)
+    public GfxNotifyOption(string aOptionText, bool anInteractable = true, string aDisabledReason = null, Action<GfxButtonCallbackType, GfxButton, bool> anEventCallback = null)
     {
         OptionText = aOptionText;
         Interactable = anInteractable;
         DisabledReason = aDisabledReason;
+        EventCallback = anEventCallback;
     }
 
     public string OptionText;
     public string DisabledReason;
+    public Action<GfxButtonCallbackType, GfxButton, bool> EventCallback;
 
     public bool Interactable;
 }

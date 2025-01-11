@@ -38,7 +38,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
         return default;
     }
 
-    public virtual CoroutineHandle InitializeOptionButton(GfxTextMessage aTextMessage, GfxButton anInstantiatedButton, GfxNotifyOption aOption, int aIndex)
+    public virtual CoroutineHandle InitializeOptionButton(GfxTextMessage aTextMessage, GfxButton anInstantiatedButton, GfxNotifyOption anOption, int aIndex)
     {
         GfxPanel panel = anInstantiatedButton as GfxPanel;
 
@@ -49,7 +49,8 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
             createData.IndecesColumnRow = new(0, aIndex);
 
             panel.SetCreateData(createData, true);
-            panel.SetTextOnly(aOption.OptionText);
+            panel.SetTextOnly(anOption.OptionText);
+            panel.OnButtonEventCallback += anOption.EventCallback;
         }
         else
         {
@@ -64,6 +65,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
         for (int optionIndex = 0; optionIndex < aTextMessage.Options.Count; ++optionIndex)
         {
             GfxButton button = GfcPooling.Instantiate(m_optionsButtonPrefab).GetComponent<GfxButton>();
+            button.Initialize();
             CoroutineHandle initializeButtonHandle = InitializeOptionButton(aTextMessage, button, aTextMessage.Options[optionIndex], optionIndex);
             if (initializeButtonHandle.IsValid) yield return Timing.WaitUntilDone(initializeButtonHandle);
 

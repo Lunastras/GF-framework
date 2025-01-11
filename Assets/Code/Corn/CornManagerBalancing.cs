@@ -16,7 +16,7 @@ public class CornManagerBalancing : MonoBehaviour
     public const int EARLIEST_SLEEP_HOUR = 23;
     public const float DAY_WAKE_UP_RATIO_PER_HOUR = 0.3f;
     public const int MAX_CORN_ACTION_IN_ROW = 2;
-    public const int DICE_ROLL_NUM_FACES = 20;
+    public const int DICE_ROLL_NUM_FACES = 10;
 
     [NonSerialized] public CornEventCostAndRewards SleepRewardsTemp;
 
@@ -165,6 +165,7 @@ public struct CornShopItemsData
     public int Price;
     public int DeliveryDays;
     public float PersonalNeedsPoints;
+    public float PreviewScale;
     public Sprite Icon;
     public GameObject Prefab;
     public CornPlayerSkillStatsModifier[] Modifiers;

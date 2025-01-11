@@ -28,7 +28,12 @@ public class CornShopItemButton : GfxButton2D
         m_textPersonalNeeds.text = (itemData.PersonalNeedsPoints * 100).Round().ToString();
         m_textPrice.text = itemData.Price.ToString();
         m_textBonuses.text = null; //todo
+        UpdateCanAfford();
+    }
 
+    public void UpdateCanAfford()
+    {
+        CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(m_item);
         bool canAfford = GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(CornPlayerConsumables.MONEY, -itemData.Price);
         SetInteractable(canAfford, "Not enough money");
     }
@@ -42,9 +47,11 @@ public class CornShopItemButton : GfxButton2D
                 CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(m_item);
                 if (itemData.Prefab)
                 {
+                    Debug.Assert(itemData.PreviewScale.Abs() > 0.0001f);
                     m_instantiatedPreviewPrefab = Instantiate(itemData.Prefab);
                     m_instantiatedPreviewPrefab.transform.SetParent(CornManagerShop.GetPrefabPreviewParent(), false);
                     m_instantiatedPreviewPrefab.transform.SetLocalPositionAndRotation(new(), Quaternion.identity);
+                    m_instantiatedPreviewPrefab.transform.localScale = new(itemData.PreviewScale, itemData.PreviewScale, itemData.PreviewScale);
                 }
                 else if (!m_printedNullError)
                 {

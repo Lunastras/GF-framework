@@ -195,6 +195,10 @@ public abstract class GfgVnScene
                     case CornDialogueActionType.WAIT:
                         yield return Timing.WaitForSeconds(dialogueAction.WaitTime);
                         break;
+
+                    case CornDialogueActionType.WAIT_FOR_COROUTINE:
+                        yield return Timing.WaitUntilDone(Timing.RunCoroutine(dialogueAction.CoroutineToWaitFor));
+                        break;
                 }
             }
         }
@@ -348,6 +352,17 @@ public abstract class GfgVnScene
         m_handler.DialogueActionsBuffer.Add(action);
     }
 
+    protected void WaitForCoroutine(IEnumerator<float> aCoroutine)
+    {
+        CornDialogueAction action = new()
+        {
+            ActionType = CornDialogueActionType.WAIT_FOR_COROUTINE,
+            CoroutineToWaitFor = aCoroutine,
+        };
+
+        m_handler.DialogueActionsBuffer.Add(action);
+    }
+
     private void CheckTypeOfLastAction(CornDialogueActionType aType)
     {
         if (m_handler.DialogueActionsBuffer.Count > 0)
@@ -389,19 +404,19 @@ public abstract class GfgVnScene
         m_handler.NextLabel = aNextLabel.GetMethodInfo();
     }
 
-    protected void Option(string aText, Action aJumpLabel, bool anInteractable = true, string aNonInteractableReason = null)
+    protected void Option(string aText, Action aJumpLabel, bool anInteractable = true, string aNonInteractableReason = null, Action<GfxButtonCallbackType, GfxButton, bool> anEventCallback = null)
     {
         OptionUntranslated(GetTranslatedText(aText), aJumpLabel, anInteractable, GetTranslatedText(aNonInteractableReason));
     }
 
-    protected void OptionUntranslated(string aText, Action aJumpLabel, bool anInteractable = true, string aNonInteractableReason = null)
+    protected void OptionUntranslated(string aText, Action aJumpLabel, bool anInteractable = true, string aNonInteractableReason = null, Action<GfxButtonCallbackType, GfxButton, bool> anEventCallback = null)
     {
         CheckForNextLabel();
         CheckTypeOfLastAction(CornDialogueActionType.TEXT);
 
         m_handler.CallbackActionsBuffer.Add(aJumpLabel.GetMethodInfo());
 
-        GfxNotifyOption option = new(aText, anInteractable, aNonInteractableReason);
+        GfxNotifyOption option = new(aText, anInteractable, aNonInteractableReason, anEventCallback);
         m_handler.OptionsBuffer.Add(option);
 
         CornDialogueAction dialogueAction = m_handler.DialogueActionsBuffer[^1];
@@ -416,14 +431,11 @@ public abstract class GfgVnScene
 public struct CornDialogueAction
 {
     public CornDialogueActionType ActionType;
-
     public GfxTextMessage Message;
-
     public Action Action;
-
     public GfcSceneId Scene;
-
     public float WaitTime;
+    public IEnumerator<float> CoroutineToWaitFor;
 }
 
 public struct CornDialogueSetting
@@ -452,6 +464,7 @@ public enum CornDialogueActionType
     SOUND,
     ENVIRONMENT,
     WAIT,
+    WAIT_FOR_COROUTINE,
 }
 
 public struct GfgVnSceneLabelInfo

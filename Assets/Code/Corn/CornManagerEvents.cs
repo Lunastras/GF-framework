@@ -81,13 +81,22 @@ public class CornManagerEvents : MonoBehaviour
     {
         var cornSaveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
         int effectiveSanity = cornSaveData.MentalSanity;
+        /*
         if (cornSaveData.HadCornEventSinceWakeUp) //double the likelyhood of a failed roll if a corn action has not been performed since waking up
-            effectiveSanity = DICE_ROLL_NUM_FACES - 2 * (DICE_ROLL_NUM_FACES - cornSaveData.MentalSanity);
+            effectiveSanity = DICE_ROLL_NUM_FACES - 2 * (DICE_ROLL_NUM_FACES - cornSaveData.MentalSanity);*/
         return effectiveSanity;
     }
 
     //returns true if the action will executed. False if the corn event can play.
-    public static bool GuaranteedCornRollSuccess() { return GfgManagerSaveData.GetActivePlayerSaveData().Data.CornActionsInARow < CornManagerBalancing.MAX_CORN_ACTION_IN_ROW; }
+    public static bool GuaranteedCornRollSuccess() { return GetEffectiveSanity() == DICE_ROLL_NUM_FACES; }// || GfgManagerSaveData.GetActivePlayerSaveData().Data.CornActionsInARow < CornManagerBalancing.MAX_CORN_ACTION_IN_ROW; }
+
+    private IEnumerator<float> _ExecuteCornRoll()
+    {
+        yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GfcGameState.CUTSCENE));
+        yield return Timing.WaitUntilDone(CornManagerStory.StartDialogueScene<DialogueCornRoll>());
+    }
+
+    public static int HoursToWasteThisEvent;
 
     private static IEnumerator<float> _ExecuteEvent(CornEvent anEvent)
     {
@@ -103,15 +112,18 @@ public class CornManagerEvents : MonoBehaviour
 
         if (CanAffordMoney(anEvent))
         {
-            bool wasteTime = eventRewardsAndCost.EventHasCornRoll
-            && !GuaranteedCornRollSuccess()
-            && GetEffectiveSanity() < UnityEngine.Random.Range(1, DICE_ROLL_NUM_FACES + 1);
+            HoursToWasteThisEvent = 0;
+            if (eventRewardsAndCost.EventHasCornRoll && !GuaranteedCornRollSuccess())
+                yield return Timing.WaitUntilDone(Timing.RunCoroutine(Instance._ExecuteCornRoll()));
+            else
+                Debug.Log("Neah no corn roll man " + eventRewardsAndCost.EventHasCornRoll + " " + !GuaranteedCornRollSuccess());
 
-            if (wasteTime)
+            if (HoursToWasteThisEvent > 0)
             {
                 cornSaveData.CornActionsInARow++;
                 cornSaveData.HadCornEventSinceWakeUp = true;
                 eventRewardsAndCost = CornManagerBalancing.GetEventCostAndRewards(CornEventType.CORN);
+                eventRewardsAndCost.HoursDuration = HoursToWasteThisEvent;
                 message = "You wasted time and didn't do anything... You watched corn videos obsessively.";
             }
             else //perform the event normally
@@ -125,7 +137,7 @@ public class CornManagerEvents : MonoBehaviour
                         break;
 
                     case CornEventType.SOCIAL:
-                        eventHandle = CornManagerStory.StartStoryScene(anEvent.Scene);
+                        eventHandle = CornManagerStory.StartDialogueScene(anEvent.Scene);
                         break;
 
                     case CornEventType.CHORES:
@@ -169,7 +181,10 @@ public class CornManagerEvents : MonoBehaviour
         eventRewardsAndCost.ApplyModifiersToPlayer(0);
 
         CornManagerPhone.CanTogglePhone = false;
-        CoroutineHandle apartmentLoadRoutine = GfgManagerSceneLoader.LoadScene(GfcSceneId.APARTMENT, GfcGameState.APARTMENT);
+        CoroutineHandle apartmentLoadRoutine = default;
+        if (GfgScene.GetSceneState(GfcSceneId.APARTMENT) == GfcSceneLoadState.UNLOADED)
+            apartmentLoadRoutine = GfgManagerSceneLoader.LoadScene(GfcSceneId.APARTMENT, GfcGameState.APARTMENT);
+
         if (apartmentLoadRoutine.IsValid)
         {
             GfgManagerSceneLoader.FakeWait = true;
@@ -362,6 +377,7 @@ public class CornManagerEvents : MonoBehaviour
 
         GfgManagerSceneLoader.FakeWait = false;
 
+        GfgManagerGame.SetGameState(GfcGameState.APARTMENT, false);
         CoroutineHandle deliveryCoroutine = _FlushDeliveredShopItems(Instance.m_messagesBuffer);
         if (deliveryCoroutine.IsValid) Timing.WaitUntilDone(deliveryCoroutine);
 

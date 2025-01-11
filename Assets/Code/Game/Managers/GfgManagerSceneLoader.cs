@@ -121,7 +121,9 @@ public class GfgManagerSceneLoader : MonoBehaviour
             }
             else
             {
-                if (Instance.m_enableLogs) Debug.Log("The scene at build index " + aSceneBuildIndex + " was already loaded.");
+                if (Instance.m_enableLogs)
+                    Debug.Log("The scene at build index " + aSceneBuildIndex + " was already loaded.");
+                return GfgManagerGame.SetGameState(GameStateAfterLoad);
             }
         }
         else if (aSceneBuildIndex != originalSceneIndexLoading)

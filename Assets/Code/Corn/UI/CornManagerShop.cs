@@ -10,7 +10,7 @@ public class CornManagerShop : MonoBehaviour
     [SerializeField] private float m_previewRotationSpeed = 5;
 
     private float m_currentRotation = 0;
-
+    private bool m_initialized = false;
     void Awake()
     {
         this.SetSingleton(ref Instance);
@@ -25,26 +25,36 @@ public class CornManagerShop : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        Debug.Assert(m_shopItemPrefab);
-        Debug.Assert(m_shopItemsParent);
-
-        int shopItemsNotOwnedLength = CornManagerBalancing.GetShopItemsNotOwnedCount();
-        Span<CornShopItem> shopItemsNotOwned = stackalloc CornShopItem[shopItemsNotOwnedLength];
-        CornManagerBalancing.GetShopItemsNotOwned(ref shopItemsNotOwned);
-
-        GfcPooling.DestroyChildren(m_shopItemsParent);
-
-        for (int i = 0; i < shopItemsNotOwnedLength; i++)
+        if (!m_initialized)
         {
-            CornShopItemButton button = Instantiate(m_shopItemPrefab).GetComponent<CornShopItemButton>();
-            button.Initialize();
-            button.SetShopItem(shopItemsNotOwned[i]);
-            button.transform.SetParent(m_shopItemsParent);
-            button.transform.localPosition = new();
-            button.transform.localScale = new(1, 1, 1);
+            Debug.Assert(m_shopItemPrefab);
+            Debug.Assert(m_shopItemsParent);
 
-            button.OnButtonEventCallback += OnButtonEvent;
+            int shopItemsNotOwnedLength = CornManagerBalancing.GetShopItemsNotOwnedCount();
+            Span<CornShopItem> shopItemsNotOwned = stackalloc CornShopItem[shopItemsNotOwnedLength];
+            CornManagerBalancing.GetShopItemsNotOwned(ref shopItemsNotOwned);
+
+            GfcPooling.DestroyChildren(m_shopItemsParent);
+
+            for (int i = 0; i < shopItemsNotOwnedLength; i++)
+            {
+                CornShopItemButton button = Instantiate(m_shopItemPrefab).GetComponent<CornShopItemButton>();
+                button.Initialize();
+                button.SetShopItem(shopItemsNotOwned[i]);
+                button.transform.SetParent(m_shopItemsParent);
+                button.transform.localPosition = new();
+                button.transform.localScale = new(1, 1, 1);
+
+                button.OnButtonEventCallback += OnButtonEvent;
+            }
         }
+    }
+
+    public static void UpdateCanAffordButtons()
+    {
+        Instance.Start();
+        foreach (Transform child in Instance.m_shopItemsParent)
+            child.GetComponent<CornShopItemButton>().UpdateCanAfford();
     }
 
     public static Transform GetPrefabPreviewParent() { return Instance.m_prefabPreviewParent; }

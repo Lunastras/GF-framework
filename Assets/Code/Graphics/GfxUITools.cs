@@ -565,6 +565,7 @@ public static class GfxUiToolsStatic
                 button = child.GetComponent<GfxButton>();
                 if (button)
                 {
+                    button.Initialize();
                     button.OnButtonEventCallback += anOnButtonEventCallback;
                     button.Index = countChildren;
                 }

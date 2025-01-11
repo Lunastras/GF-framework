@@ -109,6 +109,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     {
         m_transitionTimeEffective = TransitionTime;
         m_timeSinceTransitionStart = TransitionTime;
+        OnButtonEventCallback = null;
 
         m_deselectOnPointerExit = false;
         SetInteractable(true);

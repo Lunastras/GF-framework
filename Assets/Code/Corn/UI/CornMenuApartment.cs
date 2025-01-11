@@ -212,6 +212,8 @@ public class CornMenuApartment : MonoBehaviour
                     Debug.LogError("The prefab for shop item " + purchasedData.Item + " is null.");
             }
         }
+
+        CornManagerShop.UpdateCanAffordButtons();
     }
 
     public static void EndStatsPreview() { Instance.EndStatsPreviewInternal(); }

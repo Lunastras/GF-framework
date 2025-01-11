@@ -77,6 +77,16 @@ public class GfgScene : MonoBehaviour
 
         SceneManager.sceneUnloaded += OnSceneUnloaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
+
+        for (int i = 0; i < m_scenesData.Length; i++)
+        {
+            if (SceneManager.GetSceneByBuildIndex(i).isLoaded)
+            {
+                SceneData sceneData = m_scenesData[i];
+                sceneData.LoadState = GfcSceneLoadState.LOADED;
+                m_scenesData[i] = sceneData;
+            }
+        }
     }
 
     void Start()
@@ -90,6 +100,7 @@ public class GfgScene : MonoBehaviour
         if (GfgManagerGame.Instance) GfgManagerGame.Instance.OnGameStateChanged -= OnGameStateChanged;
     }
 
+    public static GfcSceneLoadState GetSceneState(GfcSceneId aScene) { return Instance.m_scenesData[(int)aScene].LoadState; }
     public static GfcSceneId GetActiveScene() { return (GfcSceneId)SceneManager.GetActiveScene().buildIndex; }
 
     public static GfcSceneId GetLastActiveScene() { return Instance.m_lastActiveScene; }

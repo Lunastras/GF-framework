@@ -263,7 +263,8 @@ public class CornManagerStory : MonoBehaviour
         return eventClassType;
     }
 
-    public static CoroutineHandle StartStoryScene(Type aScene)
+    public static CoroutineHandle StartDialogueScene<T>() { return StartDialogueScene(typeof(T)); }
+    public static CoroutineHandle StartDialogueScene(Type aScene)
     {
         if (aScene == null)
         {
@@ -411,31 +412,11 @@ public class TestDialoguePhone : GfgVnScene
 
         Say("Hello loser...", new(GfcStoryCharacter.PROTAG));
         Say("Let's see, do you wish to see my cock?");
-        Say("Let's see, do you wish to see my cock?");
-        Say("Let's see, do you wish to see my cock?1");
-        Say("Let's see, do you wish to see my cock?1");
-        Say("Let's see, do you wish to see my cock?2");
-        Say("Let's see, do you wish to see my cock?3");
-        Say("Let's see, do you wish to see my cock?4");
-        Say("Let's see, do you wish to see my cock?65");
-        Say("Let's see, do you wish to see my cock?6");
-        Say("Let's see, do you wish to see my cock?7");
 
-
-        Say("...", new(GfcStoryCharacter.GF));
-        Say("...", new(GfcStoryCharacter.GF));
-        Say("...", new(GfcStoryCharacter.GF));
-        Say("...", new(GfcStoryCharacter.GF));
         Say("...", new(GfcStoryCharacter.GF));
         Say("..Bad.", new(GfcStoryCharacter.GF));
-        Say("...", new(GfcStoryCharacter.GF));
-        Say("...", new(GfcStoryCharacter.GF));
-        Say("...", new(GfcStoryCharacter.GF));
         Say("...Sponge", new(GfcStoryCharacter.GF));
         Say("...", new(GfcStoryCharacter.GF));
-        Say("...", new(GfcStoryCharacter.GF));
-        Say("...", new(GfcStoryCharacter.GF));
-
 
         Say("............Well... this is awkward...", new CornDialogueSetting(GfcStoryCharacter.PROTAG));
 
@@ -463,5 +444,86 @@ public class TestDialoguePhone : GfgVnScene
     {
         Say("Hell nahh shit is too small for me ", new CornDialogueSetting(GfcStoryCharacter.GF));
         Say("Zannen desuyo", new CornDialogueSetting(GfcStoryCharacter.PROTAG));
+    }
+}
+
+public class DialogueCornRoll : GfgVnScene
+{
+    private bool m_rollWin = false;
+    private int m_rollCount = 0;
+
+    protected override void Begin()
+    {
+        bool canAffordEvent = CornManagerEvents.CanAffordMoney(new CornEvent(CornEventType.SOCIAL));
+
+        Say("Hello loser...", new(GfcStoryCharacter.DUNNO));
+        Say("Let's see how fucked you are...");
+        Play();
+    }
+
+    void Play()
+    {
+        Say("Let's test your luck...");
+        WaitForCoroutine(_RollDice());
+        Next(GameResult);
+    }
+
+    void GameResult()
+    {
+        if (m_rollWin)
+        {
+            if (m_rollCount == 2)
+            {
+                Say("Good job boy... Do you wish to take your final roll?");
+                CornOptions(true);
+            }
+            else //m_rollCount here should be either 1 or 3, which are both wins
+            {
+                Say("Congratulations... For now...");
+                Next(EndWin);
+            }
+        }
+        else
+        {
+            if (m_rollCount == 1)
+            {
+                Say("Unlucky boy... Do you wish to try your luck again?");
+                Say("If you win twice in a row, you get to leave.");
+                Say("If you lose, you will be my plaything for longer.");
+                CornOptions(true);
+            }
+            else
+            {
+                Say("Aww... Looks like you might have to spend some time with me, or do you have an ace up your sleeve?");
+                CornOptions(false);
+            }
+        }
+    }
+
+    void CornOptions(bool aCanPlayAgain)
+    {
+        if (aCanPlayAgain) Option("Yes (6 hours on fail)", Play);
+        Option("No (Waste 3 hours)", EndLose); //3 hour corn roll
+        Option("Skip Roll (-20 energy)", EndWin);
+    }
+
+    void EndWin()
+    {
+
+    }
+
+    void EndLose()
+    {
+        int multiplier = m_rollCount == 1 ? 1 : 2;
+        CornManagerEvents.HoursToWasteThisEvent = multiplier * CornManagerBalancing.GetEventCostAndRewards(CornEventType.CORN).HoursDuration;
+    }
+
+    IEnumerator<float> _RollDice()
+    {
+        yield return Timing.WaitForOneFrame;
+        int rollResultValue = UnityEngine.Random.Range(1, CornManagerEvents.DICE_ROLL_NUM_FACES + 1);
+        m_rollWin = CornManagerEvents.GetEffectiveSanity() >= rollResultValue;
+        //Debug.Log("SANITY: " + CornManagerEvents.GetEffectiveSanity() + ", VALUE " + rollResultValue + " RESULT " + m_rollWin);
+        m_rollCount++;
     }
 }

@@ -13,5 +13,6 @@ public enum GfcGameState
     IRISU,
     WHACK_A_WOLF,
     SHOP,
+    CORN_ROLL,
     COUNT
 }

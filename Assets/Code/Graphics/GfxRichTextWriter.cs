@@ -22,8 +22,6 @@ public class GfxRichTextWriter : MonoBehaviour
 
     public FloatAndInv SpeedMultiplier = new(1);
 
-    //public bool StaticVertexData = true;
-
     public TextWriterTranslation TranslationFadeIn;
 
     public TextWriterTranslation TranslationFadeOut;

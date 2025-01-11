@@ -118,6 +118,8 @@ public class GfgManagerGame : MonoBehaviour
         QuitToMenu();
     }
 
+    private bool m_gameStateChangeWaitForTask;
+
     private static void SetGameStateInternal(GfcGameState aState, bool anInstant)
     {
         if (aState != Instance.m_gameState)
@@ -135,36 +137,39 @@ public class GfgManagerGame : MonoBehaviour
     public static CoroutineHandle SetGameState(GfcGameState aState, bool aSmoothTransition = true, GfxTransitionType aTransition = GfxTransitionType.BLACK_FADE, int aPriorityInQueue = 0)
     {
         CoroutineHandle transitionHandle = default;
-
-        if (!GameStateLockHandle.Locked())
+        if (aState != GetGameState())
         {
-            if (aState == GfcGameState.INVALID)
+            Debug.Log("Requested " + aState + " current is " + GetGameState());
+            if (!GameStateLockHandle.Locked())
             {
-                Debug.LogError("The game state passed is invalid.");
-            }
-            else if (aSmoothTransition)
-            {
-                if (Instance.m_gameStateAfterTransition != aState && (!Instance.m_queuedGameStateTransitionHandle.IsValid || aPriorityInQueue > Instance.m_queuedGameStateTransitionPriority))
+                if (aState == GfcGameState.INVALID)
                 {
-                    Instance.m_queuedGameStateTransitionPriority = aPriorityInQueue;
-                    Timing.KillCoroutines(Instance.m_queuedGameStateTransitionHandle);
-                    GfcTransitionParent transition = GfxTransitions.Instance.GetSingleton(aTransition);
-                    transitionHandle = Timing.RunCoroutine(Instance._TransitionGameState(aState, transition));
-                    Instance.m_queuedGameStateTransitionHandle = transitionHandle;
+                    Debug.LogError("The game state passed is invalid.");
+                }
+                else if (aSmoothTransition)
+                {
+                    if (Instance.m_gameStateAfterTransition != aState && (!Instance.m_queuedGameStateTransitionHandle.IsValid || aPriorityInQueue > Instance.m_queuedGameStateTransitionPriority))
+                    {
+                        Instance.m_queuedGameStateTransitionPriority = aPriorityInQueue;
+                        Timing.KillCoroutines(Instance.m_queuedGameStateTransitionHandle);
+                        GfcTransitionParent transition = GfxTransitions.Instance.GetSingleton(aTransition);
+                        transitionHandle = Timing.RunCoroutine(Instance._TransitionGameState(aState, transition));
+                        Instance.m_queuedGameStateTransitionHandle = transitionHandle;
+                    }
+                }
+                else
+                {
+                    Instance.m_gameStateChangeWaitForTask = true;
+                    SetGameStateInternal(aState, true);
+                    Instance.m_gameStateChangeWaitForTask = false;
                 }
             }
             else
-            {
-                SetGameStateInternal(aState, true);
-            }
+                Debug.LogError("The gamestate is locked by " + Instance.m_gameStateLock.GetHandleCopy().ObjectHandle + ", cannot set the gamestate to " + aState);
         }
-        else
-            Debug.LogError("The gamestate is locked by " + Instance.m_gameStateLock.GetHandleCopy().ObjectHandle + ", cannot set the gamestate to " + aState);
 
         return transitionHandle;
     }
-
-    private bool m_gameStateChangeWaitForTask;
 
     public static void RegisterGameStateTask()
     {
