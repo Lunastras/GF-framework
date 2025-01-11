@@ -354,9 +354,8 @@ public class GfxRichTextWriter : MonoBehaviour
 
                 Vector3 center = Vector3.zero;
 
-                Vector2 vert0To3 = vertPositions[vertexIndexStart + 0] + vertPositions[vertexIndexStart + 3];
-                float rotationZDeg = Mathf.Rad2Deg * System.MathF.Atan2(vert0To3.y, vert0To3.x);
-
+                Vector2 vert0To3 = vertPositions[vertexIndexStart + 0] - vertPositions[vertexIndexStart + 3];
+                float rotationZDeg = -(Mathf.Rad2Deg * System.MathF.Atan2(-vert0To3.y, vert0To3.x) + 180);
                 Quaternion UndoLocalRotation = Quaternion.AngleAxis(-rotationZDeg, Vector3.forward);
 
                 VertexData data = default;

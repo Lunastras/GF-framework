@@ -5632,12 +5632,12 @@ PrefabInstance:
     - target: {fileID: 1341419963958439498, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -46.1
+      value: 52.9
       objectReference: {fileID: 0}
     - target: {fileID: 1341419963958439498, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 6.6
+      value: -108.8
       objectReference: {fileID: 0}
     - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
@@ -5647,12 +5647,42 @@ PrefabInstance:
     - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
       propertyPath: m_circleCircumference
-      value: 4847
+      value: 4400
+      objectReference: {fileID: 0}
+    - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
+        type: 3}
+      propertyPath: TranslationFadeIn.LocalScale.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
+        type: 3}
+      propertyPath: TranslationFadeIn.LocalScale.y
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
+        type: 3}
+      propertyPath: TranslationFadeIn.LocalScale.z
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
+        type: 3}
+      propertyPath: TranslationFadeOut.LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
+        type: 3}
+      propertyPath: TranslationFadeOut.LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
+        type: 3}
+      propertyPath: TranslationFadeOut.LocalScale.z
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
       propertyPath: TranslationFadeIn.LocalRotationZ
-      value: 45
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
@@ -5667,17 +5697,17 @@ PrefabInstance:
     - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
       propertyPath: TranslationFadeOut.LocalRotationZ
-      value: -45
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
       propertyPath: TranslationFadeOut.LocalPosition.x
-      value: -50
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
       propertyPath: TranslationFadeOut.LocalPosition.y
-      value: 0
+      value: -50
       objectReference: {fileID: 0}
     - target: {fileID: 2626262571356537140, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
@@ -5777,7 +5807,7 @@ PrefabInstance:
     - target: {fileID: 5885406835454776422, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 86
+      value: 93
       objectReference: {fileID: 0}
     - target: {fileID: 5885406835454776422, guid: f554c30d6d8899b44addb897097a843c,
         type: 3}

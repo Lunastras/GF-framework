@@ -457,7 +457,6 @@ public class DialogueCornRoll : GfgVnScene
         bool canAffordEvent = CornManagerEvents.CanAffordMoney(new CornEvent(CornEventType.SOCIAL));
 
         Say("Hello loser...", new(GfcStoryCharacter.DUNNO));
-        Say("Let's see how fucked you are...");
         Play();
     }
 
