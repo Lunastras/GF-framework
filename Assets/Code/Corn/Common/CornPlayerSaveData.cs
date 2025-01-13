@@ -60,18 +60,27 @@ public class GfgPlayerSaveData
         {
             for (int i = 0; i < DATA_BACKUPS_COUNT; i++)
             {
-                if (DataBackup == null || DataBackup[i].DaysPassed <= Data.DaysPassed)
+                if (DataBackup[i] == null || DataBackup[i].DaysPassed <= Data.DaysPassed)
                 {
-                    if (DataBackup != null && DataBackup[i].DaysPassed < Data.DaysPassed)
+                    if (DataBackup[i] != null && DataBackup[i].DaysPassed < Data.DaysPassed)
                     {
                         for (int j = DATA_BACKUPS_COUNT - 1; j > i; j--)
                             DataBackup[j] = DataBackup[j - 1];
                     }
 
                     DataBackup[i] = Data.GetDeepCopy();
+                    Debug.Log("I saved shit, day of the copy is: " + DataBackup[i].CurrentDay + " original date is: " + Data.CurrentDay + " items bought " + (DataBackup[i].PurchasedItems != null ? DataBackup[i].PurchasedItems.Count : "EMPTY") + " items bought original " + Data.PurchasedItems.Count);
+                    break;
                 }
             }
         }
+
+#if UNITY_EDITOR
+        int validSaves = 0;
+        for (int i = 0; i < DATA_BACKUPS_COUNT; i++)
+            if (DataBackup[i] != null) validSaves++;
+        Debug.Log("The count of save datas is: " + validSaves);
+#endif //UNITY_EDITOR
     }
 
     public string GetName() { return m_name; }
@@ -154,6 +163,7 @@ public class GfgPlayerSaveData
     }
 }
 
+[Serializable]
 public class CornSaveData
 {
     public HashSet<string> FinishedNonSpecificScenes = new(8);
@@ -175,11 +185,11 @@ public class CornSaveData
     public int DaysPassed;
     public int DayOfTheWeek;
 
-    public int CurrentHour { get; private set; } = GfgPlayerSaveData.FIRST_WAKEUP_TIME;
+    public int CurrentHour = GfgPlayerSaveData.FIRST_WAKEUP_TIME;
 
-    public int CurrentDay { get; private set; } = 0;
+    public int CurrentDay = 0;
 
-    public int CurrentMonth { get; private set; } = 0;
+    public int CurrentMonth = 0;
 
     public int CurrentWakeUpTime = GfgPlayerSaveData.FIRST_WAKEUP_TIME;
 

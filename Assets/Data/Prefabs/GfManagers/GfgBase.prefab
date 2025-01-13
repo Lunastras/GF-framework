@@ -6328,7 +6328,7 @@ PrefabInstance:
     - target: {fileID: 6510915077153339753, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}
       propertyPath: m_forceNewSave
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6655595076971933538, guid: 4cf04ccd0bd40904194fc6678b5ed3bb,
         type: 3}

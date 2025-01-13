@@ -27,20 +27,46 @@ public class CornMenuSaveData : MonoBehaviour
 
             for (int i = 0; i < backups.Length; i++)
             {
-                if (backups[i] == null)
-                    break;
-
                 CornPlayerSaveDataButton button = Instantiate(m_uiButtonPrefab).GetComponent<CornPlayerSaveDataButton>();
                 button.Button.Initialize();
                 button.Button.Index = i;
-                button.SetSaveData(backups[i]);
                 button.transform.SetParent(m_uiButtonParent);
                 button.transform.localPosition = new();
                 button.transform.localScale = new(1, 1, 1);
 
                 button.Button.OnButtonEventCallback += OnButtonEvent;
             }
+
+            GfgManagerGame.Instance.OnGameStateChanged += OnGameStateChanged;
+            m_initialized = true;
         }
+    }
+
+    private void UpdateButtons()
+    {
+        Debug.Log("UPDATE BUTTONS");
+        CornSaveData[] backups = GfgManagerSaveData.GetActivePlayerSaveData().DataBackup;
+
+        int index = 0;
+        foreach (Transform child in m_uiButtonParent)
+        {
+            if (backups[index] != null)
+            {
+                child.gameObject.SetActive(true);
+                child.GetComponent<CornPlayerSaveDataButton>().SetSaveData(backups[index]);
+            }
+            else
+            {
+                child.gameObject.SetActive(false);
+            }
+            index++;
+        }
+    }
+
+    private void OnGameStateChanged(GfcGameState aNewGameState, GfcGameState aOldGameState, bool anInstant)
+    {
+        if (aNewGameState == GfcGameState.SAVE_SELECT)
+            UpdateButtons();
     }
 
     public static void UpdateCanAffordButtons()

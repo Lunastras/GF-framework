@@ -33,7 +33,20 @@ public class CornManagerEvents : MonoBehaviour
 
     void Start()
     {
+        GfCommandConsole.RegisterCommand("PassDay", () => { ProgressTime(24); });
+
         GfCommandConsole.RegisterCommand("PassWeek", () => { ProgressTime(7 * 24); });
+
+        GfCommandConsole.RegisterCommand("kill", () =>
+        {
+            IncrementMentalSanity(-10, true);
+            CornMenuApartment.UpdateGraphics(true);
+        });
+
+        GfCommandConsole.RegisterCommand("savebackup", () =>
+        {
+            GfgManagerSaveData.GetActivePlayerSaveData().MakeBackup();
+        });
 
         GfCommandConsole.RegisterCommand("MentalSanityMinus", () =>
         {
@@ -320,7 +333,6 @@ public class CornManagerEvents : MonoBehaviour
 
             someMessages ??= GetMessagesBuffer();
 
-            Debug.Log("PASS TIME " + anElapsedHours);
             for (int i = 0; i < timePassed.Weeks; ++i)
             {
                 CornManagerBalancing.GetEventCostAndRewards(CornEventType.NEW_WEEK).ApplyModifiersToPlayer();
