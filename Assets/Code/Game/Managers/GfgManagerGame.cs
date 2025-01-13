@@ -139,7 +139,6 @@ public class GfgManagerGame : MonoBehaviour
         CoroutineHandle transitionHandle = default;
         if (aState != GetGameState())
         {
-            Debug.Log("Requested " + aState + " current is " + GetGameState());
             if (!GameStateLockHandle.Locked())
             {
                 if (aState == GfcGameState.INVALID)

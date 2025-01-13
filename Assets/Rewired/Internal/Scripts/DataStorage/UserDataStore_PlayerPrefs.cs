@@ -331,7 +331,7 @@ namespace Rewired.Data {
 
             // Disallow imprecise joystick assignment matching on some platforms when
             // system id/player Rewired Player alignment needs to stay fixed.
-#if !UNITY_EDITOR && (UNITY_XBOXONE || UNITY_PS4 || UNITY_SWITCH)
+#if !UNITY_EDITOR && (UNITY_XBOXONE || UNITY_PS4 || UNITY_PS5 || UNITY_SWITCH)
             allowImpreciseJoystickAssignmentMatching = false;
 #endif
 

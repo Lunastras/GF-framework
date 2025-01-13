@@ -115,6 +115,7 @@ public class CornMenuApartment : MonoBehaviour
         m_personalNeedsStudyOptions.InitChildrenGfxButtons(OnStudyEvent, (int)CornPlayerSkillsStats.COMFORT);//comfort is the first skill stat that is not on the study list. which is why its used as the count
         m_personalNeedsStudyOptions.gameObject.SetActive(false);
 
+        GfgManagerSaveData.GetActivePlayerSaveData().FinishedStartCutscene = true;
         UpdateGraphicsInternal();
     }
 

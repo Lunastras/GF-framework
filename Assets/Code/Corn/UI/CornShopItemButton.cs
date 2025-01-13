@@ -2,7 +2,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CornShopItemButton : GfxButton2D
+[RequireComponent(typeof(GfxButton))]
+public class CornShopItemButton : MonoBehaviour
 {
     [SerializeField] private Image m_iconImage;
     [SerializeField] private TextMeshProUGUI m_textName;
@@ -14,8 +15,14 @@ public class CornShopItemButton : GfxButton2D
     private CornShopItem m_item;
     private GameObject m_instantiatedPreviewPrefab;
 
+    public GfxButton Button { get; private set; }
     private bool m_printedNullError = false;
     public CornShopItem GetShopItem() { return m_item; }
+
+    void Awake()
+    {
+        Button = GetComponent<GfxButton>();
+    }
 
     public void SetShopItem(CornShopItem anItem)
     {
@@ -35,7 +42,7 @@ public class CornShopItemButton : GfxButton2D
     {
         CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(m_item);
         bool canAfford = GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(CornPlayerConsumables.MONEY, -itemData.Price);
-        SetInteractable(canAfford, "Not enough money");
+        Button.SetInteractable(canAfford, "Not enough money");
     }
 
     public void SetPreview(bool anActive)

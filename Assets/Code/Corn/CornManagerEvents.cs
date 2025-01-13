@@ -10,7 +10,9 @@ public class CornManagerEvents : MonoBehaviour
 
     [SerializeField] protected float m_screenFadeTime = 0.6f;
 
-    private bool m_canPlayEvent = true;
+    private GfcCoroutineHandle m_eventHandle;
+    private GfcCoroutineHandle m_progressTimeHandle;
+    private GfcCoroutineHandle m_gameOverHandle;
 
     private List<string> m_messagesBuffer = new(4);
 
@@ -35,20 +37,20 @@ public class CornManagerEvents : MonoBehaviour
 
         GfCommandConsole.RegisterCommand("MentalSanityMinus", () =>
         {
-            GfgManagerSaveData.GetActivePlayerSaveData().Data.MentalSanity -= 5;
+            IncrementMentalSanity(-5, true);
             CornMenuApartment.UpdateGraphics(true);
         });
 
         GfCommandConsole.RegisterCommand("MentalSanityPlus", () =>
         {
-            GfgManagerSaveData.GetActivePlayerSaveData().Data.MentalSanity += 5;
+            IncrementMentalSanity(5, true);
             CornMenuApartment.UpdateGraphics(true);
         });
 
         GfCommandConsole.RegisterCommand("hesoyam", () =>
         {
             var data = GfgManagerSaveData.GetActivePlayerSaveData().Data;
-            data.MentalSanity = CornManagerBalancing.DICE_ROLL_NUM_FACES;
+            data.MentalSanity = data.MaxMentalSanity;
 
             for (int i = 0; i < data.Resources.Length; i++)
                 data.Resources[i] = 1;
@@ -63,18 +65,22 @@ public class CornManagerEvents : MonoBehaviour
 
     public static int DICE_ROLL_NUM_FACES { get { return CornManagerBalancing.DICE_ROLL_NUM_FACES; } }
 
-    public static bool ExecutingEvent { get { return !Instance.m_canPlayEvent; } }
+    public static bool ExecutingEvent { get { return !Instance.m_eventHandle.CoroutineIsRunning; } }
 
-    public static void ExecuteEvent(CornEvent anEvent)
+    public static CoroutineHandle EventHandle { get { return Instance.m_eventHandle; } }
+    public static CoroutineHandle ProgressTimeHandle { get { return Instance.m_progressTimeHandle; } }
+
+    public static CoroutineHandle ExecuteEvent(CornEvent anEvent)
     {
-        if (Instance.m_canPlayEvent)
+        CoroutineHandle eventHandle = default;
+        if (!Instance.m_eventHandle.CoroutineIsRunning)
         {
             Debug.Log("Executing event " + anEvent.EventType + " with subtype " + anEvent.EventTypeSub);
-            Instance.m_canPlayEvent = false;
-            Timing.RunCoroutine(_ExecuteEvent(anEvent));
+            eventHandle = Instance.m_eventHandle.RunCoroutine(Instance._ExecuteEvent(anEvent));
         }
         else
             Debug.LogWarning("Already in the process of executing an event, could not exeucte event " + anEvent.EventType + " " + anEvent.EventTypeSub);
+        return eventHandle;
     }
 
     public static int GetEffectiveSanity()
@@ -98,7 +104,7 @@ public class CornManagerEvents : MonoBehaviour
 
     public static int HoursToWasteThisEvent;
 
-    private static IEnumerator<float> _ExecuteEvent(CornEvent anEvent)
+    private IEnumerator<float> _ExecuteEvent(CornEvent anEvent)
     {
         if (anEvent.EventType == CornEventType.SLEEP)
             anEvent.EventTypeSub = (int)CornSleepType.INTERRUPTED;
@@ -165,8 +171,7 @@ public class CornManagerEvents : MonoBehaviour
         if (!eventRewardsAndCost.CanAfford())
         {
             messagesBuffer.Add("Your fatigue mists your judgement and affects your sanity. You should go to sleep soon.");
-            cornSaveData.MentalSanity--;
-            CheckGameOver();
+            IncrementMentalSanity(-1);
         }
 
         if (!message.IsEmpty()) messagesBuffer.Add(message);
@@ -179,6 +184,9 @@ public class CornManagerEvents : MonoBehaviour
         if (anEvent.EventType == CornEventType.SLEEP)
             eventRewardsAndCost = SleepingMinigameData.GetFinalRewards();
         eventRewardsAndCost.ApplyModifiersToPlayer(0);
+
+        if (anEvent.EventType == CornEventType.CORN)
+            cornSaveData.CornActionsExecuted++;
 
         CornManagerPhone.CanTogglePhone = false;
         CoroutineHandle apartmentLoadRoutine = default;
@@ -198,8 +206,7 @@ public class CornManagerEvents : MonoBehaviour
 
         CornManagerPhone.CanTogglePhone = true;
 
-
-        Instance.m_canPlayEvent = true;
+        m_eventHandle.Finished();
     }
 
     public static CoroutineHandle _FlushDeliveredShopItems(List<string> aMessageBuffer)
@@ -302,68 +309,85 @@ public class CornManagerEvents : MonoBehaviour
     }
 
     //should only be called when an action happens
-    protected static CoroutineHandle ProgressTime(int aElapsedHours, List<string> someMessages = null, bool anFadeToBlack = true)
+    protected static CoroutineHandle ProgressTime(int anElapsedHours, List<string> someMessages = null, bool aFadeToBlack = true)
     {
-        var playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
-        TimeSpan timePassed = playerSaveData.ProgressTime(aElapsedHours);
-
-        someMessages ??= GetMessagesBuffer();
-
-        for (int i = 0; i < timePassed.Weeks; ++i)
+        CoroutineHandle progressTimeHandle = default;
+        if (!Instance.m_progressTimeHandle.CoroutineIsRunning)
         {
-            CornManagerBalancing.GetEventCostAndRewards(CornEventType.NEW_WEEK).ApplyModifiersToPlayer();
-            playerSaveData.MaxMentalSanity--;
-            playerSaveData.MentalSanity = Mathf.Clamp(playerSaveData.MentalSanity, 0, playerSaveData.MaxMentalSanity);
-            someMessages.Add("New week passed, take some money lmao, but -1 sanity.");
+            var activePlayerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
+            var playerSaveData = activePlayerSaveData.Data;
+            TimeSpan timePassed = playerSaveData.ProgressTime(anElapsedHours);
+
+            someMessages ??= GetMessagesBuffer();
+
+            Debug.Log("PASS TIME " + anElapsedHours);
+            for (int i = 0; i < timePassed.Weeks; ++i)
+            {
+                CornManagerBalancing.GetEventCostAndRewards(CornEventType.NEW_WEEK).ApplyModifiersToPlayer();
+                playerSaveData.MaxMentalSanity--;
+                IncrementMentalSanity(0); //clamp sanity
+                someMessages.Add("New week passed, take some money lmao, but -1 sanity.");
+            }
+
+            List<CornShopItemPurchased> deliveryItems = playerSaveData.PurchasedItems;
+            for (int j = 0; j < deliveryItems.Count; j++)
+            {
+                var deliveryData = deliveryItems[j];
+                if (!deliveryData.Arrived)
+                {
+                    deliveryData.DaysLeft = (deliveryData.DaysLeft - timePassed.Days).Max(0);
+                    deliveryItems[j] = deliveryData;
+                }
+
+            }
+
+            for (int i = 0; i < timePassed.Days; ++i)
+            {
+                playerSaveData.DaysPassed++;
+                string message = "Day " + (playerSaveData.DaysPassed + 1);
+
+                bool loseSanity = false;
+                bool gainSanity = true;
+
+                for (int resourceIndex = 0; resourceIndex < (int)CornPlayerResources.COUNT; ++resourceIndex)
+                {
+                    gainSanity &= playerSaveData.Resources[resourceIndex] >= 0.5f;
+                    loseSanity |= playerSaveData.Resources[resourceIndex] <= 0;
+                }
+
+                CornManagerBalancing.GetEventCostAndRewards(CornEventType.NEW_DAY).ApplyModifiersToPlayer();
+
+                if (gainSanity)
+                {
+                    message += ", +1 sanity, good job.";
+                    IncrementMentalSanity(1);
+                }
+                else if (loseSanity)
+                {
+                    message += ", -1 sanity, try to take better care of yourself, otherwise, you will spiral out of control...";
+                    IncrementMentalSanity(-1);
+                }
+
+                someMessages.Add(message);
+            }
+
+            if (timePassed.Weeks > 0)
+            {
+                if (timePassed.Weeks > 1) Debug.LogWarning("The game was not designed to have more than one week pass at a time, backup saves will have a huge gap between them");
+                activePlayerSaveData.MakeBackup();
+            }
+
+            progressTimeHandle = Instance.m_progressTimeHandle.RunCoroutine(Instance._FlushMessagesAndDrawHud(aFadeToBlack));
+        }
+        else
+        {
+            Debug.LogWarning("Already passing time, cannot progress time before the current routine is over.");
         }
 
-        List<CornShopItemPurchased> deliveryItems = playerSaveData.PurchasedItems;
-        for (int j = 0; j < deliveryItems.Count; j++)
-        {
-            var deliveryData = deliveryItems[j];
-            if (!deliveryData.Arrived)
-            {
-                deliveryData.DaysLeft = (deliveryData.DaysLeft - timePassed.Days).Max(0);
-                deliveryItems[j] = deliveryData;
-            }
-
-        }
-
-        for (int i = 0; i < timePassed.Days; ++i)
-        {
-            string message = "Day " + playerSaveData.CurrentDay;
-
-            bool loseSanity = false;
-            bool gainSanity = true;
-
-            for (int resourceIndex = 0; resourceIndex < (int)CornPlayerResources.COUNT; ++resourceIndex)
-            {
-                gainSanity &= playerSaveData.Resources[resourceIndex] >= 0.5f;
-                loseSanity |= playerSaveData.Resources[resourceIndex] <= 0;
-            }
-
-            CornManagerBalancing.GetEventCostAndRewards(CornEventType.NEW_DAY).ApplyModifiersToPlayer();
-
-            if (gainSanity)
-            {
-                message += ", +1 sanity, good job.";
-                playerSaveData.MentalSanity++;
-            }
-            else if (loseSanity)
-            {
-                message += ", -1 sanity, try to take better care of yourself, otherwise, you will spiral out of control...";
-                playerSaveData.MentalSanity--;
-            }
-
-            someMessages.Add(message);
-            playerSaveData.MentalSanity = Mathf.Clamp(playerSaveData.MentalSanity, 0, playerSaveData.MaxMentalSanity);
-            CheckGameOver();
-        }
-
-        return Timing.RunCoroutine(_FlushMessagesAndDrawHud(anFadeToBlack));
+        return progressTimeHandle;
     }
 
-    private static IEnumerator<float> _FlushMessagesAndDrawHud(bool aFadeToBlack = true)
+    private IEnumerator<float> _FlushMessagesAndDrawHud(bool aFadeToBlack = true)
     {
         float fadeTime = Instance.m_screenFadeTime;
 
@@ -377,7 +401,8 @@ public class CornManagerEvents : MonoBehaviour
 
         GfgManagerSceneLoader.FakeWait = false;
 
-        GfgManagerGame.SetGameState(GfcGameState.APARTMENT, false);
+        GfgManagerSceneLoader.RequestGameStateAfterLoad(GfcGameState.APARTMENT, false);
+
         CoroutineHandle deliveryCoroutine = _FlushDeliveredShopItems(Instance.m_messagesBuffer);
         if (deliveryCoroutine.IsValid) Timing.WaitUntilDone(deliveryCoroutine);
 
@@ -388,23 +413,62 @@ public class CornManagerEvents : MonoBehaviour
         if (handle.IsValid) yield return Timing.WaitUntilDone(handle);
 
         Instance.m_messagesBuffer.Clear();
+        CheckGameOver();
 
         if (aFadeToBlack)
         {
             GfxUiTools.FadeOverlayAlpha(0, fadeTime);
             yield return Timing.WaitForSeconds(fadeTime);
         }
+
+        m_progressTimeHandle.Finished();
     }
 
-    public static IEnumerator<float> CheckGameOver()
+    public static void IncrementMentalSanity(int aModifier, bool aCheckGameOver = false)
     {
-        var playerSaveData = GfgManagerSaveData.GetActivePlayerSaveData();
-        playerSaveData.Data.MentalSanity.MaxSelf(0);
+        var cornSaveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
+        cornSaveData.MentalSanity = (cornSaveData.MentalSanity + aModifier).Clamp(0, cornSaveData.MaxMentalSanity);
+        if (aCheckGameOver)
+            CheckGameOver();
+    }
 
-        if (playerSaveData.Data.MentalSanity == 0)
-            Debug.LogError("Game over, but not implemented yet");
+    public static bool CheckGameOver()
+    {
+        if (!Instance.m_gameOverHandle.CoroutineIsRunning)
+        {
+            var cornSaveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
+            if (cornSaveData.MentalSanity <= 0)
+            {
+                //kill any relevant system running
+                //should also close dialogue system in case the mental sanity is reduced there
+                Instance.m_eventHandle.KillCoroutine();
+                Instance.m_progressTimeHandle.KillCoroutine();
+                Instance.m_gameOverHandle.RunCoroutine(Instance._GameOver());
+            }
 
-        yield return Timing.WaitForOneFrame;
+        }
+        else
+        {
+            Debug.LogWarning("Already executing GameOver routine, cannot increment mental sanity at this moment.");
+        }
+
+        return Instance.m_gameOverHandle.CoroutineIsRunning;
+    }
+
+    public IEnumerator<float> _GameOver()
+    {
+        Debug.Log("GAME OVER BOOOO");
+        CoroutineHandle loadLevelHandle = GfgManagerSceneLoader.LoadScene(GfcSceneId.GAME_OVER, GfcGameState.MAIN_MENU);
+
+        CoroutineHandle handle = GfxUiTools.GetNotifyPanel().DrawMessage(Instance.m_messagesBuffer);
+        if (handle.IsValid) yield return Timing.WaitUntilDone(handle);
+
+        Debug.Assert(loadLevelHandle.IsValid); //this should never be invalid
+        yield return Timing.WaitUntilDone(loadLevelHandle);
+
+        yield return Timing.WaitForSeconds(1);
+        GfgManagerGame.SetGameState(GfcGameState.SAVE_SELECT);
+        m_gameOverHandle.Finished();
     }
 
     public static void PurchaseShopItem(CornShopItem anItem) { GfgManagerSaveData.GetActivePlayerSaveData().Data.PurchaseShopItem(anItem); }

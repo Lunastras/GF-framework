@@ -578,19 +578,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6615498230639281418}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3933087558831858959}
-        m_TargetAssemblyTypeName: GfxButton, Project.UI
-        m_MethodName: Submit
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &3590722994188570869
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -620,6 +608,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6e0472c0b8a12445afd06c8dd831ba9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  InputKeyPriority: 1
+  HideInteractablePrompt: 0
   OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -668,8 +658,10 @@ MonoBehaviour:
     ColorContentBlendMode: 0
     Opacity: 1
     PixelsPerUnit: 1
+  Submitable: 1
   Index: 0
   TransitionTime: 0.1
+  DeselectOnEvenSystemDeselect: 1
   VisualsParent: {fileID: 5536428220905237350}
   GraphicsPanel:
   - {fileID: 3764683503486909837}
@@ -702,8 +694,6 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   LocalTransformRelativeToOriginal: 1
-  m_colorAtBeginningOfTransition: []
-  m_originalColors: []
 --- !u!114 &4197323702013194581
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -718,8 +708,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_sliderMain: {fileID: 2128692029641355255}
   m_textValue: {fileID: 3979644706584514223}
-  m_previewFlashInterval: 2
-  m_previewHold: 1
   m_valueTextMultiplier: 100
   m_sliderPositiveColor: {r: 0, g: 1, b: 0, a: 1}
   m_sliderNegativeColor: {r: 1, g: 0, b: 0, a: 1}

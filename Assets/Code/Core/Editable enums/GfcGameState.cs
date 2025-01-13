@@ -14,5 +14,6 @@ public enum GfcGameState
     WHACK_A_WOLF,
     SHOP,
     CORN_ROLL,
+    SAVE_SELECT,
     COUNT
 }

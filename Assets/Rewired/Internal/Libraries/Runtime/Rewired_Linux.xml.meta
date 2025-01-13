@@ -6,3 +6,10 @@ TextScriptImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 21676
+  packageName: Rewired
+  packageVersion: 1.1.58.2
+  assetPath: Assets/Rewired/Internal/Libraries/Runtime/Rewired_Linux.xml
+  uploadId: 716174

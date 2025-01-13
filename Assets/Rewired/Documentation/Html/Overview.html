@@ -90,17 +90,19 @@
             <strong>Extras:</strong>
             <ul>
               <li><a href="ControlMapper.html" title="Control Mapper">Control Mapper</a></li>
+              <li><a href="Glyphs.html" title="Glyphs">Glyphs</a></li>
 	          <li><a href="TouchControls.html" title="Touch Controls">Touch Controls</a></li>
-              <li><a href="RewiredStandaloneInputModule.html">Rewired Standalone Input Module</a></li>
 	          <li><a href="UnityInputOverride.html" title="Unity Input Override">Unity Input Override</a></li>
             </ul>
             <strong>Misc:</strong>
             <ul>
+              <li><a href="RewiredStandaloneInputModule.html">Rewired Standalone Input Module</a></li>
 	          <li><a href="ComponentControls.html" title="Component Controls">Component Controls</a></li>
 	          <li><a href="PlayerControllers.html" title="Player Controllers">Player Controllers</a></li>
 	          <li><a href="InputMapper.html" title="Input Mapper">Input Mapper</a></li>
 	          <li><a href="UserDataStore.html" title="User Data Store">User Data Store</a></li>
 	          <li><a href="CustomPlatforms.html" title="User Data Store">Custom Platforms</a></li>
+              <li><a href="Localization.html" title="Localization">Localization</a></li>
             </ul>
             <strong>How To's:</strong>
             <ul>
@@ -151,7 +153,7 @@
     <ul>
       <li>Works in Unity free and Pro.</li>
       <li>Player-centric input system.</li>
-      <li>Full hot-plugging support on Windows, OSX, Linux, Windows 10 Universal, WebGL, Xbox One, Xbox Series S/X, PS4, PS5, Nintendo Switch, and Stadia. (Other platforms depend on Unity's input system's support for hot-plugging on that platform.)</li>
+      <li>Full hot-plugging support on Windows, OSX, Linux, Windows 10 Universal, WebGL, Xbox One, Xbox Series S/X, PS4, PS5, and Nintendo Switch. (Other platforms depend on Unity's input system's support for hot-plugging on that platform.)</li>
       <li>Extended native input support on several platforms.</li>
       <li>Optional XInput support for Windows (mandatory for Windows 8 Store).</li>
       <li>Fallback on Unity input for all other platforms. Most features still work.</li>
@@ -160,6 +162,8 @@
       <li>Get input in Update, Fixed Update, and OnGUI -- you choose which loops update runs in, one or multiple as needed.</li>
       <li>Customizable and saveable controller maps -- export mappings to XML or JSON and save how you choose (example included using PlayerPrefs, but save however you like.)</li>
       <li>Included Control Mapper system using Unity GUI allows your players to rebind controls at runtime.</li>
+      <li>Display glyphs or text for controller elements for UI help. Create your own glyphs or use the included ones.</li>
+      <li>User-defined localization of all strings including controller and controller element names.</li>
       <li>Unlimited mapping layouts per controller.</li>
       <li>Controller Templates (see Controllers section).</li>
       <li>Included on-screen touch controls for mobile platforms. (Unity 5.0+)</li>
@@ -172,12 +176,12 @@
     </h4>
     <ul>
       <li>Functional support for most USB and Bluetooth controllers <span style="vertical-align: super; font-size: 65%;">[<a href="#clarifications">1</a>]</span> (see below).</li>
-      <li><a href="SupportedControllers.html">Extended support for many game controllers of all types</a> on numerous platforms. You can create additional controller definitions to support more, or if you'd like you can mail me your controller and I'll add the definitions and mail it back! :)</li>
+      <li><a href="SupportedControllers.html">Extended support for many game controllers of all types</a> on numerous platforms.</li>
       <li>Supported controllers are recognized on each platform and are fully mapable by element name and have standardized axis directions.</li>
       <li>For any controller not included, you can map an Unknown controller which includes all possible buttons/axes on the platform (Windows 128 buttons &amp; 32 axes, etc.) Regardless of whether you define a map for this, users will always be able to manually map every element on the controller. This means support for the vast majority of USB and Bluetooth controllers. <span style="vertical-align: super; font-size: 65%;">[<a href="#clarifications">1</a>]</span></li>
       <li>Controller template system so you can either choose to create default maps for every controller you wish to explicitly support, or save time and just map the template. All controllers that use that template will be mapped automatically. Rewired comes with controller templates for gamepads, flight controllers, racing wheels, and 6-dof controllers. User can always map any remaining controller elements even if they're not defined on the template.</li>
       <li>Named buttons and controller elements for supported controllers (for help messages and config screens).</li>
-      <li>Vibration (Windows,  Windows 10 Universal, OSX, Linux, XBox One, Xbox Series S/X, PS4, PS5, Nintendo Switch, and Stadia currently).</li>
+      <li>Vibration (Windows,  Windows 10 Universal, OSX, Linux, XBox One, Xbox Series S/X, PS4, PS5, and Nintendo Switch currently).</li>
       <li>Advanced controller features such as vibration, touchpad, light, and gyro on the Sony DualShock 4 and DualSense controllers.</li>
       <li>Custom Controllers  - Any source can be used to drive the controller's element values. Custom Controllers can be used for on-screeen touch controllers and more.</li>
     </ul>
@@ -249,8 +253,6 @@
     <ul>
       <li>Input Manager is self-contained so you can actually have separate input managers for different levels if you choose with entirely different mappings, etc. (Not necessary but interesting!)</li>
       <li>Functions for mapping conflict checking</li>
-      <li>Identify joysticks by button press in Unity Fallback mode.</li>
-      <li>Included example of mapping screen using Unity GUI (will update when new GUI system comes out) including saving and loading of maps per-player.</li>
       <li>Documentation</li>
     </ul>
     <h4>Performance:</h4>
@@ -258,16 +260,17 @@
       <li>Rewired is fast, written in C#, and tuned for performace.</li>
       <li>ZERO bytes of memory allocated per-frame during gameplay situations means no garbage collection overhead.* (Some allocations required during remapping).<br />
         * Fallback platforms have periodic very small allocations as it polls Input.GetJoystickNames() every second or two to detect joystick changes.<!-- end .content --></li>
+      <li>The vast majority of code is included in a DLL, so it won't slow down your script compilation during development.</li>
       </ul>
     <h4>Limitations:</h4>
     <ul>
-    	<li>Hot-plugging in Windows Webplayer is not possible because the Windows Unity webplayer cannot access outside libraries. However, the rest of the features work just fine in Webplayer.</li>
-	    <li>Rewired is not for those who want to make games with zero coding knowledge. <strong>Coding is required.</strong></li>
+      <li>Rewired is not for those who want to make games with zero coding knowledge. <strong>Coding is required.</strong></li>
     </ul>
     <h4>Requirements:</h4>
     <ul>
 	    <li><a href="https://unity3d.com" target="_blank">Unity 4.3</a> or later, Free or Pro.</li>
-        <li><a href="https://unity3d.com" target="_blank">Unity 4.6</a> or later required for Control Mapper.</li>
+        <li><a href="https://unity3d.com" target="_blank">Unity 5.0</a> or later required for Control Mapper.</li>
+        <li><a href="https://unity3d.com" target="_blank">Unity 5.0</a> or later required for Glyphs.</li>
         <li><a href="https://unity3d.com" target="_blank">Unity 5.0</a> or later required for WebGL native input and Touch Controls.</li>
 	    <li>OSX 10.5 or later is required for the OSX Unity editor and OSX Standalone builds.</li>
 	    </ul>

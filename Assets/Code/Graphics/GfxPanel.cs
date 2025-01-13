@@ -43,7 +43,6 @@ public class GfxPanel : GfxButton2D
     protected float m_priorityTextLengthRatio = 1;
     private bool m_initializedPanel = false;
 
-    private void Start() { Initialize(); }
     public override void Initialize()
     {
         if (!m_initializedPanel)

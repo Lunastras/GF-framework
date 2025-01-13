@@ -1191,6 +1191,3 @@ public unsafe struct MgCollisionStruct
 }
 
 #endregion
-
-
-

@@ -19,6 +19,9 @@ public enum Order
 
 public static class GfcToolsStatic
 {
+    //Not the fastest thing in the world, but damn is it simple
+    public static T GetDeepCopy<T>(this T anObject) where T : class { return JsonUtility.FromJson<T>(JsonUtility.ToJson(anObject)); }
+
     public static int AddSorted<T>(this IList<T> aList, T aValue, Func<T, T, int> aCompareFunction, Order anOrder = Order.ASCENDING) where T : IComparable<T>
     {
         Debug.Assert(aList.GetType().IsClass, "This function does not work for value types. Please use 'GetSortedIndex' instead and insert it at the respective index, or use GfcToolsStatic.AddSorted<T>(ref IList<T> aList..)");
@@ -131,8 +134,8 @@ public static class GfcToolsStatic
 
     public static void SetSingleton<T>(this T aGameObject, ref T anInstance) where T : MonoBehaviour
     {
-        if (anInstance != aGameObject)
-            MonoBehaviour.DestroyImmediate(anInstance);
+        //if (anInstance != aGameObject && anInstance != null)
+        // MonoBehaviour.DestroyImmediate(anInstance.gameObject);
         anInstance = aGameObject;
     }
 

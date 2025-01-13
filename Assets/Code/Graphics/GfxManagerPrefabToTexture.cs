@@ -11,12 +11,15 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
     [SerializeField] private GameObject m_cameraPrefab;
     [SerializeField] private float m_xPositionOffset = 10;
 
+    private Transform m_objectsParent;
+
     const float INITIAL_X_POSITION = -65536;
     float m_currentXPosition = INITIAL_X_POSITION;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
+        Debug.Assert(m_cameraPrefab);
         this.SetSingleton(ref Instance);
         m_templates.Initialize(GfxPrefabToTextureInstanceTemplateType.COUNT);
         m_currentXPosition = INITIAL_X_POSITION;
@@ -27,7 +30,21 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
             else
                 Debug.LogError("The template of type " + (GfxPrefabToTextureInstanceTemplateType)i + " is null.");
         }
+
+        InitParent();
     }
+
+    private void InitParent()
+    {
+        if (m_objectsParent == null)
+        {
+            m_objectsParent = new GameObject("PrefabToTextureParent").transform;
+            m_objectsParent.gameObject.hideFlags = HideFlags.DontSave;
+            SceneManager.MoveGameObjectToScene(m_objectsParent.gameObject, SceneManager.GetSceneByBuildIndex((int)GfcSceneId.GF_BASE));
+        }
+    }
+
+    private void OnDestroy() { DestroyImmediate(m_objectsParent.gameObject); }
 
     public static GfxPrefabToTexture GetTemplate(GfxPrefabToTextureInstanceTemplateType aType, bool aSkipIfInstanceIsNull = false)
     {
@@ -74,15 +91,20 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    void Update() { if (!Application.isPlaying) this.SetSingleton(ref Instance); }
+    void Update()
+    {
+        if (!Application.isPlaying) this.SetSingleton(ref Instance);
+    }
 #endif //UNITY_EDITOR
 
     public static GfxPrefabToTextureInstanceData GetInitializedPrefab(GameObject aPrefab, TransformData aTransformData, float anObjectLengthX, float aCameraSizeOrFov, bool anOrthographicProjection, Vector2 aTextureResolution, FilterMode aFilterMode, bool anIgnoreIfInstanceNull)
     {
         GfxPrefabToTextureInstanceData instanceData = default;
         Debug.Assert(Instance || anIgnoreIfInstanceNull);
-        if (Instance)
+        Debug.Assert(aPrefab);
+        if (Instance && aPrefab && Instance.m_cameraPrefab)
         {
+            Instance.InitParent();
             float objectLengthHalf = anObjectLengthX * 0.5f * aTransformData.Scale.x.Abs();
             GameObject cameraObj = GfcPooling.Instantiate(Instance.m_cameraPrefab);
             Camera camera = cameraObj.GetComponent<Camera>();
@@ -94,6 +116,8 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
 
             prefabParent.gameObject.SetLayerRecursive(camera.gameObject.layer);
             cameraObj.SetHideFlagsRecursive(HideFlags.DontSave);
+
+            camera.transform.SetParent(Instance.m_objectsParent);
 
             RenderTexture renderTexture = new((int)aTextureResolution.x, (int)aTextureResolution.y, 1);
             renderTexture.filterMode = aFilterMode;
@@ -117,8 +141,6 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
                 Camera = camera,
                 Prefab = aPrefab,
             };
-
-            SceneManager.MoveGameObjectToScene(cameraObj, SceneManager.GetSceneByBuildIndex((int)GfcSceneId.GF_BASE));
         }
 
         return instanceData;

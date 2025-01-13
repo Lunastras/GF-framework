@@ -22,7 +22,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
     [SerializeField] protected bool m_enableLogs = false;
 
-    public static bool CurrentlyLoading { get { return Instance && Instance.m_loadingRoutine.CoroutineIsRunning; } }
+    public static bool CurrentlyLoading { get { return Instance && Instance.m_loadingHandle.CoroutineIsRunning; } }
 
     protected static GfcGameState GameStateAfterLoad = GfcGameState.INVALID;
 
@@ -57,7 +57,8 @@ public class GfgManagerSceneLoader : MonoBehaviour
         }
     }
 
-    private GfcCoroutineHandle m_loadingRoutine = default;
+    private GfcCoroutineHandle m_loadingHandle = default;
+    private GfcCoroutineHandle m_fakeWaitHandle = default;
 
     public static ServerLoadingMode ServerLoadingMode { get; protected set; } = ServerLoadingMode.KEEP_SERVER;
 
@@ -84,7 +85,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
     public static void RequestGameStateAfterLoad(GfcGameState aNewGameState, bool aSmoothTransition = true, GfxTransitionType aTransition = GfxTransitionType.BLACK_FADE)
     {
-        if (CurrentlyLoading)
+        if (CurrentlyLoading || Instance.m_fakeWaitHandle.CoroutineIsRunning)
         {
             if (Instance.m_softGameStateLock)
                 GameStateAfterLoad = aNewGameState;
@@ -117,7 +118,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
                 Instance.m_scenesToUnload.Clear();
                 Instance.m_gameStateKey = GfgManagerGame.GameStateLockHandle.Lock(Instance);
-                Instance.m_loadingRoutine.RunCoroutine(_LoadAsyncHost());
+                Instance.m_loadingHandle.RunCoroutine(_LoadAsyncHost());
             }
             else
             {
@@ -131,7 +132,7 @@ public class GfgManagerSceneLoader : MonoBehaviour
             Debug.LogWarning("Already in the process of loading scene with build index " + SceneBuildIndexToLoad + ", there might be issues loading scene " + aSceneBuildIndex);
         }
 
-        return Instance.m_loadingRoutine;
+        return Instance.m_loadingHandle;
     }
 
     public static void LoadScene(string aLevelName, GfcGameState aNewGameState = GfcGameState.INVALID, bool aReloadIfLoaded = false, GfcGameMultiplayerType aGameType = GfcGameMultiplayerType.SINGLEPLAYER, ServerLoadingMode aLoadingMode = ServerLoadingMode.KEEP_SERVER)
@@ -259,14 +260,14 @@ public class GfgManagerSceneLoader : MonoBehaviour
         if (mustHaveNetworkGame) GfcManagerServer.SetPlayerIsReady(true);
 
         if (Instance.m_fakeWait)
-            Timing.RunCoroutine(_FakeLoadWait());
+            Instance.m_fakeWaitHandle.RunCoroutine(_FakeLoadWait());
         else
         {
             transitionHandle = GfgManagerGame.GetGameStateTransitionHandle();
             if (transitionHandle.IsValid) yield return Timing.WaitUntilDone(transitionHandle); //make sure the fade out of the first transition is done
         }
 
-        Instance.m_loadingRoutine.Finished();
+        Instance.m_loadingHandle.Finished();
     }
 
     private static IEnumerator<float> _FakeLoadWait()
@@ -277,5 +278,6 @@ public class GfgManagerSceneLoader : MonoBehaviour
         Instance.m_fakeWait = false;
         GfgManagerGame.GameStateLockHandle.Unlock(ref Instance.m_gameStateKey);
         GfgManagerGame.SetGameState(GameStateAfterLoad, false);
+        Instance.m_fakeWaitHandle.Finished();
     }
 }

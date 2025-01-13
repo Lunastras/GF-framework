@@ -3,6 +3,8 @@ public enum GfcSceneId
 {
     INVALID = -1,
 
+    SPLASH_SCENE,
+    MAIN_MENU,
     GF_BASE,
     PHONE,
 
@@ -14,6 +16,7 @@ public enum GfcSceneId
     IRISU,
     WHACK_A_WOLF,
     SHOP,
+    GAME_OVER,
     CORN_LEVEL_0,
     COUNT,
 }

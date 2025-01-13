@@ -10,193 +10,68 @@ using Unity.Collections;
 public class GfgPlayerSaveData
 {
     [SerializeField] private string m_name;
-
     public double SecondsPlayed;
-
-    private double m_unixTimeOfCreation;
-
-    public class CornSaveData
-    {
-        public HashSet<string> FinishedNonSpecificScenes = new(8);
-
-        public int MentalSanity;
-        public int MaxMentalSanity;
-
-        public float[] Consumables;
-
-        public float[] Resources;
-        public float[] SkillStats;
-
-        public int CurrentStoryPhase;
-
-        public int[] CurrentStoryPhaseProgress;
-
-        public List<CornShopItemPurchased> PurchasedItems;
-
-        public int DayOfTheWeek;
-
-        public int CurrentHour { get; private set; } = FIRST_WAKEUP_TIME;
-
-        public int CurrentDay { get; private set; } = 0;
-
-        public int CurrentMonth { get; private set; } = 0;
-
-        public int CurrentWakeUpTime = FIRST_WAKEUP_TIME;
-
-        public int CurrentSleepTime = 22;
-
-        public bool CurrentStoryPhaseGameLevelFinished;
-
-        public int CurrentStoryPhaseGameTriviasFinished;
-
-        public int WorkCountSinceLastTrivia;
-
-        public bool HadCornEventSinceWakeUp;
-        public int CornActionsInARow;
-
-        public TimeSpan ProgressTime(int aHoursSpan)
-        {
-            CurrentHour += aHoursSpan;
-            int daysPassed = CurrentHour / 24;
-            CurrentHour %= 24;
-            CurrentDay += daysPassed;
-
-            int daysInMonth = GetDaysInMonth(CurrentMonth);
-
-            int monthsPassed = 0;
-            while (daysInMonth <= CurrentDay)
-            {
-                monthsPassed++;
-                CurrentDay -= daysInMonth;
-                CurrentMonth++;
-                CurrentMonth %= 12;
-
-                daysInMonth = GetDaysInMonth(CurrentMonth);
-            }
-
-            int weeksPassed = (DayOfTheWeek + daysPassed) / 7;
-            DayOfTheWeek = (DayOfTheWeek + daysPassed) % 7;
-
-            return new(daysPassed, weeksPassed, monthsPassed);
-        }
-
-        //aYear = 1 because we do not want leap year by default
-        protected static int GetDaysInMonth(int aMonth, int aYear = 1)
-        {
-            int numDays = 30;
-
-            if (aMonth == 1)
-            {
-                bool leapYear = (aYear % 400 == 0) || (aYear % 100 != 0) && (aYear % 4 == 0);
-                numDays = leapYear ? 29 : 28;
-            }
-            else if (aMonth % 2 == 0 || aMonth == 7) //august also has 31 days because Augustus could not accept Julius has more days
-                numDays++;
-
-            return numDays;
-        }
-
-        public float GetValue(CornPlayerResources aType) { return Resources[(int)aType]; }
-        public float GetValue(CornPlayerConsumables aType) { return Consumables[(int)aType]; }
-        public float GetValue(CornPlayerSkillsStats aType) { return SkillStats[(int)aType]; }
-
-        public void ApplyModifier(CornPlayerSkillsStats aType, float aValue)
-        {
-            SkillStats[(int)aType] = (SkillStats[(int)aType] + aValue).Clamp(0, 1);
-        }
-
-        public void ApplyModifier(CornPlayerResources aType, float aValue)
-        {
-            Resources[(int)aType] = (Resources[(int)aType] + aValue).Clamp(0, 1);
-        }
-
-        public void ApplyModifier(CornPlayerConsumables aType, float aValue)
-        {
-            Consumables[(int)aType] += aValue;
-            if (aType < CornPlayerConsumables.MONEY)
-                Consumables[(int)aType] = Consumables[(int)aType].Clamp(0, 1);
-        }
-
-        public bool CanAfford(CornPlayerConsumables aType, float aValue)
-        {
-            return -0.0001 <= Consumables[(int)aType] + aValue; //-0.001 to account for errors
-        }
-
-        public bool CanAfford(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0)
-        {
-            return CanAfford(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value));
-        }
-
-        public bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier>
-        {
-            bool canAfford = true;
-            if (someModifiers != null)
-                foreach (CornPlayerConsumablesModifier modifier in someModifiers)
-                    canAfford &= CanAfford(modifier, aMultiplier, aBonusMultiplier);
-
-            return canAfford;
-        }
-
-        public bool CanAffordMoney<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier>
-        {
-            bool canAfford = true;
-            if (someModifiers != null)
-                foreach (CornPlayerConsumablesModifier modifier in someModifiers)
-                    if (modifier.Type == CornPlayerConsumables.MONEY)
-                    {
-                        canAfford &= CanAfford(modifier, aMultiplier, aBonusMultiplier);
-                        break;
-                    }
-
-            return canAfford;
-        }
-
-        public void ApplyModifier(CornPlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
-        public void ApplyModifier(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
-        public void ApplyModifier(CornPlayerSkillStatsModifier aModifier) { ApplyModifier(aModifier.Type, aModifier.Value); }
-
-        public void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerResourcesModifier> { if (someModifiers != null) foreach (CornPlayerResourcesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
-        public void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier> { if (someModifiers != null) foreach (CornPlayerConsumablesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
-        public void ApplyModifierSkillStatsList<T>(T someModifiers) where T : IEnumerable<CornPlayerSkillStatsModifier> { if (someModifiers != null) foreach (CornPlayerSkillStatsModifier modifier in someModifiers) ApplyModifier(modifier); }
-
-        public void PurchaseShopItem(CornShopItem anItem)
-        {
-            Debug.Assert(GfgManagerGame.GetGameState() == GfcGameState.APARTMENT || GfgManagerGame.GetGameState() == GfcGameState.SHOP, "Unexpected game state in which to purchase a shop item.");
-            CornShopItemsData item = CornManagerBalancing.GetShopItemData(anItem);
-            ApplyModifier(CornPlayerConsumables.MONEY, -item.Price);
-            PurchasedItems.Add(new() { Item = anItem, DaysLeft = item.DeliveryDays, Arrived = false });
-            CornMenuApartment.UpdateGraphics();
-        }
-    };
+    public bool FinishedStartCutscene;
 
     public CornSaveData Data = new();
 
-    private readonly float m_originalMaxSumMoney = INITIAL_SUM_OF_MONEY;
+    public CornSaveData[] DataBackup;
 
-    private const int INITIAL_SUM_OF_MONEY = 10000;
-
-    private const int FIRST_WAKEUP_TIME = 8;
-
-    private const float START_RESOURCE_VALUE = 0.5f;
-
+    public double m_unixTimeOfCreation;
+    public readonly float m_originalMaxSumMoney = INITIAL_SUM_OF_MONEY;
+    public const int INITIAL_SUM_OF_MONEY = 10000;
+    public const int DATA_BACKUPS_COUNT = 3;
+    public const int FIRST_WAKEUP_TIME = 8;
+    public const float START_RESOURCE_VALUE = 0.5f;
     public const int COUNT_RESOURCES = (int)CornPlayerResources.COUNT;
-
     public const int COUNT_CONSUMABLES = (int)CornPlayerConsumables.COUNT;
-
     public const int COUNT_0_TO_100_CONSUMABLES = (int)CornPlayerConsumables.MONEY; //Money is not between 0 to 100
-
     public const int COUNT_NON_0_TO_100_CONSUMABLES = COUNT_CONSUMABLES - COUNT_0_TO_100_CONSUMABLES; //Money is not between 0 to 100
 
     public GfgPlayerSaveData(string aName, double aCurrentUnixTime)
     {
         m_name = aName;
         m_unixTimeOfCreation = aCurrentUnixTime;
+        DataBackup = new CornSaveData[DATA_BACKUPS_COUNT];
 
         ValidateSaveFile();
 
         Data.MaxMentalSanity = CornManagerBalancing.DICE_ROLL_NUM_FACES;
         Data.MentalSanity = Data.MaxMentalSanity;
         Data.Consumables[(int)CornPlayerConsumables.MONEY] = INITIAL_SUM_OF_MONEY;
+
+        MakeBackup();
+    }
+
+    public void SetBackupDataUsed(int anIndex)
+    {
+        Debug.Assert(anIndex >= 0 && anIndex < DATA_BACKUPS_COUNT);
+        Data = DataBackup[anIndex];
+        ValidateSaveFile();
+    }
+
+    public void MakeBackup()
+    {
+        if (DataBackup[0] == null)
+        {
+            DataBackup[0] = Data.GetDeepCopy();
+        }
+        else
+        {
+            for (int i = 0; i < DATA_BACKUPS_COUNT; i++)
+            {
+                if (DataBackup == null || DataBackup[i].DaysPassed <= Data.DaysPassed)
+                {
+                    if (DataBackup != null && DataBackup[i].DaysPassed < Data.DaysPassed)
+                    {
+                        for (int j = DATA_BACKUPS_COUNT - 1; j > i; j--)
+                            DataBackup[j] = DataBackup[j - 1];
+                    }
+
+                    DataBackup[i] = Data.GetDeepCopy();
+                }
+            }
+        }
     }
 
     public string GetName() { return m_name; }
@@ -254,6 +129,13 @@ public class GfgPlayerSaveData
             createdNewSave = true;
         }
 
+        if (DataBackup == null)
+        {
+            validData = false;
+            DataBackup = new CornSaveData[DATA_BACKUPS_COUNT];
+            MakeBackup();
+        }
+
         validData &= Data.PurchasedItems != null;
         Data.PurchasedItems ??= new(8);
 
@@ -261,6 +143,7 @@ public class GfgPlayerSaveData
         validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
         validData &= ValidateArrayValues(ref Data.Resources, (int)CornPlayerResources.COUNT, START_RESOURCE_VALUE);
         validData &= ValidateArrayValues(ref Data.Consumables, (int)CornPlayerConsumables.COUNT, START_RESOURCE_VALUE);
+        validData &= ValidateArrayValues(ref DataBackup, DATA_BACKUPS_COUNT);
 
         Data.MentalSanity.ClampSelf(0, CornManagerBalancing.DICE_ROLL_NUM_FACES);
 
@@ -270,6 +153,162 @@ public class GfgPlayerSaveData
         return validData || createdNewSave;
     }
 }
+
+public class CornSaveData
+{
+    public HashSet<string> FinishedNonSpecificScenes = new(8);
+
+    public int MentalSanity;
+    public int MaxMentalSanity;
+
+    public float[] Consumables;
+
+    public float[] Resources;
+    public float[] SkillStats;
+
+    public int CurrentStoryPhase;
+
+    public int[] CurrentStoryPhaseProgress;
+
+    public List<CornShopItemPurchased> PurchasedItems;
+
+    public int DaysPassed;
+    public int DayOfTheWeek;
+
+    public int CurrentHour { get; private set; } = GfgPlayerSaveData.FIRST_WAKEUP_TIME;
+
+    public int CurrentDay { get; private set; } = 0;
+
+    public int CurrentMonth { get; private set; } = 0;
+
+    public int CurrentWakeUpTime = GfgPlayerSaveData.FIRST_WAKEUP_TIME;
+
+    public int CurrentSleepTime = 22;
+
+    public bool CurrentStoryPhaseGameLevelFinished;
+
+    public int CurrentStoryPhaseGameTriviasFinished;
+
+    public int WorkCountSinceLastTrivia;
+
+    public bool HadCornEventSinceWakeUp;
+    public int CornActionsInARow;
+    public int CornActionsExecuted;
+
+    public TimeSpan ProgressTime(int aHoursSpan)
+    {
+        CurrentHour += aHoursSpan;
+        int daysPassed = CurrentHour / 24;
+        CurrentHour %= 24;
+        CurrentDay += daysPassed;
+
+        int daysInMonth = GetDaysInMonth(CurrentMonth);
+
+        int monthsPassed = 0;
+        while (daysInMonth <= CurrentDay)
+        {
+            monthsPassed++;
+            CurrentDay -= daysInMonth;
+            CurrentMonth++;
+            CurrentMonth %= 12;
+
+            daysInMonth = GetDaysInMonth(CurrentMonth);
+        }
+
+        int weeksPassed = (DayOfTheWeek + daysPassed) / 7;
+        DayOfTheWeek = (DayOfTheWeek + daysPassed) % 7;
+
+        return new(daysPassed, weeksPassed, monthsPassed);
+    }
+
+    //aYear = 1 because we do not want leap year by default
+    protected static int GetDaysInMonth(int aMonth, int aYear = 1)
+    {
+        int numDays = 30;
+
+        if (aMonth == 1)
+        {
+            bool leapYear = (aYear % 400 == 0) || (aYear % 100 != 0) && (aYear % 4 == 0);
+            numDays = leapYear ? 29 : 28;
+        }
+        else if (aMonth % 2 == 0 || aMonth == 7) //august also has 31 days because Augustus could not accept Julius has more days
+            numDays++;
+
+        return numDays;
+    }
+
+    public float GetValue(CornPlayerResources aType) { return Resources[(int)aType]; }
+    public float GetValue(CornPlayerConsumables aType) { return Consumables[(int)aType]; }
+    public float GetValue(CornPlayerSkillsStats aType) { return SkillStats[(int)aType]; }
+
+    public void ApplyModifier(CornPlayerSkillsStats aType, float aValue)
+    {
+        SkillStats[(int)aType] = (SkillStats[(int)aType] + aValue).Clamp(0, 1);
+    }
+
+    public void ApplyModifier(CornPlayerResources aType, float aValue)
+    {
+        Resources[(int)aType] = (Resources[(int)aType] + aValue).Clamp(0, 1);
+    }
+
+    public void ApplyModifier(CornPlayerConsumables aType, float aValue)
+    {
+        Consumables[(int)aType] += aValue;
+        if (aType < CornPlayerConsumables.MONEY)
+            Consumables[(int)aType] = Consumables[(int)aType].Clamp(0, 1);
+    }
+
+    public bool CanAfford(CornPlayerConsumables aType, float aValue)
+    {
+        return -0.0001 <= Consumables[(int)aType] + aValue; //-0.001 to account for errors
+    }
+
+    public bool CanAfford(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0)
+    {
+        return CanAfford(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value));
+    }
+
+    public bool CanAfford<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier>
+    {
+        bool canAfford = true;
+        if (someModifiers != null)
+            foreach (CornPlayerConsumablesModifier modifier in someModifiers)
+                canAfford &= CanAfford(modifier, aMultiplier, aBonusMultiplier);
+
+        return canAfford;
+    }
+
+    public bool CanAffordMoney<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier>
+    {
+        bool canAfford = true;
+        if (someModifiers != null)
+            foreach (CornPlayerConsumablesModifier modifier in someModifiers)
+                if (modifier.Type == CornPlayerConsumables.MONEY)
+                {
+                    canAfford &= CanAfford(modifier, aMultiplier, aBonusMultiplier);
+                    break;
+                }
+
+        return canAfford;
+    }
+
+    public void ApplyModifier(CornPlayerResourcesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
+    public void ApplyModifier(CornPlayerConsumablesModifier aModifier, float aMultiplier = 1, float aBonusMultiplier = 0) { ApplyModifier(aModifier.Type, aMultiplier * (aBonusMultiplier * aModifier.BonusPercent * aModifier.Value + aModifier.Value)); }
+    public void ApplyModifier(CornPlayerSkillStatsModifier aModifier) { ApplyModifier(aModifier.Type, aModifier.Value); }
+
+    public void ApplyModifierResourceList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerResourcesModifier> { if (someModifiers != null) foreach (CornPlayerResourcesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
+    public void ApplyModifierConsumablesList<T>(T someModifiers, float aMultiplier = 1, float aBonusMultiplier = 0) where T : IEnumerable<CornPlayerConsumablesModifier> { if (someModifiers != null) foreach (CornPlayerConsumablesModifier modifier in someModifiers) ApplyModifier(modifier, aMultiplier, aBonusMultiplier); }
+    public void ApplyModifierSkillStatsList<T>(T someModifiers) where T : IEnumerable<CornPlayerSkillStatsModifier> { if (someModifiers != null) foreach (CornPlayerSkillStatsModifier modifier in someModifiers) ApplyModifier(modifier); }
+
+    public void PurchaseShopItem(CornShopItem anItem)
+    {
+        Debug.Assert(GfgManagerGame.GetGameState() == GfcGameState.APARTMENT || GfgManagerGame.GetGameState() == GfcGameState.SHOP, "Unexpected game state in which to purchase a shop item.");
+        CornShopItemsData item = CornManagerBalancing.GetShopItemData(anItem);
+        ApplyModifier(CornPlayerConsumables.MONEY, -item.Price);
+        PurchasedItems.Add(new() { Item = anItem, DaysLeft = item.DeliveryDays, Arrived = false });
+        CornMenuApartment.UpdateGraphics();
+    }
+};
 
 public struct CornShopItemPurchased
 {

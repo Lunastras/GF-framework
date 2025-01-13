@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Data/Scenes/SplashScene.unity
+    guid: a8e3f0262474a7c4990dcc2f64e6d323
+  - enabled: 1
+    path: Assets/Data/Scenes/MainMenu.unity
+    guid: b0acabb5ca162f346babfa9c62d31852
+  - enabled: 1
     path: Assets/Data/Scenes/GfBaseScene.unity
     guid: 27914b7d823475040993c03597a56e9c
   - enabled: 1
@@ -32,6 +38,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Data/Scenes/Shop.unity
     guid: 48fa6e990cea140419ec6151a4f96f94
+  - enabled: 1
+    path: Assets/Data/Scenes/GameOver.unity
+    guid: 2fd21b214fe566f48bee1316196d5ea9
   - enabled: 1
     path: Assets/Data/Scenes/Game Levels/CornLevel0.unity
     guid: 1219f9e73be7bcf49bbc511116db3b59

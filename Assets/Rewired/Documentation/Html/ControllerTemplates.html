@@ -90,17 +90,19 @@
             <strong>Extras:</strong>
             <ul>
               <li><a href="ControlMapper.html" title="Control Mapper">Control Mapper</a></li>
+              <li><a href="Glyphs.html" title="Glyphs">Glyphs</a></li>
 	          <li><a href="TouchControls.html" title="Touch Controls">Touch Controls</a></li>
-              <li><a href="RewiredStandaloneInputModule.html">Rewired Standalone Input Module</a></li>
 	          <li><a href="UnityInputOverride.html" title="Unity Input Override">Unity Input Override</a></li>
             </ul>
             <strong>Misc:</strong>
             <ul>
+              <li><a href="RewiredStandaloneInputModule.html">Rewired Standalone Input Module</a></li>
 	          <li><a href="ComponentControls.html" title="Component Controls">Component Controls</a></li>
 	          <li><a href="PlayerControllers.html" title="Player Controllers">Player Controllers</a></li>
 	          <li><a href="InputMapper.html" title="Input Mapper">Input Mapper</a></li>
 	          <li><a href="UserDataStore.html" title="User Data Store">User Data Store</a></li>
 	          <li><a href="CustomPlatforms.html" title="User Data Store">Custom Platforms</a></li>
+              <li><a href="Localization.html" title="Localization">Localization</a></li>
             </ul>
             <strong>How To's:</strong>
             <ul>
@@ -147,9 +149,18 @@
 
     <p>A Controller Template represents a generalized controller layout that applies to all compatible controllers providing a common interface to work with these controllers. When you create a map for a Controller Template, any controller that implements the template will inherit that map automatically without the need for you to create a map specifically for that controller. For example, Rewired comes with a Gamepad Template. When you create a map for this Gamepad Template, you do not need to create individual maps specifically for any of the gamepads <a href="SupportedControllers.html">listed on this page</a> because they are all covered by the Gamepad Template. This makes is much quicker to create pre-defined controller maps for a huge variety of controllers. Additionally, as more controllers are added to the Template in the future, the map you've already created will work with these new controllers as well.</p>
 <p>If you have created a map for a Controller Template but still want to make a map for a specific controller that is covered by the Controller Template, just create the map for the specific controller and it will override the map defined in the Template.</p>
-    <p>Controller Templates can also be <a href="#scripting">accessed at runtime through scripting</a> for a variety of purposes.</p>
-    <p>For information about which controllers are compatible with which Controller Templates, please see <a href="SupportedControllers.html">Supported Controllers</a>.</p>
-    <p><strong><a name="gamepad-template" id="gamepad-template"></a><a name="dual-analog-gamepad-template" id="dual-analog-gamepad-template"></a>Gamepad Template:</strong></p>
+<p>See this for more information about <a href="ControllerMaps.html#controller-templates">how Controller Templates relate to Controller Maps</a>.</p>
+    <p>Controller Templates can also be <a href="#scripting">accessed at runtime through scripting</a> for a variety of purposes.    </p>
+    <p>For information about which controllers are compatible with which Controller Templates, please see <a href="SupportedControllers.html">Supported Controllers</a>. </p>
+<p><strong><a name="supported-controller-elements" id="supported-controller-elements"></a>Supported Controller Elements:</strong></p>
+    <ul>
+      <li>All controller elements mappable on a Controller Template are not guaranteed to exist on every compatible controller.</li>
+      <li>All controller elements on a controller are not guaranteed to be supported on every platform and input source. Which elements are supported is up to the specific input API in use for the controller.</li>
+      <li> If a controller element does not exist on a controller or if that element is not supported on a specific platform and input source, no Action mapping  will be created in the <a href="ControllerMaps.html#controller-templates">final runtime Controller Map</a> for that element.</li>
+      <li>All elements on a controller are not guaranteed to be mappable by a Controller Template. If a controller  contains elements that are not supported by the template, you must create a Controller Map for that specific controller, overriding the template, if you want to map Actions to these unsupported elements.</li>
+      </ul>
+    <p>&nbsp;</p>
+<p><strong><a name="gamepad-template" id="gamepad-template"></a><a name="dual-analog-gamepad-template" id="dual-analog-gamepad-template"></a>Gamepad Template:</strong></p>
     <p>The Gamepad Template allows you to make a map which will cover <a href="SupportedControllers.html#gamepads">all of the gamepads listed here</a>.</p>
     <p><strong>NOTE:</strong> Do not be confused and assume that the Gamepad Template will apply to and work with every gamepad in existence. The Template only applies to and works with <a href="SupportedControllers.html">recognized gamepads</a> that have controller definitions. There is no possible way to create a system that can automatically recognize and map  all gamepads, steering wheels, flight controllers, or any other type of device because the required information to do this simply does not exist in the USB or HID data provided by the device. Only <a href="SupportedControllers.html">devices that have controller definitions</a> can work with the Template system.</p>
     <p> The element names of the Gamepad Template are generalized because not all gamepads use the same names for all elements. Note that even though the Template element names are generalized, during gameplay, Rewired will use the controller's element's actual name instead of the generalized name. For example, an XBox 360 controller will report &quot;A&quot; instead of &quot;Action Bottom Row 1&quot; for the green button.</p>

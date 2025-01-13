@@ -90,17 +90,19 @@
             <strong>Extras:</strong>
             <ul>
               <li><a href="ControlMapper.html" title="Control Mapper">Control Mapper</a></li>
+              <li><a href="Glyphs.html" title="Glyphs">Glyphs</a></li>
 	          <li><a href="TouchControls.html" title="Touch Controls">Touch Controls</a></li>
-              <li><a href="RewiredStandaloneInputModule.html">Rewired Standalone Input Module</a></li>
 	          <li><a href="UnityInputOverride.html" title="Unity Input Override">Unity Input Override</a></li>
             </ul>
             <strong>Misc:</strong>
             <ul>
+              <li><a href="RewiredStandaloneInputModule.html">Rewired Standalone Input Module</a></li>
 	          <li><a href="ComponentControls.html" title="Component Controls">Component Controls</a></li>
 	          <li><a href="PlayerControllers.html" title="Player Controllers">Player Controllers</a></li>
 	          <li><a href="InputMapper.html" title="Input Mapper">Input Mapper</a></li>
 	          <li><a href="UserDataStore.html" title="User Data Store">User Data Store</a></li>
 	          <li><a href="CustomPlatforms.html" title="User Data Store">Custom Platforms</a></li>
+              <li><a href="Localization.html" title="Localization">Localization</a></li>
             </ul>
             <strong>How To's:</strong>
             <ul>
@@ -183,7 +185,9 @@
     <p>The mouse is similar to a Joystick in that it must be assigned to a Player before you can receive input from it. (This can be set in the Rewired Input Manager or through the <a href="https://guavaman.com/projects/rewired/docs/api-reference/html/P_Rewired_Player_ControllerHelper_hasMouse.htm">player.controllers.hasMouse</a> property.) </p>
     <p><strong><a name="controller-templates" id="controller-templates"></a>Controller Templates:</strong></p>
     <p>A <a href="ControllerTemplates.html">Controller Template</a> represents a generalized controller layout that applies to all compatible controllers providing a common interface to work with these controllers. When you create a map for a Controller Template, any controller that implements the template will inherit that map automatically without the need for you to create a map specifically for that controller. For example, Rewired comes with a Gamepad Template. When you create a map for this Gamepad Template, you do not need to create individual maps specifically for any of the gamepads <a href="SupportedControllers.html">listed on this page</a> because they are all covered by the Gamepad Template. This makes is much quicker to create pre-defined Controller Maps for a huge variety of controllers. Additionally, as more controllers are added to the Template in the future, the map you've already created will work with these new controllers as well.</p>
-    <p>Please see <a href="ControllerTemplates.html">Controller Templates</a> for detailed information.</p>
+    <p>It is important to understand that a Controller Template map as defined in the Rewired Editor is merely an interim map that is not used directly, but instead is converted into a Controller Map for a specific controller at runtime when the Controller Map is loaded. For example, when an Xbox Controller is connected, if a map for the Gamepad Template has been defined, the Gamepad Template map will be converted into an Xbox Controller map and loaded into the Player. At this point, the Controller Map no longer has any connection to the Gamepad Template map from which it was created, and it is just a Controller Map specifically to the Xbox One Controller.</p>
+    <p>When Controller Maps are loaded into a Player, if a Controller Map exists for a specific controller, it will override any applicable Controller Template Map (in the same Map Category and Layout) and be used instead. This can be useful if you need to create a mapping for a specific controller that differs from the template. For example, some Controllers have elements that are not mappable using a Controller Template. The Sony Dual Shock 4 controller has a touchpad button that is not covered by any of the Gamepad Template elements, so you would need to create a Controller Map specifically for the Dual Shock 4 to map an Action to the touchpad button.</p>
+<p>Please see <a href="ControllerTemplates.html">Controller Templates</a> for detailed information.</p>
 <p><strong><a name="controllers-without-templates" id="controllers-without-templates"></a>Controllers without Templates:</strong></p>
 <p>For the other controllers that do not currently have Controller Templates,  you have to create a map for each you want supported out of the box (meaning you don't want the user to manually have to map them before playing). If you don't create a map and you want the user to be able to use that controller, you'll have to make a remapping screen where the user can map his controls manually (see <a href="HowTos.html#controller-mapping-screen">Creating a Controller Mapping Screen</a> for more information).</p>
     <p><strong><a name="unknown-controllers" id="unknown-controllers"></a>Unknown Controllers (Joysticks only):</strong></p>
@@ -220,7 +224,12 @@
         <td>Hat 1</td>
       </tr>
   </table>
-    <p></p>
+    <p>&nbsp;</p>
+    <p><a name="supported-controller-elements" id="supported-controller-elements"></a><strong>Supported Controller Elements:</strong></p>
+    <ul>
+      <li>All controller elements on a controller are not guaranteed to be supported on every platform and input source. Which elements are supported is up to the specific input API in use for the controller.</li>
+      <li> If a controller element  is not supported on a specific platform and input source, no Action mapping  will be created in the final runtime Controller Map for that element.</li>
+  </ul>
     <p><strong><a name="xinput-devices-windows" id="xinput-devices-windows"></a>Special Considerations for XInput-compatible gamepads on Windows Standalone and Windows App Store</strong>:</p>
     <p>On Windows Standalone builds and in the Windows Unity Editor, when Use XInput is enabled (and Use Windows Gaming Input is disabled), and always on Windows App Store and Windows 10 Universal builds, Rewired uses XInput for all XInput-compatible controllers instead of the chosen primary input source. This has some implications on creating Joystick Maps:</p>
     <p>When using XInput, Rewired has no way of determining the actual controller type because this information is not available through XInput. The only information Rewired has to identify the controller is that it is XInput-compatible. Therefore, all XInput devices are treated as &quot;XBox 360 Controller&quot;. This means, with Use XInput enabled, if you plug in a XBox One Controller, Rewired cannot identify that it's an XBox One Controller and load the Joystick Maps you created specifically for the XBox One Controller. Instead, it identifies it simply as an &quot;XInput Gamepad&quot; and loads the Joystick Maps from the XBox 360 Controller maps you've created. This is an inherent limitation in XInput.</p>

@@ -145,7 +145,7 @@ public class GfcStringBuffer
 
     public void SetLength(int aStringLength, bool aKeepData = true) { ResizeStringBufferLength(ref m_stringBuffer, ref m_stringBufferCapacity, aStringLength, aKeepData, true); }
 
-    public void Clear() { SetLength(0); }
+    public GfcStringBuffer Clear() { SetLength(0); return this; }
 
     public void TrimExcess()
     {

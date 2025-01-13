@@ -39,13 +39,14 @@ public class CornManagerShop : MonoBehaviour
             for (int i = 0; i < shopItemsNotOwnedLength; i++)
             {
                 CornShopItemButton button = Instantiate(m_shopItemPrefab).GetComponent<CornShopItemButton>();
-                button.Initialize();
+                button.Button.Initialize();
                 button.SetShopItem(shopItemsNotOwned[i]);
+                button.Button.Index = i;
                 button.transform.SetParent(m_shopItemsParent);
                 button.transform.localPosition = new();
                 button.transform.localScale = new(1, 1, 1);
 
-                button.OnButtonEventCallback += OnButtonEvent;
+                button.Button.OnButtonEventCallback += OnButtonEvent;
             }
         }
     }
@@ -61,7 +62,7 @@ public class CornManagerShop : MonoBehaviour
 
     private void OnButtonEvent(GfxButtonCallbackType aCallbackType, GfxButton aButton, bool aState)
     {
-        CornShopItemButton shopButton = aButton as CornShopItemButton;
+        CornShopItemButton shopButton = aButton.GetComponent<CornShopItemButton>();
         CornShopItem item = shopButton.GetShopItem();
 
         switch (aCallbackType)
