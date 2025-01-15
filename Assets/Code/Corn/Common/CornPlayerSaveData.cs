@@ -320,6 +320,7 @@ public class CornSaveData
     }
 };
 
+[System.Serializable]
 public struct CornShopItemPurchased
 {
     public CornShopItem Item;

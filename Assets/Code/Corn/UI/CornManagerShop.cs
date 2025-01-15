@@ -48,6 +48,8 @@ public class CornManagerShop : MonoBehaviour
 
                 button.Button.OnButtonEventCallback += OnButtonEvent;
             }
+
+            m_initialized = true;
         }
     }
 
