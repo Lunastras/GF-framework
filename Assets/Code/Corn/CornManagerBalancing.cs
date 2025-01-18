@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CornManagerBalancing : MonoBehaviour
@@ -18,7 +19,7 @@ public class CornManagerBalancing : MonoBehaviour
     public const int MAX_CORN_ACTION_IN_ROW = 2;
     public const int DICE_ROLL_NUM_FACES = 10;
 
-    [NonSerialized] public CornEventCostAndRewards SleepRewardsTemp;
+    [NonSerialized] public CornEventCostAndRewards[] AuxCostAndRewardsCopy;
 
     // Start is called before the first frame update
     void Awake()
@@ -30,35 +31,72 @@ public class CornManagerBalancing : MonoBehaviour
         m_cornShopItems.Initialize(CornShopItem.COUNT);
         Debug.Assert(m_baseChoresMiniGameExtraPoints <= 1, "The value for m_baseChoresMiniGameExtraPoints should be between 0 and 1");
 
+        AuxCostAndRewardsCopy = new CornEventCostAndRewards[(int)CornEventType.COUNT];
+
         for (int i = 0; i < m_cornEventCostAndRewards.Length; ++i)
         {
             m_cornEventCostAndRewards[i].CostAndRewards.ConsumablesMultiplier = 1;
             m_cornEventCostAndRewards[i].CostAndRewards.ResourcesMultiplier = 1;
+            AuxCostAndRewardsCopy[i] = m_cornEventCostAndRewards[i].CostAndRewards.GetDeepCopy();
 
             if ((int)m_cornEventCostAndRewards[i].EventType != i)
                 Debug.LogError("The values inside CornEventCostAndRewards are out of order. Element at index" + i + " should be at index " + (int)m_cornEventCostAndRewards[i].EventType + '.');
         }
-
-        SleepRewardsTemp = m_cornEventCostAndRewards[(int)CornEventType.SLEEP].CostAndRewards;
-
-        if (SleepRewardsTemp.ConsumablesModifier != null && SleepRewardsTemp.ConsumablesModifier.Length > 0)
-            SleepRewardsTemp.ConsumablesModifier = new CornPlayerConsumablesModifier[SleepRewardsTemp.ConsumablesModifier.Length];
-        if (SleepRewardsTemp.ResourcesModifier != null && SleepRewardsTemp.ResourcesModifier.Length > 0)
-            SleepRewardsTemp.ResourcesModifier = new CornPlayerResourcesModifier[SleepRewardsTemp.ResourcesModifier.Length];
     }
 
     public static CornShopItemsData GetShopItemData(CornShopItem anItem) { return GetShopItemData((int)anItem); }
     public static CornShopItemsData GetShopItemData(int anItemIndex) { return Instance.m_cornShopItems[anItemIndex]; }
 
+    public static int GetCornPlayerSkillsStatsForEvent(CornEventType aType)
+    {
+        int skillIndex = -1;
+        switch (aType)
+        {
+            case CornEventType.CHORES:
+                skillIndex = (int)CornPlayerSkillsStats.HANDICRAFT;
+                break;
+
+            case CornEventType.WORK:
+                skillIndex = (int)CornPlayerSkillsStats.HANDICRAFT;
+                break;
+
+            case CornEventType.PERSONAL_TIME:
+                skillIndex = (int)CornPlayerSkillsStats.COMFORT;
+                break;
+        }
+
+        return skillIndex;
+    }
+
+    public static float GetCornPlayerSkillsStatsValueForEvent(CornEventType aType)
+    {
+        int skillIndex = GetCornPlayerSkillsStatsForEvent(aType);
+        return skillIndex >= 0 ? GfgManagerSaveData.GetActivePlayerSaveData().Data.GetValue((CornPlayerSkillsStats)skillIndex) : 0;
+    }
+
     public static bool IsSleepHour(int anHour) { return anHour >= EARLIEST_SLEEP_HOUR || anHour < MORNING_START_HOUR; }
     public static float GetBaseChoresMiniGameExtraPoints() { return InstanceInternal.m_baseChoresMiniGameExtraPoints; }
-    public static CornEventCostAndRewards GetEventCostAndRewardsRaw(CornEventType aType) { return InstanceInternal.m_cornEventCostAndRewards[(int)aType].CostAndRewards; }
+
+    public static CornEventCostAndRewards GetEventCostAndRewardsRaw(CornEventType aType)
+    {
+        CornEventCostAndRewards eventRewardsAndCost = InstanceInternal.m_cornEventCostAndRewards[(int)aType].CostAndRewards;
+
+        if (eventRewardsAndCost.ResourcesModifier != null && eventRewardsAndCost.ResourcesModifier.Length == 1)
+        {
+            CornEventCostAndRewards auxRewardsAndCost = InstanceInternal.AuxCostAndRewardsCopy[(int)aType];
+            Debug.Assert(auxRewardsAndCost.ResourcesModifier[0].Type == eventRewardsAndCost.ResourcesModifier[0].Type, "The types between the two are different, none should ever change during runtime.");
+            auxRewardsAndCost.ResourcesModifier[0].Value = GetCornPlayerSkillsStatsValueForEvent(aType) + eventRewardsAndCost.ResourcesModifier[0].Value;
+            return auxRewardsAndCost;
+        }
+
+        return eventRewardsAndCost;
+    }
+
     public static CornEventCostAndRewards GetEventCostAndRewards(CornEventType aType, uint aTypeSub = 0) { return GetEventCostAndRewards(aType, out _, aTypeSub); }
     public static CornEventCostAndRewards GetEventCostAndRewards(CornEventType aType, out string aMessage, uint aTypeSub = 0)
     {
         aMessage = null;
         CornEventCostAndRewards eventRewardsAndCost = GetEventCostAndRewardsRaw(aType);
-        var cornSaveData = GfgManagerSaveData.GetActivePlayerSaveData().Data;
 
         switch (aType)
         {
@@ -67,17 +105,6 @@ public class CornManagerBalancing : MonoBehaviour
                 CornHoursSleepData sleepData = new();
                 sleepData.Initialize();
                 eventRewardsAndCost = sleepData.GetFinalRewards();
-
-                /*
-                for (; realHourSlept < desiredSleepHours; realHourSlept++)
-                {
-                    currentHour = ++currentHour % 24;
-                    bool nightTime = IsSleepHour(currentHour);
-                    caughtNight |= nightTime;
-                    if ((!nightTime && Random.Range(0.0f, 1.0f) < DAY_WAKE_UP_RATIO_PER_HOUR && aTypeSub == (int)CornSleepType.INTERRUPTED)
-                    || 1 <= cornSaveData.GetValue(CornPlayerConsumables.ENERGY) + realHourSlept * energyPerHour)
-                        break;
-                }*/
                 break;
         }
 
@@ -140,7 +167,7 @@ public struct CornEventCostAndRewards
             CornMenuApartment.Instance.PreviewChange(modifier.Type, ConsumablesMultiplier * (aBonusMultiplier * modifier.BonusPercent * modifier.Value + modifier.Value));
 
         foreach (CornPlayerResourcesModifier modifier in ResourcesModifier)
-            CornMenuApartment.Instance.PreviewChange(modifier.Type, ConsumablesMultiplier * (aBonusMultiplier * modifier.BonusPercent * modifier.Value + modifier.Value));
+            CornMenuApartment.Instance.PreviewChange(modifier.Type, ResourcesMultiplier * (aBonusMultiplier * modifier.BonusPercent * modifier.Value + modifier.Value));
     }
 }
 
@@ -149,12 +176,6 @@ internal struct CornEventCostAndRewardsSetter
 {
     public CornEventType EventType;
     public CornEventCostAndRewards CostAndRewards;
-}
-
-public enum CornSleepType
-{
-    UNINTERRUPTED,
-    INTERRUPTED
 }
 
 [Serializable]

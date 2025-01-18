@@ -172,7 +172,7 @@ public class GfgManagerGame : MonoBehaviour
 
     public static void RegisterGameStateTask()
     {
-        Debug.Assert(Instance.m_gameStateChangeWaitForTask, "Not waiting for any tasks, this should only be called with the OnGameStateChanged callback");
+        if (!Instance.m_gameStateChangeWaitForTask) Debug.LogWarning("Not waiting for any tasks, this should only be called with the OnGameStateChanged callback");
         Instance.m_gameStateChangeWaitForTaskCounters++;
     }
 

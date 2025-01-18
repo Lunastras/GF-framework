@@ -4,29 +4,20 @@ using System.IO;
 public class GfgManagerSaveData : MonoBehaviour
 {
     protected static GfgManagerSaveData Instance;
-
-    static readonly System.DateTime UNIX_TIME_START = new System.DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc);
-
     private System.DateTime m_dateTimeOfProgramStart;
 
     [SerializeField] private bool m_printLogs = true;
     [SerializeField] private bool m_forceNewSave = false;
 
     private const string SAVE_DATA_PATH = "SaveData/";
-
     private const string SAVE_DATA_FILENAME = "SAVE_PROFILE_";
-
     public const int MAX_NUM_SAVE_FILES = 4;
-
     public const int MAX_EQUIPPED_WEAPONS = 2;
-
-    private double m_timeOfLastSave;
-
+    private long m_timeOfLastSaveUnix;
     private int m_usedSaveDataSlot = -1;
 
     private GfgPlayerSaveData m_playerSaveData = null;
 
-    // Start is called before the first frame update
     void Awake()
     {
         if (Instance != this)
@@ -36,10 +27,9 @@ public class GfgManagerSaveData : MonoBehaviour
 
         if (!Directory.Exists(SAVE_DATA_PATH)) Directory.CreateDirectory(SAVE_DATA_PATH);
 
-        m_timeOfLastSave = Time.unscaledTimeAsDouble;
+        m_timeOfLastSaveUnix = GfcTools.GetCurrentUnixUtcTime();
         m_dateTimeOfProgramStart = System.DateTime.UtcNow;
         m_playerSaveData = null;
-        m_usedSaveDataSlot = -1;
     }
 
     void OnDestroy()
@@ -73,7 +63,16 @@ public class GfgManagerSaveData : MonoBehaviour
         }
     }
 
-    public static GfgPlayerSaveData CreatePlayerSaveData(string aName) { return new(aName, GetCurrentUnixTime()); }
+    public static GfgPlayerSaveData CreatePlayerSaveData(string aName) { return new(aName); }
+
+    public static GfgPlayerSaveData[] GetPlayerSaveDatasCopy(int aSize = MAX_NUM_SAVE_FILES)
+    {
+        GfgPlayerSaveData[] saves = new GfgPlayerSaveData[aSize];
+        for (int i = 0; i < aSize; i++)
+            saves[i] = GetPlayerSaveData(i);
+
+        return saves;
+    }
 
     public static GfgPlayerSaveData GetActivePlayerSaveData()
     {
@@ -93,23 +92,30 @@ public class GfgManagerSaveData : MonoBehaviour
 
     }
 
+    public static void SetActivePlayerSaveData(int aSaveIndex) { SetActivePlayerSaveData(GetPlayerSaveData(aSaveIndex), aSaveIndex); }
+
     public static void SetActivePlayerSaveData(GfgPlayerSaveData aPlayerSaveData, int aSaveIndex = 0)
     {
-        if (aPlayerSaveData != null)
+        if (ValidSaveDataIndex(aSaveIndex))
         {
-            if (!aPlayerSaveData.ValidateSaveFile())
-                Debug.LogError("Save file validation failed, the save file might be corrupted... :(");
-            else if (Instance.m_printLogs)
-                Debug.Log("Save file " + aPlayerSaveData.GetName() + " loaded and validated successfuly");
+            if (aPlayerSaveData != null)
+            {
+                if (!aPlayerSaveData.ValidateSaveFile())
+                    Debug.LogError("Save file validation failed, the save file might be corrupted... :(");
+                else if (Instance.m_printLogs)
+                    Debug.Log("Save file " + aPlayerSaveData.GetName() + " loaded and validated successfuly");
 
-            Instance.m_timeOfLastSave = Time.unscaledTimeAsDouble;
-            Instance.m_playerSaveData = aPlayerSaveData;
-            Instance.m_usedSaveDataSlot = aSaveIndex;
+                Instance.m_timeOfLastSaveUnix = GfcTools.GetCurrentUnixUtcTime();
+                Instance.m_playerSaveData = aPlayerSaveData;
+                Instance.m_usedSaveDataSlot = aSaveIndex;
 
-            if (Instance.m_printLogs) Debug.Log("Save '" + aPlayerSaveData.GetName() + "' was loaded. Using save slot " + aSaveIndex + ".");
+                if (Instance.m_printLogs) Debug.Log("Save '" + aPlayerSaveData.GetName() + "' was loaded. Using save slot " + aSaveIndex + ".");
+            }
+            else
+                Debug.LogError("The given PlayerSaveData is null!");
         }
         else
-            Debug.LogError("The given PlayerSaveData is null!");
+            Debug.LogError("The index " + aSaveIndex + " is not valid.");
     }
 
     public static GfgPlayerSaveData GetPlayerSaveData(int aSaveIndex = 0)
@@ -136,32 +142,41 @@ public class GfgManagerSaveData : MonoBehaviour
         savePath.Clear();
     }
 
+    public static bool ValidSaveDataIndex(int aSaveIndex) { return 0 <= aSaveIndex && aSaveIndex < MAX_NUM_SAVE_FILES; }
+
     public static bool SaveExists(int aSaveIndex = 0)
     {
         GfcStringBuffer savePath = GetSaveDataFilePath(aSaveIndex);
-        bool saveExists = aSaveIndex >= 0 && aSaveIndex < MAX_NUM_SAVE_FILES && File.Exists(savePath);
+        bool saveExists = ValidSaveDataIndex(aSaveIndex) && File.Exists(savePath);
         savePath.Clear();
         return saveExists;
     }
 
     public static void SaveGame(int aSaveIndex = -1)
     {
-        if (aSaveIndex == -1) aSaveIndex = Instance.m_usedSaveDataSlot;
-        aSaveIndex = Mathf.Min(aSaveIndex, 0, MAX_NUM_SAVE_FILES - 1);
-
-        if (aSaveIndex <= -1) //most likely using a debug save file, we still want to save somewhere
+        if (aSaveIndex <= -1)
         {
-            for (aSaveIndex = 0; aSaveIndex < MAX_NUM_SAVE_FILES && SaveExists(aSaveIndex); aSaveIndex++) ; //find an unused slot
+            aSaveIndex = Instance.m_usedSaveDataSlot;
+            if (aSaveIndex <= -1) //most likely using a debug save file, we still want to save somewhere
+                for (aSaveIndex = 0; aSaveIndex < MAX_NUM_SAVE_FILES && SaveExists(aSaveIndex); aSaveIndex++) ; //find an unused slot
+
+            if (aSaveIndex >= MAX_NUM_SAVE_FILES)
+                Debug.LogError("Could not find an unused save slot, please select the save slot used.");
         }
 
-        GfgPlayerSaveData saveData = GetActivePlayerSaveData();
-        double currentTime = Time.unscaledTimeAsDouble;
-        saveData.SecondsPlayed += currentTime - Instance.m_timeOfLastSave;
+        if (aSaveIndex >= 0 && aSaveIndex < MAX_NUM_SAVE_FILES)
+        {
+            GfgPlayerSaveData saveData = GetActivePlayerSaveData();
+            long currentTime = GfcTools.GetCurrentUnixUtcTime();
+            saveData.SecondsPlayed += currentTime - Instance.m_timeOfLastSaveUnix;
 
-        Instance.m_timeOfLastSave = currentTime;
-        GfcStringBuffer savePath = GetSaveDataFilePath(aSaveIndex);
-        File.WriteAllText(savePath, JsonUtility.ToJson(saveData));
-        savePath.Clear();
+            Instance.m_timeOfLastSaveUnix = currentTime;
+            GfcStringBuffer savePath = GetSaveDataFilePath(aSaveIndex);
+            File.WriteAllText(savePath, JsonUtility.ToJson(saveData));
+            savePath.Clear();
+
+            if (Instance.m_printLogs) Debug.Log("Saved player data at index " + aSaveIndex);
+        }
     }
 
     public static GfcStringBuffer GetSaveDataFilePath(int aSaveIndex = 0)
@@ -171,6 +186,4 @@ public class GfgManagerSaveData : MonoBehaviour
         stringBuffer.Append(SAVE_DATA_FILENAME);
         return stringBuffer.Append(aSaveIndex);
     }
-
-    public static double GetCurrentUnixTime() { return (System.DateTime.UtcNow - UNIX_TIME_START).TotalSeconds; }
 }

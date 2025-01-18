@@ -6,6 +6,5 @@ public class GfcBaseLoader : MonoBehaviour
     void Awake()
     {
         GfcBase.InitializeGfBase();
-        Destroy(this);
     }
 }

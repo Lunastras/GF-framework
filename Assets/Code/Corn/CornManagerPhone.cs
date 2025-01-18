@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using MEC;
+using System.Linq;
 
 public class CornManagerPhone : MonoBehaviour
 {
@@ -119,13 +120,8 @@ public class CornManagerPhone : MonoBehaviour
             spawnPosition *= UnityEngine.Random.Range(3, 7);
             spawnPosition.y = 1;
 
-            avatar.transform.localPosition = spawnPosition;
-            avatar.transform.localRotation = Quaternion.AngleAxis(UnityEngine.Random.Range(0, 360), Vector3.up);
-
-            CornMessageEventInstance messageEvent = new(aScene);
-            messageEvent.Avatar = avatar;
-
-            Instance.m_messageScenes.Add(messageEvent);
+            avatar.transform.SetLocalPositionAndRotation(spawnPosition, Quaternion.AngleAxis(UnityEngine.Random.Range(0, 360), Vector3.up));
+            Instance.m_messageScenes.Add(new(aScene) { Avatar = avatar });
         }
         else
         {

@@ -42,6 +42,9 @@
         },
         {
             "m_Id": "5f96e18acd4e410785b43c11f3d46022"
+        },
+        {
+            "m_Id": "493f3640238b427ba99bb578feb352cb"
         }
     ],
     "m_Nodes": [
@@ -1487,6 +1490,42 @@
         "z": 0.0,
         "w": 0.0
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.CategoryData",
+    "m_ObjectId": "493f3640238b427ba99bb578feb352cb",
+    "m_Name": "",
+    "m_ChildObjectList": [
+        {
+            "m_Id": "4c7a3f8df95f40508d40e63d87701a19"
+        },
+        {
+            "m_Id": "181b4916b1ec45f7bab7c418193d26b0"
+        },
+        {
+            "m_Id": "c9072779b97641ad9609056a695945b1"
+        },
+        {
+            "m_Id": "904dab39fb6f4020ac3de23b9790987f"
+        },
+        {
+            "m_Id": "0dfcb458d67c4a8a9f6df48feb333069"
+        },
+        {
+            "m_Id": "eae18c07c0fb4188bc0ccdf50c489391"
+        },
+        {
+            "m_Id": "c1c8286a91254f2ea2034b0a3b5b662c"
+        },
+        {
+            "m_Id": "d34f734690954be0a6470462381bdaab"
+        },
+        {
+            "m_Id": "62fb8af31cc94ae5b190d2d2b69151a9"
+        }
+    ]
 }
 
 {

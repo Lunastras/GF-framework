@@ -16,6 +16,13 @@ public class CornManagerEvents : MonoBehaviour
 
     private List<string> m_messagesBuffer = new(4);
 
+    public static int DICE_ROLL_NUM_FACES { get { return CornManagerBalancing.DICE_ROLL_NUM_FACES; } }
+
+    public static bool ExecutingEvent { get { return Instance.m_eventHandle.CoroutineIsRunning; } }
+
+    public static CoroutineHandle EventHandle { get { return Instance.m_eventHandle; } }
+    public static CoroutineHandle ProgressTimeHandle { get { return Instance.m_progressTimeHandle; } }
+
     protected static List<string> GetMessagesBuffer()
     {
         if (Instance.m_messagesBuffer.Count > 0)
@@ -76,13 +83,6 @@ public class CornManagerEvents : MonoBehaviour
         });
     }
 
-    public static int DICE_ROLL_NUM_FACES { get { return CornManagerBalancing.DICE_ROLL_NUM_FACES; } }
-
-    public static bool ExecutingEvent { get { return !Instance.m_eventHandle.CoroutineIsRunning; } }
-
-    public static CoroutineHandle EventHandle { get { return Instance.m_eventHandle; } }
-    public static CoroutineHandle ProgressTimeHandle { get { return Instance.m_progressTimeHandle; } }
-
     public static CoroutineHandle ExecuteEvent(CornEvent anEvent)
     {
         CoroutineHandle eventHandle = default;
@@ -119,9 +119,6 @@ public class CornManagerEvents : MonoBehaviour
 
     private IEnumerator<float> _ExecuteEvent(CornEvent anEvent)
     {
-        if (anEvent.EventType == CornEventType.SLEEP)
-            anEvent.EventTypeSub = (int)CornSleepType.INTERRUPTED;
-
         CornEventCostAndRewards eventRewardsAndCost = CornManagerBalancing.GetEventCostAndRewards(anEvent.EventType, out string message, anEvent.EventTypeSub);
         CoroutineHandle eventHandle = default;
 
@@ -168,6 +165,7 @@ public class CornManagerEvents : MonoBehaviour
                         eventRewardsAndCost = default;
                         break;
                     case CornEventType.STUDY:
+                        Debug.Log("Incrementing point for " + (CornPlayerSkillsStats)anEvent.EventTypeSub);
                         cornSaveData.ApplyModifier((CornPlayerSkillsStats)anEvent.EventTypeSub, 0.01f);
                         break;
                 }
@@ -211,8 +209,6 @@ public class CornManagerEvents : MonoBehaviour
             GfgManagerSceneLoader.FakeWait = true;
             yield return Timing.WaitUntilDone(apartmentLoadRoutine);
         }
-
-        CornManagerPhone.LoadAvailableStoryScenes();
 
         CoroutineHandle transitionCoroutine = ProgressTime(eventRewardsAndCost.HoursDuration, messagesBuffer);
         yield return Timing.WaitUntilDone(transitionCoroutine);
@@ -421,11 +417,12 @@ public class CornManagerEvents : MonoBehaviour
         UpdateVisuals();
 
         CoroutineHandle handle = GfxUiTools.GetNotifyPanel().DrawMessage(Instance.m_messagesBuffer);
-
         if (handle.IsValid) yield return Timing.WaitUntilDone(handle);
-
         Instance.m_messagesBuffer.Clear();
+
         CheckGameOver();
+        GfgManagerSaveData.SaveGame();
+        CornManagerPhone.LoadAvailableStoryScenes();
 
         if (aFadeToBlack)
         {
@@ -455,9 +452,11 @@ public class CornManagerEvents : MonoBehaviour
                 //should also close dialogue system in case the mental sanity is reduced there
                 Instance.m_eventHandle.KillCoroutine();
                 Instance.m_progressTimeHandle.KillCoroutine();
+
+                Instance.m_eventHandle = default;
+                Instance.m_progressTimeHandle = default;
                 Instance.m_gameOverHandle.RunCoroutine(Instance._GameOver());
             }
-
         }
         else
         {
@@ -566,7 +565,7 @@ public struct CornHoursSleepData
 
     public CornEventCostAndRewards GetFinalRewards()
     {
-        var rewards = CornManagerBalancing.Instance.SleepRewardsTemp;
+        var rewards = CornManagerBalancing.Instance.AuxCostAndRewardsCopy[(int)CornEventType.SLEEP];
         rewards.ConsumablesModifier[0].Value = HourseSlept * EnergyPerHour;
         rewards.HoursDuration = HourseSlept + 1;
         return rewards;

@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class GfxButton2D : GfxButton
 {
-    public Transform VisualsParent;
+    public RectTransform VisualsParent;
 
     public Graphic[] GraphicsPanel;
 
@@ -34,10 +34,10 @@ public class GfxButton2D : GfxButton
             if (VisualsParent == null)
             {
                 Debug.Assert(transform.childCount == 1, "The VisualsParent is not assigned in the editor, but the transform of the button doesn't have a single child for its default parent. Please assign the VisualParent in the editor.");
-                VisualsParent = transform.GetChild(0);
+                VisualsParent = transform.GetChild(0) as RectTransform;
             }
 
-            m_originalLocalPosition = VisualsParent.localPosition;
+            m_originalLocalPosition = VisualsParent.anchoredPosition3D;
             m_originalLocalScale = VisualsParent.localScale;
 
             int countColors = GraphicsPanel.Length + GraphicsContent.Length;
@@ -88,8 +88,7 @@ public class GfxButton2D : GfxButton
         }
 
         VisualsParent.localScale = Vector3.Lerp(m_scaleAtStartOfTransition, aDesiredState.Scale.Mult(LocalTransformRelativeToOriginal ? m_originalLocalScale : new Vector3(1, 1, 1)), aTransitionPoint);
-        VisualsParent.localPosition = Vector3.Lerp(m_localPositionAtStartOfTransition, aDesiredState.PositionOffset + (LocalTransformRelativeToOriginal ? m_originalLocalPosition : Vector3.zero), aTransitionPoint);
-        //todo aDesiredState.PositionOffset does not work for some reason
+        VisualsParent.anchoredPosition3D = Vector3.Lerp(m_localPositionAtStartOfTransition, aDesiredState.PositionOffset + (LocalTransformRelativeToOriginal ? m_originalLocalPosition : Vector3.zero), aTransitionPoint);
     }
 
     protected override void OnStartTransition()
@@ -103,7 +102,7 @@ public class GfxButton2D : GfxButton
             m_colorAtBeginningOfTransition[colourIndex++] = graphic.color;
 
         m_scaleAtStartOfTransition = VisualsParent.localScale;
-        m_localPositionAtStartOfTransition = VisualsParent.localPosition;
+        m_localPositionAtStartOfTransition = VisualsParent.anchoredPosition3D;
     }
 
     public void SetOriginalColorOfGraphic(Graphic aGraphic, Color aColor, ColorBlendMode aBlendMode = ColorBlendMode.REPLACE)

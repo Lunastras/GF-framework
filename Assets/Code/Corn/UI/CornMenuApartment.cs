@@ -97,7 +97,7 @@ public class CornMenuApartment : MonoBehaviour
             m_consumablesSliders[i].SetName(((CornPlayerConsumables)i).ToString());
         }
 
-        if (!CornManagerEvents.ExecutingEvent)
+        if (!CornManagerEvents.ExecutingEvent) //done for the initial load of the apartment
             CornManagerPhone.LoadAvailableStoryScenes();
 
         GfxButton personalNeeds = m_actionButtons[(int)CornPlayerAction.PERSONAL_NEEDS].Button;

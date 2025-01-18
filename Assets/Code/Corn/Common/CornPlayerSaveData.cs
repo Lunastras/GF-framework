@@ -10,29 +10,33 @@ using Unity.Collections;
 public class GfgPlayerSaveData
 {
     [SerializeField] private string m_name;
-    public double SecondsPlayed;
+    public long SecondsPlayed;
     public bool FinishedStartCutscene;
 
     public CornSaveData Data = new();
 
-    public CornSaveData[] DataBackup;
+    public CornSaveData[] DataBackups;
 
-    public double m_unixTimeOfCreation;
+    public long m_unixTimeOfCreation;
     public readonly float m_originalMaxSumMoney = INITIAL_SUM_OF_MONEY;
     public const int INITIAL_SUM_OF_MONEY = 10000;
     public const int DATA_BACKUPS_COUNT = 3;
-    public const int FIRST_WAKEUP_TIME = 8;
+    public const int FIRST_WAKEUP_TIME = 9;
+    public const int FIRST_DATE_DAY = 14;
+    public const int FIRST_DATE_MONTH = 6;
+    public const int FIRST_DATE_DAY_WEEK = 5; //5 is saturday, 0 is monday
+
     public const float START_RESOURCE_VALUE = 0.5f;
     public const int COUNT_RESOURCES = (int)CornPlayerResources.COUNT;
     public const int COUNT_CONSUMABLES = (int)CornPlayerConsumables.COUNT;
     public const int COUNT_0_TO_100_CONSUMABLES = (int)CornPlayerConsumables.MONEY; //Money is not between 0 to 100
     public const int COUNT_NON_0_TO_100_CONSUMABLES = COUNT_CONSUMABLES - COUNT_0_TO_100_CONSUMABLES; //Money is not between 0 to 100
 
-    public GfgPlayerSaveData(string aName, double aCurrentUnixTime)
+    public GfgPlayerSaveData(string aName)
     {
         m_name = aName;
-        m_unixTimeOfCreation = aCurrentUnixTime;
-        DataBackup = new CornSaveData[DATA_BACKUPS_COUNT];
+        m_unixTimeOfCreation = GfcTools.GetCurrentUnixUtcTime();
+        DataBackups = new CornSaveData[DATA_BACKUPS_COUNT];
 
         ValidateSaveFile();
 
@@ -46,30 +50,31 @@ public class GfgPlayerSaveData
     public void SetBackupDataUsed(int anIndex)
     {
         Debug.Assert(anIndex >= 0 && anIndex < DATA_BACKUPS_COUNT);
-        Data = DataBackup[anIndex];
+        Data = DataBackups[anIndex];
         ValidateSaveFile();
     }
 
     public void MakeBackup()
     {
-        if (DataBackup[0] == null)
+        if (DataBackups[0] == null)
         {
-            DataBackup[0] = Data.GetDeepCopy();
+            DataBackups[0] = Data.GetDeepCopy();
+            ValidateCornData(DataBackups[0], m_originalMaxSumMoney);
         }
         else
         {
             for (int i = 0; i < DATA_BACKUPS_COUNT; i++)
             {
-                if (DataBackup[i] == null || DataBackup[i].DaysPassed <= Data.DaysPassed)
+                if (DataBackups[i] == null || DataBackups[i].DaysPassed <= Data.DaysPassed)
                 {
-                    if (DataBackup[i] != null && DataBackup[i].DaysPassed < Data.DaysPassed)
+                    if (DataBackups[i] != null && DataBackups[i].DaysPassed < Data.DaysPassed)
                     {
                         for (int j = DATA_BACKUPS_COUNT - 1; j > i; j--)
-                            DataBackup[j] = DataBackup[j - 1];
+                            DataBackups[j] = DataBackups[j - 1];
                     }
 
-                    DataBackup[i] = Data.GetDeepCopy();
-                    Debug.Log("I saved shit, day of the copy is: " + DataBackup[i].CurrentDay + " original date is: " + Data.CurrentDay + " items bought " + (DataBackup[i].PurchasedItems != null ? DataBackup[i].PurchasedItems.Count : "EMPTY") + " items bought original " + Data.PurchasedItems.Count);
+                    DataBackups[i] = Data.GetDeepCopy();
+                    ValidateCornData(DataBackups[i], m_originalMaxSumMoney);
                     break;
                 }
             }
@@ -78,16 +83,16 @@ public class GfgPlayerSaveData
 #if UNITY_EDITOR
         int validSaves = 0;
         for (int i = 0; i < DATA_BACKUPS_COUNT; i++)
-            if (DataBackup[i] != null) validSaves++;
+            if (DataBackups[i] != null) validSaves++;
         Debug.Log("The count of save datas is: " + validSaves);
 #endif //UNITY_EDITOR
     }
 
     public string GetName() { return m_name; }
 
-    public double GetUnixTimeOfCreation() { return m_unixTimeOfCreation; }
+    public long GetUnixTimeOfCreation() { return m_unixTimeOfCreation; }
 
-    private bool ValidateArrayValues<T>(ref T[] anArray, int aCount, T aDefaultValue = default, Func<T, bool> aValidator = null)
+    private static bool ValidateArrayValues<T>(ref T[] anArray, int aCount, T aDefaultValue = default, Func<T, bool> aValidator = null)
     {
         bool validArray = true;
         if (anArray == null)
@@ -132,34 +137,51 @@ public class GfgPlayerSaveData
 
         if (Data == null)
         {
-            Debug.LogWarning("The game data was null, save file might be corrupted or there was no save found.");
+            Debug.LogError("The game data was null, save file might be corrupted or there was no save found.");
             Data = new();
             validData = false;
             createdNewSave = true;
         }
 
-        if (DataBackup == null)
+        if (DataBackups == null)
         {
             validData = false;
-            DataBackup = new CornSaveData[DATA_BACKUPS_COUNT];
+            DataBackups = new CornSaveData[DATA_BACKUPS_COUNT];
             MakeBackup();
         }
 
-        validData &= Data.PurchasedItems != null;
-        Data.PurchasedItems ??= new(8);
+        validData &= ValidateCornData(Data, m_originalMaxSumMoney);
+        for (int i = 0; i < DataBackups.Length; i++)
+        {
+            bool valid = ValidateCornData(DataBackups[i], m_originalMaxSumMoney);
+            if (!valid) Debug.LogError("CornSaveData backup at index " + i + " might be corrupted.");
+            validData &= valid;
+        }
 
-        validData &= ValidateArrayValues(ref Data.SkillStats, (int)CornPlayerSkillsStats.COUNT, 0);
-        validData &= ValidateArrayValues(ref Data.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
-        validData &= ValidateArrayValues(ref Data.Resources, (int)CornPlayerResources.COUNT, START_RESOURCE_VALUE);
-        validData &= ValidateArrayValues(ref Data.Consumables, (int)CornPlayerConsumables.COUNT, START_RESOURCE_VALUE);
-        validData &= ValidateArrayValues(ref DataBackup, DATA_BACKUPS_COUNT);
-
-        Data.MentalSanity.ClampSelf(0, CornManagerBalancing.DICE_ROLL_NUM_FACES);
-
+        validData &= ValidateArrayValues(ref DataBackups, DATA_BACKUPS_COUNT);
         //used to take into account any changes made to the initial sum of money
-        Data.Consumables[(int)CornPlayerConsumables.MONEY] = Mathf.Max(0, Data.Consumables[(int)CornPlayerConsumables.MONEY] + INITIAL_SUM_OF_MONEY - m_originalMaxSumMoney);
 
         return validData || createdNewSave;
+    }
+
+    private static bool ValidateCornData(CornSaveData aSaveData, float anOriginalMaxSumMoney)
+    {
+        bool validData = true;
+        if (aSaveData != null)
+        {
+            validData &= ValidateArrayValues(ref aSaveData.SkillStats, (int)CornPlayerSkillsStats.COUNT, 0);
+            validData &= ValidateArrayValues(ref aSaveData.CurrentStoryPhaseProgress, (int)GfcStoryCharacter.COUNT, 0);
+            validData &= ValidateArrayValues(ref aSaveData.Resources, (int)CornPlayerResources.COUNT, START_RESOURCE_VALUE);
+            validData &= ValidateArrayValues(ref aSaveData.Consumables, (int)CornPlayerConsumables.COUNT, 1);
+
+            validData &= aSaveData.PurchasedItems != null;
+            aSaveData.PurchasedItems ??= new(8);
+
+            aSaveData.MentalSanity.ClampSelf(0, CornManagerBalancing.DICE_ROLL_NUM_FACES);
+            aSaveData.Consumables[(int)CornPlayerConsumables.MONEY] = Mathf.Max(0, aSaveData.Consumables[(int)CornPlayerConsumables.MONEY] + INITIAL_SUM_OF_MONEY - anOriginalMaxSumMoney);
+        }
+
+        return validData;
     }
 }
 
@@ -182,14 +204,15 @@ public class CornSaveData
 
     public List<CornShopItemPurchased> PurchasedItems;
 
-    public int DaysPassed;
-    public int DayOfTheWeek;
+    public int DaysPassed = 1;
+
+    public int DayOfTheWeek = GfgPlayerSaveData.FIRST_DATE_DAY_WEEK;
 
     public int CurrentHour = GfgPlayerSaveData.FIRST_WAKEUP_TIME;
 
-    public int CurrentDay = 0;
+    public int CurrentDay = GfgPlayerSaveData.FIRST_DATE_DAY - 1; //0 indexed
 
-    public int CurrentMonth = 0;
+    public int CurrentMonth = GfgPlayerSaveData.FIRST_DATE_MONTH - 1; //0 indexed
 
     public int CurrentWakeUpTime = GfgPlayerSaveData.FIRST_WAKEUP_TIME;
 

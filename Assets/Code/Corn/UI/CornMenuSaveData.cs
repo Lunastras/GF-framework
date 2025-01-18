@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class CornMenuSaveData : MonoBehaviour
@@ -22,7 +21,7 @@ public class CornMenuSaveData : MonoBehaviour
             Debug.Assert(m_uiButtonPrefab);
             Debug.Assert(m_uiButtonParent);
 
-            CornSaveData[] backups = GfgManagerSaveData.GetActivePlayerSaveData().DataBackup;
+            CornSaveData[] backups = GfgManagerSaveData.GetActivePlayerSaveData().DataBackups;
             GfcPooling.DestroyChildren(m_uiButtonParent);
 
             for (int i = 0; i < backups.Length; i++)
@@ -37,15 +36,17 @@ public class CornMenuSaveData : MonoBehaviour
                 button.Button.OnButtonEventCallback += OnButtonEvent;
             }
 
-            GfgManagerGame.Instance.OnGameStateChanged += OnGameStateChanged;
             m_initialized = true;
         }
     }
 
     private void UpdateButtons()
     {
+        if (!m_initialized)
+            return;
+
         Debug.Log("UPDATE BUTTONS");
-        CornSaveData[] backups = GfgManagerSaveData.GetActivePlayerSaveData().DataBackup;
+        CornSaveData[] backups = GfgManagerSaveData.GetActivePlayerSaveData().DataBackups;
 
         int index = 0;
         foreach (Transform child in m_uiButtonParent)
@@ -63,10 +64,9 @@ public class CornMenuSaveData : MonoBehaviour
         }
     }
 
-    private void OnGameStateChanged(GfcGameState aNewGameState, GfcGameState aOldGameState, bool anInstant)
+    private void OnEnable()
     {
-        if (aNewGameState == GfcGameState.SAVE_SELECT)
-            UpdateButtons();
+        UpdateButtons();
     }
 
     public static void UpdateCanAffordButtons()

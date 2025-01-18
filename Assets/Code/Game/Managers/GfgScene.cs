@@ -217,8 +217,12 @@ public class GfgScene : MonoBehaviour
             if (sceneId != GfcSceneId.INVALID)
             {
                 Debug.Assert(!Instance.m_registeredGameStateTask, "Trying to register task, but it was already registered and unfinished.");
-                Instance.m_registeredGameStateTask = true;
-                GfgManagerGame.RegisterGameStateTask();
+
+                if (!anInstant)
+                {
+                    Instance.m_registeredGameStateTask = true;
+                    GfgManagerGame.RegisterGameStateTask();
+                }
 
                 LoadScene(sceneId, true);
             }

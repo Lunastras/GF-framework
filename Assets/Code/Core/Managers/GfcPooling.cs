@@ -117,12 +117,10 @@ public class GfcPooling : MonoBehaviour
             var currentPool = pool.List;
             if (null != currentPool && currentPool.Count > 0)
             {
-                int lastIndex = currentPool.Count - 1;
-
                 int i = 0;
                 GameObject obj;
 
-                for (; i <= lastIndex; i++)
+                for (; i < currentPool.Count; i++)
                 {
                     obj = currentPool[i];
                     if (obj)
@@ -137,10 +135,7 @@ public class GfcPooling : MonoBehaviour
                     }
                 }
 
-                //if (mustBeInactive)
-                //while (currentPool[i] && (!currentPool[i].activeSelf ^ !ObjectQueuedForPool(currentPool[i])) && --i >= 0) ; //go through the list until an inactive element is found //changes don't work
-
-                if (i <= lastIndex)
+                if (i < currentPool.Count)
                 {
                     spawnedObject = currentPool[i];
                     currentPool.RemoveAtSwapBack(i);
@@ -236,11 +231,11 @@ public class GfcPooling : MonoBehaviour
     private IEnumerator<float> _DeactivateOneFrameLate(GameObject aGameObject)
     {
         yield return Timing.WaitForOneFrame; //wait one frame to see if we have to spawn this object, frames where we destroy objects are also frames where its likely we will spawn objects
-        if (ObjectQueuedForPool(aGameObject)) //if it was moved out of the pool, don't deactivate
+        if (aGameObject && ObjectQueuedForPool(aGameObject)) //if it was moved out of the pool, don't deactivate
         {
             aGameObject.SetActive(false);
             yield return Timing.WaitForOneFrame; //wait one frame before moving into destroyed position, we do this because objects cannot be activated the turn they were inactivated
-            locSetObjectPosition(aGameObject.transform, DESTROY_POSITION, false);
+            if (aGameObject) locSetObjectPosition(aGameObject.transform, DESTROY_POSITION, false);
         }
     }
 
@@ -380,8 +375,8 @@ public class GfcPooling : MonoBehaviour
                     }
 
                     locSetObjectPosition(anObjectToDestroy.transform, newPos, false);
-                    Scene scene = pool.PermanentObjects ? SceneManager.GetSceneByBuildIndex((int)GfcSceneId.GF_BASE) : SceneManager.GetActiveScene();
-                    SceneManager.MoveGameObjectToScene(anObjectToDestroy, scene);
+                    if (pool.PermanentObjects)
+                        anObjectToDestroy.MoveToScene(GfcSceneId.GF_BASE);
                 }
             }
 

@@ -10,12 +10,8 @@ public class CornPlayerSaveDataButton : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_textSanity;
     [SerializeField] private TextMeshProUGUI m_textMoney;
     [SerializeField] private TextMeshProUGUI m_textEnergy;
-    // [SerializeField] private TextMeshProUGUI m_textPersonalNeeds;
-    //[SerializeField] private TextMeshProUGUI m_textBonuses;
-    private CornShopItem m_item;
-    public CornShopItem GetShopItem() { return m_item; }
 
-    public GfxButton Button { get; private set; }
+    public GfxButton Button;
 
     void Awake()
     {
@@ -26,6 +22,11 @@ public class CornPlayerSaveDataButton : MonoBehaviour
 
     public void SetSaveData(CornSaveData aSaveData)
     {
+        Debug.Assert(m_textDate);
+        Debug.Assert(m_textSanity);
+        Debug.Assert(m_textMoney);
+        Debug.Assert(m_textEnergy);
+
         m_saveData = aSaveData;
         if (aSaveData != null)
         {

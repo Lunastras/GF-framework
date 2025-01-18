@@ -10,6 +10,7 @@ using static Unity.Mathematics.math;
 using System.Reflection;
 using System.Linq;
 using Unity.Mathematics;
+using UnityEngine.SceneManagement;
 
 public enum Order
 {
@@ -19,8 +20,10 @@ public enum Order
 
 public static class GfcToolsStatic
 {
+    public static void MoveToScene(this GameObject aGameObject, GfcSceneId aSceneId) { SceneManager.MoveGameObjectToScene(aGameObject, SceneManager.GetSceneByBuildIndex((int)aSceneId)); }
+
     //Not the fastest thing in the world, but damn is it simple
-    public static T GetDeepCopy<T>(this T anObject) where T : class { return JsonUtility.FromJson<T>(JsonUtility.ToJson(anObject)); }
+    public static T GetDeepCopy<T>(this T anObject) { return JsonUtility.FromJson<T>(JsonUtility.ToJson(anObject)); }
 
     public static int AddSorted<T>(this IList<T> aList, T aValue, Func<T, T, int> aCompareFunction, Order anOrder = Order.ASCENDING) where T : IComparable<T>
     {
@@ -574,6 +577,12 @@ public class GfcTools
 {
     public const double EULER = 2.7182818284590452;
     public const float EPSILON = 0.99999f;
+
+    public static long GetCurrentUnixUtcTime() { return ((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds(); }
+    public static long GetCurrentUnixLocalTime() { return ((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds(); }
+
+    public static DateTime GetDateTimeFromUnix(long aUnixTime) { return DateTimeOffset.FromUnixTimeSeconds(aUnixTime).DateTime; }
+    public static DateTime GetLocalDateTimeFromUnixUtc(long aUnixTime) { return DateTimeOffset.FromUnixTimeSeconds(aUnixTime).DateTime.ToLocalTime(); }
 
     //godbless stack overflow
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
