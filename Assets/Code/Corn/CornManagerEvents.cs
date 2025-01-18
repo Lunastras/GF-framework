@@ -131,8 +131,6 @@ public class CornManagerEvents : MonoBehaviour
             HoursToWasteThisEvent = 0;
             if (eventRewardsAndCost.EventHasCornRoll && !GuaranteedCornRollSuccess())
                 yield return Timing.WaitUntilDone(Timing.RunCoroutine(Instance._ExecuteCornRoll()));
-            else
-                Debug.Log("Neah no corn roll man " + eventRewardsAndCost.EventHasCornRoll + " " + !GuaranteedCornRollSuccess());
 
             if (HoursToWasteThisEvent > 0)
             {

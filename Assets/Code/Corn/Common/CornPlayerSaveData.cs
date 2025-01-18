@@ -38,7 +38,7 @@ public class GfgPlayerSaveData
         m_unixTimeOfCreation = GfcTools.GetCurrentUnixUtcTime();
         DataBackups = new CornSaveData[DATA_BACKUPS_COUNT];
 
-        ValidateSaveFile();
+        ValidateSaveFile(false);
 
         Data.MaxMentalSanity = CornManagerBalancing.DICE_ROLL_NUM_FACES;
         Data.MentalSanity = Data.MaxMentalSanity;
@@ -51,7 +51,7 @@ public class GfgPlayerSaveData
     {
         Debug.Assert(anIndex >= 0 && anIndex < DATA_BACKUPS_COUNT);
         Data = DataBackups[anIndex];
-        ValidateSaveFile();
+        ValidateSaveFile(false);
     }
 
     public void MakeBackup()
@@ -79,13 +79,6 @@ public class GfgPlayerSaveData
                 }
             }
         }
-
-#if UNITY_EDITOR
-        int validSaves = 0;
-        for (int i = 0; i < DATA_BACKUPS_COUNT; i++)
-            if (DataBackups[i] != null) validSaves++;
-        Debug.Log("The count of save datas is: " + validSaves);
-#endif //UNITY_EDITOR
     }
 
     public string GetName() { return m_name; }
@@ -104,7 +97,7 @@ public class GfgPlayerSaveData
         }
         else if (anArray.Length != aCount)
         {
-            Debug.LogWarning("The length of the array'" + anArray.Length + "' is invalid, replacing it with the desired length of: " + aCount);
+            //Debug.LogWarning("The length of the array'" + anArray.Length + "' is invalid, replacing it with the desired length of: " + aCount);
 
             validArray = false;
             T[] newArray = new T[aCount];
@@ -130,7 +123,7 @@ public class GfgPlayerSaveData
         return validArray;
     }
 
-    public bool ValidateSaveFile()
+    public bool ValidateSaveFile(bool aPrintErrors)
     {
         bool validData = true;
         bool createdNewSave = false;
@@ -154,7 +147,7 @@ public class GfgPlayerSaveData
         for (int i = 0; i < DataBackups.Length; i++)
         {
             bool valid = ValidateCornData(DataBackups[i], m_originalMaxSumMoney);
-            if (!valid) Debug.LogError("CornSaveData backup at index " + i + " might be corrupted.");
+            if (!valid && aPrintErrors) Debug.LogError("CornSaveData backup at index " + i + " might be corrupted.");
             validData &= valid;
         }
 

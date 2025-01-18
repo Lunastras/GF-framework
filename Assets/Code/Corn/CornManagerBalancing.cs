@@ -57,7 +57,7 @@ public class CornManagerBalancing : MonoBehaviour
                 break;
 
             case CornEventType.WORK:
-                skillIndex = (int)CornPlayerSkillsStats.HANDICRAFT;
+                skillIndex = (int)CornPlayerSkillsStats.PROGRAMMING;
                 break;
 
             case CornEventType.PERSONAL_TIME:

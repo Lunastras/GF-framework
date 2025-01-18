@@ -239,6 +239,7 @@ public enum GfcInputLockPriority
     UI2,
     UI3,
     UI4,
+    PAUSE,
     GF_MASTER = 999999
 }
 

@@ -70,4 +70,19 @@ public struct GfcCoroutineHandle
 
     public int Finished() { return KillCoroutine(); }
     public static implicit operator CoroutineHandle(GfcCoroutineHandle d) => d.m_coroutineHandle;
+
+    public static float WaitForSeconds(float aSeconds, bool anIgnoreTimeScale = false)
+    {
+        if (aSeconds <= 0) return Timing.WaitForOneFrame;
+        return Timing.WaitUntilDone(Timing.RunCoroutine(_WaitForSeconds(aSeconds, anIgnoreTimeScale)));
+    }
+
+    static IEnumerator<float> _WaitForSeconds(float aSeconds, bool anIgnoreTimeScale = false)
+    {
+        while (aSeconds > 0)
+        {
+            yield return Timing.WaitForOneFrame;
+            aSeconds -= anIgnoreTimeScale ? Time.unscaledDeltaTime : Time.deltaTime;
+        }
+    }
 }

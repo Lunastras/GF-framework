@@ -217,7 +217,6 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
         Scene currentScene = SceneManager.GetSceneByBuildIndex(sceneToLoadIndex);
         SceneManager.SetActiveScene(currentScene);
-        Debug.Log("The active scene is " + (GfcSceneId)sceneToLoadIndex);
 
         if (mustHaveNetworkGame)
         {

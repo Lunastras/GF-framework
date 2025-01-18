@@ -118,7 +118,7 @@ public class GfgPlayerController : MonoBehaviour
         bool auxFlagJump = false;
         Vector3 auxMovDir = Vector3.zero;
 
-        if (!GfgManagerLevel.IsPaused() && CanTakeInputs) //get inputs
+        if (!GfgPauseToggle.Paused && CanTakeInputs) //get inputs
         {
             Vector3 upVec = m_movement.GetUpvecRotation();
 

@@ -86,9 +86,8 @@ public class GfxClickInteract : MonoBehaviour
 
         if (component)
         {
-            string notInteractableReason = null;
             GfcLockKey inputKey = new((int)component.InputKeyPriority);
-            if (component.Interactable(hitInfo, out notInteractableReason))
+            if (component.Interactable(hitInfo))
             {
                 if (anInteract && GfcInput.InputLockHandle.AuthorityTest(inputKey))
                 {
@@ -98,10 +97,6 @@ public class GfxClickInteract : MonoBehaviour
                 {
                     GfcInput.UpdateDisplayInput(m_submitTracker.InputType, inputKey, m_clickInteractText);
                 }
-            }
-            else
-            {
-                //somehow let player they cannot interact
             }
         }
     }

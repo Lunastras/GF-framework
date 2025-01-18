@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class GfcTransitionParent : MonoBehaviour
 {
+    public bool IgnoreTimeScale = false;
     [SerializeField] private float m_duration = 0.3f;
 
     public float ParentIndexDelaySeconds = 0;
-
     GfcCoroutineHandle m_transitionHandle;
 
     protected bool m_fadeIn;
@@ -76,12 +76,14 @@ public class GfcTransitionParent : MonoBehaviour
         foreach (GfcTransitionChild child in m_children) child.SetProgress(aProgress);
     }
 
+    private bool IgnoreTimeScaleEffective { get { return m_ignoreTimeScale || IgnoreTimeScale; } }
+
     private IEnumerator<float> _TransitionRoutine()
     {
         yield return Timing.WaitForOneFrame;
 
         if (ParentIndexDelaySeconds > 0)
-            yield return Timing.WaitForSeconds(ParentIndexDelaySeconds * transform.GetSiblingIndex());
+            yield return GfcCoroutineHandle.WaitForSeconds(ParentIndexDelaySeconds * transform.GetSiblingIndex(), IgnoreTimeScaleEffective);
 
         float targetProgress = m_fadeIn ? 1 : 0;
         while (m_progressRaw != targetProgress)
@@ -89,7 +91,7 @@ public class GfcTransitionParent : MonoBehaviour
             SetProgressInternal(m_progressRaw);
 
             yield return Timing.WaitForOneFrame;
-            m_progressRaw += m_durationInv * (m_fadeIn ? 1 : -1) * (m_ignoreTimeScale ? Time.unscaledDeltaTime : Time.deltaTime);
+            m_progressRaw += m_durationInv * (m_fadeIn ? 1 : -1) * (IgnoreTimeScaleEffective ? Time.unscaledDeltaTime : Time.deltaTime);
             m_progressRaw.ClampSelf(0, 1);
             targetProgress = m_fadeIn ? 1 : 0;
         }

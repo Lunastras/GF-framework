@@ -43,13 +43,6 @@ public class GfgManagerLevel : MonoBehaviour
     [SerializeField]
     protected GfgPathfinding[] m_pathfindingSystems = null;
 
-    protected bool m_isPaused = false;
-
-    public bool CanPause = true;
-
-    protected bool m_pauseButtonReleased = true;
-
-
     protected float m_pitchSmoothTime = 2;
 
     protected bool m_isPlayingCalmMusic = true;
@@ -257,19 +250,6 @@ public class GfgManagerLevel : MonoBehaviour
 
     protected void Update()
     {
-        if (Input.GetAxisRaw("Pause") > 0.1f)
-        {
-            if (m_pauseButtonReleased)
-            {
-                m_pauseButtonReleased = false;
-                PauseToggle();
-            }
-        }
-        else
-        {
-            m_pauseButtonReleased = true;
-        }
-
         switch (m_currentGameState)
         {
             case LevelState.LEVEL_IDLE:
@@ -377,29 +357,9 @@ public class GfgManagerLevel : MonoBehaviour
         {
             Instance.m_currentGameState = LevelState.LEVEL_ENDED;
 
-            Instance.CanPause = false;
-            if (Instance.m_isPaused)
-                PauseToggle();
-
+            GfgPauseToggle.SetPause(false);
             OnLevelEnd?.Invoke();
         }
-    }
-
-    public static void PauseToggle()
-    {
-        if (!Instance.m_isPaused && (!Instance.CanPause || GfgManagerSceneLoader.CurrentlyLoading))
-            return;
-
-        Instance.m_isPaused = !Instance.m_isPaused;
-        Time.timeScale = Instance.m_isPaused && !GfgManagerGame.IsMultiplayer ? 0 : 1;
-        Instance.m_pauseScreen.SetActive(Instance.m_isPaused);
-        Cursor.visible = Instance.m_isPaused;
-        Cursor.lockState = Instance.m_isPaused ? CursorLockMode.None : CursorLockMode.Locked;
-    }
-
-    public static bool IsPaused()
-    {
-        return Instance ? Instance.m_isPaused : false;
     }
 
     public static float OnCheckpointReset(GfgCheckpointManager aCheckpointManager, bool anIsHardCheckpoint)

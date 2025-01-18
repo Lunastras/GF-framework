@@ -100,7 +100,7 @@ public class GfgManagerSaveData : MonoBehaviour
         {
             if (aPlayerSaveData != null)
             {
-                if (!aPlayerSaveData.ValidateSaveFile())
+                if (!aPlayerSaveData.ValidateSaveFile(true))
                     Debug.LogError("Save file validation failed, the save file might be corrupted... :(");
                 else if (Instance.m_printLogs)
                     Debug.Log("Save file " + aPlayerSaveData.GetName() + " loaded and validated successfuly");

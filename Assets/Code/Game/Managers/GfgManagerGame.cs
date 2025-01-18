@@ -187,6 +187,8 @@ public class GfgManagerGame : MonoBehaviour
     {
         yield return Timing.WaitForOneFrame; //don't execute immediately after RunCoroutine
 
+        GfgPauseToggle.SetPause(false);
+
         if (GameStateTransitioningFadeInPhase())
             yield return Timing.WaitUntilDone(m_gameStateTransitionHandle);
 
@@ -335,11 +337,8 @@ public class GfgManagerGame : MonoBehaviour
 
     public static void QuitToMenu()
     {
-        GfgManagerLevel.Instance.CanPause = false;
-        if (GfgManagerLevel.IsPaused())
-            GfgManagerLevel.PauseToggle();
-
-        GfgManagerSceneLoader.LoadScene(0, GfcGameState.MAIN_MENU, false, GfcGameMultiplayerType.NONE, ServerLoadingMode.SHUTDOWN);
+        GfgPauseToggle.SetPause(false);
+        GfgManagerSceneLoader.LoadScene(GfcSceneId.MAIN_MENU, GfcGameState.MAIN_MENU, false, GfcGameMultiplayerType.NONE, ServerLoadingMode.SHUTDOWN);
     }
 
     public static void QuitGame()
@@ -372,7 +371,7 @@ public class GfgManagerGame : MonoBehaviour
     public static void SetTimeScale(float timeScale)
     {
         Instance.m_currentTimeScale = timeScale;
-        if (!GfgManagerLevel.IsPaused() || IsMultiplayer) Time.timeScale = timeScale;
+        if (!GfgPauseToggle.Paused || IsMultiplayer) Time.timeScale = timeScale;
     }
 }
 

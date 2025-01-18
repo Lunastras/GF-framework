@@ -7,6 +7,8 @@ using UnityEngine.UI;
 
 public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHandler, IPointerEnterHandler, IPointerExitHandler
 {
+    public bool TimeScaleIndependent = false;
+
     public GfcUnityEvent OnSubmit = new();
 
     [SerializeField] protected GfxButtonHightlightState m_highlightStateDefault = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = Color.white, PixelsPerUnit = 1 };
@@ -138,13 +140,15 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     {
         if (m_timeSinceTransitionStart < m_transitionTimeEffective && m_initialisedButton)
         {
-            m_timeSinceTransitionStart += Time.deltaTime;
+            m_timeSinceTransitionStart += TimeScaleIndependent ? Time.unscaledDeltaTime : Time.deltaTime;
             m_timeSinceTransitionStart.MinSelf(m_transitionTimeEffective);
             SetTransitionLerpState(m_timeSinceTransitionStart / m_transitionTimeEffective, GetFinalHighlightState());
         }
     }
 
     protected abstract void SetTransitionLerpState(float aTransitionPoint, GfxButtonHightlightState aDesiredState);
+
+    protected void OnDisable() { SetSelected(false); }
 
     public void SetSelected(bool aSelect)
     {

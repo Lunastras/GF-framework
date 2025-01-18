@@ -653,7 +653,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.8301887, b: 0.3432613, a: 1}
+  m_Color: {r: 0.3958707, g: 0.3254717, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1587,7 +1587,7 @@ GameObject:
   - component: {fileID: 340263136}
   - component: {fileID: 340263135}
   m_Layer: 5
-  m_Name: GfxButtonArt
+  m_Name: GfxButtonCode
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1714,6 +1714,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0.05
 --- !u!114 &340263140
@@ -1730,6 +1731,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InputKeyPriority: 1
   HideInteractablePrompt: 0
+  TimeScaleIndependent: 0
   OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -2363,7 +2365,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Arts
+  m_text: 'Code
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2390,7 +2394,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
+  m_fontSize: 25
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2547,6 +2551,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0
 --- !u!114 &414613212
@@ -2563,6 +2568,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InputKeyPriority: 1
   HideInteractablePrompt: 0
+  TimeScaleIndependent: 0
   OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -3171,7 +3177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GameStates: 06000000
-  m_instantDisable: 0
+  m_instantDisable: 1
 --- !u!114 &574776178
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3336,8 +3342,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 340263134}
   - {fileID: 2032797215}
+  - {fileID: 340263134}
   - {fileID: 1957264998}
   - {fileID: 1461163697}
   m_Father: {fileID: 1236483783}
@@ -3409,6 +3415,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0
 --- !u!225 &585079158
@@ -4053,6 +4060,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0
 --- !u!225 &743040920
@@ -4569,8 +4577,9 @@ GameObject:
   - component: {fileID: 975713133}
   - component: {fileID: 975713132}
   - component: {fileID: 975713131}
+  - component: {fileID: 975713135}
   m_Layer: 0
-  m_Name: CameraApartment
+  m_Name: CameraShop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4589,7 +4598,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1441893736}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 18.45, y: 45, z: 0}
 --- !u!114 &975713131
 MonoBehaviour:
@@ -4706,6 +4715,20 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &975713135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975713129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fc1e7f1f2673b346b438f74b22e9941, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GameStates: 09000000
+  m_instantDisable: 1
 --- !u!1 &977654753
 GameObject:
   m_ObjectHideFlags: 0
@@ -5021,7 +5044,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.8301887, b: 0.3432613, a: 1}
+  m_Color: {r: 0.3958707, g: 0.3254717, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5097,7 +5120,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.8301887, b: 0.3432613, a: 1}
+  m_Color: {r: 0.3958707, g: 0.3254717, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5983,6 +6006,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0
 --- !u!114 &1236483789
@@ -5999,6 +6023,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InputKeyPriority: 1
   HideInteractablePrompt: 1
+  TimeScaleIndependent: 0
   OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -7289,7 +7314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GameStates: 09000000
-  m_instantDisable: 0
+  m_instantDisable: 1
 --- !u!4 &1441893736
 Transform:
   m_ObjectHideFlags: 0
@@ -7304,7 +7329,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2137210559}
-  - {fileID: 975713130}
   - {fileID: 920208113}
   - {fileID: 1796328450}
   m_Father: {fileID: 0}
@@ -7513,7 +7537,7 @@ GameObject:
   - component: {fileID: 1461163699}
   - component: {fileID: 1461163698}
   m_Layer: 5
-  m_Name: GfxButtonCode (1)
+  m_Name: GfxButtonAstronomy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7640,6 +7664,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0.05
 --- !u!114 &1461163703
@@ -7656,6 +7681,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InputKeyPriority: 1
   HideInteractablePrompt: 0
+  TimeScaleIndependent: 0
   OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -7983,7 +8009,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Code
+  m_text: Art
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -8010,7 +8036,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25
+  m_fontSize: 32
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -8238,7 +8264,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Code
+  m_text: Astronomy
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -8265,7 +8291,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25
+  m_fontSize: 18
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -9961,7 +9987,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1964680461}
   - {fileID: 1972392236}
   - {fileID: 244995929}
   - {fileID: 303769644}
@@ -10388,7 +10413,7 @@ GameObject:
   - component: {fileID: 1957265000}
   - component: {fileID: 1957264999}
   m_Layer: 5
-  m_Name: GfxButtonCode
+  m_Name: GfxButtonArt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10515,6 +10540,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0.05
 --- !u!114 &1957265004
@@ -10531,6 +10557,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InputKeyPriority: 1
   HideInteractablePrompt: 0
+  TimeScaleIndependent: 0
   OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -10870,6 +10897,7 @@ GameObject:
   - component: {fileID: 1964680464}
   - component: {fileID: 1964680463}
   - component: {fileID: 1964680462}
+  - component: {fileID: 1964680466}
   m_Layer: 0
   m_Name: CameraApartment
   m_TagString: Untagged
@@ -10890,7 +10918,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1891361122}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 18.45, y: 45, z: 0}
 --- !u!114 &1964680462
 MonoBehaviour:
@@ -11014,6 +11042,20 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &1964680466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964680460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fc1e7f1f2673b346b438f74b22e9941, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GameStates: 04000000
+  m_instantDisable: 1
 --- !u!1 &1972392235
 GameObject:
   m_ObjectHideFlags: 0
@@ -11098,7 +11140,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.8301887, b: 0.3432613, a: 1}
+  m_Color: {r: 0.3958707, g: 0.3254717, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -11640,6 +11682,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0.05
 --- !u!114 &2032797221
@@ -11656,6 +11699,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InputKeyPriority: 1
   HideInteractablePrompt: 0
+  TimeScaleIndependent: 0
   OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -12186,6 +12230,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   InputKeyPriority: 1
   HideInteractablePrompt: 0
+  TimeScaleIndependent: 0
   OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -12376,6 +12421,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0
 --- !u!114 &2960242468912225855
@@ -13454,4 +13500,6 @@ SceneRoots:
   - {fileID: 1891361122}
   - {fileID: 1441893736}
   - {fileID: 574776182}
+  - {fileID: 975713130}
+  - {fileID: 1964680461}
   - {fileID: 1902730850}

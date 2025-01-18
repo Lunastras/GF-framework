@@ -188,19 +188,30 @@ public struct GfcLockKey : IEquatable<GfcLockKey>
     public GfcTimeStamp Key { get; private set; }
     public int Priority { get; private set; }
 
-    public GfcLockKey(GfcTimeStamp aKey, int aPriority = 0)
-    {
-        Key = aKey;
-        Priority = aPriority;
-    }
-
     public GfcLockKey(int aPriority)
     {
         Key = new(0);
         Priority = aPriority;
     }
 
-    public readonly bool Valid() { return Key.Valid(); }
+    public GfcLockKey(GfcInputLockPriority aPriority)
+    {
+        Key = new(0);
+        Priority = (int)aPriority;
+    }
 
+    public GfcLockKey(GfcTimeStamp aKey, int aPriority = 0)
+    {
+        Key = aKey;
+        Priority = aPriority;
+    }
+
+    public GfcLockKey(GfcTimeStamp aKey, GfcInputLockPriority aPriority = GfcInputLockPriority.BASE)
+    {
+        Key = aKey;
+        Priority = (int)aPriority;
+    }
+
+    public readonly bool Valid() { return Key.Valid(); }
     public readonly bool Equals(GfcLockKey anOther) { return Priority == anOther.Priority && Key.Equals(anOther.Key); }
 }
