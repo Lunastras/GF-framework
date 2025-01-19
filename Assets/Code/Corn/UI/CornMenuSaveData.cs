@@ -45,7 +45,6 @@ public class CornMenuSaveData : MonoBehaviour
         if (!m_initialized)
             return;
 
-        Debug.Log("UPDATE BUTTONS");
         CornSaveData[] backups = GfgManagerSaveData.GetActivePlayerSaveData().DataBackups;
 
         int index = 0;
