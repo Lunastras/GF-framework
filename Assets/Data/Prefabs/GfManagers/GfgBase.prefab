@@ -1863,6 +1863,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1b98ef59a429eb4b991694cc544f6b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_interactableCheckInterval: 0.02
   m_layermask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -2988,8 +2989,8 @@ MonoBehaviour:
         _elementIdentifierId: -1
         _axisRange: 0
         _invert: 0
-        _axisContribution: 1
-        _keyboardKeyCode: 27
+        _axisContribution: 0
+        _keyboardKeyCode: 101
         _modifierKey1: 0
         _modifierKey2: 0
         _modifierKey3: 0
@@ -3702,15 +3703,15 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6877117886472241483}
-  - {fileID: 4715738812055843890}
-  - {fileID: 8279208471888182998}
   - {fileID: 8057045576918884481}
   - {fileID: 5150500069436248050}
+  - {fileID: 4715738812055843890}
   - {fileID: 5234947385377215648}
   - {fileID: 1940894468165821179}
   - {fileID: 4655651345050461226}
   - {fileID: 6122799578979212287}
   - {fileID: 3683748270929751723}
+  - {fileID: 8279208471888182998}
   m_Father: {fileID: 4706887839667432007}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

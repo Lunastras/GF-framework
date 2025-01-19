@@ -16,14 +16,14 @@ public class GfcInput : MonoBehaviour
 
     private readonly List<ActionElementMap> m_actionsElementsBuffer = new(8);
 
-    private int m_fixedUpdateCountOfUpdate = 1;
+    private float m_unscaledTimeOfUpdate = 1;
 
     private readonly GfcLockPriorityQueue m_inputLockHandle = new();
 
     public static GfcLockPriorityQueue InputLockHandle { get { return Instance.m_inputLockHandle; } }
 
-    private const int FIXED_DELTAS_UNTIL_REMOVE_DISPLAY = 3;
-    private const int FIXED_DELTAS_UNTIL_UPDATE_DISPLAY = 3;
+    private const float SECONDS_UNTIL_REMOVE_DISPLAY = 0.06f;
+    private const float SECONDS_UNTIL_UPDATE_DISPLAY = 0.06f;
 
     public static List<ActionElementMap> ActionsElementsBuffer
     {
@@ -36,8 +36,8 @@ public class GfcInput : MonoBehaviour
 
     private static void SetDisplayDirty()
     {
-        if (Instance.m_fixedUpdateCountOfUpdate == -1)
-            Instance.m_fixedUpdateCountOfUpdate = GfcPhysics.FixedUpdateCount + FIXED_DELTAS_UNTIL_UPDATE_DISPLAY;
+        if (Instance.m_unscaledTimeOfUpdate == -1)
+            Instance.m_unscaledTimeOfUpdate = Time.unscaledTime + SECONDS_UNTIL_UPDATE_DISPLAY;
     }
 
     // Start is called before the first frame update
@@ -51,12 +51,9 @@ public class GfcInput : MonoBehaviour
         Debug.Assert(m_displayedInputsParent);
     }
 
-    void FixedUpdate()
+    void LateUpdate()
     {
-        //if (InputLockHandle.Locked())
-        //Debug.Log("I AM LOCKED BY " + InputLockHandle.GetHeadCopy().ObjectHandle);
-
-        int fixedUpdateCount = GfcPhysics.FixedUpdateCount;
+        float unscaledTime = Time.unscaledTime;
         for (int i = 0; i < m_displayedInputs.Count; i++)
         {
             GfcDisplayedInputData data = m_displayedInputs[i];
@@ -65,8 +62,8 @@ public class GfcInput : MonoBehaviour
 
             for (int j = 0; j < numComponents; j++) //fixme
             {
-                int fixedUpdatesSinceLastUpdate = fixedUpdateCount - data.Labels[j].LastUpdateFixedUpdateCount;
-                if (data.Labels[j].LabelString != null && fixedUpdatesSinceLastUpdate >= FIXED_DELTAS_UNTIL_REMOVE_DISPLAY)
+                float secondsSinceLastUpdate = unscaledTime - data.Labels[j].LastUpdateUnscaledTime;
+                if (data.Labels[j].LabelString != null && secondsSinceLastUpdate >= SECONDS_UNTIL_REMOVE_DISPLAY)
                 {
                     data.Labels.RemoveAt(j);
                     data.UpdateLabelString();
@@ -94,11 +91,11 @@ public class GfcInput : MonoBehaviour
             }
         }
 
-        if (m_fixedUpdateCountOfUpdate != -1 && m_fixedUpdateCountOfUpdate <= fixedUpdateCount)
+        if (m_unscaledTimeOfUpdate != -1 && m_unscaledTimeOfUpdate <= unscaledTime)
         {
             SortPrompts();
             m_displayedInputsParent.UpdatePrompts(m_displayedInputs);
-            m_fixedUpdateCountOfUpdate = -1;
+            m_unscaledTimeOfUpdate = -1;
         }
     }
 
@@ -393,7 +390,7 @@ public interface IGfcInputTracker
 public struct GfcDisplayedInputDataLabel : IComparable<GfcDisplayedInputDataLabel>, IEquatable<GfcDisplayedInputDataLabel>
 {
     public string LabelString;
-    public int LastUpdateFixedUpdateCount;
+    public float LastUpdateUnscaledTime;
 
     public int CompareTo(GfcDisplayedInputDataLabel aLabel)
     {
@@ -474,7 +471,7 @@ public struct GfcDisplayedInputData : IComparable<GfcDisplayedInputData>
 
         if (validIndex)
         {
-            GfcDisplayedInputDataLabel label = new() { LabelString = aLabel, LastUpdateFixedUpdateCount = GfcPhysics.FixedUpdateCount };
+            GfcDisplayedInputDataLabel label = new() { LabelString = aLabel, LastUpdateUnscaledTime = Time.unscaledTime };
             if (addNewLabel)
             {
                 Labels.Insert(Labels.GetSortedIndex(label), label);

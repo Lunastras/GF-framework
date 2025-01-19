@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GfxClickInteract : MonoBehaviour
 {
+    [SerializeField] float m_interactableCheckInterval = 0.02f;
     [SerializeField] LayerMask m_layermask;
     [SerializeField] QueryTriggerInteraction m_queryTriggerInteraction = QueryTriggerInteraction.Ignore;
 
@@ -22,7 +23,8 @@ public class GfxClickInteract : MonoBehaviour
 
     public static GfcInteractable GetHoveredInteract() { return Instance.m_currentlyHoveredInteract; }
 
-    // Start is called before the first frame update
+    private float m_timeUntilInteractableCheck = 0;
+
     void Awake()
     {
         this.SetSingleton(ref Instance);
@@ -30,18 +32,19 @@ public class GfxClickInteract : MonoBehaviour
         m_submitTracker.DisplayPrompt = false;
         m_submitTracker.Key = new((int)GfcInputLockPriority.GF_MASTER);
         m_clickInteractText = new("Interact");
+        m_timeUntilInteractableCheck = m_interactableCheckInterval;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (m_submitTracker.PressedSinceLastCheck()) //on demand interact
-            CheckInteract(true);
-    }
+        m_timeUntilInteractableCheck -= Time.unscaledDeltaTime;
+        bool interact = m_submitTracker.PressedSinceLastCheck();
 
-    void FixedUpdate()
-    {
-        CheckInteract(false); //check every so often so highlight to the player they can interact with something
+        if (interact || m_timeUntilInteractableCheck <= 0)
+        {
+            CheckInteract(interact);
+            m_timeUntilInteractableCheck = m_interactableCheckInterval;
+        }
     }
 
     private GfcInteractable SetHoveredInteract(GfcCursorRayhit aHit)

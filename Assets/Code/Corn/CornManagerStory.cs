@@ -526,3 +526,15 @@ public class DialogueCornRoll : GfgVnScene
         m_rollCount++;
     }
 }
+
+public class _VNC_START_CUTSCENE : GfgVnScene
+{
+    protected override void Begin()
+    {
+        LoadScene(GfcSceneId.ENV_PARK);
+        Say("Hello loser...", new(GfcStoryCharacter.DUNNO));
+        Say("This is just dumb placeholder...", new(GfcStoryCharacter.DUNNO));
+        Say("This will be a good cutscene one day", new(GfcStoryCharacter.GF));
+        LoadScene(GfcSceneId.APARTMENT);
+    }
+}

@@ -4,10 +4,8 @@ using UnityEngine;
 
 public class GfgGameStateSetter : MonoBehaviour
 {
-    [SerializeField] private GfcGameState m_gameState;
-
     [SerializeField] private bool m_smoothTransition;
-
+    [SerializeField] private GfcGameState m_gameState;
     [SerializeField] private GfxTransitionType Transition;
 
     void SetGameState(bool anSkipIfInstanceIsNull)

@@ -83,15 +83,19 @@ public class GfgManagerSceneLoader : MonoBehaviour
         }
     }
 
-    public static void RequestGameStateAfterLoad(GfcGameState aNewGameState, bool aSmoothTransition = true, GfxTransitionType aTransition = GfxTransitionType.BLACK_FADE)
+    public static bool RequestGameStateAfterLoad(GfcGameState aNewGameState, bool aSmoothTransition = true, GfxTransitionType aTransition = GfxTransitionType.BLACK_FADE)
     {
+        bool success = true;
         if (CurrentlyLoading || Instance.m_fakeWaitHandle.CoroutineIsRunning)
         {
-            if (Instance.m_softGameStateLock)
+            success = Instance.m_softGameStateLock;
+            if (success)
                 GameStateAfterLoad = aNewGameState;
         }
         else
             GfgManagerGame.SetGameState(aNewGameState, aSmoothTransition, aTransition);
+
+        return success;
     }
 
     public static CoroutineHandle LoadScene(GfcSceneId aScene, GfcGameState aNewGameState = GfcGameState.INVALID, bool aReloadIfLoaded = false, GfcGameMultiplayerType aGameType = GfcGameMultiplayerType.SINGLEPLAYER, ServerLoadingMode aLoadingMode = ServerLoadingMode.KEEP_SERVER)
@@ -174,7 +178,6 @@ public class GfgManagerSceneLoader : MonoBehaviour
 
     private static IEnumerator<float> _LoadAsyncHost()
     {
-
         GfgManagerGame.GameStateLockHandle.Unlock(ref Instance.m_gameStateKey);
         yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GfcGameState.LOADING, true));
 

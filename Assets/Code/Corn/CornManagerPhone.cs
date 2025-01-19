@@ -30,13 +30,18 @@ public class CornManagerPhone : MonoBehaviour
 
     protected bool m_canTogglePhone = true;
 
+    GfcLocalizedString m_openPhoneString;
+    GfcLocalizedString m_closePhoneString;
+
     public static bool CanTogglePhone { get { return Instance.m_canTogglePhone; } set { Instance.m_canTogglePhone = value; } }
 
     // Start is called before the first frame update
     void Awake()
     {
         m_openPhoneInputTracker = new(m_openPhoneInput);
-        m_openPhoneInputTracker.DisplayPromptString = new("Open Phone");
+        m_openPhoneString = new("Open Phone");
+        m_closePhoneString = new("Close Phone");
+        m_openPhoneInputTracker.DisplayPromptString = m_openPhoneString;
         this.SetSingleton(ref Instance);
     }
 
@@ -65,7 +70,18 @@ public class CornManagerPhone : MonoBehaviour
     {
         if (CanTogglePhone)
         {
-            GfcGameState gameStateToSet = GfgManagerGame.GetGameState() == GfcGameState.PHONE ? GfgManagerGame.GetPreviousGameState() : GfcGameState.PHONE;
+            GfcGameState gameStateToSet;
+            if (GfgManagerGame.GetGameState() == GfcGameState.PHONE)
+            {
+                gameStateToSet = GfgManagerGame.GetPreviousGameState();
+                m_openPhoneInputTracker.DisplayPromptString = m_openPhoneString;
+            }
+            else
+            {
+                gameStateToSet = GfcGameState.PHONE;
+                m_openPhoneInputTracker.DisplayPromptString = m_closePhoneString;
+            }
+
             GfgManagerGame.SetGameState(gameStateToSet);
         }
     }

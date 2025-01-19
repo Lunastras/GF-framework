@@ -6,7 +6,7 @@ public class TestDialogue : GfgVnScene
 {
     protected override void Begin()
     {
-        Environment(GfcSceneId.ENV_MUSUEM);
+        LoadScene(GfcSceneId.ENV_MUSUEM);
 
         Say("I suck dick", new(GfcStoryCharacter.PROTAG));
         Say("Neat trick, right?");
@@ -38,7 +38,7 @@ public class TestDialogue : GfgVnScene
 
     void Test1Num()
     {
-        Environment(GfcSceneId.ENV_PARK);
+        LoadScene(GfcSceneId.ENV_PARK);
 
         Say("Bruh", GfcStoryCharacter.GF);
         SayKey("Lmao");
@@ -55,7 +55,7 @@ public class TestDialogue : GfgVnScene
 
     void Test3Num()
     {
-        Environment(GfcSceneId.ENV_RESTAURANT);
+        LoadScene(GfcSceneId.ENV_RESTAURANT);
         Say("non", new CornDialogueSetting(GfcStoryCharacter.TEST));
         Say("eheh");
     }

@@ -49,11 +49,16 @@ public class CornMenuProfileSelect : MonoBehaviour
             case GfxButtonCallbackType.SELECT:
                 break;
             case GfxButtonCallbackType.SUBMIT:
-                if (m_saves[aButton.Index] == null)
-                    m_saves[aButton.Index] = new("Cool Name(todo add name select)");
 
+                bool newSave = m_saves[aButton.Index] == null;
+                if (newSave) m_saves[aButton.Index] = new("Cool Name(todo add name select)");
                 GfgManagerSaveData.SetActivePlayerSaveData(m_saves[aButton.Index], aButton.Index);
-                GfgManagerSceneLoader.LoadScene(GfcSceneId.APARTMENT);
+
+                if (newSave)
+                    CornManagerStory.StartDialogueScene<_VNC_START_CUTSCENE>();
+                else
+                    GfgManagerSceneLoader.LoadScene(GfcSceneId.APARTMENT);
+
                 break;
         }
     }

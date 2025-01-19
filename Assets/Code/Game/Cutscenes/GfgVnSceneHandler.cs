@@ -159,7 +159,12 @@ public abstract class GfgVnScene
 
         Next(Begin);
 
-    StartLabel:
+        bool mustSetCutsceneGameStateOnLoad = m_handler.DialogueActionsBuffer.Count == 0 || m_handler.DialogueActionsBuffer[0].ActionType == CornDialogueActionType.LOAD_SCENE;
+
+        if (!mustSetCutsceneGameStateOnLoad)
+            yield return Timing.WaitUntilDone(GfgManagerGame.SetGameState(GfcGameState.CUTSCENE, false));
+
+        StartLabel:
 
         while (m_handler.NextLabel == null && !m_handler.OptionsBuffer.IsEmpty())
             yield return Timing.WaitForOneFrame;
@@ -185,8 +190,9 @@ public abstract class GfgVnScene
                         dialogueAction.Action?.Invoke();
                         break;
 
-                    case CornDialogueActionType.ENVIRONMENT:
-                        yield return Timing.WaitUntilDone(GfgManagerSceneLoader.LoadScene(dialogueAction.Scene, GfcGameState.CUTSCENE));
+                    case CornDialogueActionType.LOAD_SCENE:
+                        yield return Timing.WaitUntilDone(GfgManagerSceneLoader.LoadScene(dialogueAction.Scene, mustSetCutsceneGameStateOnLoad ? GfcGameState.CUTSCENE : GfcGameState.INVALID));
+                        mustSetCutsceneGameStateOnLoad = false;
                         break;
 
                     case CornDialogueActionType.SOUND:
@@ -266,11 +272,11 @@ public abstract class GfgVnScene
         m_handler.DialogueActionsBuffer.Add(action);
     }
 
-    protected void Environment(GfcSceneId aScene)
+    protected void LoadScene(GfcSceneId aScene)
     {
         CornDialogueAction action = new()
         {
-            ActionType = CornDialogueActionType.ENVIRONMENT,
+            ActionType = CornDialogueActionType.LOAD_SCENE,
             Scene = aScene,
         };
 
@@ -462,7 +468,7 @@ public enum CornDialogueActionType
     ACTION,
     TEXT,
     SOUND,
-    ENVIRONMENT,
+    LOAD_SCENE,
     WAIT,
     WAIT_FOR_COROUTINE,
 }

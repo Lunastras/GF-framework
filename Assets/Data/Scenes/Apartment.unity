@@ -7292,8 +7292,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1441893736}
   - component: {fileID: 1441893735}
-  - component: {fileID: 1441893737}
   - component: {fileID: 1441893738}
+  - component: {fileID: 1441893739}
   m_Layer: 0
   m_Name: ShopManager
   m_TagString: Untagged
@@ -7333,25 +7333,6 @@ Transform:
   - {fileID: 1796328450}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1441893737
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1441893734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cccc9cc4eefee1f4b87e0e65e736b2bb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GameStateToToggle:
-    State: 4
-    SmoothTransition: 1
-    Transition: 0
-  m_toggleStateInput: 6
-  m_statesWhereToggleEnabled: 
-  CanToggleGameState: 1
 --- !u!114 &1441893738
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7369,6 +7350,22 @@ MonoBehaviour:
   m_shopItemsParent: {fileID: 5953722144369939043}
   m_prefabPreviewParent: {fileID: 920208113}
   m_previewRotationSpeed: 20
+--- !u!114 &1441893739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1441893734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b838ccdafdffa4d429e9e658b6c15def, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SmoothTransition: 1
+  Transition: 0
+  ToggleStateInput: 18
+  CanToggleGameState: 1
 --- !u!1 &1452979014
 GameObject:
   m_ObjectHideFlags: 0
@@ -9743,7 +9740,8 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 2147483647
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1536505067836444305, guid: 943bb5fa6ac782143b7561037a737f5c, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -9971,8 +9969,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e613b37254f3d2141b32c5e6105f235e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_gameState: 4
   m_smoothTransition: 0
+  m_gameState: 4
   Transition: 0
 --- !u!4 &1891361122
 Transform:
