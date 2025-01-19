@@ -119,6 +119,8 @@ public class CornManagerEvents : MonoBehaviour
 
     private IEnumerator<float> _ExecuteEvent(CornEvent anEvent)
     {
+        while (GfgManagerGame.GameStateTransitioning()) yield return Timing.WaitForOneFrame;
+
         CornEventCostAndRewards eventRewardsAndCost = CornManagerBalancing.GetEventCostAndRewards(anEvent.EventType, out string message, anEvent.EventTypeSub);
         CoroutineHandle eventHandle = default;
 
@@ -395,14 +397,17 @@ public class CornManagerEvents : MonoBehaviour
 
     private IEnumerator<float> _FlushMessagesAndDrawHud(bool aFadeToBlack = true)
     {
+        while (GfgManagerGame.GameStateTransitioning()) yield return Timing.WaitForOneFrame;
+
         float fadeTime = Instance.m_screenFadeTime;
 
+        GfcTransitionParent transition = GfxTransitions.Instance.GetSingleton(GfxTransitionType.BLACK_FADE);
         if (aFadeToBlack)
         {
-            GfxUiTools.FadeOverlayAlpha(1, fadeTime);
             GfcCursor.RemoveSelectedGameObject();
-
-            yield return Timing.WaitForSeconds(fadeTime);
+            yield return Timing.WaitUntilDone(transition.StartFadeIn());
+            //GfxUiTools.FadeOverlayAlpha(1, fadeTime);
+            //yield return Timing.WaitForSeconds(fadeTime);
         }
 
         GfgManagerSceneLoader.FakeWait = false;
@@ -418,14 +423,17 @@ public class CornManagerEvents : MonoBehaviour
         if (handle.IsValid) yield return Timing.WaitUntilDone(handle);
         Instance.m_messagesBuffer.Clear();
 
-        CheckGameOver();
-        GfgManagerSaveData.SaveGame();
-        CornManagerPhone.LoadAvailableStoryScenes();
-
-        if (aFadeToBlack)
+        if (!CheckGameOver())
         {
-            GfxUiTools.FadeOverlayAlpha(0, fadeTime);
-            yield return Timing.WaitForSeconds(fadeTime);
+            GfgManagerSaveData.SaveGame();
+            CornManagerPhone.LoadAvailableStoryScenes();
+
+            if (aFadeToBlack)
+            {
+                yield return Timing.WaitUntilDone(transition.StartFadeOut());
+                //GfxUiTools.FadeOverlayAlpha(0, fadeTime);
+                //yield return Timing.WaitForSeconds(fadeTime);
+            }
         }
 
         m_progressTimeHandle.Finished();

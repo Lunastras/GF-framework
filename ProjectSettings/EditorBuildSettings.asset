@@ -18,8 +18,8 @@ EditorBuildSettings:
     path: Assets/Data/Scenes/Phone.unity
     guid: 9179934f609e8b24490baa0c2e4ce26c
   - enabled: 1
-    path: Assets/Data/Scenes/ApartmentOld.unity
-    guid: e162b25afd126974c8066d3f52543087
+    path: Assets/Data/Scenes/Apartment.unity
+    guid: dded6612cbb89d24c9417a010a2ae53b
   - enabled: 1
     path: Assets/Data/Scenes/Environment/Park.unity
     guid: ea18f0a7cdffc0d48a329ac3de3cad6d

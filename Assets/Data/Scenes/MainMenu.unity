@@ -918,6 +918,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 0
   m_duration: 0.3
   ParentIndexDelaySeconds: 0
@@ -1440,7 +1441,6 @@ GameObject:
   - component: {fileID: 780362503}
   - component: {fileID: 780362502}
   - component: {fileID: 780362501}
-  - component: {fileID: 780362509}
   - component: {fileID: 780362510}
   m_Layer: 5
   m_Name: ScreenProfiles
@@ -1532,6 +1532,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 0
   m_duration: 0.3
   ParentIndexDelaySeconds: 0
@@ -1585,21 +1586,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 780362499}
   m_CullTransparentMesh: 1
---- !u!114 &780362509
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 780362499}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0aee0031160875041895f64168baf5ae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_uiButtonPrefab: {fileID: 6914615085014296213, guid: dfaed125d296d3c4598594f2f953bb12,
-    type: 3}
-  m_uiButtonParent: {fileID: 2146361689}
 --- !u!114 &780362510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2244,7 +2230,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000061035156}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -0.15332031, y: 0.21289062}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &986016452
@@ -2559,6 +2545,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0
@@ -2625,10 +2612,19 @@ MonoBehaviour:
     ColorContentBlendMode: 0
     Opacity: 1
     PixelsPerUnit: 1
+  m_highlightStatePressed:
+    Scale: {x: 0.9, y: 0.9, z: 0.9}
+    PositionOffset: {x: 100, y: 0, z: 0}
+    ColorPanel: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorContent: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
-  DeselectOnEvenSystemDeselect: 1
+  DeselectOnPointerExit: 1
   VisualsParent: {fileID: 930824448}
   GraphicsPanel:
   - {fileID: 930824449}
@@ -2838,6 +2834,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0
@@ -2904,10 +2901,19 @@ MonoBehaviour:
     ColorContentBlendMode: 0
     Opacity: 1
     PixelsPerUnit: 1
+  m_highlightStatePressed:
+    Scale: {x: 0.9, y: 0.9, z: 0.9}
+    PositionOffset: {x: 100, y: 0, z: 0}
+    ColorPanel: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorContent: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
-  DeselectOnEvenSystemDeselect: 1
+  DeselectOnPointerExit: 1
   VisualsParent: {fileID: 1934545738}
   GraphicsPanel:
   - {fileID: 1934545739}
@@ -3076,6 +3082,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 0
   m_duration: 0.3
   ParentIndexDelaySeconds: 0
@@ -3387,6 +3394,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0
@@ -3453,10 +3461,19 @@ MonoBehaviour:
     ColorContentBlendMode: 0
     Opacity: 1
     PixelsPerUnit: 1
+  m_highlightStatePressed:
+    Scale: {x: 0.9, y: 0.9, z: 0.9}
+    PositionOffset: {x: 100, y: 0, z: 0}
+    ColorPanel: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorContent: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
-  DeselectOnEvenSystemDeselect: 1
+  DeselectOnPointerExit: 1
   VisualsParent: {fileID: 737859789}
   GraphicsPanel:
   - {fileID: 737859790}
@@ -3745,6 +3762,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 0
   m_duration: 0.15
   ParentIndexDelaySeconds: 0
@@ -3811,10 +3829,19 @@ MonoBehaviour:
     ColorContentBlendMode: 0
     Opacity: 1
     PixelsPerUnit: 1
+  m_highlightStatePressed:
+    Scale: {x: 0.9, y: 0.9, z: 0.9}
+    PositionOffset: {x: 100, y: 0, z: 0}
+    ColorPanel: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorContent: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
-  DeselectOnEvenSystemDeselect: 1
+  DeselectOnPointerExit: 1
   VisualsParent: {fileID: 1284857001}
   GraphicsPanel:
   - {fileID: 1284857002}

@@ -1169,6 +1169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 1
   m_duration: 0.2
   ParentIndexDelaySeconds: 0
@@ -1550,6 +1551,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 1
   m_duration: 0.15
   ParentIndexDelaySeconds: 0.025
@@ -1795,6 +1797,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 0
   m_duration: 0.3
   ParentIndexDelaySeconds: 0
@@ -3870,6 +3873,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 1
   m_duration: 0.15
   ParentIndexDelaySeconds: 0.025
@@ -4341,9 +4345,9 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 8022340243468226600}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -90, y: -21}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 96.6, y: -23.3}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &325185441697208032
@@ -4381,7 +4385,7 @@ MonoBehaviour:
     m_BestFit: 0
     m_MinSize: 2
     m_MaxSize: 40
-    m_Alignment: 2
+    m_Alignment: 0
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
@@ -5058,6 +5062,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 1
   m_duration: 0.15
   ParentIndexDelaySeconds: 0.025
@@ -7350,7 +7355,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -20, y: -30}
+  m_AnchoredPosition: {x: -20, y: -40}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6726331928748200902
@@ -7526,6 +7531,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PrintLogs: 0
   IgnoreTimeScale: 1
   m_duration: 0.3
   ParentIndexDelaySeconds: 0

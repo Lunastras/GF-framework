@@ -45,7 +45,9 @@ public class CornMenuSaveData : MonoBehaviour
         if (!m_initialized)
             return;
 
-        CornSaveData[] backups = GfgManagerSaveData.GetActivePlayerSaveData().DataBackups;
+        var playerProfile = GfgManagerSaveData.GetActivePlayerSaveData();
+        //playerProfile.ValidateSaveFile(false);
+        CornSaveData[] backups = playerProfile.DataBackups;
 
         int index = 0;
         foreach (Transform child in m_uiButtonParent)

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using MEC;
 using UnityEngine.EventSystems;
 using System.Reflection;
 using UnityEngine.UI;
@@ -12,14 +13,11 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     public GfcUnityEvent OnSubmit = new();
 
     [SerializeField] protected GfxButtonHightlightState m_highlightStateDefault = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = Color.white, PixelsPerUnit = 1 };
-
     [SerializeField] protected GfxButtonHightlightState m_highlightStateDisabled = new() { Scale = new(1, 1, 1), Opacity = 0.6f, ColorContent = Color.white, ColorPanel = Color.white, PixelsPerUnit = 1 };
-
     [SerializeField] protected GfxButtonHightlightState m_highlightStateSelected = new() { Scale = new(1.15f, 1.15f, 1.15f), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.75f, 0.75f, 0.75f, 1), PixelsPerUnit = 1 };
-
     [SerializeField] protected GfxButtonHightlightState m_highlightStateSubmit = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.75f, 0.75f, 0.75f, 1), PixelsPerUnit = 1 };
-
     [SerializeField] protected GfxButtonHightlightState m_highlightStatePinned = new() { Scale = new(1, 1, 1), Opacity = 1, ColorContent = Color.white, ColorPanel = new(0.5f, 0.5f, 0.5f, 1), PixelsPerUnit = 1 };
+    [SerializeField] protected GfxButtonHightlightState m_highlightStatePressed = new() { Scale = new(0.9f, 0.9f, 0.9f), Opacity = 1, ColorContent = new(0.75f, 0.75f, 0.75f, 1), ColorPanel = new(0.75f, 0.75f, 0.75f, 1), PixelsPerUnit = 1 };
 
     [HideInInspector] public bool Submitable = true;
 
@@ -56,6 +54,8 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     protected GfcSound m_soundSubmit;
 
+    protected bool m_pressed;
+
     //the bool tells if the panel was selected or not. False means it was deselected
 
     protected const string EMPTY = "";
@@ -79,6 +79,10 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     protected void Start() { Initialize(); }
 
     const string EVENT_FUNCTION_NAME = "OnButtonEvent";
+
+    public bool Transitioning { get { return m_timeSinceTransitionStart < m_transitionTimeEffective && m_initialisedButton; } }
+
+    private GfcCoroutineHandle m_pressedRoutineHandle;
 
     public virtual void Initialize()
     {
@@ -131,14 +135,17 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
         if (Interactable() && Submitable)
         {
             OnSubmit.Invoke();
+            m_pressedRoutineHandle.KillCoroutine();
+            m_pressedRoutineHandle.RunCoroutine(_PressedRoutine());
             OnEventCallbackInternal(GfxButtonCallbackType.SUBMIT, true);
             m_soundSubmit?.PlaySingleInstance();
         }
     }
 
+
     protected void Update()
     {
-        if (m_timeSinceTransitionStart < m_transitionTimeEffective && m_initialisedButton)
+        if (Transitioning)
         {
             m_timeSinceTransitionStart += TimeScaleIndependent ? Time.unscaledDeltaTime : Time.deltaTime;
             m_timeSinceTransitionStart.MinSelf(m_transitionTimeEffective);
@@ -274,7 +281,24 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
         GfxButtonHightlightState defaultState = GetDefaultHighlightState();
         GfxButtonHightlightState desiredState = GetDesiredHighlightState();
 
-        return ComposeHighlightState(defaultState, desiredState);
+        GfxButtonHightlightState finalStateUnpressed = ComposeHighlightState(defaultState, desiredState);
+
+        if (m_pressed)
+            finalStateUnpressed = ComposeHighlightState(defaultState, m_highlightStatePressed);
+
+        return finalStateUnpressed;
+    }
+
+    private IEnumerator<float> _PressedRoutine()
+    {
+        Debug.Log("PRESSED");
+        m_pressed = true;
+        StartTransitionToNewState();
+        while (Transitioning) yield return Timing.WaitForOneFrame;
+        Debug.Log("UNPRESSED");
+        m_pressed = false;
+        StartTransitionToNewState();
+        m_pressedRoutineHandle.Finished();
     }
 
     public virtual void SetCreateData(GfxButtonCreateData aPanelData, bool aSnapToDesiredState = false, bool aSetPositionAndIndex = true)
@@ -320,6 +344,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     public void SetHightlightStatePinned(GfxButtonHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStatePinned = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
     public void SetHightlightStateSelected(GfxButtonHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStateSelected = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
     public void SetHightlightStateSubmit(GfxButtonHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStateSubmit = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
+    public void SetHightlightStatePressed(GfxButtonHightlightState aState, bool aSnapToDesiredState = false) { m_highlightStatePressed = aState; if (aSnapToDesiredState) SnapToDesiredState(); else StartTransitionToNewState(); }
 
     public bool IsSelected() { return m_isSelected; }
     public GfxButtonHightlightState GetHightlightStateDefault() { return m_highlightStateDefault; }
@@ -327,6 +352,8 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     public GfxButtonHightlightState GetHightlightStateSelected() { return m_highlightStateSelected; }
     public GfxButtonHightlightState GetHightlightStateSubmit() { return m_highlightStateSubmit; }
     public GfxButtonHightlightState GetHightlightStatePinned() { return m_highlightStatePinned; }
+    public GfxButtonHightlightState GetHightlightStatePressed() { return m_highlightStatePressed; }
+
     public bool IsPinned() { return m_isPinned; }
     public bool IsSelectedPinned() { return m_isPinned && m_isSelected; }
 }

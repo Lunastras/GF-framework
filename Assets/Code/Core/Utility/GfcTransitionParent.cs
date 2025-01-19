@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class GfcTransitionParent : MonoBehaviour
 {
+#if UNITY_EDITOR
+    public bool PrintLogs = false;
+#endif
     public bool IgnoreTimeScale = false;
     [SerializeField] private float m_duration = 0.3f;
 
@@ -39,6 +42,10 @@ public class GfcTransitionParent : MonoBehaviour
 
     public CoroutineHandle StartTransition(bool aFadeIn, bool anIgnoreTimeScale = false, bool aForceChangeDuration = false)
     {
+#if UNITY_EDITOR
+        if (PrintLogs) Debug.Log("Received request for " + (aFadeIn ? " FADE IN " : "FADE OUT"));
+#endif
+
         m_ignoreTimeScale = anIgnoreTimeScale;
 
         //simply ignore if the fade is already ongoing, even if the requested duration is different

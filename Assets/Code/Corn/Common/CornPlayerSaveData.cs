@@ -38,10 +38,10 @@ public class GfgPlayerSaveData
         m_unixTimeOfCreation = GfcTools.GetCurrentUnixUtcTime();
         DataBackups = new CornSaveData[DATA_BACKUPS_COUNT];
 
-        ValidateSaveFile(false);
-
         Data.MaxMentalSanity = CornManagerBalancing.DICE_ROLL_NUM_FACES;
         Data.MentalSanity = Data.MaxMentalSanity;
+
+        ValidateSaveFile(false);
         Data.Consumables[(int)CornPlayerConsumables.MONEY] = INITIAL_SUM_OF_MONEY;
 
         MakeBackup();
@@ -56,6 +56,9 @@ public class GfgPlayerSaveData
 
     public void MakeBackup()
     {
+        if (Data.MentalSanity <= 0)
+            return;
+
         if (DataBackups[0] == null)
         {
             DataBackups[0] = Data.GetDeepCopy();
@@ -135,6 +138,12 @@ public class GfgPlayerSaveData
             validData = false;
             createdNewSave = true;
         }
+        else
+        {
+            bool validSanity = Data.MentalSanity > 0;
+            validData &= validSanity;
+            Debug.Assert(validSanity, "Sanity should never be 0 in a save file. Perform a game over check before saving.");
+        }
 
         if (DataBackups == null)
         {
@@ -152,7 +161,8 @@ public class GfgPlayerSaveData
         }
 
         validData &= ValidateArrayValues(ref DataBackups, DATA_BACKUPS_COUNT);
-        //used to take into account any changes made to the initial sum of money
+
+
 
         return validData || createdNewSave;
     }
@@ -263,22 +273,25 @@ public class CornSaveData
         return numDays;
     }
 
-    public float GetValue(CornPlayerResources aType) { return Resources[(int)aType]; }
-    public float GetValue(CornPlayerConsumables aType) { return Consumables[(int)aType]; }
-    public float GetValue(CornPlayerSkillsStats aType) { return SkillStats[(int)aType]; }
+    public float GetValue(CornPlayerResources aType) { Debug.Assert(Resources != null); return Resources[(int)aType]; }
+    public float GetValue(CornPlayerConsumables aType) { Debug.Assert(Consumables != null); return Consumables[(int)aType]; }
+    public float GetValue(CornPlayerSkillsStats aType) { Debug.Assert(SkillStats != null); return SkillStats[(int)aType]; }
 
     public void ApplyModifier(CornPlayerSkillsStats aType, float aValue)
     {
+        Debug.Assert(SkillStats != null);
         SkillStats[(int)aType] = (SkillStats[(int)aType] + aValue).Clamp(0, 1);
     }
 
     public void ApplyModifier(CornPlayerResources aType, float aValue)
     {
+        Debug.Assert(Resources != null);
         Resources[(int)aType] = (Resources[(int)aType] + aValue).Clamp(0, 1);
     }
 
     public void ApplyModifier(CornPlayerConsumables aType, float aValue)
     {
+        Debug.Assert(Consumables != null);
         Consumables[(int)aType] += aValue;
         if (aType < CornPlayerConsumables.MONEY)
             Consumables[(int)aType] = Consumables[(int)aType].Clamp(0, 1);
@@ -286,6 +299,7 @@ public class CornSaveData
 
     public bool CanAfford(CornPlayerConsumables aType, float aValue)
     {
+        Debug.Assert(Consumables != null);
         return -0.0001 <= Consumables[(int)aType] + aValue; //-0.001 to account for errors
     }
 
