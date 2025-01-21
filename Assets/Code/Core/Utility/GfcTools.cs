@@ -20,6 +20,18 @@ public enum Order
 
 public static class GfcToolsStatic
 {
+    public static IEnumerator<float> CancelWithGf(this IEnumerator<float> coroutine, GameObject gameObject)
+    {
+        while (MEC.Timing.MainThread != System.Threading.Thread.CurrentThread || (gameObject && gameObject.ActiveInHierarchyGf() && coroutine.MoveNext()))
+            yield return coroutine.Current;
+    }
+
+    public static IEnumerator<float> CancelWhenDestroyed(this IEnumerator<float> coroutine, GameObject gameObject)
+    {
+        while (MEC.Timing.MainThread != System.Threading.Thread.CurrentThread || (gameObject && coroutine.MoveNext()))
+            yield return coroutine.Current;
+    }
+
     public static void MoveToScene(this GameObject aGameObject, GfcSceneId aSceneId) { SceneManager.MoveGameObjectToScene(aGameObject, SceneManager.GetSceneByBuildIndex((int)aSceneId)); }
 
     //Not the fastest thing in the world, but damn is it simple

@@ -40,6 +40,7 @@ public class CornShopItemButton : MonoBehaviour
 
     public void UpdateCanAfford()
     {
+        Button.Initialize();
         CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(m_item);
         bool canAfford = GfgManagerSaveData.GetActivePlayerSaveData().Data.CanAfford(CornPlayerConsumables.MONEY, -itemData.Price);
         Button.SetInteractable(canAfford, "Not enough money");

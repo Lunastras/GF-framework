@@ -120,7 +120,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!84 &534320795
+--- !u!84 &97005622
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -157,7 +157,44 @@ RenderTexture:
   m_Dimension: 2
   m_VolumeDepth: 1
   m_ShadowSamplingMode: 2
---- !u!84 &645732532
+--- !u!84 &232116924
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 6
+  m_Width: 1024
+  m_Height: 1024
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 90
+  m_ColorFormat: 4
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 1
+  m_UseDynamicScale: 0
+  m_UseDynamicScaleExplicit: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_EnableRandomWrite: 0
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
+--- !u!84 &984303745
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -202,6 +239,36 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 276659211708489159, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_Texture
+      value: 
+      objectReference: {fileID: 984303745}
+    - target: {fileID: 302134472058172031, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_Texture
+      value: 
+      objectReference: {fileID: 1883050064}
+    - target: {fileID: 658737043036766423, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.Camera
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 658737043036766423, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.RenderTexture
+      value: 
+      objectReference: {fileID: 984303745}
+    - target: {fileID: 658737043036766423, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.InstantiatedPrefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 658737043036766423, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.InstantiatedPrefabParent
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 2080833477572206972, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_Name
@@ -257,6 +324,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4473803781613914271, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_Texture
+      value: 
+      objectReference: {fileID: 232116924}
     - target: {fileID: 4779852546949658699, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -279,16 +351,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4779852546949658699, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4779852546949658699, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4779852546949658699, guid: 991079a6e37a01e408719e7581e20fe7,
-        type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 50
       objectReference: {fileID: 0}
@@ -297,16 +359,76 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -55
       objectReference: {fileID: 0}
+    - target: {fileID: 5356880119201574730, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.Camera
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5356880119201574730, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.RenderTexture
+      value: 
+      objectReference: {fileID: 1883050064}
+    - target: {fileID: 5356880119201574730, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.InstantiatedPrefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5356880119201574730, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.InstantiatedPrefabParent
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 5414675803961272453, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5414675803961272453, guid: 991079a6e37a01e408719e7581e20fe7,
+    - target: {fileID: 6697997725284469679, guid: 991079a6e37a01e408719e7581e20fe7,
         type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
+      propertyPath: m_instanceData.Camera
+      value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 6697997725284469679, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.RenderTexture
+      value: 
+      objectReference: {fileID: 97005622}
+    - target: {fileID: 6697997725284469679, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.InstantiatedPrefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6697997725284469679, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.InstantiatedPrefabParent
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6816803943675599677, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.Camera
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6816803943675599677, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.RenderTexture
+      value: 
+      objectReference: {fileID: 232116924}
+    - target: {fileID: 6816803943675599677, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.InstantiatedPrefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6816803943675599677, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_instanceData.InstantiatedPrefabParent
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7324844413261370138, guid: 991079a6e37a01e408719e7581e20fe7,
+        type: 3}
+      propertyPath: m_Texture
+      value: 
+      objectReference: {fileID: 97005622}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -373,7 +495,7 @@ LightingSettings:
   m_PVRFilteringAtrousPositionSigmaIndirect: 2
   m_PVRFilteringAtrousPositionSigmaAO: 1
   m_RespectSceneVisibilityWhenBakingGI: 0
---- !u!84 &1847059036
+--- !u!84 &1883050064
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -387,43 +509,6 @@ RenderTexture:
   serializedVersion: 6
   m_Width: 1024
   m_Height: 512
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 90
-  m_ColorFormat: 4
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 1
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 0
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
---- !u!84 &2033557007
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 1024
-  m_Height: 1024
   m_AntiAliasing: 1
   m_MipCount: -1
   m_DepthStencilFormat: 90

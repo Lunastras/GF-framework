@@ -231,11 +231,11 @@ public class GfcPooling : MonoBehaviour
     private IEnumerator<float> _DeactivateOneFrameLate(GameObject aGameObject)
     {
         yield return Timing.WaitForOneFrame; //wait one frame to see if we have to spawn this object, frames where we destroy objects are also frames where its likely we will spawn objects
-        if (aGameObject && ObjectQueuedForPool(aGameObject)) //if it was moved out of the pool, don't deactivate
+        if (ObjectQueuedForPool(aGameObject)) //if it was moved out of the pool, don't deactivate
         {
             aGameObject.SetActive(false);
             yield return Timing.WaitForOneFrame; //wait one frame before moving into destroyed position, we do this because objects cannot be activated the turn they were inactivated
-            if (aGameObject) locSetObjectPosition(aGameObject.transform, DESTROY_POSITION, false);
+            locSetObjectPosition(aGameObject.transform, DESTROY_POSITION, false);
         }
     }
 
@@ -252,7 +252,7 @@ public class GfcPooling : MonoBehaviour
             anUseTransition = anUseTransition && objectToDestroy.TryGetComponent(out transitionActive);
 
             if (delay > 0 || anUseTransition)
-                handle = Timing.RunCoroutine(_WaitUntilDestroy(delay, objectToDestroy, false, goOverCapacity, transitionActive));
+                handle = Timing.RunCoroutine(_WaitUntilDestroy(delay, objectToDestroy, false, goOverCapacity, transitionActive).CancelWhenDestroyed(objectToDestroy));
             else
                 InternalDestroy(objectToDestroy, keepActive, goOverCapacity);
         }
@@ -371,7 +371,7 @@ public class GfcPooling : MonoBehaviour
                     if (!aKeepActive)
                     {
                         newPos = DEACTIVATE_NEXT_FRAME_POSITION;
-                        Timing.RunCoroutine(Instance._DeactivateOneFrameLate(anObjectToDestroy));
+                        Timing.RunCoroutine(Instance._DeactivateOneFrameLate(anObjectToDestroy).CancelWhenDestroyed(anObjectToDestroy));
                     }
 
                     locSetObjectPosition(anObjectToDestroy.transform, newPos, false);

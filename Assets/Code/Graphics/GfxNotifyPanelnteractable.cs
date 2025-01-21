@@ -158,7 +158,9 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
         GfxTextMessage currentMessage = default;
 
         GfcInputTracker trackerSubmit = new(m_inputSubmit, gameObject);
+        trackerSubmit.DisplayPromptString = new("Continue");
         GfcInputTracker trackerSkip = new(m_inputSkip, gameObject);
+        trackerSkip.DisplayPromptString = new("Skip");
         trackerSubmit.Key = m_inputLockKey;
         trackerSkip.Key = m_inputLockKey;
 

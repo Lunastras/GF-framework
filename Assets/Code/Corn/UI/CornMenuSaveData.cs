@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class CornMenuSaveData : MonoBehaviour
 {
@@ -21,10 +22,10 @@ public class CornMenuSaveData : MonoBehaviour
             Debug.Assert(m_uiButtonPrefab);
             Debug.Assert(m_uiButtonParent);
 
-            CornSaveData[] backups = GfgManagerSaveData.GetActivePlayerSaveData().DataBackups;
+            int countBackups = GfgManagerSaveData.GetActivePlayerSaveData().DataBackups.Count;
             GfcPooling.DestroyChildren(m_uiButtonParent);
 
-            for (int i = 0; i < backups.Length; i++)
+            for (int i = 0; i < GfgPlayerSaveData.DATA_BACKUPS_COUNT; i++)
             {
                 CornPlayerSaveDataButton button = Instantiate(m_uiButtonPrefab).GetComponent<CornPlayerSaveDataButton>();
                 button.Button.Initialize();
@@ -47,12 +48,12 @@ public class CornMenuSaveData : MonoBehaviour
 
         var playerProfile = GfgManagerSaveData.GetActivePlayerSaveData();
         //playerProfile.ValidateSaveFile(false);
-        CornSaveData[] backups = playerProfile.DataBackups;
+        List<CornSaveData> backups = playerProfile.DataBackups;
 
         int index = 0;
         foreach (Transform child in m_uiButtonParent)
         {
-            if (backups[index] != null)
+            if (backups.Count > index)
             {
                 child.gameObject.SetActive(true);
                 child.GetComponent<CornPlayerSaveDataButton>().SetSaveData(backups[index]);

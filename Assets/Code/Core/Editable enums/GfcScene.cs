@@ -13,6 +13,7 @@ public enum GfcSceneId
     ENV_PARK,
     ENV_RESTAURANT,
     ENV_MUSUEM,
+
     IRISU,
     WHACK_A_WOLF,
     SHOP,

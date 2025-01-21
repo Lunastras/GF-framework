@@ -1505,6 +1505,15 @@ MonoBehaviour:
     ColorContentBlendMode: 0
     Opacity: 1
     PixelsPerUnit: 1
+  m_highlightStatePressed:
+    Scale: {x: 0.9, y: 0.9, z: 0.9}
+    PositionOffset: {x: 0, y: 0, z: 0}
+    ColorPanel: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorContent: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
@@ -3827,6 +3836,15 @@ MonoBehaviour:
     ColorContentBlendMode: 0
     Opacity: 1
     PixelsPerUnit: 1
+  m_highlightStatePressed:
+    Scale: {x: 0.9, y: 0.9, z: 0.9}
+    PositionOffset: {x: 0, y: 0, z: 0}
+    ColorPanel: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorContent: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
@@ -4347,7 +4365,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 96.6, y: -23.3}
+  m_AnchoredPosition: {x: 96.6001, y: -23.300049}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &325185441697208032
@@ -5012,6 +5030,15 @@ MonoBehaviour:
     PositionOffset: {x: 0, y: 0, z: 0}
     ColorPanel: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     ColorContent: {r: 1, g: 1, b: 1, a: 1}
+    ColorPanelBlendMode: 0
+    ColorContentBlendMode: 0
+    Opacity: 1
+    PixelsPerUnit: 1
+  m_highlightStatePressed:
+    Scale: {x: 0.9, y: 0.9, z: 0.9}
+    PositionOffset: {x: 0, y: 0, z: 0}
+    ColorPanel: {r: 0.75, g: 0.75, b: 0.75, a: 1}
+    ColorContent: {r: 0.75, g: 0.75, b: 0.75, a: 1}
     ColorPanelBlendMode: 0
     ColorContentBlendMode: 0
     Opacity: 1
@@ -7355,7 +7382,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -20, y: -40}
+  m_AnchoredPosition: {x: -20, y: -35}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6726331928748200902

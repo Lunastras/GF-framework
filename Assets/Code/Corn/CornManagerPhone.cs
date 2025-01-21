@@ -33,8 +33,11 @@ public class CornManagerPhone : MonoBehaviour
     GfcLocalizedString m_openPhoneString;
     GfcLocalizedString m_closePhoneString;
 
+    private GfcInputTracker m_backButtonTracker;
+
     public static bool CanTogglePhone { get { return Instance.m_canTogglePhone; } set { Instance.m_canTogglePhone = value; } }
 
+    public
     // Start is called before the first frame update
     void Awake()
     {
@@ -42,16 +45,20 @@ public class CornManagerPhone : MonoBehaviour
         m_openPhoneString = new("Open Phone");
         m_closePhoneString = new("Close Phone");
         m_openPhoneInputTracker.DisplayPromptString = m_openPhoneString;
+        m_backButtonTracker = new(GfcInputType.BACK);
+        m_backButtonTracker.Key = new(GfcInputLockPriority.UI1);
+        m_backButtonTracker.DisplayPromptString = new("Close Chat");
         this.SetSingleton(ref Instance);
+
     }
 
     // Update is called once per frame
     void Update()
     {
+        GfcGameState gameState = GfgManagerGame.GetGameState();
         if (CanTogglePhone)
         {
             bool validState = m_statesWhereToggleEnabled.Length == 0;
-            GfcGameState gameState = GfgManagerGame.GetGameState();
 
             for (int i = 0; !validState && i < m_statesWhereToggleEnabled.Length; i++)
                 validState = gameState == m_statesWhereToggleEnabled[i];
@@ -59,6 +66,9 @@ public class CornManagerPhone : MonoBehaviour
             if (validState && !GfgManagerGame.GameStateTransitioningFadeInPhase() && m_openPhoneInputTracker.PressedSinceLastCheck())
                 TogglePhone();
         }
+
+        if (gameState == GfcGameState.PHONE && Instance.m_currentlyShownAvatarEvent && m_backButtonTracker.PressedSinceLastCheck())
+            CloseMessageScene(Instance.m_currentlyShownAvatarEvent.PhoneEventIndex);
     }
 
     public static void TogglePhone()
@@ -247,12 +257,6 @@ public class CornManagerPhone : MonoBehaviour
 
         StartSocialEventIfEventWasQueued();
         RemoveMessageScene(anAvatar.PhoneEventIndex);
-    }
-
-    public static void PressedBack()
-    {
-        if (Instance.m_currentlyShownAvatarEvent)
-            CloseMessageScene(Instance.m_currentlyShownAvatarEvent.PhoneEventIndex);
     }
 }
 

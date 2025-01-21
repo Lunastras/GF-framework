@@ -291,11 +291,9 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     private IEnumerator<float> _PressedRoutine()
     {
-        Debug.Log("PRESSED");
         m_pressed = true;
         StartTransitionToNewState();
         while (Transitioning) yield return Timing.WaitForOneFrame;
-        Debug.Log("UNPRESSED");
         m_pressed = false;
         StartTransitionToNewState();
         m_pressedRoutineHandle.Finished();

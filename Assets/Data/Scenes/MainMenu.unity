@@ -2624,7 +2624,7 @@ MonoBehaviour:
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
-  DeselectOnPointerExit: 1
+  DeselectOnEvenSystemDeselect: 1
   VisualsParent: {fileID: 930824448}
   GraphicsPanel:
   - {fileID: 930824449}
@@ -2913,7 +2913,7 @@ MonoBehaviour:
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
-  DeselectOnPointerExit: 1
+  DeselectOnEvenSystemDeselect: 1
   VisualsParent: {fileID: 1934545738}
   GraphicsPanel:
   - {fileID: 1934545739}
@@ -3473,7 +3473,7 @@ MonoBehaviour:
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
-  DeselectOnPointerExit: 1
+  DeselectOnEvenSystemDeselect: 1
   VisualsParent: {fileID: 737859789}
   GraphicsPanel:
   - {fileID: 737859790}
@@ -3841,7 +3841,7 @@ MonoBehaviour:
   Submitable: 1
   Index: 0
   TransitionTime: 0.07
-  DeselectOnPointerExit: 1
+  DeselectOnEvenSystemDeselect: 1
   VisualsParent: {fileID: 1284857001}
   GraphicsPanel:
   - {fileID: 1284857002}

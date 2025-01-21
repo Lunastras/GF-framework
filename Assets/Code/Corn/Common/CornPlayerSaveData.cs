@@ -15,12 +15,12 @@ public class GfgPlayerSaveData
 
     public CornSaveData Data = new();
 
-    public CornSaveData[] DataBackups;
+    public const int DATA_BACKUPS_COUNT = 3;
+    public List<CornSaveData> DataBackups;
 
     public long m_unixTimeOfCreation;
     public readonly float m_originalMaxSumMoney = INITIAL_SUM_OF_MONEY;
     public const int INITIAL_SUM_OF_MONEY = 10000;
-    public const int DATA_BACKUPS_COUNT = 3;
     public const int FIRST_WAKEUP_TIME = 9;
     public const int FIRST_DATE_DAY = 14;
     public const int FIRST_DATE_MONTH = 6;
@@ -36,21 +36,18 @@ public class GfgPlayerSaveData
     {
         m_name = aName;
         m_unixTimeOfCreation = GfcTools.GetCurrentUnixUtcTime();
-        DataBackups = new CornSaveData[DATA_BACKUPS_COUNT];
 
         Data.MaxMentalSanity = CornManagerBalancing.DICE_ROLL_NUM_FACES;
         Data.MentalSanity = Data.MaxMentalSanity;
 
         ValidateSaveFile(false);
         Data.Consumables[(int)CornPlayerConsumables.MONEY] = INITIAL_SUM_OF_MONEY;
-
-        MakeBackup();
     }
 
     public void SetBackupDataUsed(int anIndex)
     {
         Debug.Assert(anIndex >= 0 && anIndex < DATA_BACKUPS_COUNT);
-        Data = DataBackups[anIndex];
+        Data = DataBackups[anIndex].GetDeepCopy(); //can be optimised
         ValidateSaveFile(false);
     }
 
@@ -59,25 +56,23 @@ public class GfgPlayerSaveData
         if (Data.MentalSanity <= 0)
             return;
 
-        if (DataBackups[0] == null)
+        if (DataBackups.Count < DATA_BACKUPS_COUNT)
         {
-            DataBackups[0] = Data.GetDeepCopy();
-            ValidateCornData(DataBackups[0], m_originalMaxSumMoney);
+            DataBackups.Insert(0, Data.GetDeepCopy());
         }
         else
         {
             for (int i = 0; i < DATA_BACKUPS_COUNT; i++)
             {
-                if (DataBackups[i] == null || DataBackups[i].DaysPassed <= Data.DaysPassed)
+                if (DataBackups[i].DaysPassed <= Data.DaysPassed)
                 {
-                    if (DataBackups[i] != null && DataBackups[i].DaysPassed < Data.DaysPassed)
+                    if (DataBackups[i].DaysPassed < Data.DaysPassed)
                     {
                         for (int j = DATA_BACKUPS_COUNT - 1; j > i; j--)
                             DataBackups[j] = DataBackups[j - 1];
                     }
 
                     DataBackups[i] = Data.GetDeepCopy();
-                    ValidateCornData(DataBackups[i], m_originalMaxSumMoney);
                     break;
                 }
             }
@@ -145,24 +140,26 @@ public class GfgPlayerSaveData
             Debug.Assert(validSanity, "Sanity should never be 0 in a save file. Perform a game over check before saving.");
         }
 
+        validData &= ValidateCornData(Data, m_originalMaxSumMoney);
+
         if (DataBackups == null)
         {
             validData = false;
-            DataBackups = new CornSaveData[DATA_BACKUPS_COUNT];
-            MakeBackup();
+            DataBackups = new(DATA_BACKUPS_COUNT);
         }
 
-        validData &= ValidateCornData(Data, m_originalMaxSumMoney);
-        for (int i = 0; i < DataBackups.Length; i++)
+        if (DataBackups.Count == 0)
+            MakeBackup();
+
+        for (int i = 0; i < DataBackups.Count; i++)
         {
+            Debug.Assert(DataBackups[i] != null);
             bool valid = ValidateCornData(DataBackups[i], m_originalMaxSumMoney);
             if (!valid && aPrintErrors) Debug.LogError("CornSaveData backup at index " + i + " might be corrupted.");
             validData &= valid;
         }
 
-        validData &= ValidateArrayValues(ref DataBackups, DATA_BACKUPS_COUNT);
-
-
+        Debug.Assert(DataBackups.Count <= DATA_BACKUPS_COUNT);
 
         return validData || createdNewSave;
     }

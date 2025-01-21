@@ -42,7 +42,7 @@ public abstract class GfxNotifyPanelTemplate : MonoBehaviour
     {
         CoroutineHandle handle = default;
         if (m_messagesBuffer.Count > 0)
-            handle = m_currentNotifyCoroutine.RunCoroutineIfNotRunning(_DrawMessages(), Segment.LateUpdate);
+            handle = m_currentNotifyCoroutine.RunCoroutineIfNotRunning(_DrawMessages().CancelWhenDestroyed(gameObject), Segment.LateUpdate);
 
         return handle;
     }

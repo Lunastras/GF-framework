@@ -81,6 +81,18 @@ public class CornManagerEvents : MonoBehaviour
             data.Consumables[(int)CornPlayerConsumables.MONEY] = 99999999;
             CornMenuApartment.UpdateGraphics(true);
         });
+
+        GfCommandConsole.RegisterCommand("rockbottom", () =>
+        {
+            var data = GfgManagerSaveData.GetActivePlayerSaveData().Data;
+            data.MentalSanity = 1;
+
+            for (int i = 0; i < data.Resources.Length; i++)
+                data.Resources[i] = 0;
+
+            data.Consumables[(int)CornPlayerConsumables.MONEY] = 99999999;
+            CornMenuApartment.UpdateGraphics(true);
+        });
     }
 
     public static CoroutineHandle ExecuteEvent(CornEvent anEvent)

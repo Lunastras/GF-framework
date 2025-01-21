@@ -101,7 +101,19 @@ public class GfgScene : MonoBehaviour
     }
 
     public static GfcSceneLoadState GetSceneState(GfcSceneId aScene) { return Instance.m_scenesData[(int)aScene].LoadState; }
-    public static GfcSceneId GetActiveScene() { return (GfcSceneId)SceneManager.GetActiveScene().buildIndex; }
+    public static GfcSceneId GetActiveSceneId()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        GfcSceneId sceneId = (GfcSceneId)activeScene.buildIndex;
+#if UNITY_EDITOR
+        if ((int)sceneId >= SceneManager.sceneCountInBuildSettings)
+        {
+            Debug.LogWarning("The active scene '" + activeScene.name + "' is not in the build settings, cannot fetch its scene id.");
+            sceneId = GfcSceneId.INVALID;
+        }
+#endif //UNITY_EDITOR
+        return sceneId;
+    }
 
     public static GfcSceneId GetLastActiveScene() { return Instance.m_lastActiveScene; }
 
@@ -109,7 +121,7 @@ public class GfgScene : MonoBehaviour
     {
         GfcSceneActiveSetResult result;
 
-        GfcSceneId activeScene = GetActiveScene();
+        GfcSceneId activeScene = GetActiveSceneId();
         if (activeScene != aScene)
         {
             Scene sceneToActivate = SceneManager.GetSceneByBuildIndex((int)aScene);
@@ -157,6 +169,7 @@ public class GfgScene : MonoBehaviour
     public static void LoadScene(GfcSceneId aScene, bool aSceneActivation = false, bool aPersistentScene = false)
     {
         Debug.Assert(aScene != GfcSceneId.INVALID);
+        Debug.Assert(aScene != GfcSceneId.COUNT);
 
         SceneData sceneData = Instance.m_scenesData[(int)aScene];
         sceneData.PersistentScene |= aPersistentScene;
@@ -208,7 +221,10 @@ public class GfgScene : MonoBehaviour
         int gameStateIndex = (int)GfgManagerGame.GetPreviousGameState();
         GfcGameStateScene[] gameStateScenes = Instance.m_gameStateScenes;
         if (!gameStateScenes[gameStateIndex].Static)
-            gameStateScenes[gameStateIndex].Scene = GetActiveScene();
+        {
+            gameStateScenes[gameStateIndex].Scene = GetActiveSceneId();
+
+        }
 
         if (Instance.m_gameStateScenes.Length > (int)aNewGameState)
         {

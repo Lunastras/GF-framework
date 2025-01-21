@@ -543,6 +543,9 @@ GameObject:
   - component: {fileID: 1920439008781233622}
   - component: {fileID: 6303746377477524521}
   - component: {fileID: 8209198727500411482}
+  - component: {fileID: 6969327357725296148}
+  - component: {fileID: 3729767205726532209}
+  - component: {fileID: 7110313988190203049}
   m_Layer: 5
   m_Name: PhoneChat
   m_TagString: Untagged
@@ -681,6 +684,72 @@ MonoBehaviour:
   NotifyPanel: {fileID: 0}
   CurrentSceneNameLength: 0
   HasCachedDialogueSetting: 0
+--- !u!114 &6969327357725296148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5801674869962584519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 311b14da191a91a43a73f1de1caeaa15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PrintLogs: 0
+  IgnoreTimeScale: 0
+  m_duration: 0.3
+  ParentIndexDelaySeconds: 0
+--- !u!114 &3729767205726532209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5801674869962584519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64b1a4cefbaf8cb47a10cdf53ac9ea3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AnimationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  m_canvasGroup: {fileID: 1920439008781233622}
+--- !u!114 &7110313988190203049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5801674869962584519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e38cdc327318e94a8d0f346e84dfd8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TransitionActiveType: 0
 --- !u!1 &6939238388748972925
 GameObject:
   m_ObjectHideFlags: 0
