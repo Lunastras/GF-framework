@@ -79,10 +79,11 @@ public class GfxManagerPrefabToTexture : MonoBehaviour
             if (Instance.m_templates.Length > (int)aType)
             {
                 var template = Instance.m_templates[aType];
-                Debug.Assert(template.TemplateInstance.GetInstanceData().RenderTexture, "The texture is null, something is really wrong");
-
                 if (anAccessType == GfxPrefabToTextureInstanceTemplateAccessType.AQUIRE)
+                {
                     template.Aquire();
+                    Debug.Assert(template.TemplateInstance.GetInstanceData().RenderTexture, "The texture is null, something is really wrong");
+                }
                 else
                     template.Release();
                 Instance.m_templates[aType] = template;
