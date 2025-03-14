@@ -1,0 +1,121 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Misc_en-US
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en-US
+  m_SharedData: {fileID: 11400000, guid: 1fab485ef721b7d4493c753aa4063ebd, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 159224255836161
+    m_Localized: Open Phone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224255836160
+    m_Localized: Interact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224230670336
+    m_Localized: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224255836162
+    m_Localized: Close Phone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224226476032
+    m_Localized: Poster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224222281728
+    m_Localized: Flowers
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224218087424
+    m_Localized: PISHII
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224205504512
+    m_Localized: Comfy Couch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224130007040
+    m_Localized: Study
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159222112546816
+    m_Localized: Test string english
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159057666469888
+    m_Localized: Coolest
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224213893120
+    m_Localized: Lighting McQueen Beddo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 159224255836163
+    m_Localized: Close Chat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 162521150746624
+    m_Localized: Goof Around
+    m_Metadata:
+      m_Items: []
+  - m_Id: 162521150746625
+    m_Localized: Shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 162523067543552
+    m_Localized: 'Code
+
+'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 162523067543553
+    m_Localized: Art
+    m_Metadata:
+      m_Items: []
+  - m_Id: 162523067543554
+    m_Localized: Astronomy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 162523071737856
+    m_Localized: House Work
+    m_Metadata:
+      m_Items: []
+  - m_Id: 163317837819904
+    m_Localized: Back to menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 163317846208512
+    m_Localized: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 163317846208513
+    m_Localized: 'Options
+
+'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 163317846208514
+    m_Localized: 'Quit
+
+'
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

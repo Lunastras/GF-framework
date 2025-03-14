@@ -1,15 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class CornMenuApartment : MonoBehaviour
 {
     public static CornMenuApartment Instance { get; protected set; } = null;
-
     [SerializeField] protected bool m_showConsumableSliders = false;
     public Transform CameraTarget;
     [SerializeField] protected Transform m_lightParent;
@@ -40,8 +34,6 @@ public class CornMenuApartment : MonoBehaviour
     private LightShadows m_moonShadowMode;
 
     bool[] m_instantiatedShopItems;
-
-    // Start is called before the first frame update
 
     void Awake()
     {

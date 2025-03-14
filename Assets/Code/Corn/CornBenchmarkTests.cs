@@ -7,51 +7,37 @@ public class CornBenchmarkTests : MonoBehaviour
 {
     public float testNum = 51;
 
-    public int numIterations = 5000;
+    public int numIterations = 50000;
 
-    private float SqrtInternal(float aNum, float aLeft, float aRight)
-    {
-        float mid;
-        int it = 0;
-        while (System.MathF.Abs(aLeft - aRight) > 0.00001f)
-        {
-            it++;
-
-            mid = 0.5f * (aLeft + aRight);
-
-            if (mid * mid > aNum)
-                aRight = mid;
-            else
-                aLeft = mid;
-        }
-
-        //UnityEngine.Debug.Log("The count is: " + it);
-        return aLeft;
-    }
-
-    public float Sqrt(float aNum) { return SqrtInternal(aNum, 0, aNum); }
+    public unsafe int FastInt(bool aBool) { return *(int*)&aBool; }
+    [SerializeField] ulong cnt = 0;
 
     // Update is called once per frame
     void Update()
     {
         UnityEngine.Debug.Log("TESTS BEGIN");
-
-
         Stopwatch stopwatch = new();
-
         stopwatch.Start();
 
-        for (int i = 0; i < numIterations; ++i) System.MathF.Sqrt(testNum);
-        UnityEngine.Debug.Log("Elapsed time 1: " + stopwatch.ElapsedTicks + " res : " + System.MathF.Sqrt(testNum));
+        int val = 0;
+
+        for (int i = 0; i < numIterations; ++i)
+        {
+            cnt += (ulong)FastInt(i % 2 == 0);
+        }
+
+        UnityEngine.Debug.Log("Elapsed time 1: " + stopwatch.ElapsedTicks + " res : " + val);
 
         stopwatch.Stop();
-
         stopwatch.Reset();
-
         stopwatch.Start();
 
-        for (int i = 0; i < numIterations; ++i) Sqrt(testNum);
-        UnityEngine.Debug.Log("Elapsed time 2: " + stopwatch.ElapsedTicks + " res : " + Sqrt(testNum));
+        for (int i = 0; i < numIterations; ++i)
+        {
+            cnt += (ulong)(i % 2 == 0 ? 1 : 0);
+        }
+
+        UnityEngine.Debug.Log("Elapsed time 2: " + stopwatch.ElapsedTicks + " res : " + val);
 
         stopwatch.Stop();
     }

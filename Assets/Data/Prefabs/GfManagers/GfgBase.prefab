@@ -528,11 +528,16 @@ MonoBehaviour:
   m_speedMultiplierTextWrite: 1
   m_speedMultiplierTextErase: 1
   m_speedMultiplierFinish: 2
+  m_messageWaitSecondsOnSkip: 0.02
   m_inputSubmit: 17
   m_inputSkip: 10
-  m_messageWaitSecondsOnSkip: 0.02
-  m_forceWriteOnSubmit: 0
   m_transitionMixMode: 3
+  m_forceWriteOnSubmit: 0
+  m_soundPresetSubmitText: 0
+  m_soundPresetMessageEnter: 9
+  m_soundPresetMessageExit: 10
+  m_soundPresetMessageShown: -1
+  m_soundPresetMessageShownSkip: -1
   m_mainTextWriter: {fileID: 5397643093001943242}
   m_nameTextWriter: {fileID: 622875938455196513}
   m_continueText: {fileID: 4199103206174973163}
@@ -1518,6 +1523,11 @@ MonoBehaviour:
   Index: 0
   TransitionTime: 0.07
   DeselectOnEvenSystemDeselect: 1
+  m_soundPresetSelect: 5
+  m_soundPresetDeselect: -1
+  m_soundPresetPinned: 7
+  m_soundPresetUnpinned: 8
+  m_soundPresetSubmit: 0
   VisualsParent: {fileID: 6564273718992798245}
   GraphicsPanel:
   - {fileID: 889483526193697161}
@@ -1893,6 +1903,177 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bb811b038a3910479d5a76d8fd01632, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_soundPresets:
+    FirstElementIsFallback: 0
+    Elements:
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 0
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 1
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 2
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 3
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 4
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 5
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 6
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 7
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 8
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 9
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 10
+    - Singleton:
+        Clip: {fileID: 0}
+        MixerType: 8
+        Loop: 0
+        Volume: 0.5
+        VolumeVariance: 0
+        Pitch: 1
+        PitchVariance: 0
+        SpatialBlend: 0
+        CoolDownTime: 0.08
+        MinDistance: 1
+        MaxDistance: 500
+        MaxInstances: 1
+      Type: 11
   m_mixerGroups:
   - AudioMixerType: 0
     AudioMixerGroup: {fileID: 24300002, guid: 372330576c2e8484ab40fd6aeebac69a, type: 2}
@@ -1942,40 +2123,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c17da6a3b82f21409be495b00151243, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_stringTableLinks:
-  - Type: 0
-    StringTableCollection: {fileID: 11400000, guid: 46e9d78e9c5c06e4b887386418d6a41b,
-      type: 2}
-  - Type: 1
-    StringTableCollection: {fileID: 11400000, guid: bcc85114f95bd35498488b9b128cb316,
-      type: 2}
-  - Type: 2
-    StringTableCollection: {fileID: 11400000, guid: cbdd8527afde9674ebdd858003dc7307,
-      type: 2}
-  - Type: 3
-    StringTableCollection: {fileID: 11400000, guid: 9ae610c7c7823c9428b6979d1db7a2e0,
-      type: 2}
-  - Type: 4
-    StringTableCollection: {fileID: 11400000, guid: 32e42fd19a6f36649851f1eaed44b85e,
-      type: 2}
-  - Type: 5
-    StringTableCollection: {fileID: 11400000, guid: 5adb6ca4a8c982d478f40144d9d4dfd3,
-      type: 2}
-  - Type: 6
-    StringTableCollection: {fileID: 11400000, guid: 4c2d8700c6672614f9a0269d5bec6d7e,
-      type: 2}
-  - Type: 7
-    StringTableCollection: {fileID: 11400000, guid: 1183f5bb6f838494590b24fb4bb270fc,
-      type: 2}
-  - Type: 8
-    StringTableCollection: {fileID: 11400000, guid: 7baaaebac20cb894e8b44735a7a551b8,
-      type: 2}
-  - Type: 9
-    StringTableCollection: {fileID: 11400000, guid: 11538d8a8a79cb544a102be2a8893232,
-      type: 2}
-  - Type: 10
-    StringTableCollection: {fileID: 11400000, guid: 3c234d45abd291a4eac255297506caae,
-      type: 2}
+  m_stringTableCollectionsEditor:
+    FirstElementIsFallback: 0
+    Elements:
+    - Singleton: {fileID: 11400000, guid: b2c993d5207d51a4cb219ccc81cf06f8, type: 2}
+      Type: 0
+    - Singleton: {fileID: 11400000, guid: 0a6ca178e08640f4f82fc788ffc93a49, type: 2}
+      Type: 1
+  m_stringTablesPlayer:
+    FirstElementIsFallback: 0
+    Elements:
+    - Singleton:
+        m_TableReference:
+          m_TableCollectionName: GUID:1fab485ef721b7d4493c753aa4063ebd
+      Type: 0
+    - Singleton:
+        m_TableReference:
+          m_TableCollectionName: GUID:8f8a7e3ac6c224c458de7640d0bb8b27
+      Type: 1
   m_printErrors: 0
 --- !u!114 &2480019356626476555
 MonoBehaviour:
@@ -3505,67 +3670,67 @@ MonoBehaviour:
       SoundSelect:
         Clip: {fileID: 0}
         MixerType: 0
+        Loop: 0
         Volume: 0.5
         VolumeVariance: 0
         Pitch: 1
         PitchVariance: 0
+        SpatialBlend: 0
         CoolDownTime: 0.08
-        Loop: 0
         MinDistance: 1
         MaxDistance: 500
-        SpatialBlend: 0
         MaxInstances: 12
       SoundDeselect:
         Clip: {fileID: 0}
         MixerType: 0
+        Loop: 0
         Volume: 0.5
         VolumeVariance: 0
         Pitch: 1
         PitchVariance: 0
+        SpatialBlend: 0
         CoolDownTime: 0.08
-        Loop: 0
         MinDistance: 1
         MaxDistance: 500
-        SpatialBlend: 0
         MaxInstances: 12
       SoundPinned:
         Clip: {fileID: 0}
         MixerType: 0
+        Loop: 0
         Volume: 0.5
         VolumeVariance: 0
         Pitch: 1
         PitchVariance: 0
+        SpatialBlend: 0
         CoolDownTime: 0.08
-        Loop: 0
         MinDistance: 1
         MaxDistance: 500
-        SpatialBlend: 0
         MaxInstances: 12
       SoundUnpinned:
         Clip: {fileID: 0}
         MixerType: 0
+        Loop: 0
         Volume: 0.5
         VolumeVariance: 0
         Pitch: 1
         PitchVariance: 0
+        SpatialBlend: 0
         CoolDownTime: 0.08
-        Loop: 0
         MinDistance: 1
         MaxDistance: 500
-        SpatialBlend: 0
         MaxInstances: 12
       SoundSubmit:
         Clip: {fileID: 0}
         MixerType: 0
+        Loop: 0
         Volume: 0.5
         VolumeVariance: 0
         Pitch: 1
         PitchVariance: 0
+        SpatialBlend: 0
         CoolDownTime: 0.08
-        Loop: 0
         MinDistance: 1
         MaxDistance: 500
-        SpatialBlend: 0
         MaxInstances: 12
       DefaultHighlightState:
         Scale: {x: 1, y: 1, z: 1}
@@ -3848,6 +4013,11 @@ MonoBehaviour:
   Index: 0
   TransitionTime: 0.07
   DeselectOnEvenSystemDeselect: 1
+  m_soundPresetSelect: 5
+  m_soundPresetDeselect: -1
+  m_soundPresetPinned: 7
+  m_soundPresetUnpinned: 8
+  m_soundPresetSubmit: 0
   VisualsParent: {fileID: 4925774017482689350}
   GraphicsPanel:
   - {fileID: 2224891647510606347}
@@ -5046,6 +5216,11 @@ MonoBehaviour:
   Index: 0
   TransitionTime: 0.07
   DeselectOnEvenSystemDeselect: 1
+  m_soundPresetSelect: 5
+  m_soundPresetDeselect: -1
+  m_soundPresetPinned: 7
+  m_soundPresetUnpinned: 8
+  m_soundPresetSubmit: 0
   VisualsParent: {fileID: 5271455953141407803}
   GraphicsPanel:
   - {fileID: 3719022688286866526}

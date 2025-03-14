@@ -6,29 +6,18 @@ using static Unity.Mathematics.math;
 public class GfcManagerAudio : MonoBehaviour
 {
     private static GfcManagerAudio Instance = null;
-
-    [SerializeField]
-    private AudioMixerTypeInstance[] m_mixerGroups = null;
-
-    [SerializeField]
-    private GameObject m_audioObjectPrefab = null;
-
-    [SerializeField]
-    private float m_maxVolumeDecibels = 0;
-
-    [SerializeField]
-    private float m_minVolumeDecibels = -80;
-
-    private static readonly Vector3 ZERO3 = Vector3.zero;
-
+    [SerializeField] private EnumSingletons<GfcSound, GfcSoundPreset> m_soundPresets;
+    [SerializeField] private AudioMixerTypeInstance[] m_mixerGroups = null;
+    [SerializeField] private GameObject m_audioObjectPrefab = null;
+    [SerializeField] private float m_maxVolumeDecibels = 0;
+    [SerializeField] private float m_minVolumeDecibels = -80;
     private AudioSource m_audioLoadAudioSource = null;
 
     //twelveth root of 2
     const float NOTE_PROGRESSION_COEF = 1.05946309436f;
-
     const string VOLUME_STRING = "Volume";
-
     const string PITCH_STRING = "Pitch";
+    private static readonly Vector3 ZERO3 = Vector3.zero;
 
     void Awake()
     {
@@ -36,6 +25,7 @@ public class GfcManagerAudio : MonoBehaviour
             Destroy(Instance);
         Instance = this;
 
+        m_soundPresets.Initialize(GfcSoundPreset.COUNT);
         m_audioLoadAudioSource = GetComponent<AudioSource>();
         for (int i = 0; i < m_mixerGroups.Length; ++i)
             if ((int)m_mixerGroups[i].AudioMixerType != i)
@@ -64,6 +54,8 @@ public class GfcManagerAudio : MonoBehaviour
         else Debug.LogWarning("Clip cannot load before the audioManager initializes.");
 
     }
+
+    public static GfcSound GetSoundPresets(GfcSoundPreset aSoundPreset) { return aSoundPreset == GfcSoundPreset.NONE ? null : Instance.m_soundPresets[aSoundPreset]; }
 
     public static float GetPitchFromNote(int octave, PianoNotes note)
     {
@@ -247,4 +239,22 @@ public struct AudioMixerTypeInstance
 {
     public AudioMixerType AudioMixerType;
     public AudioMixerGroup AudioMixerGroup;
+}
+
+public enum GfcSoundPreset
+{
+    NONE = -1,
+    SUBMIT,
+    SUBMIT_ALT,
+    SUBMIT_SUPER,
+    BACK,
+    BACK_ALT,
+    SELECT,
+    SELECT_ALT,
+    PIN,
+    UNPIN,
+    SWOOSH_ENTER,
+    SWOOSH_EXIT,
+    SKIP,
+    COUNT,
 }

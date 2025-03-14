@@ -31,8 +31,12 @@ public class GfxClickInteract : MonoBehaviour
         m_submitTracker = new(GfcInputType.SUBMIT);
         m_submitTracker.DisplayPrompt = false;
         m_submitTracker.Key = new((int)GfcInputLockPriority.GF_MASTER);
-        m_clickInteractText = new("Interact");
         m_timeUntilInteractableCheck = m_interactableCheckInterval;
+    }
+
+    void Start()
+    {
+        m_clickInteractText = new("Interact");
     }
 
     void Update()

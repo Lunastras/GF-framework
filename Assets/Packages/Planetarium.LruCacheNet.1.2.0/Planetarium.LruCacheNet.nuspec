@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Planetarium.LruCacheNet</id>
+    <version>1.2.0</version>
+    <authors>mwdavis84</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/planetarium/LruCacheNet/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/planetarium/LruCacheNet</projectUrl>
+    <description>A fast, generic, thread-safe Least Recently Used (LRU) cache for .NET Standard.
+
+Implements IDictionary&lt;TKey, TValue&gt; to easily integrate to more systems(Planetarium Fork)</description>
+    <releaseNotes>Implements IDictionary&lt;TKey, TValue&gt; interface</releaseNotes>
+    <copyright>(c) 2018 Mark Davis</copyright>
+    <tags>cache, LRUCache</tags>
+    <repository type="Git" url="https://github.com/planetarium/LruCacheNet" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
+  </metadata>
+</package>

@@ -15,8 +15,12 @@ public class GfgGameStateReturnToPrevious : MonoBehaviour
         m_toggleInputTracker = new(ToggleStateInput);
         m_toggleInputTracker.DisplayPrompt = !InputPrompt.IsEmpty();
         m_toggleInputTracker.ParentGameObject = gameObject;
-        if (m_toggleInputTracker.DisplayPrompt)
-            m_toggleInputTracker.DisplayPromptString = new(InputPrompt);
+
+    }
+
+    void Start()
+    {
+        if (m_toggleInputTracker.DisplayPrompt) m_toggleInputTracker.DisplayPromptString = new(InputPrompt);
     }
 
     void Update()

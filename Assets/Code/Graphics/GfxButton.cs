@@ -44,14 +44,16 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
 
     private float m_timeSinceTransitionStart = 0;
 
+    [SerializeField] protected GfcSoundPreset m_soundPresetSelect = GfcSoundPreset.SELECT;
+    [SerializeField] protected GfcSoundPreset m_soundPresetDeselect = GfcSoundPreset.NONE;
+    [SerializeField] protected GfcSoundPreset m_soundPresetPinned = GfcSoundPreset.PIN;
+    [SerializeField] protected GfcSoundPreset m_soundPresetUnpinned = GfcSoundPreset.UNPIN;
+    [SerializeField] protected GfcSoundPreset m_soundPresetSubmit = GfcSoundPreset.SUBMIT;
+
     protected GfcSound m_soundSelect;
-
     protected GfcSound m_soundDeselect;
-
     protected GfcSound m_soundPinned;
-
     protected GfcSound m_soundUnpinned;
-
     protected GfcSound m_soundSubmit;
 
     protected bool m_pressed;
@@ -88,6 +90,12 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
     {
         if (!m_initialisedButton)
         {
+            m_soundSelect = GfcSound.GetSoundPreset(m_soundPresetSelect);
+            m_soundDeselect = GfcSound.GetSoundPreset(m_soundPresetDeselect);
+            m_soundPinned = GfcSound.GetSoundPreset(m_soundPresetPinned);
+            m_soundUnpinned = GfcSound.GetSoundPreset(m_soundPresetUnpinned);
+            m_soundSubmit = GfcSound.GetSoundPreset(m_soundPresetSubmit);
+
             m_transform = transform;
             m_initialisedButton = true;
 
@@ -164,15 +172,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
             m_isSelected = aSelect;
             StartTransitionToNewState(aSelect);
             OnEventCallbackInternal(GfxButtonCallbackType.SELECT, aSelect);
-
-            if (aSelect)
-            {
-                m_soundSelect?.PlaySingleInstance();
-            }
-            else //deselected
-            {
-                m_soundDeselect?.PlaySingleInstance();
-            }
+            (aSelect ? m_soundSelect : m_soundDeselect)?.PlaySingleInstance();
         }
     }
 
@@ -186,11 +186,7 @@ public abstract class GfxButton : GfcInteractable, ISelectHandler, IDeselectHand
             m_isPinned = aIsPinned;
             StartTransitionToNewState(aIsPinned);
             OnEventCallbackInternal(GfxButtonCallbackType.PINNED, aIsPinned);
-
-            if (aIsPinned)
-                m_soundPinned?.PlaySingleInstance();
-            else
-                m_soundUnpinned?.PlaySingleInstance();
+            (aIsPinned ? m_soundPinned : m_soundUnpinned)?.PlaySingleInstance();
         }
     }
 

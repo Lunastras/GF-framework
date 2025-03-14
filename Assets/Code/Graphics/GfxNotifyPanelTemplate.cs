@@ -8,15 +8,10 @@ using UnityEngine;
 public abstract class GfxNotifyPanelTemplate : MonoBehaviour
 {
     protected GfcCoroutineHandle m_currentNotifyCoroutine = default;
-
     protected List<GfxTextMessage> m_messagesBuffer = new(8);
-
     public Action<GfxTextMessage, int> OnDrawMessageCallback;
-
     public Action OnNotificationFadeInStart;
-
     public Action OnNotificationFadeOutStart;
-
     public Action OnNotificationFadeOutEnd;
 
     protected void Start()

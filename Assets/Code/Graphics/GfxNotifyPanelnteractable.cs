@@ -15,16 +15,38 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
     [SerializeField] protected float m_speedMultiplierTextWrite = 1;
     [SerializeField] protected float m_speedMultiplierTextErase = 1;
     [SerializeField] protected float m_speedMultiplierFinish = 2;
+    [SerializeField] protected float m_messageWaitSecondsOnSkip = 0.05f;
     [SerializeField] protected GfcInputType m_inputSubmit = GfcInputType.SUBMIT;
     [SerializeField] protected GfcInputType m_inputSkip = GfcInputType.RUN;
-    [SerializeField] protected float m_messageWaitSecondsOnSkip = 0.05f;
-    [SerializeField] protected bool m_forceWriteOnSubmit = false;
     [SerializeField] protected BoxTextTransitionMode m_transitionMixMode = BoxTextTransitionMode.MIX_NONE;
+    [SerializeField] protected bool m_forceWriteOnSubmit = false;
+
+    [SerializeField] protected GfcSoundPreset m_soundPresetSubmitText = GfcSoundPreset.SUBMIT;
+    [SerializeField] protected GfcSoundPreset m_soundPresetMessageEnter = GfcSoundPreset.SWOOSH_ENTER;
+    [SerializeField] protected GfcSoundPreset m_soundPresetMessageExit = GfcSoundPreset.SWOOSH_EXIT;
+    [SerializeField] protected GfcSoundPreset m_soundPresetMessageShown = GfcSoundPreset.NONE;
+    [SerializeField] protected GfcSoundPreset m_soundPresetMessageShownSkip = GfcSoundPreset.SKIP;
+
+    GfcSound m_soundSubmitText;
+    GfcSound m_soundMessageShown;
+    GfcSound m_soundMessageShownSkip;
+    GfcSound m_soundEnter;
+    GfcSound m_soundExit;
 
     protected int m_lastWrittenMessageIndex = -1;
     protected int m_messageBufferIndex = 0;
     private bool m_waitingForOptionSelect = true;
     protected GfcLockKey m_inputLockKey;
+
+    new protected void Start()
+    {
+        base.Start();
+        m_soundSubmitText = GfcSound.GetSoundPreset(m_soundPresetSubmitText);
+        m_soundMessageShown = GfcSound.GetSoundPreset(m_soundPresetMessageShown);
+        m_soundEnter = GfcSound.GetSoundPreset(m_soundPresetMessageEnter);
+        m_soundExit = GfcSound.GetSoundPreset(m_soundPresetMessageExit);
+        m_soundMessageShownSkip = GfcSound.GetSoundPreset(m_soundPresetMessageShownSkip);
+    }
 
     public override void ClearVisuals()
     {
@@ -111,12 +133,11 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
     protected abstract void EraseMessages();
 
-    private void DrawCurrentMessageInternal()
+    private void DrawCurrentMessageInternal(ref GfcInputTracker anInputTrackerSkip, bool aPlayClip)
     {
         if (m_lastWrittenMessageIndex != m_messageBufferIndex)
         {
-            //messageAudioSource?.Stop();
-            // messageAudioSource = m_messagesBuffer[m_messageBufferIndex].Sound?.PlaySingleInstance();
+            if (aPlayClip) (anInputTrackerSkip.Pressed() ? m_soundMessageShownSkip : m_soundMessageShown)?.Play();
             m_lastWrittenMessageIndex = m_messageBufferIndex;
             OnDrawMessageCallback?.Invoke(m_messagesBuffer[m_messageBufferIndex], m_messageBufferIndex);
             DrawCurrentMessage();
@@ -151,6 +172,8 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
         OnDrawMessagesStart();
 
+        m_soundEnter?.Play();
+
         m_messageBufferIndex = 0;
         m_lastWrittenMessageIndex = -1;
         bool hasNameBox = false;
@@ -161,6 +184,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
         trackerSubmit.DisplayPromptString = new("Continue");
         GfcInputTracker trackerSkip = new(m_inputSkip, gameObject);
         trackerSkip.DisplayPromptString = new("Skip");
+
         trackerSubmit.Key = m_inputLockKey;
         trackerSkip.Key = m_inputLockKey;
 
@@ -177,7 +201,7 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
                 invTransitionTime = effectiveTransitionTime > 0.00001f ? 1.0f / effectiveTransitionTime : 999999999;
 
                 if (BoxTextTransitionMode.MIX_BEGIN == m_transitionMixMode || BoxTextTransitionMode.MIX_BOTH == m_transitionMixMode)
-                    DrawCurrentMessageInternal();
+                    DrawCurrentMessageInternal(ref trackerSkip, false);
             }
             else //fading out
             {
@@ -204,10 +228,12 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
                 {
                     currentMessage = m_messagesBuffer[m_messageBufferIndex];
 
-                    DrawCurrentMessageInternal();
+                    DrawCurrentMessageInternal(ref trackerSkip, true);
 
                     while (DrawingMessage() && !trackerSubmit.PressedSinceLastCheck() && !trackerSkip.Pressed())
                         yield return Timing.WaitForOneFrame;
+
+                    if (trackerSubmit.Pressed()) m_soundSubmitText?.Play();
 
                     FlushCurrentMessage();
 
@@ -251,6 +277,8 @@ public abstract class GfxNotifyPanelInteractable : GfxNotifyPanelTemplate
 
             FlushCurrentMessage();
         }
+
+        m_soundExit?.Play();
 
         //messageAudioSource?.Stop();
         GfcInput.InputLockHandle.Unlock(ref m_inputLockKey);

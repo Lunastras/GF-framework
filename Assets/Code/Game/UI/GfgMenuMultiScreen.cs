@@ -13,6 +13,9 @@ public abstract class GfgMenuMultiScreen<ENUM> : MonoBehaviour where ENUM : unma
     protected void InitMultiScreenMenu(ENUM anEnumCount) { InitMultiScreenMenu(anEnumCount.Index()); }
     protected void InitMultiScreenMenu(int aCount)
     {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+
         m_screens.Initialize(aCount);
         m_buttonsParent.InitChildrenGfxButtons(OnButtonEvent);
         for (int i = 0; i < aCount; i++)

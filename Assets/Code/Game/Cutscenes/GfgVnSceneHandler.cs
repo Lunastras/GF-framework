@@ -258,7 +258,7 @@ public abstract class GfgVnScene
         m_handler.DialogueStringBuffer.Append(currentLabel.LabelStatementCount);
         currentLabel.LabelStatementCount++;
 
-        return new GfcLocalizedString(aText, GfcLocalizationStringTable.DIALOGUE, m_handler.DialogueStringBuffer);
+        return new GfcLocalizedString(aText, GfcLocalizationStringTableType.DIALOGUE, m_handler.DialogueStringBuffer);
     }
 
     protected void Wait(float aSeconds)
@@ -295,7 +295,7 @@ public abstract class GfgVnScene
         m_handler.DialogueStringBuffer.SetLength(currentLabel.DialogueStringPrefixLength);
         m_handler.DialogueStringBuffer.Append(aUniqueKeyPostfix);
 
-        SayUntranslated(GfcLocalization.GetString(GfcLocalizationStringTable.DIALOGUE, m_handler.DialogueStringBuffer), aSetting);
+        SayUntranslated(GfcLocalization.GetString(GfcLocalizationStringTableType.DIALOGUE, m_handler.DialogueStringBuffer), aSetting);
     }
 
     private string GetCharacterName(GfcStoryCharacter aCharacter)

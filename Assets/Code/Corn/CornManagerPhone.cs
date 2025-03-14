@@ -41,6 +41,11 @@ public class CornManagerPhone : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        this.SetSingleton(ref Instance);
+    }
+
+    void Start()
+    {
         m_openPhoneInputTracker = new(m_openPhoneInput);
         m_openPhoneString = new("Open Phone");
         m_closePhoneString = new("Close Phone");
@@ -48,8 +53,6 @@ public class CornManagerPhone : MonoBehaviour
         m_backButtonTracker = new(GfcInputType.BACK);
         m_backButtonTracker.Key = new(GfcInputLockPriority.UI1);
         m_backButtonTracker.DisplayPromptString = new("Close Chat");
-        this.SetSingleton(ref Instance);
-
     }
 
     // Update is called once per frame

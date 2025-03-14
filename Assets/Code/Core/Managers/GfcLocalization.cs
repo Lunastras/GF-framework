@@ -1,87 +1,100 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.Localization;
+using UnityEditor.Localization.Plugins.CSV;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
-using UnityEngine.Localization.SmartFormat.Utilities;
 using UnityEngine.Localization.Tables;
 
 public class GfcLocalization : MonoBehaviour
 {
-    [SerializeField]
-    private StringTableLink[] m_stringTableLinks = null;
-
-    [SerializeField]
-    private bool m_printErrors = true;
-
     protected static GfcLocalization Instance = null;
+
+#if UNITY_EDITOR
+    [SerializeField] private EnumSingletons<StringTableCollection, GfcLocalizationStringTableType> m_stringTableCollectionsEditor;
+#endif //UNITY_EDITOR
+
+    [SerializeField] private EnumSingletons<LocalizedStringTable, GfcLocalizationStringTableType> m_stringTablesPlayer;
+    [SerializeField] private bool m_printErrors = true;
+
     protected Dictionary<string, string>[] m_cachedStringLists = null;
-
     protected StringTable[] m_stringTables = null;
-
     protected LocalizedStringDatabase m_localizedStringDatabase = null;
+    protected const string UNKNOWN_ENTRY = "_UNKNOWN_ENTRY";
+    protected LocaleIdentifier m_defaultLocaleIdentifier;
 
     private GfcStringBuffer m_stringBuffer = new(15);
 
-    protected const string UNKNOWN_ENTRY = "_UNKNOWN_ENTRY";
+    public static void RegisterLocalizedString(string aString, string aKey, GfcLocalizationStringTableType aTable)
+    {
+#if UNITY_EDITOR
+        StringTableCollection stringTableCollection = Instance.m_stringTableCollectionsEditor[aTable];
+        StringTable table = stringTableCollection.GetTable(Instance.m_defaultLocaleIdentifier) as StringTable;
+        StringTableEntry tableEntry = table.GetEntry(aKey);
 
-    protected LocaleIdentifier m_defaultLocaleIdentifier;
+        if (tableEntry == null || tableEntry.Value != aString)
+        {
+            tableEntry = table.AddEntry(aKey, aString);
+
+            Debug.Log("GfcLocalization: Registered string '" + aString + "' for key '" + aKey + "'");
+
+            // We need to mark the table and shared table data entry as we have made changes
+            EditorUtility.SetDirty(table);
+            EditorUtility.SetDirty(table.SharedData);
+        }
+#endif //UNITY_EDITOR
+    }
 
     // Start is called before the first frame update
     void Awake()
     {
         if (this != Instance)
         {
-            Destroy(Instance);
-
             Instance = this;
             LocalizationSettings.Instance.OnSelectedLocaleChanged += OnSelectedLocaleChanged;
 
-
-            int countStringTables = (int)GfcLocalizationStringTable.COUNT;
+            int countStringTables = (int)GfcLocalizationStringTableType.COUNT;
             m_stringTables = new StringTable[countStringTables];
             m_cachedStringLists = new Dictionary<string, string>[countStringTables];
 
             m_defaultLocaleIdentifier = LocalizationSettings.Instance.GetSelectedLocale().Identifier;
             LoadStringTables(m_defaultLocaleIdentifier, false);
         }
+
+        GfcLocalizedString s = new("Test string english");
     }
 
     public static bool IsDefaultLocale() { return Instance.m_defaultLocaleIdentifier == LocalizationSettings.Instance.GetSelectedLocale().Identifier; }
 
-
     protected void LoadStringTables(LocaleIdentifier aLocaleIdentifier, bool aForceUpdate = false)
     {
-        int countStringTables = (int)GfcLocalizationStringTable.COUNT;
+        int countStringTables = (int)GfcLocalizationStringTableType.COUNT;
 
-        if (null == m_stringTableLinks || 0 == m_stringTableLinks.Length)
+#if UNITY_EDITOR
+        m_stringTableCollectionsEditor.Initialize(GfcLocalizationStringTableType.COUNT);
+#endif //UNITY_EDITOR
+        m_stringTablesPlayer.Initialize(GfcLocalizationStringTableType.COUNT);
+
+        if (null == m_stringTablesPlayer || 0 == m_stringTablesPlayer.Length
+#if UNITY_EDITOR
+        || null == m_stringTableCollectionsEditor || 0 == m_stringTableCollectionsEditor.Length
+#endif //UNITY_EDITOR
+        )
             Debug.LogError("The string table links array has not been initialised!");
 
-        if (null != m_stringTableLinks)
+        for (int i = 0; i < (int)GfcLocalizationStringTableType.COUNT; ++i)
         {
-            int linksLength = m_stringTableLinks.Length;
-            for (int i = 0; i < linksLength; ++i)
-            {
-                int typeIndex = (int)m_stringTableLinks[i].Type;
+            //m_stringTables[i] = m_stringTableCollectionsEditor[i].GetTable(aLocaleIdentifier) as StringTable;
+            m_stringTables[i] = m_stringTablesPlayer[i].GetTable();
+        }
 
-                //too lazy to do this in the UI, I already wasted enough time over-engineering stuff
-                if (i != typeIndex) Debug.LogWarning("The StringTableLink for the type " + m_stringTableLinks[i].Type + " is at index " + i + ", please reorder it at index " + typeIndex);
-
-                if (!aForceUpdate && null != m_stringTables[typeIndex])
-                    Debug.LogError("The type " + m_stringTableLinks[i].Type + " was already asssigned to string table '" + m_stringTables[typeIndex].name + "'.");
-                else if (null == m_stringTableLinks[i].StringTableCollection)
-                    Debug.LogError("The StringTableCollection for the type " + m_stringTableLinks[i].Type + " is null, please assign it from the editor.");
-                else
-                    m_stringTables[typeIndex] = m_stringTableLinks[i].StringTableCollection.GetTable(aLocaleIdentifier) as StringTable;
-            }
-
-            for (int i = 0; i < countStringTables; ++i)
-            {
-                if (null == m_stringTables[i] && m_printErrors)
-                    Debug.LogError("The type " + (GfcLocalizationStringTable)i + " does not have a string table assigned.");
-            }
+        for (int i = 0; i < countStringTables; ++i)
+        {
+            if (null == m_stringTables[i] && m_printErrors)
+                Debug.LogError("The type " + (GfcLocalizationStringTableType)i + " does not have a string table assigned.");
         }
     }
 
@@ -89,10 +102,7 @@ public class GfcLocalization : MonoBehaviour
     {
         int length = m_cachedStringLists.Length;
         for (int i = 0; i < length; ++i)
-        {
-            if (null != m_cachedStringLists[i])
-                m_cachedStringLists[i].Clear();
-        }
+            m_cachedStringLists[i]?.Clear();
     }
 
     protected void OnSelectedLocaleChanged(Locale aNewLocale)
@@ -103,9 +113,41 @@ public class GfcLocalization : MonoBehaviour
 
     protected static bool LoadString(StringTable aTable, string aEntryName, out string aLocalizedString)
     {
-        var entry = aTable.GetEntry(aEntryName);
+        StringTableEntry entry = aTable.GetEntry(aEntryName);
         aLocalizedString = null != entry ? entry.GetLocalizedString() : null;
         return aLocalizedString != null;
+    }
+
+    //Retrieves the string for the current locale Id found inside the table associated with [aStringTableType] at the entry [aEntryName]
+    //Please do not call in the "Awake" function
+    public static string GetString(GfcLocalizationStringTableType aStringTableType, string aEntryName) { return Instance.GetStringInternal(aStringTableType, aEntryName); }
+
+    protected string GetStringInternal(GfcLocalizationStringTableType aStringTableType, string aEntryName)
+    {
+        string valueString;
+        int tableIndex = (int)aStringTableType;
+        if (null == m_cachedStringLists[tableIndex] || !m_cachedStringLists[tableIndex].TryGetValue(aEntryName, out valueString))
+        {
+            if (LoadString(m_stringTables[tableIndex], aEntryName, out valueString))
+            {
+                if (null == m_cachedStringLists[tableIndex])
+                    m_cachedStringLists[tableIndex] = new(4);
+
+                m_cachedStringLists[tableIndex].Add(aEntryName, valueString);
+            }
+            else
+            {
+                m_stringBuffer.Clear();
+                m_stringBuffer.Append(aEntryName);
+                m_stringBuffer.Append(UNKNOWN_ENTRY);
+                valueString = m_stringBuffer.GetStringCopy();
+
+                if (m_printErrors)
+                    Debug.LogError("Could not find the entry '" + aEntryName + "' in the table '" + m_stringTables[tableIndex].name + "' (type: '" + aStringTableType + "' ).");
+            }
+        }
+
+        return valueString;
     }
 
     public static string GetDateString(int aDay, int aMonth, int aYear = -1)
@@ -141,56 +183,12 @@ public class GfcLocalization : MonoBehaviour
 
         return stringBuffer.GetStringCopy();
     }
-
-    //Retrieves the string for the current locale Id found inside the table associated with [aStringTableType] at the entry [aEntryName]
-    //Please do not call in the "Awake" function
-    public static string GetString(GfcLocalizationStringTable aStringTableType, string aEntryName) { return Instance.GetStringInternal(aStringTableType, aEntryName); }
-
-    protected string GetStringInternal(GfcLocalizationStringTable aStringTableType, string aEntryName)
-    {
-        string valueString;
-        int tableIndex = (int)aStringTableType;
-        if (null == m_cachedStringLists[tableIndex] || !m_cachedStringLists[tableIndex].TryGetValue(aEntryName, out valueString))
-        {
-            if (LoadString(m_stringTables[tableIndex], aEntryName, out valueString))
-            {
-                if (null == m_cachedStringLists[tableIndex])
-                    m_cachedStringLists[tableIndex] = new(4);
-
-                m_cachedStringLists[tableIndex].Add(aEntryName, valueString);
-            }
-            else
-            {
-                m_stringBuffer.Clear();
-                m_stringBuffer.Append(aEntryName);
-                m_stringBuffer.Append(UNKNOWN_ENTRY);
-                valueString = m_stringBuffer.GetStringCopy();
-
-                if (m_printErrors)
-                    Debug.LogError("Could not find the entry '" + aEntryName + "' in the table '" + m_stringTables[tableIndex].name + "' (type: '" + aStringTableType + "' ).");
-            }
-        }
-
-        return valueString;
-    }
 }
 
-public enum GfcLocalizationStringTable
+public enum GfcLocalizationStringTableType
 {
     MISC,
-
     DIALOGUE,
-
-    WEAPON_DESCRIPTIONS_TIER_1,
-    WEAPON_DESCRIPTIONS_TIER_2,
-    WEAPON_DESCRIPTIONS_TIER_3,
-    WEAPON_DESCRIPTIONS_TIER_4,
-    WEAPON_DESCRIPTIONS_TIER_5,
-    WEAPON_DESCRIPTIONS_TIER_6,
-    WEAPON_DESCRIPTIONS_TIER_7,
-    WEAPON_DESCRIPTIONS_TIER_8,
-    WEAPON_DESCRIPTIONS_TIER_9,
-    WEAPON_DESCRIPTIONS_TIER_10,
 
     COUNT
 }
@@ -198,14 +196,14 @@ public enum GfcLocalizationStringTable
 [Serializable]
 public struct StringTableLink
 {
-    public GfcLocalizationStringTable Type;
+    public GfcLocalizationStringTableType Type;
     public StringTableCollection StringTableCollection;
 }
 
 //A string that gets translated if the selected locale is different from the default locale, but kept intact if the locale was unchanged
 public struct GfcLocalizedString
 {
-    public GfcLocalizedString(string aRawStringForDefaultLocale, GfcLocalizationStringTable aTable = GfcLocalizationStringTable.MISC, string aLocalizedKey = null)
+    public GfcLocalizedString(string aRawStringForDefaultLocale, GfcLocalizationStringTableType aTable = GfcLocalizationStringTableType.MISC, string aLocalizedKey = null)
     {
         if (aLocalizedKey.IsEmpty())
             aLocalizedKey = aRawStringForDefaultLocale.GetHashCode().ToString();
@@ -214,12 +212,12 @@ public struct GfcLocalizedString
         m_table = aTable;
         m_localeCodeOfCachedString = m_cachedString = null;
         m_key = aLocalizedKey;
-
+        GfcLocalization.RegisterLocalizedString(aRawStringForDefaultLocale, aLocalizedKey, aTable);
     }
 
     private readonly string m_key;
     private readonly string m_rawString;
-    private readonly GfcLocalizationStringTable m_table;
+    private readonly GfcLocalizationStringTableType m_table;
 
     private string m_cachedString;
     private string m_localeCodeOfCachedString;
@@ -233,12 +231,10 @@ public struct GfcLocalizedString
         get
         {
             string localeCode = LocalizationSettings.Instance.GetSelectedLocale().Identifier.Code;
-
-            if (m_localeCodeOfCachedString != localeCode && m_rawString != null)
+            if (m_localeCodeOfCachedString != localeCode || m_rawString != null)
             {
-                m_cachedString = GfcLocalization.IsDefaultLocale() ? m_rawString : GfcLocalization.GetString(m_table, m_key);
-                m_cachedString ??= m_rawString;
-
+                m_cachedString = GfcLocalization.GetString(m_table, m_key);
+                if (m_cachedString.IsEmpty()) m_cachedString = m_rawString;
                 m_localeCodeOfCachedString = localeCode;
             }
 

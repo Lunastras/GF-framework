@@ -77,8 +77,8 @@ Material:
     - _DistanceFadeFalloff: -0.11
     - _DistanceFadeFalloff_1: 0.42
     - _DistanceFadeIntensity: 0.81
-    - _DotsMaskRadius: 0.223
-    - _DotsMaskSmoothness: 0.04
+    - _DotsMaskRadius: 0.322
+    - _DotsMaskSmoothness: 0.02
     - _Edge1: 0.99
     - _Edge2: 1.01
     - _Float: 0
@@ -96,7 +96,7 @@ Material:
     - _NadirBlendPower: 0.3
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _ResolutionScale: 0.01
+    - _ResolutionScale: 0.013
     - _Rotation: 45
     - _Scale: 500
     - _StarDensity: 150
@@ -116,17 +116,17 @@ Material:
     - _test1: -0.23
     - _test_1: 0.25
     m_Colors:
-    - _BackgroundColor: {r: 0.1715023, g: 0.18857573, b: 0.7735849, a: 1}
+    - _BackgroundColor: {r: 0.77392703, g: 0.5395603, b: 0.9150943, a: 1}
     - _BottomColor: {r: 0, g: 0, b: 0, a: 0}
     - _BottomNightColor: {r: 0, g: 0, b: 0, a: 0}
     - _CloudColor: {r: 1, g: 1, b: 1, a: 1}
     - _CloudDayColor: {r: 1, g: 1, b: 1, a: 0}
     - _CloudScale: {r: 4, g: 2, b: 0, a: 0}
-    - _DotsColor: {r: 0.8679245, g: 0.61161125, b: 0.30704877, a: 1}
+    - _DotsColor: {r: 0.8701503, g: 0.7311321, b: 1, a: 1}
     - _MidColor: {r: 0.2581829, g: 0.3662527, b: 0.83879924, a: 0}
     - _MidNightColor: {r: 0, g: 0, b: 0, a: 0}
     - _MoonColor: {r: 6.264151, g: 2.785716, b: 0, a: 1}
-    - _Movement: {r: 0.1, g: 0, b: 0, a: 0}
+    - _Movement: {r: 1, g: 0, b: 0, a: 0}
     - _NadirDayColor: {r: 0, g: 1.17034, b: 2.569365, a: 1}
     - _NadirNightColor: {r: 0, g: 0.15380049, b: 1.1486983, a: 1}
     - _NadirTwilightColor: {r: 2.670157, g: 0.8690605, b: 1.1426519, a: 0}

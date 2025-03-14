@@ -29,7 +29,7 @@ public class CornShopItemButton : MonoBehaviour
         m_item = anItem;
         CornShopItemsData itemData = CornManagerBalancing.GetShopItemData(anItem);
         m_iconImage.sprite = itemData.Icon;
-        m_textName.text = new GfcLocalizedString(itemData.Name, GfcLocalizationStringTable.MISC).String;
+        m_textName.text = new GfcLocalizedString(itemData.Name, GfcLocalizationStringTableType.MISC).String;
         //m_textDescription.text = new GfcLocalizedString(itemData.Description, GfcLocalizationStringTable.MISC).String;
         m_textDeliveryTime.text = itemData.DeliveryDays.ToString();
         m_textPersonalNeeds.text = (itemData.PersonalNeedsPoints * 100).Round().ToString();

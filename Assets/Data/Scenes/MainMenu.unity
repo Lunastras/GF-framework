@@ -2625,6 +2625,11 @@ MonoBehaviour:
   Index: 0
   TransitionTime: 0.07
   DeselectOnEvenSystemDeselect: 1
+  m_soundPresetSelect: 5
+  m_soundPresetDeselect: -1
+  m_soundPresetPinned: 7
+  m_soundPresetUnpinned: 8
+  m_soundPresetSubmit: 0
   VisualsParent: {fileID: 930824448}
   GraphicsPanel:
   - {fileID: 930824449}
@@ -2914,6 +2919,11 @@ MonoBehaviour:
   Index: 0
   TransitionTime: 0.07
   DeselectOnEvenSystemDeselect: 1
+  m_soundPresetSelect: 5
+  m_soundPresetDeselect: -1
+  m_soundPresetPinned: 7
+  m_soundPresetUnpinned: 8
+  m_soundPresetSubmit: 0
   VisualsParent: {fileID: 1934545738}
   GraphicsPanel:
   - {fileID: 1934545739}
@@ -3474,6 +3484,11 @@ MonoBehaviour:
   Index: 0
   TransitionTime: 0.07
   DeselectOnEvenSystemDeselect: 1
+  m_soundPresetSelect: 5
+  m_soundPresetDeselect: -1
+  m_soundPresetPinned: 7
+  m_soundPresetUnpinned: 8
+  m_soundPresetSubmit: 0
   VisualsParent: {fileID: 737859789}
   GraphicsPanel:
   - {fileID: 737859790}
@@ -3842,6 +3857,11 @@ MonoBehaviour:
   Index: 0
   TransitionTime: 0.07
   DeselectOnEvenSystemDeselect: 1
+  m_soundPresetSelect: 5
+  m_soundPresetDeselect: -1
+  m_soundPresetPinned: 7
+  m_soundPresetUnpinned: 8
+  m_soundPresetSubmit: 0
   VisualsParent: {fileID: 1284857001}
   GraphicsPanel:
   - {fileID: 1284857002}
@@ -4239,7 +4259,7 @@ PrefabInstance:
     - target: {fileID: 9167411274886384294, guid: 2cc5fa6d26965384497feebddcb9852d,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -125
       objectReference: {fileID: 0}
     - target: {fileID: 9167411274886384294, guid: 2cc5fa6d26965384497feebddcb9852d,
         type: 3}
